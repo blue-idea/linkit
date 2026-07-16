@@ -2,7 +2,7 @@
 
 > 文件路径：`docs/spec/test_strategy.md`  
 > 参考方法论：`phases/qa_engine.md` §第1阶段  
-> 版本：1.0.0  
+> 版本：1.1.0
 > 日期：2026-07-16  
 > 状态：已定稿
 
@@ -71,12 +71,12 @@ test_scope:
 | React 单元测试 | ✅ | 领域命令、Zod Schema、迁移、selector、排序筛选；关键路径 100% | Vitest |
 | React 组件测试 | ✅ | 主要交互、键盘焦点、错误与降级状态 | React Testing Library + Vitest |
 | 集成 / API 测试 | ✅ | Wails DTO、Supabase Auth/RLS/revision、OpenAI-compatible 契约及异常路径 | Go Integration Test、Supabase CLI、实际 HTTP 调用 |
-| 桌面 E2E | ✅ | 16 条关键用户旅程，Windows 与 macOS 核心路径对等 | Playwright |
+| 桌面 E2E | ✅ | 16 条关键用户旅程在选定目标平台完整执行；另一平台执行 Wails 构建门禁 | Playwright |
 | 视觉回归 | ✅ | 登录、主窗口、六视图、详情、设置、冲突与 AI 对话框 | Playwright Screenshot |
 | 性能测试 | ✅ | REQ-028：10,000 条数据的启动、交互、保存和进度预算 | Go Benchmark + Playwright 性能采样 |
 | 安全测试 | ✅ | RLS、密钥泄露、URL 输入、导入校验、破坏性操作和依赖漏洞 | Supabase 本地测试、`govulncheck`、`pnpm audit`、Secret Scan |
 | 无障碍测试 | ✅ | 核心路径达到 WCAG 2.1 AA 自动检查基线 | axe-core + Playwright |
-| 人工测试 | ✅ | 原生窗口、Keychain、双平台惯例和最终视觉审查 | 记录式检查清单 |
+| 人工测试 | ✅ | 选定平台的原生窗口、Keychain/Credential Manager、平台惯例和最终视觉审查 | 记录式检查清单 |
 
 真实云端与真实 AI 用例只有在 `docs/spec/info.md` 对应环境解除 `BLOCKED` 后才能执行。
 
@@ -101,7 +101,7 @@ test_scope:
 | J-13 | AI consent、重新分析、去重建议、库内推荐和静态知识图 |
 | J-14 | Insights、手动健康扫描、取消和 Updated/Broken 筛选 |
 | J-15 | 全局快捷键、URL 拖入、Esc 和键盘无障碍 |
-| J-16 | 10,000 条性能与 Windows/macOS 核心路径对等 |
+| J-16 | 10,000 条性能、选定平台完整桌面旅程与另一平台构建门禁 |
 
 ---
 
@@ -188,7 +188,7 @@ environments:
 
 - UI 变更必须生成 Baseline、实际截图和 Diff。
 - 每个关键旅程至少保存最终状态截图；破坏性操作、错误、降级和冲突路径保存对话框截图。
-- Windows 与 macOS 的核心窗口和快捷键分别留证。
+- 选定验收平台保存核心窗口、快捷键、Baseline、实际截图与 Diff；另一平台保存 Wails 构建日志。
 - 截图不得包含真实 Email、API Key、token 或用户收藏内容。
 
 ---
@@ -218,7 +218,8 @@ environments:
 |------|----------|
 | Supabase Auth/RLS/revision | 可访问本地或远程测试项目、migration 已应用、测试账号已配置 |
 | 真实 AI | API Base、Model、Key 已配置并取得测试数据发送授权 |
-| Windows/macOS 对等 | 两个平台均有可运行 Wails 构建环境 |
+| 选定平台桌面旅程 | 至少一个目标平台具备可运行 Wails 应用与 Playwright/人工验收环境 |
+| 另一平台构建 | 另一个目标平台具备可运行的 Wails 构建 runner；仅要求构建，不重复完整桌面旅程 |
 | OS Keychain | 在真实 Windows Credential Manager 与 macOS Keychain 中执行 |
 
 ---
@@ -229,3 +230,4 @@ environments:
 |------|------|------|------|
 | 0.1.0 | 2026-07-16 | 草稿 | 根据风险概况、121 条 AC、性能预算和现有环境状态生成 |
 | 1.0.0 | 2026-07-16 | 已定稿 | 经用户确认后正式生效 |
+| 1.1.0 | 2026-07-16 | 已定稿 | 用户确认完整桌面旅程任选一个平台执行，另一平台保留 Wails 构建门禁 |
