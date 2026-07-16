@@ -1,7 +1,7 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：1.2.0  
+> 版本：1.3.0
 > 日期：2026-07-16  
 > 状态：已定稿
 
@@ -33,6 +33,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 9. 未认证读取云用户表采用 Supabase 原生 RLS 行为，允许 HTTP 200 空结果；核心安全条件是不返回用户数据。
 10. 10,000 个书签下，热启动不超过 2 秒；本地搜索、筛选和视图切换 P95 不超过 100ms；本地保存 P95 不超过 500ms；AI/网络操作在 300ms 内显示进度。
 11. 首次向某个 API Base 发送收藏内容前必须获得用户明确授权；授权按 API Base 记忆，API Base 改变后重新确认。
+12. Windows 与 macOS 均为目标平台；每个发布候选至少在一个选定平台执行完整桌面关键旅程，另一平台保留 Wails 构建门禁，不重复要求完整真实旅程。
 
 ---
 
@@ -1456,14 +1457,16 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 ```yaml
 - id: REQ-027-AC-001
   ears: >
-    When 相同 MVP 用例分别在 Windows 与 macOS 执行,
-    the Linkit shall 提供功能对等的结果并使用平台惯例映射 Ctrl 或 Cmd.
+    While Windows 与 macOS 均为目标平台,
+    when Linkit 验收发布候选,
+    the Linkit shall 在至少一个选定平台通过完整关键桌面旅程并遵循该平台的 Ctrl 或 Cmd 与窗口惯例，同时为另一平台保留成功的 Wails 构建证据.
   test_type: Manual
   expected:
     checklist:
-      - "Critical user journeys pass on Windows"
-      - "Critical user journeys pass on macOS"
-      - "Shortcuts and window controls follow platform conventions"
+      - "Critical desktop journeys pass on at least one selected target platform"
+      - "Shortcuts and window controls follow the selected platform conventions"
+      - "A successful Wails build is recorded for the other target platform"
+      - "No unexecuted platform journey is reported as PASS"
 
 - id: REQ-027-AC-002
   ears: >
@@ -1485,6 +1488,17 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
     ui_state: "A clear English persistence error is visible and success indicators are absent"
     side_effects:
       - "The last known valid persisted state remains recoverable"
+
+- id: REQ-027-AC-004
+  ears: >
+    When Linkit 初始化桌面工程骨架,
+    the Linkit shall 锁定 Go 1.26 与稳定 Wails v2，使用 ui 作为前端与绑定目录，并统一通过 pnpm 执行前端安装和构建.
+  test_type: Unit
+  expected:
+    return_value: "The Wails project configuration, Go module and pnpm package configuration satisfy the locked toolchain contract"
+    side_effects:
+      - "The repository contains only the pnpm lockfile for Node.js dependencies"
+      - "The existing React source remains under ui"
 ```
 
 ---
@@ -1635,3 +1649,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 1.0.0 | 2026-07-16 | 已定稿 | 经用户逐条确认后正式生效 |
 | 1.1.0 | 2026-07-16 | 已定稿 | 经用户确认新增云端 revision 冲突处理需求 |
 | 1.2.0 | 2026-07-16 | 已定稿 | STEP 4 澄清注册分支、RLS 响应、性能预算与 AI 数据授权，并修正接口字段和测试类型 |
+| 1.3.0 | 2026-07-16 | 已定稿 | 用户确认单平台完整桌面旅程加另一平台构建门禁，并新增 Wails/pnpm 工程骨架 AC |

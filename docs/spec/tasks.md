@@ -1,11 +1,11 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：1.0.0  
+> 版本：1.1.0
 > 日期：2026-07-16  
 > 状态：已定稿
 
-执行时须严格遵循 `docs/spec/requirements.md` 1.2.0、`docs/spec/design.md` 1.1.0 和 `docs/spec/test_strategy.md` 1.0.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
+执行时须严格遵循 `docs/spec/requirements.md` 1.3.0、`docs/spec/design.md` 1.2.0 和 `docs/spec/test_strategy.md` 1.1.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
 
 AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首尾均包含。
 
@@ -13,7 +13,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ## 波次 0 · 工程与测试基础
 
-- [ ] **TASK-001 · 建立 Wails 与统一包管理骨架**
+- [x] **TASK-001 · 建立 Wails 与统一包管理骨架**
 
   > 依赖：无 · 预计：2–4 小时
 
@@ -24,6 +24,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
   **验证方式：**
   ```powershell
   go test ./...
+  wails build
   pnpm --dir ui typecheck
   pnpm --dir ui lint
   pnpm --dir ui build
@@ -31,8 +32,8 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
   **验收证据：** Wails/React 均可构建，仓库只保留 pnpm 锁文件，命令真实输出归档。
 
-  _需求: REQ-024、REQ-027  
-  验收标准：REQ-024-AC-001、REQ-027-AC-001、REQ-027-AC-003  
+  _需求: REQ-027
+  验收标准：REQ-027-AC-004
   _测试类型: Unit + Manual
 
 ---
@@ -920,9 +921,9 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
   > 依赖：TASK-025、TASK-029、TASK-031~041 · 预计：3–4 小时
 
-  - [ ] 在 Windows 构建正式 Wails 应用并运行关键桌面旅程。
-  - [ ] 验证 Credential Manager、原生文件对话框、外部浏览器和快捷键。
-  - [ ] 保存打包产物信息、截图和 Diff。
+  - [ ] 在 Windows 构建正式 Wails 应用。
+  - [ ] 当 Windows 被选为本发布候选的验收平台时，运行关键桌面旅程并验证 Credential Manager、原生文件对话框、外部浏览器和快捷键。
+  - [ ] 始终保存构建产物信息；仅在 Windows 为选定验收平台时保存旅程截图和 Diff。
 
   **验证方式：**
   ```powershell
@@ -930,21 +931,21 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
   pnpm --dir ui exec playwright test tests/e2e/desktop/windows
   ```
 
-  **验收证据：** Windows 构建日志、二进制信息、桌面 E2E 和截图。
+  **验收证据：** Windows 构建日志与二进制信息；Windows 为选定验收平台时追加桌面 E2E 和截图。
 
   _需求: REQ-005、REQ-008、REQ-024、REQ-027、REQ-028  
-  验收标准：REQ-027-AC-001~003、REQ-028-AC-004  
+  验收标准：REQ-027-AC-001、REQ-027-AC-004、REQ-028-AC-004
   _测试类型: E2E + Manual
 
 ---
 
-- [ ] **TASK-043 · macOS Wails 构建与桌面 E2E** `BLOCKED`
+- [ ] **TASK-043 · macOS Wails 构建与桌面 E2E**
 
-  > 依赖：TASK-042 · 门禁：可用 macOS runner 或测试设备 · 预计：3–4 小时
+  > 依赖：TASK-025、TASK-029、TASK-031~041 · 门禁：可用 macOS runner 或测试设备 · 预计：3–4 小时
 
-  - [ ] 在 macOS 构建正式 Wails 应用并执行与 Windows 对等的关键旅程。
-  - [ ] 验证 Keychain、原生对话框、Cmd 快捷键和窗口惯例。
-  - [ ] 保存 macOS 截图、Diff 与构建产物信息。
+  - [ ] 在 macOS 构建正式 Wails 应用。
+  - [ ] 当 macOS 被选为本发布候选的验收平台时，执行关键桌面旅程并验证 Keychain、原生对话框、Cmd 快捷键和窗口惯例。
+  - [ ] 始终保存构建产物信息；仅在 macOS 为选定验收平台时保存旅程截图和 Diff。
 
   **验证方式：**
   ```powershell
@@ -952,10 +953,10 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
   pnpm --dir ui exec playwright test tests/e2e/desktop/macos
   ```
 
-  **验收证据：** macOS 真实 runner 输出；无 runner 时保持 BLOCKED。
+  **验收证据：** macOS 构建日志与二进制信息；macOS 为选定验收平台时追加桌面 E2E 和截图。
 
   _需求: REQ-024、REQ-027、REQ-028  
-  验收标准：REQ-027-AC-001、REQ-028-AC-004  
+  验收标准：REQ-027-AC-001、REQ-027-AC-004、REQ-028-AC-004
   _测试类型: E2E + Manual
 
 ---
@@ -965,6 +966,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
   > 依赖：TASK-040~043 · 预计：3–4 小时
 
   - [ ] 运行全量 Go、TypeScript、Supabase、E2E、视觉、安全和性能套件。
+  - [ ] 确认 Windows 与 macOS 构建均通过，且至少一个选定平台完成完整桌面旅程。
   - [ ] 汇总覆盖率、flaky、BLOCKED、风险和质量评分。
   - [ ] 生成最终 AC 矩阵与测试报告，确认无未解决 P0/P1。
 
@@ -979,7 +981,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
   **验收证据：** 全量真实命令输出、Coverage Report、Playwright Report、质量评分和发布结论。
 
   _需求: REQ-001~028  
-  验收标准：全部 121 条 AC  
+  验收标准：全部 122 条 AC
   _测试类型: Unit + API + E2E + Performance + Security + Manual
 
 ---
@@ -988,7 +990,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
 |---------|------|:--------:|:----:|---------|
-| TASK-001 | Wails 与包管理骨架 | Unit/Manual | BLOCKED | REQ-024、027 |
+| TASK-001 | Wails 与包管理骨架 | Unit/Manual | done | REQ-027 |
 | TASK-002 | 测试与 CI 框架 | Unit/E2E | 待开始 | REQ-024、028 |
 | TASK-003 | 数据 Schema 与迁移 | Unit | 待开始 | REQ-026 |
 | TASK-004 | 测试 Factory 与性能数据 | Unit/Performance | 待开始 | REQ-026、028 |
@@ -1030,7 +1032,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-040 | 安全与隐私测试 | Security/API | 待开始 | REQ-003~005、019~020、025、027 |
 | TASK-041 | 性能预算 | Performance | 待开始 | REQ-028 |
 | TASK-042 | Windows 桌面验收 | E2E/Manual | 待开始 | REQ-005、008、024、027、028 |
-| TASK-043 | macOS 桌面验收 | E2E/Manual | BLOCKED | REQ-024、027、028 |
+| TASK-043 | macOS 桌面验收 | E2E/Manual | 待开始 | REQ-024、027、028 |
 | TASK-044 | 全量回归与发布门禁 | 全类型 | 待开始 | REQ-001~028 |
 
 ---
@@ -1041,3 +1043,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 |------|------|------|------|
 | 0.1.0 | 2026-07-16 | 草稿 | 按本地优先顺序拆分 44 项任务 |
 | 1.0.0 | 2026-07-16 | 已定稿 | 经用户确认后正式生效 |
+| 1.1.0 | 2026-07-16 | 已定稿 | 单平台完整桌面旅程加另一平台构建门禁，并将 TASK-001 改绑工程骨架 AC |

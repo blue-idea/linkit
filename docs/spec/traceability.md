@@ -2,7 +2,7 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.0.0  
+> 版本：1.1.0
 > 日期：2026-07-16  
 > 状态：已定稿
 
@@ -26,7 +26,7 @@
 
 | TASK ID | 任务名称 | REQ / AC | 状态 | 实现文件 | 测试文件 | AC 报告 | 完成日期 |
 |---------|---------|----------|:----:|---------|---------|---------|---------|
-| TASK-001 | Wails 与包管理骨架 | REQ-024-AC-001；REQ-027-AC-001、003 | BLOCKED | `main.go`、`config/app.go`、`wails.json`、`go.mod`、`ui/package.json` | `internal/scaffold/scaffold_test.go` | `docs/spec/ac/TASK-001-AC.md` | — |
+| TASK-001 | Wails 与包管理骨架 | REQ-027-AC-004 | done | `main.go`、`config/app.go`、`wails.json`、`go.mod`、`ui/package.json`、`ui/pnpm-workspace.yaml`、`ui/vite.config.ts`、`ui/src/config/icons.ts` | `internal/scaffold/scaffold_test.go` | `docs/spec/ac/TASK-001-AC.md` | 2026-07-16 |
 | TASK-002 | 测试与 CI 框架 | REQ-024-AC-006；REQ-028-AC-004 | 待开始 | — | — | — | — |
 | TASK-003 | 数据 Schema 与迁移 | REQ-026-AC-001~004 | 待开始 | — | — | — | — |
 | TASK-004 | 测试 Factory 与性能数据 | REQ-026-AC-001~004；REQ-028-AC-005~007 | 待开始 | — | — | — | — |
@@ -67,9 +67,9 @@
 | TASK-039 | 链接健康 | REQ-022-AC-002~004 | 待开始 | — | — | — | — |
 | TASK-040 | 安全与隐私测试 | REQ-003~005、019~020、025、027 的安全与破坏性操作 AC | 待开始 | — | — | — | — |
 | TASK-041 | 性能预算 | REQ-028-AC-005~008 | 待开始 | — | — | — | — |
-| TASK-042 | Windows 桌面验收 | REQ-005、008、024；REQ-027-AC-001~003；REQ-028-AC-004 | 待开始 | — | — | — | — |
-| TASK-043 | macOS 桌面验收 | REQ-024；REQ-027-AC-001；REQ-028-AC-004 | BLOCKED | — | — | — | — |
-| TASK-044 | 全量回归与发布门禁 | REQ-001~028 / 全部 121 条 AC | 待开始 | — | — | — | — |
+| TASK-042 | Windows 桌面验收 | REQ-005、008、024；REQ-027-AC-001、004；REQ-028-AC-004 | 待开始 | — | — | — | — |
+| TASK-043 | macOS 桌面验收 | REQ-024；REQ-027-AC-001、004；REQ-028-AC-004 | 待开始 | — | — | — | — |
+| TASK-044 | 全量回归与发布门禁 | REQ-001~028 / 全部 122 条 AC | 待开始 | — | — | — | — |
 
 ---
 
@@ -94,3 +94,5 @@
 | 2026-07-16 | 初始化矩阵，共 44 项任务 | STEP 5 本地优先任务拆分完成 |
 | 2026-07-16 | 矩阵定稿为 1.0.0 | 用户确认任务拆分 |
 | 2026-07-16 | TASK-001 标记为 BLOCKED，并补充实现、测试与 AC 证据 | 工程骨架已实现；三个 AC 仍需原生桌面或下游持久化能力验收 |
+| 2026-07-16 | 矩阵更新为 1.1.0，TASK-001 改绑 REQ-027-AC-004，平台任务采用单平台完整旅程加另一平台构建门禁 | 用户确认平台验收策略并修正任务与 AC 职责边界 |
+| 2026-07-16 | TASK-001 更新为 done，并补充最终实现、测试、AC 报告与完成日期 | REQ-027-AC-004 已通过真实工程契约、双平台构建与 macOS 启动验证 |

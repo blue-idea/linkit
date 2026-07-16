@@ -35,7 +35,7 @@ type packageConfig struct {
 func TestProjectSkeleton(t *testing.T) {
 	repositoryRoot := findRepositoryRoot(t)
 
-	// REQ-024-AC-001：桌面主窗口必须由可构建的 Wails 根工程承载。
+	// REQ-027-AC-004：Wails 配置必须绑定现有前端并统一使用 pnpm。
 	t.Run("Wails 配置指向现有 ui 前端并统一使用 pnpm", func(t *testing.T) {
 		var config wailsConfig
 		readJSON(t, filepath.Join(repositoryRoot, "wails.json"), &config)
@@ -57,7 +57,7 @@ func TestProjectSkeleton(t *testing.T) {
 		}
 	})
 
-	// REQ-027-AC-001：跨平台桌面运行时必须锁定稳定的 Wails v2 版本。
+	// REQ-027-AC-004：桌面运行时必须锁定 Go 1.26 与稳定 Wails v2。
 	t.Run("Go module 锁定项目路径与 Wails 稳定版本", func(t *testing.T) {
 		goMod := readFile(t, filepath.Join(repositoryRoot, "go.mod"))
 
@@ -66,7 +66,7 @@ func TestProjectSkeleton(t *testing.T) {
 		assertContains(t, goMod, "github.com/wailsapp/wails/v2 "+expectedWailsVersion)
 	})
 
-	// REQ-024-AC-001：Wails 入口必须嵌入构建后的 UI，并从集中配置装配窗口。
+	// REQ-027-AC-004：Wails 入口必须嵌入构建后的 UI，并从集中配置装配窗口。
 	t.Run("Wails 入口嵌入前端产物并使用集中配置", func(t *testing.T) {
 		mainSource := readFile(t, filepath.Join(repositoryRoot, "main.go"))
 
@@ -76,7 +76,7 @@ func TestProjectSkeleton(t *testing.T) {
 		assertPathExists(t, filepath.Join(repositoryRoot, "frontend", "dist", ".gitkeep"))
 	})
 
-	// REQ-027-AC-001：统一包管理器与锁文件保证跨平台构建输入一致。
+	// REQ-027-AC-004：统一包管理器与锁文件保证跨平台构建输入一致。
 	t.Run("前端只保留 pnpm 锁文件并锁定工具版本", func(t *testing.T) {
 		var config packageConfig
 		readJSON(t, filepath.Join(repositoryRoot, "ui", "package.json"), &config)

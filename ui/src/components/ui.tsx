@@ -1,13 +1,11 @@
 import type { ReactNode } from 'react';
-import * as Icons from 'lucide-react';
 import type { TagColor } from '../types';
 import { tagColors, thumbnailGradients } from '../colors';
+import { iconComponents, type IconName } from '../config/icons';
 
 /* ---------- Icon helper ---------- */
-type IconName = keyof typeof Icons;
-
 export function Icon({ name, size = 16, className = '', strokeWidth = 2, fill = 'none' }: { name: string; size?: number; className?: string; strokeWidth?: number; fill?: string }) {
-  const C = (Icons as unknown as Record<string, Icons.LucideIcon>)[name as IconName] ?? Icons.Circle;
+  const C = iconComponents[name as IconName] ?? iconComponents.Circle;
   return <C size={size} className={className} strokeWidth={strokeWidth} fill={fill} />;
 }
 
