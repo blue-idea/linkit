@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import * as Icons from 'lucide-react';
 import type { TagColor } from '../types';
 import { tagColors, thumbnailGradients } from '../colors';
@@ -203,7 +203,7 @@ export function Button({
   onClick,
   disabled,
 }: {
-  children?: React.ReactNode;
+  children?: ReactNode;
   variant?: 'primary' | 'ghost' | 'subtle' | 'danger';
   size?: 'sm' | 'md';
   icon?: string;
@@ -231,34 +231,15 @@ export function Button({
 }
 
 /* ---------- KBD ---------- */
-export function Kbd({ children }: { children: React.ReactNode }) {
+export function Kbd({ children }: { children: ReactNode }) {
   return <kbd className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded bg-ink-700/80 text-[10px] text-ink-200 hairline font-mono">{children}</kbd>;
 }
 
-/* ---------- Tooltip-ish helper label ---------- */
-export function useDelayedFlag(ms = 400) {
-  const [flag, setFlag] = useState(false);
-  const ref = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const on = () => { ref.current = setTimeout(() => setFlag(true), ms); };
-  const off = () => { if (ref.current) clearTimeout(ref.current); setFlag(false); };
-  useEffect(() => () => { if (ref.current) clearTimeout(ref.current); }, []);
-  return { flag, on, off };
-}
-
 /* ---------- Animate-in wrapper ---------- */
-export function AnimateIn({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
+export function AnimateIn({ children, delay = 0, className = '' }: { children: ReactNode; delay?: number; className?: string }) {
   return (
     <div className={`animate-slide-up ${className}`} style={{ animationDelay: `${delay}ms` }}>
       {children}
     </div>
   );
-}
-
-export function formatDate(iso: string): string {
-  const d = new Date(iso);
-  const now = new Date();
-  const sameYear = d.getFullYear() === now.getFullYear();
-  const mm = d.getMonth() + 1;
-  const dd = d.getDate();
-  return sameYear ? `${mm}月${dd}日` : `${d.getFullYear()}/${mm}/${dd}`;
 }

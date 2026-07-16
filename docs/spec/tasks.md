@@ -17,9 +17,9 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
   > 依赖：无 · 预计：2–4 小时
 
-  - [ ] 创建 Wails v2 根工程、Go module、`wails.json` 和集中 `config/` 目录。
-  - [ ] 保留 `ui/` 作为前端目录，配置 Wails 构建与生成绑定路径。
-  - [ ] 在 `package.json` 锁定 pnpm，移除重复 npm 锁文件并统一脚本入口。
+  - [x] 创建 Wails v2 根工程、Go module、`wails.json` 和集中 `config/` 目录。
+  - [x] 保留 `ui/` 作为前端目录，配置 Wails 构建与生成绑定路径。
+  - [x] 在 `package.json` 锁定 pnpm，移除重复 npm 锁文件并统一脚本入口。
 
   **验证方式：**
   ```powershell
@@ -988,7 +988,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
 |---------|------|:--------:|:----:|---------|
-| TASK-001 | Wails 与包管理骨架 | Unit/Manual | 待开始 | REQ-024、027 |
+| TASK-001 | Wails 与包管理骨架 | Unit/Manual | BLOCKED | REQ-024、027 |
 | TASK-002 | 测试与 CI 框架 | Unit/E2E | 待开始 | REQ-024、028 |
 | TASK-003 | 数据 Schema 与迁移 | Unit | 待开始 | REQ-026 |
 | TASK-004 | 测试 Factory 与性能数据 | Unit/Performance | 待开始 | REQ-026、028 |
