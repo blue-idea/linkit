@@ -202,7 +202,7 @@ export function aiSemanticSearch(
 }
 
 /** AI Feature 4: insights report */
-export function aiBuildInsights(all: Bookmark[], _cols: Collection[]): AIInsight[] {
+export function aiBuildInsights(all: Bookmark[]): AIInsight[] {
   const weekAgo = Date.now() - 7 * 86400000;
   const recent = all.filter((b) => new Date(b.createdAt).getTime() > weekAgo);
   const tagGrowth: Record<string, number> = {};

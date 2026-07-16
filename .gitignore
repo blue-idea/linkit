@@ -6,3 +6,11 @@
 # SDD 测试账号与环境信息
 /docs/spec/info.md
 
+# Wails 构建产物
+/build/bin/
+/frontend/dist/*
+!/frontend/dist/.gitkeep
+
+# Go 本地测试与覆盖率产物
+*.test
+coverage.out

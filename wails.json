@@ -1,0 +1,11 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "Linkit",
+  "outputfilename": "linkit",
+  "frontend:dir": "ui",
+  "frontend:install": "pnpm install --frozen-lockfile",
+  "frontend:build": "pnpm build",
+  "frontend:dev:watcher": "pnpm dev",
+  "frontend:dev:serverUrl": "auto",
+  "wailsjsdir": "ui"
+}

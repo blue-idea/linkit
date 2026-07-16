@@ -181,7 +181,7 @@ export default function App() {
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
   }, [library, settings.storageMode, auth.user, authed]);
 
-  const insights = useMemo(() => aiBuildInsights(bookmarks, cols), [bookmarks, cols]);
+  const insights = useMemo(() => aiBuildInsights(bookmarks), [bookmarks]);
 
   /* ---------- derived list ---------- */
   const visibleBookmarks = useMemo(() => {

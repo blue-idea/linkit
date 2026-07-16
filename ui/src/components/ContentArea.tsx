@@ -1,25 +1,24 @@
 import { useState } from 'react';
 import type { Bookmark, Category, Collection, Tag, ViewDensity } from '../types';
 import type { Filters, Selection } from '../state';
-import { Icon, TagPill, Segmented, Favicon, AIBadge, Button, AnimateIn, formatDate } from './ui';
+import { Icon, TagPill, Segmented, Favicon, AIBadge, Button, AnimateIn } from './ui';
 import { thumbnailGradients } from '../colors';
+import { formatDate } from '../utils/format-date';
 
 /* ---------- AI smart aggregation banner (Feature 2) ---------- */
 function SmartAggregation({
   collection,
   bookmarks,
-  categories,
   onAccept,
   onDismiss,
 }: {
   collection: Collection;
   bookmarks: Bookmark[];
-  categories: Category[];
   onAccept: (bookmarkIds: string[]) => void;
   onDismiss: () => void;
 }) {
   // lightweight inline recommendation to avoid importing heavy logic into render loop
-  const recommendations = useInlineRecommend(collection, bookmarks, categories);
+  const recommendations = useInlineRecommend(collection, bookmarks);
   const [added, setAdded] = useState<Set<string>>(new Set());
 
   if (recommendations.length === 0) return null;
@@ -80,7 +79,7 @@ function SmartAggregation({
   );
 }
 
-function useInlineRecommend(collection: Collection, bookmarks: Bookmark[], _categories: Category[]) {
+function useInlineRecommend(collection: Collection, bookmarks: Bookmark[]) {
   // simplified; real impl in ai.ts but kept local for the banner
   const memberIds = new Set(collection.bookmarkIds);
   const members = bookmarks.filter((b) => memberIds.has(b.id));
@@ -489,7 +488,6 @@ export function ContentArea({
         <SmartAggregation
           collection={collections.find((c) => c.id === (selection.kind === 'collection' ? selection.id : ''))!}
           bookmarks={allBookmarks}
-          categories={categories}
           onAccept={(ids) => { onAcceptAICollection(ids); setAiDismissed(true); }}
           onDismiss={() => { onDismissAICollection(); setAiDismissed(true); }}
         />
