@@ -1,0 +1,8 @@
+# 本地环境变量与测试凭据
+**/.env
+**/.env.*
+!**/.env.example
+
+# SDD 测试账号与环境信息
+/docs/spec/info.md
+
