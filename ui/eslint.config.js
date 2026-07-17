@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   // Wails 绑定由框架生成，不手工修改或纳入应用源码规则。
-  { ignores: ['dist', 'wailsjs'] },
+  { ignores: ['dist', 'wailsjs', 'coverage', 'playwright-report', 'test-results'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
@@ -24,6 +24,12 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+    },
+  },
+  {
+    files: ['**/*.{test,spec}.{ts,tsx}', 'vitest.setup.ts'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
     },
   }
 );

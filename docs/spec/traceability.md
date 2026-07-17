@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.1.0
-> 日期：2026-07-16  
-> 状态：已定稿
+> 版本：1.2.0
+> 日期：2026-07-18  
+> 状态：已定稿（TASK-002 已完成）
 
 ---
 
@@ -27,7 +27,7 @@
 | TASK ID | 任务名称 | REQ / AC | 状态 | 实现文件 | 测试文件 | AC 报告 | 完成日期 |
 |---------|---------|----------|:----:|---------|---------|---------|---------|
 | TASK-001 | Wails 与包管理骨架 | REQ-027-AC-004 | done | `main.go`、`config/app.go`、`wails.json`、`go.mod`、`ui/package.json`、`ui/pnpm-workspace.yaml`、`ui/vite.config.ts`、`ui/src/config/icons.ts` | `internal/scaffold/scaffold_test.go` | `docs/spec/ac/TASK-001-AC.md` | 2026-07-16 |
-| TASK-002 | 测试与 CI 框架 | REQ-024-AC-006；REQ-028-AC-004 | 待开始 | — | — | — | — |
+| TASK-002 | 测试与 CI 框架 | REQ-024-AC-006；REQ-028-AC-004 | done | `ui/vitest.config.ts`、`ui/playwright.config.ts`、`config/test/coverage.mjs`、`ui/.husky/*`、`.github/workflows/*` | `ui/src/utils/format-date.test.ts`、`ui/src/components/ui.test.tsx`、`ui/tests/e2e/*`、`ui/tests/visual/*`、`ui/verify-quality-config.mjs` | `docs/spec/ac/TASK-002-AC.md` | 2026-07-18 |
 | TASK-003 | 数据 Schema 与迁移 | REQ-026-AC-001~004 | 待开始 | — | — | — | — |
 | TASK-004 | 测试 Factory 与性能数据 | REQ-026-AC-001~004；REQ-028-AC-005~007 | 待开始 | — | — | — | — |
 | TASK-005 | Store、命令与 Repository | REQ-026-AC-001~004；REQ-027-AC-002~003 | 待开始 | — | — | — | — |

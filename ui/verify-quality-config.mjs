@@ -67,8 +67,35 @@ async function verifyWorkflows() {
   assert.match(releaseWorkflow, /gh release create/, 'Release workflow must publish a GitHub release');
 }
 
+async function verifyTestFramework() {
+  const packageJson = JSON.parse(await readRepositoryFile('ui/package.json'));
+
+  for (const script of ['test', 'test:coverage', 'test:e2e', 'test:visual']) {
+    assert.ok(packageJson.scripts?.[script], `Missing package script: ${script}`);
+  }
+
+  for (const dependency of [
+    'vitest',
+    '@vitest/coverage-v8',
+    '@testing-library/react',
+    '@playwright/test',
+    '@axe-core/playwright',
+  ]) {
+    assert.ok(packageJson.devDependencies?.[dependency], `Missing devDependency: ${dependency}`);
+  }
+
+  const vitestConfig = await readRepositoryFile('ui/vitest.config.ts');
+  const playwrightConfig = await readRepositoryFile('ui/playwright.config.ts');
+  const coverageConfig = await readRepositoryFile('config/test/coverage.mjs');
+
+  assert.match(vitestConfig, /jsdom/, 'Vitest must use jsdom');
+  assert.match(playwrightConfig, /webServer/, 'Playwright must configure a dev webServer');
+  assert.match(coverageConfig, /provider: 'v8'/, 'Coverage must use the V8 provider');
+}
+
 await verifyPackageScripts();
 await verifyHooks();
 await verifyWorkflows();
+await verifyTestFramework();
 
 console.log('Quality configuration is valid');

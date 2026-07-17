@@ -1,8 +1,8 @@
 # Linkit 项目宪法（Constitution）
 
 > 文件路径：`docs/spec/constitution.md`
-> 版本：1.0.1（正式）
-> 日期：2026-07-17
+> 版本：1.0.2（正式）
+> 日期：2026-07-18
 
 ---
 
@@ -54,7 +54,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 2. `pnpm-lock.yaml` 是唯一的 Node.js 依赖锁文件，必须提交到版本控制。
 3. 不得保留或提交 `package-lock.json`、`yarn.lock` 等其他包管理器锁文件。
 4. `package.json` 必须通过 `packageManager` 字段锁定 pnpm 主版本与经验证的工具版本。
-5. 当前项目未配置 CI；本地开发与手动验收安装依赖时必须使用冻结锁文件，未来引入 CI 后也不得在流水线中隐式更新锁文件。
+5. 本地与 CI 安装依赖时必须使用冻结锁文件；流水线不得隐式更新锁文件。
 6. 直接依赖使用已验证的稳定版本；禁止引入 alpha、beta、rc 或来源不明的软件包。
 7. 新增依赖前必须确认现有代码或标准库无法合理满足需求，并记录用途、安全影响与维护成本。
 8. Go 依赖必须由 `go.mod` 和 `go.sum` 管理并提交到版本控制。
@@ -116,16 +116,16 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 
 ### 本地提交检查
 
-- 当前项目未配置 Git Hooks、Husky 或 lint-staged，不得将其描述为已启用的提交门禁。
-- 提交或交付前必须根据变更范围手动执行适用的格式化、Lint、类型检查、Go 测试、前端构建与 Wails 构建命令，并保留真实执行结果。
-- 在 Git Hooks 落地前，不得以缺少自动触发为由跳过质量检查；未来引入 Git Hooks 时必须先更新对应技术设计或任务规格。
+- 项目已配置 Husky 与 lint-staged：`ui/.husky/pre-commit` 执行 `lint:staged` 与 `typecheck`；`ui/.husky/pre-push` 执行前端 `quality`、单元测试以及 `go vet` / `go test`。
+- 提交或推送前仍须根据变更范围确认适用检查已真实通过，并保留验收证据；不得通过 `--no-verify` 绕过门禁，除非用户明确授权且在报告中记录原因。
+- 调整 Hook 命令或质量脚本前，必须同步更新 `verify-quality-config` 契约与相关任务规格。
 
 ### CI/CD
 
-- 当前项目未配置 CI/CD，也没有启用 GitHub Actions 或其他自动化流水线，不得将本地检查结果表述为 CI 通过。
-- 自动化流水线落地前，依赖安装、Lint、类型检查、Go 测试、React 测试、生产构建和安全扫描均由任务执行者按规格手动运行并记录证据。
-- Windows 与 macOS 的桌面构建和发布验收按 `docs/spec/tasks.md` 中对应任务执行；未实际执行的平台必须标记为 `BLOCKED` 或待验收。
-- CI/CD 与测试框架的建设由 `TASK-002` 跟踪；引入或调整流水线、发布流程前必须同步更新技术设计、任务规格和验收证据要求。
+- 项目已配置 GitHub Actions：`ci.yml`（质量、审计、单元/E2E 冒烟）、`desktop-build.yml`（Windows/macOS Wails 构建）、`release.yml`（手动发布）。
+- CI 结果不得替代本地任务验收证据；未实际执行的平台或依赖受限步骤必须标记为 `BLOCKED`。
+- Windows 与 macOS 的完整桌面旅程仍按 `docs/spec/tasks.md` 中 TASK-042 / TASK-043 执行；本阶段 CI 仅提供构建与质量骨架。
+- 引入或调整流水线、发布流程前必须同步更新技术设计、任务规格和验收证据要求。
 
 ### 完成标准
 
@@ -205,3 +205,4 @@ docs/spec/
 | 0.1.0 | 2026-07-16 | 待定稿 | 根据 `docs/README.md`、项目现状及 STEP 1 七项确认结果生成初稿 |
 | 1.0.0 | 2026-07-16 | 正式 | 经用户二次确认后定稿生效 |
 | 1.0.1 | 2026-07-17 | 正式 | 纠正项目工程现状：CI/CD 与 Git Hooks 尚未配置，现阶段改由手动质量检查与真实证据作为门禁，自动化建设继续由 `TASK-002` 跟踪 |
+| 1.0.2 | 2026-07-18 | 正式 | `TASK-002` 落地 Vitest/Playwright/axe-core、Husky/lint-staged 与 GitHub Actions 骨架；更新本地提交检查与 CI/CD 条款 |
