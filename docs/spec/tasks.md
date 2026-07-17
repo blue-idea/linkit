@@ -85,13 +85,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-004 · 建立授权测试 Factory 与性能数据生成器**
+- [x] **TASK-004 · 建立授权测试 Factory 与性能数据生成器**
 
   > 依赖：TASK-003 · 预计：2–3 小时
 
-  - [ ] 创建与 `info.md` 一致的确定性实体 Factory 和核心旅程 seed。
-  - [ ] 创建 10,000 条书签性能数据生成器，保证固定 seed 和引用有效。
-  - [ ] 增加生成数据的 Schema 校验和重复 ID 测试。
+  - [x] 创建与 `info.md` 一致的确定性实体 Factory 和核心旅程 seed。
+  - [x] 创建 10,000 条书签性能数据生成器，保证固定 seed 和引用有效。
+  - [x] 增加生成数据的 Schema 校验和重复 ID 测试。
 
   **验证方式：**
   ```powershell
@@ -995,7 +995,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-001 | Wails 与包管理骨架 | Unit/Manual | done | REQ-027 |
 | TASK-002 | 测试与 CI 框架 | Unit/E2E | done | REQ-024、028 |
 | TASK-003 | 数据 Schema 与迁移 | Unit | done | REQ-026 |
-| TASK-004 | 测试 Factory 与性能数据 | Unit/Performance | 待开始 | REQ-026、028 |
+| TASK-004 | 测试 Factory 与性能数据 | Unit/Performance | done | REQ-026、028 |
 | TASK-005 | Store、命令与 Repository | Unit | 待开始 | REQ-026、027 |
 | TASK-006 | 本地原子资料库与云草稿 | Unit/API | 待开始 | REQ-002、003、027 |
 | TASK-007 | 本地设置服务 | Unit | 待开始 | REQ-019、023 |
