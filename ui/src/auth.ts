@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
-import { supabase } from './supabase';
+import { isSupabaseConfigured, supabase } from './supabase';
+
+const missingCloudConfigMessage = 'Cloud auth is not configured';
 
 export interface AuthState {
   user: User | null;
@@ -14,10 +16,16 @@ export interface AuthState {
 
 export function useAuth(): AuthState {
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(isSupabaseConfigured);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // 无 Supabase 配置时立即结束加载，保证本地模式登录门可用（含 CI E2E）。
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
     let mounted = true;
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
@@ -35,6 +43,10 @@ export function useAuth(): AuthState {
 
   const signUp = useCallback(async (email: string, password: string) => {
     setError(null);
+    if (!supabase) {
+      setError(missingCloudConfigMessage);
+      return { error: missingCloudConfigMessage };
+    }
     const { data, error: err } = await supabase.auth.signUp({ email, password });
     if (err) {
       setError(err.message);
@@ -47,6 +59,10 @@ export function useAuth(): AuthState {
 
   const signIn = useCallback(async (email: string, password: string) => {
     setError(null);
+    if (!supabase) {
+      setError(missingCloudConfigMessage);
+      return { error: missingCloudConfigMessage };
+    }
     const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
     if (err) {
       setError(err.message);
@@ -57,7 +73,9 @@ export function useAuth(): AuthState {
   }, []);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
     setSession(null);
   }, []);
 
