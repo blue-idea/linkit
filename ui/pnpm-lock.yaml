@@ -23,6 +23,9 @@ importers:
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
+      zod:
+        specifier: 4.0.1
+        version: 4.0.1
     devDependencies:
       '@axe-core/playwright':
         specifier: ^4.10.2
@@ -2109,6 +2112,9 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
+  zod@4.0.1:
+    resolution: {integrity: sha512-3ayMCwqt0I18sfM+jC4t06mieo1n5B7jeH7GtPvCmzSfnecxO8+qBLtD56wOLccc3TJOMHUhiaG36ck6dtmKeQ==}
+
 snapshots:
 
   '@adobe/css-tools@4.5.0': {}
@@ -4049,3 +4055,5 @@ snapshots:
     optional: true
 
   yocto-queue@0.1.0: {}
+
+  zod@4.0.1: {}

@@ -63,13 +63,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-003 · 实现版本化数据 Schema 与迁移器**
+- [x] **TASK-003 · 实现版本化数据 Schema 与迁移器**
 
   > 依赖：TASK-002 · 预计：3–4 小时
 
-  - [ ] 使用 Zod 定义 LibraryEnvelope、LibraryData、实体和 AppSettings Schema。
-  - [ ] 实现 V1 迁移、引用完整性、分类无环和双向主题关系校验。
-  - [ ] 先编写无效 JSON、悬空引用和版本迁移失败测试。
+  - [x] 使用 Zod 定义 LibraryEnvelope、LibraryData、实体和 AppSettings Schema。
+  - [x] 实现 V1 迁移、引用完整性、分类无环和双向主题关系校验。
+  - [x] 先编写无效 JSON、悬空引用和版本迁移失败测试。
 
   **验证方式：**
   ```powershell
@@ -994,7 +994,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 |---------|------|:--------:|:----:|---------|
 | TASK-001 | Wails 与包管理骨架 | Unit/Manual | done | REQ-027 |
 | TASK-002 | 测试与 CI 框架 | Unit/E2E | done | REQ-024、028 |
-| TASK-003 | 数据 Schema 与迁移 | Unit | 待开始 | REQ-026 |
+| TASK-003 | 数据 Schema 与迁移 | Unit | done | REQ-026 |
 | TASK-004 | 测试 Factory 与性能数据 | Unit/Performance | 待开始 | REQ-026、028 |
 | TASK-005 | Store、命令与 Repository | Unit | 待开始 | REQ-026、027 |
 | TASK-006 | 本地原子资料库与云草稿 | Unit/API | 待开始 | REQ-002、003、027 |
