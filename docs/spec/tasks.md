@@ -38,14 +38,14 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-002 · 配置单元、组件、E2E、视觉与 CI 框架**
+- [x] **TASK-002 · 配置单元、组件、E2E、视觉与 CI 框架**
 
   > 依赖：TASK-001 · 预计：3–4 小时
 
-  - [ ] 配置 Vitest、React Testing Library、V8 Coverage、Playwright 和 axe-core。
-  - [ ] 配置 Husky 与 lint-staged，通过 pre-commit 和 pre-push 复用项目质量检查脚本。
-  - [ ] 建立 Windows/macOS GitHub Actions 骨架与安全扫描入口。
-  - [ ] 创建最小冒烟测试，验证测试框架、截图目录和覆盖率报告可生成。
+  - [x] 配置 Vitest、React Testing Library、V8 Coverage、Playwright 和 axe-core。
+  - [x] 配置 Husky 与 lint-staged，通过 pre-commit 和 pre-push 复用项目质量检查脚本。
+  - [x] 建立 Windows/macOS GitHub Actions 骨架与安全扫描入口。
+  - [x] 创建最小冒烟测试，验证测试框架、截图目录和覆盖率报告可生成。
 
   **验证方式：**
   ```powershell
@@ -993,7 +993,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
 |---------|------|:--------:|:----:|---------|
 | TASK-001 | Wails 与包管理骨架 | Unit/Manual | done | REQ-027 |
-| TASK-002 | 测试与 CI 框架 | Unit/E2E | 待开始 | REQ-024、028 |
+| TASK-002 | 测试与 CI 框架 | Unit/E2E | done | REQ-024、028 |
 | TASK-003 | 数据 Schema 与迁移 | Unit | 待开始 | REQ-026 |
 | TASK-004 | 测试 Factory 与性能数据 | Unit/Performance | 待开始 | REQ-026、028 |
 | TASK-005 | Store、命令与 Repository | Unit | 待开始 | REQ-026、027 |

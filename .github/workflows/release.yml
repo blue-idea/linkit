@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  GO_VERSION: '1.26'
+  PNPM_VERSION: '10.33.0'
+  WAILS_VERSION: v2.13.0
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: ui/pnpm-lock.yaml
+
+      - name: Install frontend dependencies
+        run: pnpm --dir ui install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm --dir ui build
+
+      - name: Build Wails desktop app
+        run: go run github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }} build -clean -platform linux/amd64
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ inputs.tag }}" --generate-notes build/bin/*

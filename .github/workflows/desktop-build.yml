@@ -1,0 +1,66 @@
+name: Desktop Build
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GO_VERSION: '1.26'
+  PNPM_VERSION: '10.33.0'
+  WAILS_VERSION: v2.13.0
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows/amd64
+            artifact: build/bin/linkit.exe
+          - os: macos-latest
+            platform: darwin/universal
+            artifact: build/bin/Linkit.app
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: ui/pnpm-lock.yaml
+
+      - name: Install frontend dependencies
+        run: pnpm --dir ui install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm --dir ui build
+
+      - name: Build Wails desktop app
+        run: go run github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }} build -clean -platform ${{ matrix.platform }}
+
+      - name: Verify build artifact
+        shell: bash
+        run: test -e "${{ matrix.artifact }}"
