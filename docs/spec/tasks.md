@@ -1,8 +1,8 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：1.1.0
-> 日期：2026-07-16  
+> 版本：1.2.0
+> 日期：2026-07-17  
 > 状态：已定稿
 
 执行时须严格遵循 `docs/spec/requirements.md` 1.3.0、`docs/spec/design.md` 1.2.0 和 `docs/spec/test_strategy.md` 1.1.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
@@ -43,6 +43,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
   > 依赖：TASK-001 · 预计：3–4 小时
 
   - [ ] 配置 Vitest、React Testing Library、V8 Coverage、Playwright 和 axe-core。
+  - [ ] 配置 Husky 与 lint-staged，通过 pre-commit 和 pre-push 复用项目质量检查脚本。
   - [ ] 建立 Windows/macOS GitHub Actions 骨架与安全扫描入口。
   - [ ] 创建最小冒烟测试，验证测试框架、截图目录和覆盖率报告可生成。
 
@@ -51,6 +52,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
   pnpm --dir ui test --run
   pnpm --dir ui test:coverage
   pnpm --dir ui exec playwright test --list
+  pnpm --dir ui verify:quality-config
   ```
 
   **验收证据：** 单元测试、覆盖率报告、Playwright 用例清单和 CI 配置文件。
@@ -1044,3 +1046,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 0.1.0 | 2026-07-16 | 草稿 | 按本地优先顺序拆分 44 项任务 |
 | 1.0.0 | 2026-07-16 | 已定稿 | 经用户确认后正式生效 |
 | 1.1.0 | 2026-07-16 | 已定稿 | 单平台完整桌面旅程加另一平台构建门禁，并将 TASK-001 改绑工程骨架 AC |
+| 1.2.0 | 2026-07-17 | 已定稿 | 根据用户指令将 Git Hooks、CI/CD 与配置验收纳入 TASK-002 的工程质量范围 |
