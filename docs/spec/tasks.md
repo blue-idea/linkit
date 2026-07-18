@@ -106,13 +106,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-005 · 建立领域命令、Zustand slices 与 Repository 接口**
+- [x] **TASK-005 · 建立领域命令、Zustand slices 与 Repository 接口**
 
   > 依赖：TASK-003、TASK-004 · 预计：3–4 小时
 
-  - [ ] 创建 session、library、sync、ui、settings slices 和细粒度 selector。
-  - [ ] 定义 LibraryRepository、MemoryRepository、StorageCoordinator 契约。
-  - [ ] 禁止组件直接修改实体数组，并为命令失败和事件结果编写测试。
+  - [x] 创建 session、library、sync、ui、settings slices 和细粒度 selector。
+  - [x] 定义 LibraryRepository、MemoryRepository、StorageCoordinator 契约。
+  - [x] 禁止组件直接修改实体数组，并为命令失败和事件结果编写测试。
 
   **验证方式：**
   ```powershell
@@ -996,7 +996,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-002 | 测试与 CI 框架 | Unit/E2E | done | REQ-024、028 |
 | TASK-003 | 数据 Schema 与迁移 | Unit | done | REQ-026 |
 | TASK-004 | 测试 Factory 与性能数据 | Unit/Performance | done | REQ-026、028 |
-| TASK-005 | Store、命令与 Repository | Unit | 待开始 | REQ-026、027 |
+| TASK-005 | Store、命令与 Repository | Unit | done | REQ-026、027 |
 | TASK-006 | 本地原子资料库与云草稿 | Unit/API | 待开始 | REQ-002、003、027 |
 | TASK-007 | 本地设置服务 | Unit | 待开始 | REQ-019、023 |
 | TASK-008 | 原生导入导出服务 | Unit/Manual | 待开始 | REQ-005、025 |
