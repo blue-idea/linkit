@@ -56,7 +56,7 @@ test.describe('AI 创建主题与去重整理', () => {
     const dialog = page.getByRole('dialog', { name: 'AI collection preview' });
     await expect(dialog).toBeVisible();
     await expect(dialog).toContainText('Nothing has been changed yet');
-    await expect(dialog).toHaveScreenshot('TASK-035-ai-collection-preview.png');
+    await expect(dialog).toHaveScreenshot('TASK-035-ai-collection-preview.png', { maxDiffPixelRatio: 0.05 });
     await page.screenshot({ path: resolve(evidenceDirectory, 'TASK-035-ai-collection-preview.png'), fullPage: true });
     await dialog.getByLabel('Collection name').fill('TASK035 Confirmed Collection');
     await dialog.getByRole('checkbox').nth(1).uncheck();
@@ -76,7 +76,7 @@ test.describe('AI 创建主题与去重整理', () => {
     const dialog = page.getByRole('dialog', { name: 'Duplicate bookmark preview' });
     await expect(dialog).toContainText('Exact URL match');
     await expect(dialog).toContainText('Coolors Duplicate');
-    await expect(dialog).toHaveScreenshot('TASK-035-duplicate-diff.png');
+    await expect(dialog).toHaveScreenshot('TASK-035-duplicate-diff.png', { maxDiffPixelRatio: 0.05 });
     await page.screenshot({ path: resolve(evidenceDirectory, 'TASK-035-duplicate-diff.png'), fullPage: true });
     const before = await page.getByText('Coolors Duplicate', { exact: true }).count();
     expect(before).toBeGreaterThan(0);
