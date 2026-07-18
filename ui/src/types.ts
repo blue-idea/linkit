@@ -1,4 +1,10 @@
-export type ViewDensity = 'card' | 'list' | 'masonry';
+export type ViewDensity =
+  | 'card'
+  | 'list'
+  | 'masonry'
+  | 'timeline'
+  | 'tag-aggregation'
+  | 'theme-space';
 
 export type TagColor = 'blue' | 'green' | 'amber' | 'coral' | 'violet' | 'gray';
 
