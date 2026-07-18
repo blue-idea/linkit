@@ -146,8 +146,10 @@ test.describe('本地模式启动恢复', () => {
     await enterLocalMode(page);
     await page.getByTitle('Settings').click();
     await page.getByRole('button', { name: 'Restore sample data' }).click();
-    await expect(page.getByRole('dialog', { name: 'Replace current library?' })).toBeVisible();
-    await page.getByRole('button', { name: 'Cancel' }).click();
-    await expect(page.getByRole('dialog', { name: 'Replace current library?' })).toHaveCount(0);
+    // Settings 面板也有 Cancel，须限定在确认对话框内点击。
+    const confirm = page.getByRole('dialog', { name: 'Replace current library?' });
+    await expect(confirm).toBeVisible();
+    await confirm.getByRole('button', { name: 'Cancel' }).click();
+    await expect(confirm).toHaveCount(0);
   });
 });
