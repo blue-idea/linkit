@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/blue-idea/collection/config"
+	"github.com/blue-idea/collection/internal/localstore"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -16,7 +17,12 @@ import (
 var assets embed.FS
 
 func main() {
-	err := wails.Run(&options.App{
+	localDocumentService, err := localstore.NewDefaultService()
+	if err != nil {
+		log.Fatalf("Unable to initialise local document service: %v", err)
+	}
+
+	err = wails.Run(&options.App{
 		Title:  config.AppTitle,
 		Width:  config.AppWidth,
 		Height: config.AppHeight,
@@ -28,6 +34,9 @@ func main() {
 			G: config.BackgroundGreen,
 			B: config.BackgroundBlue,
 			A: config.BackgroundAlpha,
+		},
+		Bind: []interface{}{
+			localDocumentService,
 		},
 	})
 	if err != nil {
