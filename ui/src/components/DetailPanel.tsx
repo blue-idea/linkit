@@ -51,6 +51,10 @@ export function DetailPanel({
   onToggleStar,
   onTogglePin,
   onToggleCollection,
+  onAddTag,
+  onRemoveTag,
+  onAcceptSuggestedTag,
+  onCreateTag,
   onVisit,
   onOpenHealth,
   onDelete,
@@ -64,6 +68,10 @@ export function DetailPanel({
   onToggleStar: () => void;
   onTogglePin: () => void;
   onToggleCollection: (collectionId: string) => void;
+  onAddTag: (tagId: string) => void;
+  onRemoveTag: (tagId: string) => void;
+  onAcceptSuggestedTag: (tagId: string) => void;
+  onCreateTag: (label: string) => void;
   onVisit: () => void;
   onOpenHealth: () => void;
   onDelete?: () => void;
@@ -280,9 +288,14 @@ export function DetailPanel({
 
         {/* Tags */}
         <Field label="标签" hint="支持颜色标记">
-          <div className="flex flex-wrap gap-1.5 items-center">
+          <div className="flex flex-wrap gap-1.5 items-center" aria-label="Bookmark tags">
             {bTags.map((t) => (
-              <TagPill key={t.id} label={t.label} color={t.color} onRemove={() => onUpdate({ tags: b.tags.filter((x) => x !== t.id) })} />
+              <TagPill
+                key={t.id}
+                label={t.label}
+                color={t.color}
+                onRemove={() => onRemoveTag(t.id)}
+              />
             ))}
             {b.aiSuggestedTags && b.aiSuggestedTags.filter((t) => !b.tags.includes(t)).map((tid) => {
               const t = tags.find((x) => x.id === tid);
@@ -290,7 +303,9 @@ export function DetailPanel({
               return (
                 <button
                   key={tid}
-                  onClick={() => onUpdate({ tags: [...b.tags, tid] })}
+                  type="button"
+                  aria-label={`Accept suggested tag ${t.label}`}
+                  onClick={() => onAcceptSuggestedTag(tid)}
                   className="inline-flex items-center gap-1 rounded-full border border-dashed border-violet2-400/40 text-[11px] text-violet2-400 px-2 py-0.5 hover:bg-violet2-500/10 transition"
                 >
                   <AIBadge label="" /> +{t.label}
@@ -298,13 +313,16 @@ export function DetailPanel({
               );
             })}
             <input
+              aria-label="Add tag"
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && tagInput.trim()) {
-                  // create-or-add by label
-                  const existing = tags.find((t) => t.label === tagInput.trim());
-                  if (existing && !b.tags.includes(existing.id)) onUpdate({ tags: [...b.tags, existing.id] });
+                  // REQ-014-AC-002：已有标签则加入；否则创建后加入。
+                  const label = tagInput.trim();
+                  const existing = tags.find((t) => t.label.toLocaleLowerCase() === label.toLocaleLowerCase());
+                  if (existing) onAddTag(existing.id);
+                  else onCreateTag(label);
                   setTagInput('');
                 }
               }}

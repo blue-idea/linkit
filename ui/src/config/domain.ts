@@ -24,6 +24,18 @@ export const DOMAIN_CONFIG = {
       code: 'COMPOSE_SELECTION_TOO_SMALL',
       message: 'Select at least two bookmarks to create a collection',
     },
+    tagNotFound: {
+      code: 'TAG_NOT_FOUND',
+      message: 'Tag was not found',
+    },
+    tagLabelInvalid: {
+      code: 'TAG_LABEL_INVALID',
+      message: 'Tag label is required',
+    },
+    tagLabelDuplicate: {
+      code: 'TAG_LABEL_DUPLICATE',
+      message: 'Tag label already exists',
+    },
     readStatusInvalid: {
       code: 'READ_STATUS_INVALID',
       message: 'Read status must be unread, reading, read or archived',
@@ -61,5 +73,9 @@ export const DOMAIN_CONFIG = {
     categoryCreated: 'category.created',
     categoryRenamed: 'category.renamed',
     categoryDeleted: 'category.deleted',
+    tagCreated: 'tag.created',
+    tagDeleted: 'tag.deleted',
+    bookmarkTagChanged: 'bookmark.tag.changed',
+    bookmarkSuggestedTagAccepted: 'bookmark.suggested-tag.accepted',
   },
 } as const;

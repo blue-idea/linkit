@@ -59,6 +59,13 @@ import {
   type CollectionFormValues,
   type ComposePreview,
 } from './features/collections';
+import {
+  applyTagLibraryResult,
+  runAcceptSuggestedTag,
+  runAddTagToBookmark,
+  runCreateTag,
+  runRemoveTagFromBookmark,
+} from './features/tags';
 import { createBrowserStorageAdapters } from './services/storage';
 import { normalizeBookmarkUrl } from './domain/commands';
 import {
@@ -629,6 +636,90 @@ export default function App() {
     setComposePreview(null);
   }, []);
 
+  const entities = useCallback(
+    () => ({ bookmarks, categories: cats, collections: cols, tags: tagList }),
+    [bookmarks, cats, cols, tagList]
+  );
+
+  const applyTagResult = useCallback(
+    (result: Parameters<typeof applyTagLibraryResult>[0]) => {
+      const applied = applyTagLibraryResult(result, bookmarks);
+      setTagList(applied.tags);
+      setBookmarks(applied.bookmarks);
+    },
+    [bookmarks]
+  );
+
+  const handleAddTag = useCallback((tagId: string) => {
+    // REQ-014-AC-002：详情添加标签后立即刷新书签与侧栏计数。
+    if (!selectedBookmark) return;
+    const result = runAddTagToBookmark({ ...entities(), bookmarkId: selectedBookmark.id, tagId });
+    if (!result.ok) {
+      flashToast(result.error.message);
+      return;
+    }
+    applyTagResult(result.value);
+  }, [applyTagResult, entities, flashToast, selectedBookmark]);
+
+  const handleRemoveTag = useCallback((tagId: string) => {
+    // REQ-014-AC-002：详情移除标签后立即刷新筛选相关状态。
+    if (!selectedBookmark) return;
+    const result = runRemoveTagFromBookmark({ ...entities(), bookmarkId: selectedBookmark.id, tagId });
+    if (!result.ok) {
+      flashToast(result.error.message);
+      return;
+    }
+    applyTagResult(result.value);
+  }, [applyTagResult, entities, flashToast, selectedBookmark]);
+
+  const handleAcceptSuggestedTag = useCallback((tagId: string) => {
+    // REQ-014-AC-003：采纳建议标签且不重复。
+    if (!selectedBookmark) return;
+    const result = runAcceptSuggestedTag({ ...entities(), bookmarkId: selectedBookmark.id, tagId });
+    if (!result.ok) {
+      flashToast(result.error.message);
+      return;
+    }
+    applyTagResult(result.value);
+  }, [applyTagResult, entities, flashToast, selectedBookmark]);
+
+  const handleCreateTag = useCallback((label: string) => {
+    // REQ-014-AC-002：不存在则创建后加入当前书签。
+    if (!selectedBookmark) return;
+    const created = runCreateTag({ ...entities(), label });
+    if (!created.ok) {
+      // 重名时尝试直接加入已有标签
+      const existing = tagList.find(
+        (tag) => tag.label.toLocaleLowerCase() === label.trim().toLocaleLowerCase()
+      );
+      if (existing) {
+        handleAddTag(existing.id);
+        return;
+      }
+      flashToast(created.error.message);
+      return;
+    }
+    const newTag = created.value.tags.find(
+      (tag) => tag.label.toLocaleLowerCase() === label.trim().toLocaleLowerCase()
+    );
+    const withTag = applyTagLibraryResult(created.value, bookmarks);
+    setTagList(withTag.tags);
+    setBookmarks(withTag.bookmarks);
+    if (newTag) {
+      const added = runAddTagToBookmark({
+        bookmarks: withTag.bookmarks,
+        categories: cats,
+        collections: cols,
+        tags: withTag.tags,
+        bookmarkId: selectedBookmark.id,
+        tagId: newTag.id,
+      });
+      if (added.ok) {
+        applyTagResult(added.value);
+      }
+    }
+  }, [applyTagResult, bookmarks, cats, cols, entities, flashToast, handleAddTag, selectedBookmark, tagList]);
+
   const requestDeleteCategory = useCallback((categoryId: string) => {
     const childCount = cats.filter((c) => c.parentId === categoryId).length;
     const bookmarkCount = bookmarks.filter((b) => b.categoryId === categoryId).length;
@@ -936,6 +1027,10 @@ export default function App() {
                 onToggleStar={() => selectedBookmark && toggleStar(selectedBookmark.id)}
                 onTogglePin={() => selectedBookmark && togglePin(selectedBookmark.id)}
                 onToggleCollection={(cid) => selectedBookmark && toggleCollection(selectedBookmark.id, cid)}
+                onAddTag={handleAddTag}
+                onRemoveTag={handleRemoveTag}
+                onAcceptSuggestedTag={handleAcceptSuggestedTag}
+                onCreateTag={handleCreateTag}
                 onVisit={() => { void handleVisit(); }}
                 onOpenHealth={() => setHealthOpen(true)}
                 onDelete={() => selectedBookmark && requestDeleteBookmark(selectedBookmark.id)}
