@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"log"
 
 	"github.com/blue-idea/collection/config"
 	"github.com/blue-idea/collection/internal/localstore"
+	"github.com/blue-idea/collection/internal/platform"
 	"github.com/blue-idea/collection/internal/settingsstore"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -26,6 +28,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to initialise settings service: %v", err)
 	}
+	nativeFileService := platform.NewService()
 
 	err = wails.Run(&options.App{
 		Title:  config.AppTitle,
@@ -40,9 +43,14 @@ func main() {
 			B: config.BackgroundBlue,
 			A: config.BackgroundAlpha,
 		},
+		OnStartup: func(ctx context.Context) {
+			// 原生对话框依赖 Wails 运行时上下文。
+			nativeFileService.SetContext(ctx)
+		},
 		Bind: []interface{}{
 			localDocumentService,
 			settingsService,
+			nativeFileService,
 		},
 	})
 	if err != nil {
