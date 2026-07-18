@@ -24,6 +24,7 @@
     "test:supabase": "supabase test db --workdir .. && node ./scripts/supabase-rls-api-test.mjs && node ./scripts/supabase-auth-api-test.mjs && node ./scripts/supabase-revision-api-test.mjs",
     "test:supabase:auth": "node ./scripts/supabase-auth-api-test.mjs",
     "test:supabase:revision": "node ./scripts/supabase-revision-api-test.mjs",
+    "test:cloud:remote": "node ./scripts/cloud-remote-test.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "verify:quality-config": "node verify-quality-config.mjs"
   },

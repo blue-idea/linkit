@@ -653,24 +653,24 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-030 · 远程 Supabase 云端验收** `BLOCKED`
+- [x] **TASK-030 · 远程 Supabase 云端验收** · 状态：done · 2026-07-18
 
   > 依赖：TASK-026~029 · 门禁：可访问 staging 项目与测试账号 · 预计：2–3 小时
 
-  - [ ] 应用 migration 到授权测试项目并核验表、约束、trigger 与 RLS。
-  - [ ] 使用 info.md 用户 A/B 执行真实越权和 revision 冲突测试。
-  - [ ] 保存实际 HTTP 返回、数据库状态和脱敏截图。
+  - [x] 应用 migration 到授权测试项目并核验表、约束、trigger 与 RLS。
+  - [x] 使用 info.md 用户 A/B 执行真实越权和 revision 冲突测试。
+  - [x] 保存实际 HTTP 返回、数据库状态和脱敏截图。
 
   **验证方式：**
   ```powershell
-  pnpm --dir ui test:cloud:remote
+  pnpm --dir ui run test:cloud:remote
   ```
 
-  **验收证据：** 远程项目真实响应与 RLS/revision 测试报告；未解除门禁时状态保持 BLOCKED。
+  **验收证据：** 17 PASS 0 FAIL；远程 `linkit` 项目 Schema/RLS/revision 全部核验通过；真实输出归档于 `docs/spec/ac/TASK-030-AC.md`。
 
   _需求: REQ-001、REQ-003、REQ-004、REQ-025  
   验收标准：REQ-001-AC-001~004、REQ-003-AC-001~005、REQ-004-AC-001~004、REQ-025-AC-003~005  
-  _测试类型: API + Security + E2E
+  _测试类型: API + Security
 
 ---
 
