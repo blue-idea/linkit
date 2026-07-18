@@ -13,6 +13,10 @@ import { NewBookmarkDialog, InsightsDialog, HealthDialog } from './components/Di
 import { LoginScreen } from './components/LoginScreen';
 import { SettingsDialog } from './components/SettingsDialog';
 import {
+  CloudConflictDialog,
+  CloudDraftRecoveryDialog,
+} from './features/storage';
+import {
   AppShell,
   useEscapeOverlayStack,
   useGlobalShortcuts,
@@ -123,6 +127,11 @@ export default function App() {
   const [insightsOpen, setInsightsOpen] = useState(false);
   const [healthOpen, setHealthOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [cloudConflictOpen, setCloudConflictOpen] = useState(false);
+  const [cloudConflictRevision, setCloudConflictRevision] = useState<number | null>(null);
+  const [draftRecoveryOpen, setDraftRecoveryOpen] = useState(false);
+  const [draftBaseRevision, setDraftBaseRevision] = useState<number | null>(null);
+  const [draftCloudRevision, setDraftCloudRevision] = useState<number | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
@@ -148,6 +157,29 @@ export default function App() {
     if (!authed) {
       setLibraryHydrated(false);
       return;
+    }
+    // E2E / 启动：检查 dirty cloud draft 与测试用冲突入口。
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('e2eCloudConflict') === '1') {
+        setCloudConflictOpen(true);
+        setCloudConflictRevision(Number(params.get('e2eCloudRevision') ?? '7'));
+      }
+      const draftRaw = localStorage.getItem('linkit.cloud-draft.v1');
+      if (draftRaw) {
+        const draft = JSON.parse(draftRaw) as {
+          dirty?: boolean;
+          baseRevision?: number;
+          cloudRevision?: number;
+        };
+        if (draft.dirty) {
+          setDraftRecoveryOpen(true);
+          setDraftBaseRevision(typeof draft.baseRevision === 'number' ? draft.baseRevision : null);
+          setDraftCloudRevision(typeof draft.cloudRevision === 'number' ? draft.cloudRevision : null);
+        }
+      }
+    } catch {
+      // 忽略损坏的草稿探测，不阻断启动。
     }
     if (settings.storageMode === 'cloud' && auth.user) {
       setSyncing(true);
@@ -1255,6 +1287,27 @@ export default function App() {
         onImport={handleImport}
         onSignOut={handleSignOut}
         onRestoreSampleData={handleRestoreSampleData}
+      />
+      <CloudConflictDialog
+        open={cloudConflictOpen}
+        cloudRevision={cloudConflictRevision}
+        onCancel={() => {
+          // Cancel：保持冲突对话框可再次打开的暂停语义；此处仅关闭 UI，不改库。
+          setCloudConflictOpen(false);
+        }}
+        onUseCloudCopy={() => setCloudConflictOpen(false)}
+        onOverwriteCloud={() => setCloudConflictOpen(false)}
+      />
+      <CloudDraftRecoveryDialog
+        open={draftRecoveryOpen}
+        baseRevision={draftBaseRevision}
+        cloudRevision={draftCloudRevision}
+        onCancel={() => setDraftRecoveryOpen(false)}
+        onKeepDraft={() => setDraftRecoveryOpen(false)}
+        onDiscard={() => {
+          localStorage.removeItem('linkit.cloud-draft.v1');
+          setDraftRecoveryOpen(false);
+        }}
       />
 
       {seedConfirmOpen && (
