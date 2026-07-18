@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Bookmark, Category, Collection, Tag, AIInsight } from '../types';
-import { aiStreamAnalyze, aiAnalyzeUrl } from '../ai';
+import { resolveBookmarkAnalysis, fetchBookmarkMetadata } from '../features/bookmarks';
 import { Icon, Favicon, AIBadge, Button, Kbd, AnimateIn } from './ui';
 import { tagColors } from '../colors';
 
@@ -29,7 +29,7 @@ function ModalHeader({ icon, title, subtitle, onClose }: { icon: string; title: 
         <Icon name={icon} size={17} className="text-ink-100" />
       </span>
       <div className="flex-1 min-w-0">
-        <div className="text-[15px] font-semibold text-ink-100 leading-tight">{title}</div>
+        <div className="text-[15px] font-semibold text-ink-100 leading-tight" role="heading" aria-level={2}>{title}</div>
         {subtitle && <div className="text-[11px] text-ink-400 mt-0.5">{subtitle}</div>}
       </div>
       <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-ink-700/60 text-ink-400 hover:text-ink-100 flex items-center justify-center transition">
@@ -39,7 +39,7 @@ function ModalHeader({ icon, title, subtitle, onClose }: { icon: string; title: 
   );
 }
 
-/* ============ New Bookmark Dialog with AI streaming ============ */
+/* ============ New Bookmark Dialog：分析确认后入库，失败则手动降级 ============ */
 export function NewBookmarkDialog({
   open,
   initialUrl,
@@ -60,8 +60,8 @@ export function NewBookmarkDialog({
   const [url, setUrl] = useState(initialUrl);
   const [title, setTitle] = useState('');
   const [stage, setStage] = useState<'input' | 'analyzing' | 'review'>('input');
-  const [steps, setSteps] = useState<{ label: string; done: boolean }[]>([]);
-  const [result, setResult] = useState<ReturnType<typeof aiAnalyzeUrl> | null>(null);
+  const [fallbackMessage, setFallbackMessage] = useState<string | null>(null);
+  const [analysisSource, setAnalysisSource] = useState<'metadata' | 'manual' | null>(null);
   const [chosenTags, setChosenTags] = useState<string[]>([]);
   const [chosenCategory, setChosenCategory] = useState<string>('');
   const [chosenCollections, setChosenCollections] = useState<string[]>([]);
@@ -73,41 +73,47 @@ export function NewBookmarkDialog({
       setUrl(initialUrl);
       setTitle('');
       setStage('input');
-      setSteps([]);
-      setResult(null);
+      setFallbackMessage(null);
+      setAnalysisSource(null);
       setChosenTags([]);
+      setChosenCategory('');
       setChosenCollections([]);
       setNotes('');
       setDescription('');
     }
   }, [open, initialUrl]);
 
-  const runAnalysis = () => {
+  const runAnalysis = async () => {
     setStage('analyzing');
-    setSteps([]);
-    aiStreamAnalyze(
+    setFallbackMessage(null);
+    // REQ-006-AC-001：进入分析/确认，确认前不调用 onCreate。
+    const result = await resolveBookmarkAnalysis({
       url,
-      title,
-      (step) => setSteps((prev) => [...prev.filter((s) => s.label !== step.label), step]),
-      (r) => {
-        setResult(r);
-        setChosenTags(r.tags);
-        setChosenCategory(r.categoryId);
-        setStage('review');
-      }
-    );
+      titleHint: title,
+      fetchMetadata: fetchBookmarkMetadata,
+    });
+    setTitle(result.preview.title);
+    setDescription(result.preview.description);
+    setFallbackMessage(result.fallbackMessage);
+    setAnalysisSource(result.source);
+    if (result.preview.suggestedCategoryId) {
+      setChosenCategory(result.preview.suggestedCategoryId);
+    }
+    setChosenTags(result.preview.suggestedTags);
+    setStage('review');
   };
 
   const submit = () => {
-    const domain = url.replace(/^https?:\/\//, '').split('/')[0];
-    const glyph = domain[0]?.toUpperCase() ?? '🔗';
+    const domain = url.replace(/^https?:\/\//, '').split('/')[0] || 'unknown';
+    const glyph = domain[0]?.toUpperCase() ?? '?';
+    // REQ-006-AC-004：仅在用户确认保存时创建。
     onCreate({
-      title: title || domain,
-      url,
+      title: title.trim() || domain,
+      url: url.trim(),
       domain,
       favicon: glyph,
       faviconColor: 'blue',
-      description: (description.trim() || result?.summary) ?? '',
+      description: description.trim(),
       notes,
       tags: chosenTags,
       categoryId: chosenCategory,
@@ -116,8 +122,8 @@ export function NewBookmarkDialog({
       pinned: false,
       thumbnail: 'blue',
       health: 'ok',
-      aiSummary: result?.summary,
-      aiSuggestedTags: result?.tags,
+      aiSummary: '',
+      aiSuggestedTags: [],
     });
     onClose();
   };
@@ -126,135 +132,141 @@ export function NewBookmarkDialog({
 
   return (
     <Modal open={open} onClose={onClose} width="max-w-[520px]">
-      <ModalHeader icon="Plus" title="新增收藏" subtitle="粘贴网址，AI 自动生成摘要与分类标签" onClose={onClose} />
+      <ModalHeader
+        icon="Plus"
+        title="New Bookmark"
+        subtitle="Paste a URL, review the preview, then save"
+        onClose={onClose}
+      />
 
       {stage === 'input' && (
         <div className="p-5 space-y-4">
           <div>
-            <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">网址</label>
+            <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">URL</label>
             <div className="flex items-center gap-2 rounded-lg bg-ink-800/60 hairline px-3 py-2.5">
               <Icon name="Link" size={14} className="text-ink-400" />
               <input
                 autoFocus
+                aria-label="Bookmark URL"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter' && url.trim()) runAnalysis(); }}
+                onKeyDown={(e) => { if (e.key === 'Enter' && url.trim()) void runAnalysis(); }}
                 placeholder="https://…"
                 className="flex-1 bg-transparent text-[13px] text-ink-100 placeholder:text-ink-500 outline-none"
               />
             </div>
           </div>
           <div>
-            <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">标题 <span className="text-ink-500">（可选，留空则自动抓取）</span></label>
+            <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">
+              Title <span className="text-ink-500">(optional)</span>
+            </label>
             <input
+              aria-label="Bookmark title hint"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="网站标题"
+              placeholder="Page title"
               className="w-full rounded-lg bg-ink-800/60 hairline text-[13px] text-ink-100 placeholder:text-ink-500 px-3 py-2.5 outline-none focus-ring"
             />
           </div>
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-violet2-500/10 border border-violet2-400/20">
-            <AIBadge label="AI 将自动" />
-            <span className="text-[11px] text-ink-300">抓取网页内容 · 生成摘要 · 推荐分类与标签</span>
-          </div>
           <div className="flex items-center justify-end gap-2 pt-1">
-            <Button variant="ghost" onClick={onClose}>取消</Button>
-            <Button variant="primary" icon="Sparkles" onClick={runAnalysis} disabled={!url.trim()}>
-              开始分析
+            <Button variant="ghost" onClick={onClose}>Cancel</Button>
+            <Button variant="primary" icon="Search" onClick={() => void runAnalysis()} disabled={!url.trim()}>
+              Analyze
             </Button>
           </div>
         </div>
       )}
 
       {stage === 'analyzing' && (
-        <div className="p-7 space-y-4">
+        <div className="p-7 space-y-4" role="status" aria-label="Analyzing bookmark">
           <div className="flex items-center gap-3">
             <div className="relative w-10 h-10">
-              <div className="absolute inset-0 rounded-full border-2 border-violet2-500/30" />
-              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-violet2-400 animate-spin" />
-              <Icon name="Sparkles" size={16} className="absolute inset-0 m-auto text-violet2-400" />
+              <div className="absolute inset-0 rounded-full border-2 border-accent-500/30" />
+              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-accent-400 animate-spin" />
             </div>
             <div>
-              <div className="text-[14px] font-semibold ai-shimmer">AI 正在分析网页</div>
+              <div className="text-[14px] font-semibold text-ink-100">Fetching page metadata…</div>
               <div className="text-[11px] text-ink-400 truncate max-w-[300px]">{url}</div>
             </div>
-          </div>
-          <div className="space-y-2">
-            {['正在抓取网页内容', '解析正文结构', '生成摘要', '推荐分类与标签'].map((label) => {
-              const step = steps.find((s) => s.label === label);
-              const done = step?.done;
-              const current = step && !step.done;
-              return (
-                <div key={label} className={`flex items-center gap-3 text-[12px] transition ${done ? 'text-ink-200' : current ? 'text-ink-100' : 'text-ink-500'}`}>
-                  <span className={`w-5 h-5 rounded-full flex items-center justify-center transition ${done ? 'bg-mint-500/20' : current ? 'bg-violet2-500/20' : 'bg-ink-800'}`}>
-                    {done ? <Icon name="Check" size={11} className="text-mint-400" /> : current ? <span className="w-2 h-2 rounded-full bg-violet2-400 animate-ai-pulse" /> : <span className="w-1.5 h-1.5 rounded-full bg-ink-600" />}
-                  </span>
-                  {label}
-                </div>
-              );
-            })}
           </div>
         </div>
       )}
 
-      {stage === 'review' && result && (
+      {stage === 'review' && (
         <div className="max-h-[64vh] overflow-y-auto scroll-thin">
           <div className="p-5 space-y-4">
-            {/* preview card */}
+            {fallbackMessage && (
+              <div
+                role="alert"
+                className="rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200"
+              >
+                {fallbackMessage}
+              </div>
+            )}
+            {analysisSource === 'metadata' && (
+              <div className="text-[11px] text-mint-400">Metadata loaded. Review and save when ready.</div>
+            )}
+
             <div className="flex items-center gap-3 rounded-mac-lg bg-ink-800/60 hairline p-3">
-              <Favicon glyph={(url.replace(/^https?:\/\//, '')[0] ?? '🔗').toUpperCase()} color="blue" size={36} />
+              <Favicon glyph={(url.replace(/^https?:\/\//, '')[0] ?? '?').toUpperCase()} color="blue" size={36} />
               <div className="min-w-0 flex-1">
-                <div className="text-[13px] font-semibold text-ink-100 truncate">{title || url.replace(/^https?:\/\//, '').split('/')[0]}</div>
+                <input
+                  aria-label="Bookmark title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full bg-transparent text-[13px] font-semibold text-ink-100 outline-none"
+                />
                 <div className="text-[11px] text-ink-400 truncate">{url}</div>
               </div>
-              <span className="px-2 py-0.5 rounded-full bg-mint-500/15 text-mint-400 text-[10px] font-medium">
-                置信度 {(result.confidence * 100).toFixed(0)}%
-              </span>
             </div>
 
-            {/* site description */}
             <div>
-              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">站点描述</label>
+              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Description</label>
               <textarea
+                aria-label="Bookmark description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder={result.summary + '（AI 已生成，可在此修改补充）'}
+                placeholder="Add a short description"
                 rows={2}
                 className="w-full rounded-lg bg-ink-800/60 hairline text-[12px] text-ink-100 placeholder:text-ink-500 px-3 py-2.5 outline-none focus-ring resize-none"
               />
             </div>
 
-            {/* AI summary */}
             <div>
-              <div className="flex items-center gap-2 mb-1.5">
-                <AIBadge label="AI 摘要" />
+              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Category</label>
+              <div className="flex flex-wrap gap-1.5">
+                {categories.filter((c) => !c.parentId).map((c) => {
+                  const on = chosenCategory === c.id;
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => setChosenCategory(c.id)}
+                      className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] transition ${
+                        on ? 'border-accent-400/40 bg-accent-500/15 text-ink-100' : 'border-ink-600/50 text-ink-400'
+                      }`}
+                    >
+                      <Icon name={c.icon} size={12} />
+                      {c.name}
+                    </button>
+                  );
+                })}
               </div>
-              <p className="text-[12px] text-ink-200 leading-relaxed rounded-mac bg-violet2-500/10 border border-violet2-400/20 p-3">{result.summary}</p>
+              {cat && (
+                <div className="mt-2 text-[11px] text-ink-400">Selected: {cat.name}</div>
+              )}
             </div>
 
-            {/* category */}
             <div>
-              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">推荐分类</label>
-              <div className="inline-flex items-center gap-2 rounded-lg bg-accent-500/15 border border-accent-400/30 px-3 py-2">
-                <Icon name={cat?.icon ?? 'Folder'} size={14} className="text-accent-300" />
-                <span className="text-[12px] text-ink-100 font-medium">{cat?.name}</span>
-                <AIBadge label="" />
-              </div>
-            </div>
-
-            {/* tags */}
-            <div>
-              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">推荐标签 <span className="text-ink-500">· 点击增减</span></label>
+              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Tags</label>
               <div className="flex flex-wrap gap-1.5">
                 {tags.map((t) => {
                   const on = chosenTags.includes(t.id);
-                  const suggested = result.tags.includes(t.id);
                   return (
-                    <button key={t.id} onClick={() => setChosenTags((p) => on ? p.filter((x) => x !== t.id) : [...p, t.id])}>
-                      <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition ${on ? tagColors[t.color].border + ' ' + tagColors[t.color].bg + ' ' + tagColors[t.color].text : 'border-ink-600/50 text-ink-400 hover:text-ink-200'}`}>
+                    <button key={t.id} type="button" onClick={() => setChosenTags((p) => (on ? p.filter((x) => x !== t.id) : [...p, t.id]))}>
+                      <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition ${on ? `${tagColors[t.color].border} ${tagColors[t.color].bg} ${tagColors[t.color].text}` : 'border-ink-600/50 text-ink-400'}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${tagColors[t.color].dot}`} />
                         {t.label}
-                        {suggested && <Icon name="Sparkles" size={9} className="text-violet2-400" />}
                       </span>
                     </button>
                   );
@@ -262,15 +274,14 @@ export function NewBookmarkDialog({
               </div>
             </div>
 
-            {/* collections */}
             <div>
-              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">加入主题 <span className="text-ink-500">· 可多个</span></label>
+              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Collections</label>
               <div className="flex flex-wrap gap-1.5">
                 {collections.map((c) => {
                   const on = chosenCollections.includes(c.id);
                   return (
-                    <button key={c.id} onClick={() => setChosenCollections((p) => on ? p.filter((x) => x !== c.id) : [...p, c.id])}>
-                      <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition ${on ? tagColors[c.color].border + ' ' + tagColors[c.color].bg + ' ' + tagColors[c.color].text : 'border-ink-600/50 text-ink-400 hover:text-ink-200'}`}>
+                    <button key={c.id} type="button" onClick={() => setChosenCollections((p) => (on ? p.filter((x) => x !== c.id) : [...p, c.id]))}>
+                      <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition ${on ? `${tagColors[c.color].border} ${tagColors[c.color].bg} ${tagColors[c.color].text}` : 'border-ink-600/50 text-ink-400'}`}>
                         {c.emoji} {c.name}
                       </span>
                     </button>
@@ -279,21 +290,23 @@ export function NewBookmarkDialog({
               </div>
             </div>
 
-            {/* notes */}
             <div>
-              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">备注 <span className="text-ink-500">· Markdown</span></label>
+              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Notes</label>
               <textarea
+                aria-label="Bookmark notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="为什么收藏这个？日后想怎么用？"
+                placeholder="Why save this?"
                 rows={3}
                 className="w-full rounded-lg bg-ink-800/60 hairline text-[12px] text-ink-100 placeholder:text-ink-500 px-3 py-2.5 outline-none focus-ring resize-none"
               />
             </div>
           </div>
           <div className="px-5 py-4 border-t border-white/5 flex items-center justify-end gap-2">
-            <Button variant="ghost" onClick={() => setStage('input')}>返回</Button>
-            <Button variant="primary" icon="Check" onClick={submit}>收藏入库</Button>
+            <Button variant="ghost" onClick={() => setStage('input')}>Back</Button>
+            <Button variant="primary" icon="Check" onClick={submit}>
+              Save bookmark
+            </Button>
           </div>
         </div>
       )}

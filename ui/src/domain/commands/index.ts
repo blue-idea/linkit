@@ -3,6 +3,17 @@ import type { LibraryData } from '../library';
 import type { CommandResult } from './types';
 
 export type { CommandResult, DomainError, DomainEvent, LibraryCommand } from './types';
+export {
+  createBookmark,
+  deleteBookmark,
+  normalizeBookmarkUrl,
+  updateBookmark,
+} from './bookmarks';
+export type {
+  CreateBookmarkInput,
+  DeleteBookmarkInput,
+  UpdateBookmarkInput,
+} from './bookmarks';
 
 export interface MembershipCommandInput extends Record<string, unknown> {
   bookmarkId: string;

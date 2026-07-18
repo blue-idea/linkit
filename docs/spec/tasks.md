@@ -236,13 +236,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-011 · 实现书签新增、查看、编辑与删除**
+- [x] **TASK-011 · 实现书签新增、查看、编辑与删除**
 
   > 依赖：TASK-005、TASK-009、TASK-010 · 预计：3–4 小时
 
-  - [ ] 先实现 create/update/delete 领域命令及引用清理测试。
-  - [ ] 接入 New Bookmark、详情和删除确认 UI。
-  - [ ] 支持元数据失败后的手动入库，不使用模拟 AI 冒充真实结果。
+  - [x] 先实现 create/update/delete 领域命令及引用清理测试。
+  - [x] 接入 New Bookmark、详情和删除确认 UI。
+  - [x] 支持元数据失败后的手动入库，不使用模拟 AI 冒充真实结果。
 
   **验证方式：**
   ```powershell
@@ -1002,7 +1002,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-008 | 原生导入导出服务 | Unit/Manual | done | REQ-005、025 |
 | TASK-009 | 网页元数据与外部 URL | API/Security | done | REQ-006、008、025 |
 | TASK-010 | 本地模式启动恢复 | Unit/E2E | done | REQ-001、002 |
-| TASK-011 | 书签核心 CRUD | Unit/E2E | 待开始 | REQ-006、007 |
+| TASK-011 | 书签核心 CRUD | Unit/E2E | done | REQ-006、007 |
 | TASK-012 | 书签状态与访问 | Unit/E2E | 待开始 | REQ-008 |
 | TASK-013 | 排序与筛选 | Unit | 待开始 | REQ-008、009 |
 | TASK-014 | 分类 CRUD 与删除 | Unit/E2E | 待开始 | REQ-010 |
