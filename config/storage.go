@@ -11,4 +11,9 @@ const (
 	LibraryTemporaryName    = "library.json.tmp"
 	CloudDraftFileName      = "cloud-draft.json"
 	CloudDraftTemporaryName = "cloud-draft.json.tmp"
+	SettingsFileName        = "settings.json"
+	SettingsBackupName      = "settings.json.bak"
+	SettingsTemporaryName   = "settings.json.tmp"
+	// MaxSettingsBytes 限制本机设置文件大小；设置远小于资料库。
+	MaxSettingsBytes int64 = 1 * 1024 * 1024
 )

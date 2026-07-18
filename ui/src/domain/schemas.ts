@@ -32,10 +32,13 @@ const apiBaseSchema = z.url().refine((value) => {
   return url.protocol === 'https:' || (url.protocol === 'http:' && ['localhost', '127.0.0.1', '::1'].includes(url.hostname));
 }, { message: 'API Base must use HTTPS unless it targets loopback' });
 
+// 空字符串表示 AI 未配置；非空时必须满足 HTTPS/loopback 约束。
+const optionalApiBaseSchema = z.union([z.literal(''), apiBaseSchema]);
+
 export const AppSettingsSchema = z.strictObject({
   settingsVersion: z.int().min(1), storageMode: z.enum(['local', 'cloud']),
   theme: z.enum(['midnight', 'ocean', 'graphite', 'sunset']), locale: z.enum(['en', 'zh']),
-  ai: z.strictObject({ apiBase: apiBaseSchema, model: z.string().trim().min(1) }),
+  ai: z.strictObject({ apiBase: optionalApiBaseSchema, model: z.string().trim() }),
   aiConsent: z.strictObject({ apiBase: apiBaseSchema, grantedAt: z.iso.datetime() }).nullable(),
   view: z.strictObject({ defaultMode: z.enum(['card', 'list', 'masonry', 'timeline', 'tag-aggregation', 'theme-space']) }),
   lastCloudRevision: z.int().min(0).nullable(),

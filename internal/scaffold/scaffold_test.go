@@ -87,6 +87,16 @@ func TestProjectSkeleton(t *testing.T) {
 		assertPathExists(t, filepath.Join(repositoryRoot, "internal", "localstore", "service.go"))
 	})
 
+	// TASK-007：本机设置服务必须作为职责独立的 Wails 绑定暴露。
+	t.Run("Wails 入口绑定 SettingsService", func(t *testing.T) {
+		mainSource := readFile(t, filepath.Join(repositoryRoot, "main.go"))
+
+		assertContains(t, mainSource, expectedModulePath+"/internal/settingsstore")
+		assertContains(t, mainSource, "settingsstore.NewDefaultService")
+		assertContains(t, mainSource, "settingsService")
+		assertPathExists(t, filepath.Join(repositoryRoot, "internal", "settingsstore", "service.go"))
+	})
+
 	// REQ-027-AC-004：统一包管理器与锁文件保证跨平台构建输入一致。
 	t.Run("前端只保留 pnpm 锁文件并锁定工具版本", func(t *testing.T) {
 		var config packageConfig
