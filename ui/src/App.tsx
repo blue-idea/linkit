@@ -23,7 +23,13 @@ import {
   useLocalStartup,
   persistUiSettings,
 } from './features/auth';
+import {
+  applyDeleteDecision,
+  DeleteBookmarkDialog,
+  shouldConfirmBookmarkDelete,
+} from './features/bookmarks';
 import { createBrowserStorageAdapters } from './services/storage';
+import { normalizeBookmarkUrl } from './domain/commands';
 
 /* ---------- window chrome ---------- */
 function WindowChrome({
@@ -138,6 +144,7 @@ export default function App() {
   const [toast, setToast] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [seedConfirmOpen, setSeedConfirmOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   // 防止“未水合的种子数据”在加载本机库前被自动保存覆盖。
   const [libraryHydrated, setLibraryHydrated] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -277,12 +284,63 @@ export default function App() {
   }, [state.selection, flashToast]);
 
   const createBookmark = useCallback((b: Omit<Bookmark, 'id' | 'createdAt' | 'lastVisitedAt' | 'visitCount' | 'spark'>) => {
-    const id = 'b-' + Date.now().toString(36);
-    const full: Bookmark = { ...b, id, createdAt: new Date().toISOString(), lastVisitedAt: null, visitCount: 0, spark: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1] };
+    // REQ-006-AC-004：规范化 URL 并生成唯一 ID；确认保存后才进入此路径。
+    const normalized = normalizeBookmarkUrl(b.url);
+    if (!normalized.ok) {
+      flashToast('Invalid bookmark URL');
+      return;
+    }
+    const id = 'b-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6);
+    const full: Bookmark = {
+      ...b,
+      id,
+      url: normalized.url,
+      domain: normalized.domain,
+      createdAt: new Date().toISOString(),
+      lastVisitedAt: null,
+      visitCount: 0,
+      spark: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    };
     setBookmarks((prev) => [full, ...prev]);
+    if (full.collectionIds.length) {
+      setCols((prev) =>
+        prev.map((c) =>
+          full.collectionIds.includes(c.id) && !c.bookmarkIds.includes(id)
+            ? { ...c, bookmarkIds: [...c.bookmarkIds, id] }
+            : c
+        )
+      );
+    }
     setState((s) => ({ ...s, selectedBookmarkId: id }));
-    flashToast('收藏已入库');
+    flashToast('Bookmark saved');
   }, [flashToast]);
+
+  const requestDeleteBookmark = useCallback((id: string) => {
+    // REQ-007-AC-003：删除前弹出确认。
+    if (shouldConfirmBookmarkDelete()) {
+      setDeleteTargetId(id);
+    }
+  }, []);
+
+  const confirmDeleteBookmark = useCallback(() => {
+    if (!deleteTargetId) return;
+    if (applyDeleteDecision({ confirmed: true }) !== 'deleted') return;
+    const id = deleteTargetId;
+    // REQ-007-AC-004：移除书签并清理主题成员引用。
+    setBookmarks((prev) => prev.filter((b) => b.id !== id));
+    setCols((prev) =>
+      prev.map((c) => ({
+        ...c,
+        bookmarkIds: c.bookmarkIds.filter((bid) => bid !== id),
+      }))
+    );
+    setState((s) => ({
+      ...s,
+      selectedBookmarkId: s.selectedBookmarkId === id ? null : s.selectedBookmarkId,
+    }));
+    setDeleteTargetId(null);
+    flashToast('Bookmark deleted');
+  }, [deleteTargetId, flashToast]);
 
   const handleSaveSettings = useCallback(async (s: AppSettings) => {
     setSettings(s);
@@ -515,6 +573,7 @@ export default function App() {
                   window.open(selectedBookmark.url, '_blank');
                 }}
                 onOpenHealth={() => setHealthOpen(true)}
+                onDelete={() => selectedBookmark && requestDeleteBookmark(selectedBookmark.id)}
                 onClose={() => setState((s) => ({ ...s, selectedBookmarkId: null }))}
               />
             </div>
@@ -566,6 +625,13 @@ export default function App() {
         onClose={() => setNewOpen(false)}
         onCreate={createBookmark}
       />
+      {deleteTargetId && (
+        <DeleteBookmarkDialog
+          title={bookmarks.find((b) => b.id === deleteTargetId)?.title ?? 'Bookmark'}
+          onCancel={() => setDeleteTargetId(null)}
+          onConfirm={confirmDeleteBookmark}
+        />
+      )}
       <InsightsDialog
         open={insightsOpen}
         insights={insights}

@@ -41,6 +41,7 @@ export function DetailPanel({
   onToggleCollection,
   onVisit,
   onOpenHealth,
+  onDelete,
   onClose,
 }: {
   bookmark: Bookmark | null;
@@ -53,9 +54,11 @@ export function DetailPanel({
   onToggleCollection: (collectionId: string) => void;
   onVisit: () => void;
   onOpenHealth: () => void;
+  onDelete?: () => void;
   onClose: () => void;
 }) {
   const [editingNotes, setEditingNotes] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(false);
   const [tagInput, setTagInput] = useState('');
 
   if (!bookmark) {
@@ -84,7 +87,31 @@ export function DetailPanel({
       <div className="px-4 pt-4 pb-3 flex items-start gap-3 border-b border-white/5">
         <Favicon glyph={b.favicon} color={b.faviconColor} size={40} />
         <div className="min-w-0 flex-1">
-          <div className="text-[14px] font-semibold text-ink-100 leading-snug">{b.title}</div>
+          {editingTitle ? (
+            <input
+              autoFocus
+              aria-label="Bookmark title"
+              defaultValue={b.title}
+              onBlur={(e) => {
+                const next = e.target.value.trim();
+                if (next && next !== b.title) onUpdate({ title: next });
+                setEditingTitle(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+              }}
+              className="w-full rounded-md bg-ink-800/60 hairline px-2 py-1 text-[14px] font-semibold text-ink-100 outline-none focus-ring"
+            />
+          ) : (
+            <button
+              type="button"
+              aria-label="Edit bookmark title"
+              onClick={() => setEditingTitle(true)}
+              className="text-left text-[14px] font-semibold text-ink-100 leading-snug hover:text-accent-200 transition"
+            >
+              {b.title}
+            </button>
+          )}
           <a href={b.url} target="_blank" rel="noreferrer" className="text-[11px] text-accent-300 hover:text-accent-200 truncate block mt-0.5">
             {b.url}
           </a>
@@ -102,7 +129,17 @@ export function DetailPanel({
             <Icon name="Star" size={13} fill={b.starred ? 'currentColor' : 'none'} />
           </Button>
           <Button variant="subtle" size="sm" onClick={onTogglePin} className={b.pinned ? 'text-amber-400' : ''} icon="Pin" />
-          <Button variant="subtle" size="sm" icon="Share2" />
+          {onDelete && (
+            <button
+              type="button"
+              aria-label="Delete bookmark"
+              onClick={onDelete}
+              className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md text-coral-400 hover:bg-coral-500/15 transition"
+            >
+              <Icon name="Trash2" size={13} />
+              Delete
+            </button>
+          )}
         </div>
 
         {/* Preview */}
