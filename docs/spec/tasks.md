@@ -719,13 +719,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-033 · 实现 AI 入库分析与重新分析**
+- [x] **TASK-033 · 实现 AI 入库分析与重新分析**
 
-  > 依赖：TASK-011、TASK-018、TASK-032 · 预计：3–4 小时
+  > 依赖：TASK-011、TASK-018、TASK-032 · 预计：3–4 小时 · 状态：done · 2026-07-18
 
-  - [ ] 实现标题、摘要、分类 ID 和标签建议 DTO 校验。
-  - [ ] 接入新增和 Reanalyze 预览，确认前不修改资料库。
-  - [ ] 实现无 Key/失败的英文提示和手动降级。
+  - [x] 实现标题、摘要、分类 ID 和标签建议 DTO 校验。
+  - [x] 接入新增和 Reanalyze 预览，确认前不修改资料库。
+  - [x] 实现无 Key/失败的英文提示和手动降级。
 
   **验证方式：**
   ```powershell
@@ -733,7 +733,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
   pnpm --dir ui exec playwright test -g "AI 入库分析|重新分析|AI 降级"
   ```
 
-  **验收证据：** 预览/确认/拒绝测试、降级截图和无模拟结果检查。
+  **验收证据：** 预览/确认/拒绝测试、降级截图 `TASK-033-ai-fallback.png` 和无模拟结果检查。
 
   _需求: REQ-006、REQ-020  
   验收标准：REQ-006-AC-002~003、REQ-020-AC-001~002  
@@ -1024,7 +1024,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-030 | 远程 Supabase 验收 | API/Security/E2E | BLOCKED | REQ-001、003、004、025 |
 | TASK-031 | SecretStore 与 AI 授权 | Unit/Security/E2E | done | REQ-019、025 |
 | TASK-032 | AI 客户端与降级 | API/Security | done | REQ-019、027 |
-| TASK-033 | AI 分析与重分析 | API/E2E | 待开始 | REQ-006、020 |
+| TASK-033 | AI 分析与重分析 | API/E2E | done | REQ-006、020 |
 | TASK-034 | 语义搜索 | API/E2E | 待开始 | REQ-018 |
 | TASK-035 | AI 主题与去重 | Unit/API/E2E | 待开始 | REQ-013、020 |
 | TASK-036 | 推荐与知识网络 | Unit/E2E | 待开始 | REQ-021 |

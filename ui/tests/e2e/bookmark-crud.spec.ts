@@ -21,9 +21,9 @@ test.describe('书签 CRUD', () => {
 
     await page.getByRole('textbox', { name: 'Bookmark URL' }).fill('https://example.test/new-bookmark');
     await page.getByLabel('Bookmark title hint').fill('Manual Entry Bookmark');
-    await page.getByRole('button', { name: 'Analyze' }).click();
+    await page.getByRole('button', { name: 'Analyze', exact: true }).click();
 
-    await expect(page.getByRole('alert')).toContainText(/Could not fetch|manual/i);
+    await expect(page.getByRole('alert')).toContainText(/Could not fetch|manual|AI analysis is unavailable/i);
     await expect(page.getByRole('button', { name: 'Save bookmark' })).toBeVisible();
     await expect(page.getByText('Manual Entry Bookmark').first()).toHaveCount(0);
 

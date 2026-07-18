@@ -129,6 +129,16 @@ func TestProjectSkeleton(t *testing.T) {
 		assertPathExists(t, filepath.Join(repositoryRoot, "config", "network.go"))
 	})
 
+	// TASK-033：AIService 必须绑定，入库分析与重新分析共用该入口。
+	t.Run("Wails 入口绑定 AIService", func(t *testing.T) {
+		mainSource := readFile(t, filepath.Join(repositoryRoot, "main.go"))
+
+		assertContains(t, mainSource, expectedModulePath+"/internal/ai")
+		assertContains(t, mainSource, "ai.NewDefaultService")
+		assertContains(t, mainSource, "aiService")
+		assertPathExists(t, filepath.Join(repositoryRoot, "internal", "ai", "service.go"))
+	})
+
 	// REQ-027-AC-004：统一包管理器与锁文件保证跨平台构建输入一致。
 	t.Run("前端只保留 pnpm 锁文件并锁定工具版本", func(t *testing.T) {
 		var config packageConfig

@@ -57,6 +57,7 @@ export function DetailPanel({
   onCreateTag,
   onVisit,
   onOpenHealth,
+  onReanalyze,
   onDelete,
   onClose,
 }: {
@@ -74,6 +75,7 @@ export function DetailPanel({
   onCreateTag: (label: string) => void;
   onVisit: () => void;
   onOpenHealth: () => void;
+  onReanalyze?: () => void;
   onDelete?: () => void;
   onClose: () => void;
 }) {
@@ -159,6 +161,17 @@ export function DetailPanel({
           >
             Visit
           </Button>
+          {onReanalyze && (
+            <Button
+              variant="subtle"
+              size="sm"
+              icon="Sparkles"
+              onClick={onReanalyze}
+              aria-label="Regenerate AI summary"
+            >
+              Reanalyze
+            </Button>
+          )}
           <Button
             variant="subtle"
             size="sm"
