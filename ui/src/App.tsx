@@ -837,13 +837,15 @@ export default function App() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const meta = e.metaKey || e.ctrlKey;
-      if (meta && e.key === 'k') { e.preventDefault(); setSpotlightOpen(true); }
-      else if (meta && e.key === 'n') { e.preventDefault(); setNewUrl(''); setNewOpen(true); }
-      else if (meta && e.key === 'i') { e.preventDefault(); setInsightsOpen(true); }
+      const key = e.key.toLowerCase();
+      // REQ-017-AC-001：Cmd/Ctrl+K 打开 Spotlight。
+      if (meta && key === 'k') { e.preventDefault(); setSpotlightOpen(true); }
+      else if (meta && key === 'n') { e.preventDefault(); setNewUrl(''); setNewOpen(true); }
+      else if (meta && key === 'i') { e.preventDefault(); setInsightsOpen(true); }
       else if (meta && e.key === ',') { e.preventDefault(); setSettingsOpen(true); }
-      else if (meta && e.key === '1') setState((s) => ({ ...s, density: 'card' }));
-      else if (meta && e.key === '2') setState((s) => ({ ...s, density: 'list' }));
-      else if (meta && e.key === '3') setState((s) => ({ ...s, density: 'masonry' }));
+      else if (meta && key === '1') setState((s) => ({ ...s, density: 'card' }));
+      else if (meta && key === '2') setState((s) => ({ ...s, density: 'list' }));
+      else if (meta && key === '3') setState((s) => ({ ...s, density: 'masonry' }));
       else if (meta && e.key === '\\') { e.preventDefault(); setSidebarOpen((v) => !v); }
     };
     window.addEventListener('keydown', onKey);
@@ -1074,7 +1076,12 @@ export default function App() {
         collections={cols}
         onSelect={(id) => setState((s) => ({ ...s, selectedBookmarkId: id }))}
         onClose={() => setSpotlightOpen(false)}
-        onNewFromUrl={(url) => { setNewUrl(url); setNewOpen(true); }}
+        onNewFromUrl={(url) => {
+          // 先写入 URL 再打开对话框，避免空 initialUrl 竞态。
+          setSpotlightOpen(false);
+          setNewUrl(url);
+          setNewOpen(true);
+        }}
       />
       <NewBookmarkDialog
         open={newOpen}
@@ -1082,7 +1089,10 @@ export default function App() {
         categories={cats}
         tags={tagList}
         collections={cols}
-        onClose={() => setNewOpen(false)}
+        onClose={() => {
+          setNewOpen(false);
+          setNewUrl('');
+        }}
         onCreate={createBookmark}
       />
       {deleteTargetId && (
