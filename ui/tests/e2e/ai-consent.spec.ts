@@ -24,7 +24,7 @@ test.describe('AI 设置与授权', () => {
   // REQ-019-AC-001 / REQ-025-AC-002：Key 不进入设置草稿明文持久化路径。
   test('AI 设置 shall 保存本机配置且不在界面回显 Key 明文', async ({ page }) => {
     await enterLocalMode(page);
-    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
     const settings = page.getByRole('dialog', { name: 'Settings' });
     await settings.getByRole('tab', { name: 'AI' }).click();
 
@@ -48,7 +48,7 @@ test.describe('AI 设置与授权', () => {
     await expect(consent).toHaveCount(0);
 
     // 重新打开设置：Key 输入框应为空（不回显明文），状态为已配置。
-    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
     const again = page.getByRole('dialog', { name: 'Settings' });
     await again.getByRole('tab', { name: 'AI' }).click();
     await expect(again.getByLabel('API Key')).toHaveValue('');
@@ -58,7 +58,7 @@ test.describe('AI 设置与授权', () => {
   // REQ-019-AC-005
   test('AI 授权 shall Cancel 时不保存设置', async ({ page }) => {
     await enterLocalMode(page);
-    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
     const settings = page.getByRole('dialog', { name: 'Settings' });
     await settings.getByRole('tab', { name: 'AI' }).click();
     await settings.getByPlaceholder('https://api.openai.com/v1').fill('https://api.example.test/v1');

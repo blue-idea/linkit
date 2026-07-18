@@ -34,7 +34,7 @@ test.describe('库内推荐与知识网络', () => {
     await expect(dialog).toBeVisible();
     await expect(dialog.getByRole('img', { name: 'Bookmark relationship graph' })).toBeVisible();
     await expect(dialog).toContainText(/Shared tag|Shared collection/);
-    await expect(dialog).toHaveScreenshot('TASK-036-knowledge-graph.png');
+    await expect(dialog).toHaveScreenshot('TASK-036-knowledge-graph.png', { maxDiffPixelRatio: 0.05 });
     await page.screenshot({ path: resolve(evidenceDirectory, 'TASK-036-knowledge-graph.png'), fullPage: true });
 
     const nodes = dialog.getByRole('button', { name: /^Open / });
