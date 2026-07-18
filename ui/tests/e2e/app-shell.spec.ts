@@ -10,7 +10,7 @@ const evidenceDirectory = resolve(
 );
 
 async function enterLocalMode(page: import('@playwright/test').Page) {
-  await page.getByRole('button', { name: '使用本地模式（无需登录）' }).click();
+  await page.getByRole('button', { name: 'Continue in local mode' }).click();
   await expect(page.getByText('Lattice', { exact: true })).toBeVisible();
 }
 
@@ -49,7 +49,7 @@ test.describe('主窗口 快捷键 拖入 URL 键盘可访问', () => {
     await page.evaluate(() => localStorage.clear());
     await page.reload();
     await page.setViewportSize({ width: 1280, height: 800 });
-    await expect(page.getByRole('button', { name: '使用本地模式（无需登录）' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Continue in local mode' })).toBeVisible();
     await enterLocalMode(page);
   });
 
@@ -58,9 +58,9 @@ test.describe('主窗口 快捷键 拖入 URL 键盘可访问', () => {
     await expect(page.getByRole('navigation', { name: 'Sidebar' })).toBeVisible();
     await expect(page.getByRole('main', { name: 'Content Area' })).toBeVisible();
     await expect(page.getByRole('complementary', { name: 'Detail Panel' })).toBeVisible();
-    await expect(page.getByRole('button', { name: '搜索', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: '新增', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: '设置', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Search', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'New', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Settings', exact: true })).toBeVisible();
 
     await mkdir(evidenceDirectory, { recursive: true });
     await page.screenshot({
@@ -167,17 +167,17 @@ test.describe('主窗口 快捷键 拖入 URL 键盘可访问', () => {
 
   // REQ-024-AC-006
   test('键盘可访问 shall 提供焦点顺序、可见焦点与 accessible name 并通过 axe', async ({ page }) => {
-    await page.getByRole('button', { name: '搜索' }).focus();
-    await expect(page.getByRole('button', { name: '搜索' })).toBeFocused();
+    await page.getByRole('button', { name: 'Search' }).focus();
+    await expect(page.getByRole('button', { name: 'Search' })).toBeFocused();
 
     await page.keyboard.press('Tab');
     const focused = page.locator(':focus-visible');
     await expect(focused).toBeVisible();
 
-    await expect(page.getByRole('button', { name: '搜索', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: '新增', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: '设置', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: '切换侧边栏' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Search', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'New', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Settings', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Toggle sidebar' })).toBeVisible();
 
     const axeResults = await new AxeBuilder({ page })
       .include('.glass-strong.shadow-win')

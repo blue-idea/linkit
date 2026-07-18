@@ -78,6 +78,9 @@ export type StorageMode = 'local' | 'cloud';
 
 export type ThemeId = 'midnight' | 'ocean' | 'graphite' | 'sunset';
 
+/** UI 语言偏好；与 domain AppSettings.locale 对齐。 */
+export type UiLocale = 'en' | 'zh';
+
 export interface AISettings {
   apiBase: string;
   model: string;
@@ -87,6 +90,8 @@ export interface AISettings {
 export interface AppSettings {
   storageMode: StorageMode;
   theme: ThemeId;
+  /** 界面语言；缺省按 en 处理。覆盖 REQ-023-AC-004。 */
+  locale: UiLocale;
   ai: AISettings;
 }
 

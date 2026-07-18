@@ -1,15 +1,33 @@
 import { useEffect, useRef, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
-import type { AppSettings, LibraryData, StorageMode } from '../types';
+import type { AppSettings, LibraryData, StorageMode, ThemeId, UiLocale } from '../types';
 import { themes, applyTheme } from '../themes';
 import { Icon, Button, AIBadge } from './ui';
 import { exportLibrary, importLibrary } from '../storage';
+import { getSettingsSections } from '../i18n';
+import { useI18n } from '../i18n/use-i18n';
+import type { SettingsSectionKey } from '../config/i18n';
+import { resolveThemeLabel } from '../features/settings';
 
-type Tab = 'general' | 'storage' | 'ai' | 'appearance';
+type Tab = SettingsSectionKey;
 
-function Modal({ open, onClose, children, width = 'max-w-[640px]', 'aria-label': ariaLabel = 'Settings' }: { open: boolean; onClose: () => void; children: React.ReactNode; width?: string; 'aria-label'?: string }) {
+function Modal({
+  open,
+  onClose,
+  children,
+  width = 'max-w-[640px]',
+  'aria-label': ariaLabel = 'Settings',
+}: {
+  open: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+  width?: string;
+  'aria-label'?: string;
+}) {
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
     if (open) window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
@@ -30,7 +48,17 @@ function Modal({ open, onClose, children, width = 'max-w-[640px]', 'aria-label':
   );
 }
 
-function Row({ icon, label, children, hint }: { icon: string; label: string; children: React.ReactNode; hint?: string }) {
+function Row({
+  icon,
+  label,
+  children,
+  hint,
+}: {
+  icon: string;
+  label: string;
+  children: React.ReactNode;
+  hint?: string;
+}) {
   return (
     <div className="flex items-center justify-between gap-4 py-3">
       <div className="flex items-center gap-3 min-w-0">
@@ -47,15 +75,36 @@ function Row({ icon, label, children, hint }: { icon: string; label: string; chi
   );
 }
 
-function StorageRadio({ mode, current, onSelect, label, icon, hint }: { mode: StorageMode; current: StorageMode; onSelect: (m: StorageMode) => void; label: string; icon: string; hint: string }) {
+function StorageRadio({
+  mode,
+  current,
+  onSelect,
+  label,
+  icon,
+  hint,
+}: {
+  mode: StorageMode;
+  current: StorageMode;
+  onSelect: (m: StorageMode) => void;
+  label: string;
+  icon: string;
+  hint: string;
+}) {
   const active = mode === current;
   return (
     <button
+      type="button"
       onClick={() => onSelect(mode)}
-      className={`flex-1 rounded-mac-lg p-4 text-left transition hairline ${active ? 'bg-accent-500/15 ring-1 ring-accent-400/40' : 'bg-ink-800/50 hover:bg-ink-700/60'}`}
+      className={`flex-1 rounded-mac-lg p-4 text-left transition hairline ${
+        active ? 'bg-accent-500/15 ring-1 ring-accent-400/40' : 'bg-ink-800/50 hover:bg-ink-700/60'
+      }`}
     >
       <div className="flex items-center gap-2.5 mb-2">
-        <span className={`w-8 h-8 rounded-lg flex items-center justify-center ${active ? 'bg-accent-500/20' : 'bg-ink-700/60'}`}>
+        <span
+          className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+            active ? 'bg-accent-500/20' : 'bg-ink-700/60'
+          }`}
+        >
           <Icon name={icon} size={15} className={active ? 'text-accent-300' : 'text-ink-300'} />
         </span>
         <span className="text-[13px] font-semibold text-ink-100">{label}</span>
@@ -66,6 +115,18 @@ function StorageRadio({ mode, current, onSelect, label, icon, hint }: { mode: St
   );
 }
 
+const TAB_ICONS: Record<Tab, string> = {
+  general: 'User',
+  storage: 'Database',
+  ai: 'Sparkles',
+  appearance: 'Palette',
+  language: 'Languages',
+};
+
+/**
+ * Settings 对话框：General / Storage / AI / Appearance / Language。
+ * 覆盖 REQ-023-AC-001~005。
+ */
 export function SettingsDialog({
   open,
   settings,
@@ -82,7 +143,7 @@ export function SettingsDialog({
   user: User | null;
   library: LibraryData;
   onClose: () => void;
-  onSave: (s: AppSettings) => void;
+  onSave: (s: AppSettings) => void | Promise<void>;
   onImport: (lib: LibraryData) => void;
   onSignOut: () => void;
   onRestoreSampleData?: () => void;
@@ -91,48 +152,64 @@ export function SettingsDialog({
   const [draft, setDraft] = useState<AppSettings>(settings);
   const [importMsg, setImportMsg] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const i18n = useI18n(draft.locale ?? 'en');
 
-  useEffect(() => { if (open) { setDraft(settings); setImportMsg(null); } }, [open, settings]);
+  useEffect(() => {
+    if (open) {
+      setDraft(settings);
+      setImportMsg(null);
+    }
+  }, [open, settings]);
 
   const update = (patch: Partial<AppSettings>) => setDraft((d) => ({ ...d, ...patch }));
-  const updateAI = (patch: Partial<AppSettings['ai']>) => setDraft((d) => ({ ...d, ai: { ...d.ai, ...patch } }));
+  const updateAI = (patch: Partial<AppSettings['ai']>) =>
+    setDraft((d) => ({ ...d, ai: { ...d.ai, ...patch } }));
 
   const handleImport = async (file: File) => {
     try {
       const lib = await importLibrary(file);
       onImport(lib);
-      setImportMsg(`已导入 ${lib.bookmarks.length} 个收藏`);
+      setImportMsg(`Imported ${lib.bookmarks.length} bookmarks`);
     } catch (e) {
-      setImportMsg(`导入失败：${(e as Error).message}`);
+      setImportMsg(`Import failed: ${(e as Error).message}`);
     }
   };
 
-  const tabs: { id: Tab; icon: string; label: string }[] = [
-    { id: 'general', icon: 'User', label: '通用' },
-    { id: 'storage', icon: 'Database', label: '存储' },
-    { id: 'ai', icon: 'Sparkles', label: 'AI' },
-    { id: 'appearance', icon: 'Palette', label: '外观' },
-  ];
+  const sections = getSettingsSections(i18n).map((s) => ({
+    ...s,
+    icon: TAB_ICONS[s.id],
+  }));
+
+  const themeDescKey = (id: ThemeId) => `theme.${id}.desc` as const;
 
   return (
-    <Modal open={open} onClose={onClose}>
-      {/* Header */}
+    <Modal open={open} onClose={onClose} aria-label={i18n.t('settings.title')}>
       <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5 shrink-0">
         <Icon name="Settings" size={18} className="text-ink-200" />
-        <span className="text-[15px] font-semibold text-ink-100">设置</span>
-        <button onClick={onClose} className="ml-auto w-8 h-8 rounded-lg hover:bg-ink-700/60 text-ink-400 hover:text-ink-100 flex items-center justify-center transition">
+        <span className="text-[15px] font-semibold text-ink-100">{i18n.t('settings.title')}</span>
+        <button
+          type="button"
+          onClick={onClose}
+          className="ml-auto w-8 h-8 rounded-lg hover:bg-ink-700/60 text-ink-400 hover:text-ink-100 flex items-center justify-center transition"
+        >
           <Icon name="X" size={16} />
         </button>
       </div>
 
       <div className="flex flex-1 min-h-0">
-        {/* Tab sidebar */}
-        <div className="w-44 shrink-0 border-r border-white/5 p-2 space-y-0.5">
-          {tabs.map((t) => (
+        <div className="w-44 shrink-0 border-r border-white/5 p-2 space-y-0.5" role="tablist" aria-label="Settings sections">
+          {sections.map((t) => (
             <button
               key={t.id}
+              type="button"
+              role="tab"
+              aria-selected={tab === t.id}
               onClick={() => setTab(t.id)}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition ${tab === t.id ? 'bg-accent-500/20 text-ink-100' : 'text-ink-300 hover:bg-ink-700/50 hover:text-ink-100'}`}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition ${
+                tab === t.id
+                  ? 'bg-accent-500/20 text-ink-100'
+                  : 'text-ink-300 hover:bg-ink-700/50 hover:text-ink-100'
+              }`}
             >
               <Icon name={t.icon} size={14} />
               {t.label}
@@ -140,30 +217,65 @@ export function SettingsDialog({
           ))}
         </div>
 
-        {/* Tab content */}
         <div className="flex-1 overflow-y-auto scroll-thin p-5">
           {tab === 'general' && (
             <div className="space-y-1">
-              <div className="text-[11px] uppercase tracking-wider text-ink-500 font-semibold mb-2">账户</div>
-              <Row icon="Mail" label={user?.email ?? '未登录'} hint={user ? '已登录，可使用云同步' : '本地模式，数据保存在浏览器'}>
+              <div className="text-[11px] uppercase tracking-wider text-ink-500 font-semibold mb-2">
+                {i18n.t('settings.general.account')}
+              </div>
+              <Row
+                icon="Mail"
+                label={user?.email ?? 'Signed out'}
+                hint={user ? 'Signed in — cloud sync available' : 'Local mode — data stays on this device'}
+              >
                 {user ? (
-                  <Button size="sm" variant="danger" icon="LogOut" onClick={onSignOut}>退出登录</Button>
+                  <Button size="sm" variant="danger" icon="LogOut" onClick={onSignOut}>
+                    Sign out
+                  </Button>
                 ) : (
-                  <Button size="sm" variant="subtle" icon="LogOut" onClick={onSignOut}>Back to login</Button>
+                  <Button size="sm" variant="subtle" icon="LogOut" onClick={onSignOut}>
+                    Back to login
+                  </Button>
                 )}
               </Row>
               <div className="h-px bg-white/5 my-2" />
-              <div className="text-[11px] uppercase tracking-wider text-ink-500 font-semibold mb-2">数据</div>
-              <Row icon="Download" label="导出数据" hint="将全部收藏导出为 JSON 文件">
-                <Button size="sm" variant="subtle" icon="Download" onClick={() => exportLibrary(library)}>导出</Button>
+              <div className="text-[11px] uppercase tracking-wider text-ink-500 font-semibold mb-2">
+                {i18n.t('settings.general.data')}
+              </div>
+              <Row icon="Download" label={i18n.t('settings.general.export')} hint="Export all bookmarks as JSON">
+                <Button size="sm" variant="subtle" icon="Download" onClick={() => exportLibrary(library)}>
+                  Export
+                </Button>
               </Row>
-              <Row icon="Upload" label="导入数据" hint="从 JSON 文件导入收藏（将覆盖当前数据）">
-                <input ref={fileRef} type="file" accept="application/json" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImport(f); e.target.value = ''; }} />
-                <Button size="sm" variant="subtle" icon="Upload" onClick={() => fileRef.current?.click()}>导入</Button>
+              <Row
+                icon="Upload"
+                label={i18n.t('settings.general.import')}
+                hint="Import from JSON (overwrites current library)"
+              >
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="application/json"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) handleImport(f);
+                    e.target.value = '';
+                  }}
+                />
+                <Button size="sm" variant="subtle" icon="Upload" onClick={() => fileRef.current?.click()}>
+                  Import
+                </Button>
               </Row>
               {onRestoreSampleData && (
-                <Row icon="RefreshCw" label="Restore sample data" hint="Replace the current library with built-in sample bookmarks after confirmation">
-                  <Button size="sm" variant="danger" icon="RefreshCw" onClick={onRestoreSampleData}>Restore sample data</Button>
+                <Row
+                  icon="RefreshCw"
+                  label="Restore sample data"
+                  hint="Replace the current library with built-in sample bookmarks after confirmation"
+                >
+                  <Button size="sm" variant="danger" icon="RefreshCw" onClick={onRestoreSampleData}>
+                    Restore sample data
+                  </Button>
                 </Row>
               )}
               {importMsg && (
@@ -177,38 +289,47 @@ export function SettingsDialog({
           {tab === 'storage' && (
             <div className="space-y-4">
               <div>
-                <div className="text-[11px] uppercase tracking-wider text-ink-500 font-semibold mb-2">存储模式</div>
+                <div className="text-[11px] uppercase tracking-wider text-ink-500 font-semibold mb-2">
+                  {i18n.t('settings.storage.mode')}
+                </div>
                 <div className="flex gap-3">
                   <StorageRadio
                     mode="local"
                     current={draft.storageMode}
                     onSelect={(m) => update({ storageMode: m })}
-                    label="本地存储"
+                    label={i18n.t('settings.storage.local')}
                     icon="HardDrive"
-                    hint="数据保存在浏览器 localStorage，不联网，刷新不丢失，但换设备不同步。"
+                    hint="Data stays on this device. No sync across machines."
                   />
                   <StorageRadio
                     mode="cloud"
                     current={draft.storageMode}
                     onSelect={(m) => update({ storageMode: m })}
-                    label="云存储"
+                    label={i18n.t('settings.storage.cloud')}
                     icon="Cloud"
-                    hint={user ? '数据同步到你的账户，多设备共享。需保持登录。' : '需要先登录才能使用云存储。'}
+                    hint={user ? 'Sync across devices while signed in.' : 'Sign in required to use cloud storage.'}
                   />
                 </div>
                 {!user && draft.storageMode === 'cloud' && (
                   <div className="mt-3 rounded-lg bg-amber-500/10 border border-amber-400/30 px-3 py-2 text-[12px] text-amber-400 flex items-center gap-2">
-                    <Icon name="AlertCircle" size={13} /> 请先登录账户后再切换到云存储。
+                    <Icon name="AlertCircle" size={13} /> Sign in before switching to cloud storage.
                   </div>
                 )}
               </div>
               <div className="rounded-mac-lg bg-ink-800/50 hairline p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[12px] font-medium text-ink-100">当前库容量</span>
-                  <span className="text-[11px] text-ink-400 tabular-nums">{library.bookmarks.length} 个收藏</span>
+                  <span className="text-[12px] font-medium text-ink-100">
+                    {i18n.t('settings.storage.capacity')}
+                  </span>
+                  <span className="text-[11px] text-ink-400 tabular-nums">
+                    {i18n.t('settings.storage.bookmarks', { count: library.bookmarks.length })}
+                  </span>
                 </div>
                 <div className="h-1.5 rounded-full bg-ink-700/60 overflow-hidden">
-                  <div className="h-full rounded-full bg-gradient-to-r from-accent-500 to-mint-500" style={{ width: `${Math.min(library.bookmarks.length / 2, 100)}%` }} />
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-accent-500 to-mint-500"
+                    style={{ width: `${Math.min(library.bookmarks.length / 2, 100)}%` }}
+                  />
                 </div>
               </div>
             </div>
@@ -217,11 +338,13 @@ export function SettingsDialog({
           {tab === 'ai' && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 p-3 rounded-lg bg-violet2-500/10 border border-violet2-400/20">
-                <AIBadge label="AI 配置" />
-                <span className="text-[11px] text-ink-300">自定义 AI 服务的接口地址、模型与密钥，用于摘要、标签建议与语义搜索。</span>
+                <AIBadge label="AI" />
+                <span className="text-[11px] text-ink-300">
+                  Configure API base, model, and key for summaries, tags, and semantic search.
+                </span>
               </div>
               <div>
-                <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">API 地址</label>
+                <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">API Base</label>
                 <input
                   value={draft.ai.apiBase}
                   onChange={(e) => updateAI({ apiBase: e.target.value })}
@@ -230,7 +353,7 @@ export function SettingsDialog({
                 />
               </div>
               <div>
-                <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">模型名称</label>
+                <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Model</label>
                 <input
                   value={draft.ai.model}
                   onChange={(e) => updateAI({ model: e.target.value })}
@@ -247,7 +370,9 @@ export function SettingsDialog({
                   placeholder="sk-…"
                   className="w-full rounded-lg bg-ink-800/60 hairline text-[13px] text-ink-100 placeholder:text-ink-500 px-3 py-2.5 outline-none focus-ring font-mono"
                 />
-                <p className="text-[10px] text-ink-500 mt-1.5">密钥仅保存在本地，不会上传到服务器。留空则使用内置模拟 AI。</p>
+                <p className="text-[10px] text-ink-500 mt-1.5">
+                  The key stays on this device and is never uploaded. Leave empty to disable AI.
+                </p>
               </div>
             </div>
           )}
@@ -255,19 +380,30 @@ export function SettingsDialog({
           {tab === 'appearance' && (
             <div className="space-y-4">
               <div>
-                <div className="text-[11px] uppercase tracking-wider text-ink-500 font-semibold mb-2">主题皮肤</div>
+                <div className="text-[11px] uppercase tracking-wider text-ink-500 font-semibold mb-2">
+                  {i18n.t('settings.theme.label')}
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   {themes.map((t) => {
                     const active = draft.theme === t.id;
+                    const locale = (draft.locale ?? 'en') as UiLocale;
                     return (
                       <button
+                        type="button"
                         key={t.id}
-                        onClick={() => { update({ theme: t.id }); applyTheme(t.id); }}
-                        className={`rounded-mac-lg p-3 text-left transition hairline ${active ? 'ring-1 ring-accent-400/40 bg-ink-700/40' : 'bg-ink-800/50 hover:bg-ink-700/60'}`}
+                        onClick={() => {
+                          update({ theme: t.id });
+                          applyTheme(t.id);
+                        }}
+                        className={`rounded-mac-lg p-3 text-left transition hairline ${
+                          active ? 'ring-1 ring-accent-400/40 bg-ink-700/40' : 'bg-ink-800/50 hover:bg-ink-700/60'
+                        }`}
                       >
                         <div className="flex items-center gap-2 mb-2.5">
                           <span className="text-base">{t.emoji}</span>
-                          <span className="text-[13px] font-semibold text-ink-100">{t.name}</span>
+                          <span className="text-[13px] font-semibold text-ink-100">
+                            {resolveThemeLabel(t.id, locale)}
+                          </span>
                           {active && <Icon name="Check" size={13} className="text-accent-300 ml-auto" />}
                         </div>
                         <div className="flex gap-1.5 mb-2">
@@ -275,7 +411,44 @@ export function SettingsDialog({
                             <span key={i} className="w-5 h-5 rounded-md hairline" style={{ background: c }} />
                           ))}
                         </div>
-                        <p className="text-[10px] text-ink-400 leading-relaxed">{t.description}</p>
+                        <p className="text-[10px] text-ink-400 leading-relaxed">
+                          {i18n.t(themeDescKey(t.id))}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab === 'language' && (
+            <div className="space-y-4">
+              <div>
+                <div className="text-[11px] uppercase tracking-wider text-ink-500 font-semibold mb-2">
+                  {i18n.t('settings.language.label')}
+                </div>
+                <p className="text-[11px] text-ink-400 mb-3">{i18n.t('settings.language.hint')}</p>
+                <div className="flex gap-3">
+                  {(['en', 'zh'] as const).map((locale) => {
+                    const active = (draft.locale ?? 'en') === locale;
+                    return (
+                      <button
+                        type="button"
+                        key={locale}
+                        onClick={() => update({ locale })}
+                        className={`flex-1 rounded-mac-lg p-4 text-left transition hairline ${
+                          active
+                            ? 'bg-accent-500/15 ring-1 ring-accent-400/40'
+                            : 'bg-ink-800/50 hover:bg-ink-700/60'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-[13px] font-semibold text-ink-100">
+                            {i18n.t(`settings.language.${locale}`)}
+                          </span>
+                          {active && <Icon name="Check" size={14} className="text-accent-300 ml-auto" />}
+                        </div>
                       </button>
                     );
                   })}
@@ -286,10 +459,23 @@ export function SettingsDialog({
         </div>
       </div>
 
-      {/* Footer */}
       <div className="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-white/5 shrink-0">
-        <Button variant="ghost" onClick={onClose}>取消</Button>
-        <Button variant="primary" icon="Check" onClick={() => { onSave(draft); onClose(); }}>保存设置</Button>
+        <Button variant="ghost" onClick={onClose}>
+          {i18n.t('settings.cancel')}
+        </Button>
+        <Button
+          variant="primary"
+          icon="Check"
+          onClick={() => {
+            void (async () => {
+              // 必须等待持久化完成，避免 E2E reload 早于写入。
+              await onSave(draft);
+              onClose();
+            })();
+          }}
+        >
+          {i18n.t('settings.save')}
+        </Button>
       </div>
     </Modal>
   );

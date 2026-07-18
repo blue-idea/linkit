@@ -1,7 +1,8 @@
-import type { ThemeId } from './types';
+import type { ThemeId, UiLocale } from './types';
 
 export interface ThemeDef {
   id: ThemeId;
+  /** 稳定英文名；展示层通过 i18n 解析本地化标签。 */
   name: string;
   emoji: string;
   description: string;
@@ -11,30 +12,30 @@ export interface ThemeDef {
 export const themes: ThemeDef[] = [
   {
     id: 'midnight',
-    name: '午夜',
+    name: 'Midnight',
     emoji: '🌙',
-    description: '深蓝夜空，默认主题',
+    description: 'Deep navy night, the default look',
     swatches: ['#0c1018', '#1a64e0', '#19c083', '#9b8cff'],
   },
   {
     id: 'ocean',
-    name: '深海',
+    name: 'Ocean',
     emoji: '🌊',
-    description: '青蓝海洋色调',
+    description: 'Cyan ocean tones',
     swatches: ['#06141f', '#0ea5b7', '#22d3ee', '#3dd9a0'],
   },
   {
     id: 'graphite',
-    name: '石墨',
+    name: 'Graphite',
     emoji: '⬛',
-    description: '中性灰黑，专注低对比',
+    description: 'Neutral graphite for low contrast focus',
     swatches: ['#111113', '#3f3f46', '#71717a', '#e4e4e7'],
   },
   {
     id: 'sunset',
-    name: '暮霞',
+    name: 'Sunset',
     emoji: '🌅',
-    description: '暖橙玫红，柔和明亮',
+    description: 'Warm orange and rose',
     swatches: ['#1a1014', '#f97316', '#fb7185', '#fbbf24'],
   },
 ];
@@ -42,6 +43,7 @@ export const themes: ThemeDef[] = [
 export const defaultSettings = {
   storageMode: 'local' as const,
   theme: 'midnight' as ThemeId,
+  locale: 'en' as UiLocale,
   ai: { apiBase: '', model: '', apiKey: '' },
 };
 

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 async function enterLocalMode(page: import('@playwright/test').Page) {
-  await page.getByRole('button', { name: '使用本地模式（无需登录）' }).click();
+  await page.getByRole('button', { name: 'Continue in local mode' }).click();
   await expect(page.getByText('Lattice', { exact: true })).toBeVisible();
 }
 
@@ -10,13 +10,13 @@ test.describe('本地模式启动恢复', () => {
     await page.goto('/');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
-    await expect(page.getByRole('button', { name: '使用本地模式（无需登录）' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Continue in local mode' })).toBeVisible();
   });
 
   // REQ-001-AC-005：启动过程中不得未点击就进入主界面。
   test('启动恢复时 shall 先显示 Loading 再进入登录门', async ({ page }) => {
-    await expect(page.getByRole('button', { name: '使用本地模式（无需登录）' })).toBeVisible();
-    await expect(page.getByRole('button', { name: '切换侧边栏' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Continue in local mode' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Toggle sidebar' })).toHaveCount(0);
   });
 
   // REQ-002-AC-001 / REQ-002-AC-002：本地模式持久化，重启后恢复资料库。
@@ -134,9 +134,9 @@ test.describe('本地模式启动恢复', () => {
     await page.reload();
     await expect(page.getByText('Kept After Sign Out').first()).toBeVisible();
 
-    await page.getByTitle('设置').click();
+    await page.getByTitle('Settings').click();
     await page.getByRole('button', { name: 'Back to login' }).click();
-    await expect(page.getByRole('button', { name: '使用本地模式（无需登录）' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Continue in local mode' })).toBeVisible();
     await enterLocalMode(page);
     await expect(page.getByText('Kept After Sign Out').first()).toBeVisible();
   });
@@ -144,7 +144,7 @@ test.describe('本地模式启动恢复', () => {
   // REQ-002-AC-004：恢复种子前显示二次确认。
   test('恢复种子示例时 shall 先显示确认对话框', async ({ page }) => {
     await enterLocalMode(page);
-    await page.getByTitle('设置').click();
+    await page.getByTitle('Settings').click();
     await page.getByRole('button', { name: 'Restore sample data' }).click();
     await expect(page.getByRole('dialog', { name: 'Replace current library?' })).toBeVisible();
     await page.getByRole('button', { name: 'Cancel' }).click();

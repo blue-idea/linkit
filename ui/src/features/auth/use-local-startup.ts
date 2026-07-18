@@ -6,10 +6,16 @@ import { loadSettings as loadLegacySettings } from '../../storage';
 import { applyTheme } from '../../themes';
 import { resolveStartupView, type StartupView } from './startup-gate';
 
-function toUiSettings(domainStorageMode: 'local' | 'cloud', domainTheme: string, legacy: UiSettings): UiSettings {
+function toUiSettings(
+  domainStorageMode: 'local' | 'cloud',
+  domainTheme: string,
+  domainLocale: string,
+  legacy: UiSettings
+): UiSettings {
   return {
     storageMode: domainStorageMode,
     theme: (domainTheme as ThemeId) || legacy.theme,
+    locale: domainLocale === 'zh' || domainLocale === 'en' ? domainLocale : legacy.locale ?? 'en',
     ai: {
       apiBase: legacy.ai.apiBase,
       model: legacy.ai.model,
@@ -26,6 +32,7 @@ export async function persistUiSettings(settings: UiSettings): Promise<void> {
     ...getDefaultAppSettings(),
     storageMode: settings.storageMode,
     theme: settings.theme,
+    locale: settings.locale ?? 'en',
     ai: {
       apiBase: settings.ai.apiBase || '',
       model: settings.ai.model || '',
@@ -54,9 +61,15 @@ export function useLocalStartup(authLoading: boolean) {
         });
         if (cancelled) return;
 
-        const nextSettings = toUiSettings(result.settings.storageMode, result.settings.theme, legacy);
+        const nextSettings = toUiSettings(
+          result.settings.storageMode,
+          result.settings.theme,
+          result.settings.locale,
+          legacy
+        );
         setSettings(nextSettings);
         applyTheme(nextSettings.theme);
+        document.documentElement.lang = nextSettings.locale ?? 'en';
         setRecoveryPending(result.phase === 'recovery_required');
         if (result.shouldEnterLocalMode && result.phase === 'ready') {
           setSessionMode('local');

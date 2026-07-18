@@ -9,7 +9,7 @@ const evidenceDirectory = resolve(
 );
 
 async function enterLocalMode(page: import('@playwright/test').Page) {
-  await page.getByRole('button', { name: '使用本地模式（无需登录）' }).click();
+  await page.getByRole('button', { name: 'Continue in local mode' }).click();
   await expect(page.getByText('Lattice', { exact: true })).toBeVisible();
 }
 
@@ -35,7 +35,7 @@ test.describe('Spotlight 关键词与 URL', () => {
     await page.evaluate(() => localStorage.clear());
     await page.reload();
     await page.setViewportSize({ width: 1280, height: 800 });
-    await expect(page.getByRole('button', { name: '使用本地模式（无需登录）' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Continue in local mode' })).toBeVisible();
     await enterLocalMode(page);
   });
 
