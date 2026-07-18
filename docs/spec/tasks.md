@@ -631,13 +631,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-029 · 实现存储切换、冲突对话框与草稿恢复**
+- [x] **TASK-029 · 实现存储切换、冲突对话框与草稿恢复**
 
-  > 依赖：TASK-007、TASK-028 · 预计：3–4 小时
+  > 依赖：TASK-007、TASK-028 · 预计：3–4 小时 · 状态：done · 2026-07-18
 
-  - [ ] 实现 Local/Cloud 摘要与 Use Target、Overwrite Target、Cancel。
-  - [ ] 实现 revision 冲突的 Use Cloud Copy、Overwrite Cloud、Cancel。
-  - [ ] 实现 dirty cloud draft 启动恢复和失败保持原模式。
+  - [x] 实现 Local/Cloud 摘要与 Use Target、Overwrite Target、Cancel。
+  - [x] 实现 revision 冲突的 Use Cloud Copy、Overwrite Cloud、Cancel。
+  - [x] 实现 dirty cloud draft 启动恢复和失败保持原模式。
 
   **验证方式：**
   ```powershell
@@ -1020,7 +1020,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-026 | Supabase 本地与 RLS | API/Security | done | REQ-003、025 |
 | TASK-027 | Supabase Auth | API/E2E | done | REQ-001、002 |
 | TASK-028 | CloudRepository | Unit/API | done | REQ-003、027 |
-| TASK-029 | 存储切换与冲突 | Unit/E2E | 待开始 | REQ-003、004 |
+| TASK-029 | 存储切换与冲突 | Unit/E2E | done | REQ-003、004 |
 | TASK-030 | 远程 Supabase 验收 | API/Security/E2E | BLOCKED | REQ-001、003、004、025 |
 | TASK-031 | SecretStore 与 AI 授权 | Unit/Security/E2E | 待开始 | REQ-019、025 |
 | TASK-032 | AI 客户端与降级 | API/Security | 待开始 | REQ-019、027 |

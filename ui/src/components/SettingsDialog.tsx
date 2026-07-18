@@ -16,7 +16,11 @@ import {
   type ImportSummary,
   ImportOverwriteDialog,
 } from '../features/import-export';
+import {
+  StorageSwitchDialog,
+} from '../features/storage';
 import type { LibraryEnvelope } from '../domain/library';
+import type { StorageSummary } from '../repositories';
 
 type Tab = SettingsSectionKey;
 
@@ -141,21 +145,30 @@ export function SettingsDialog({
   settings,
   user,
   library,
+  cloudSummary = null,
   onClose,
   onSave,
   onImport,
   onSignOut,
   onRestoreSampleData,
+  onStorageSwitchConfirm,
 }: {
   open: boolean;
   settings: AppSettings;
   user: { id: string; email: string | null } | null;
   library: LibraryData;
+  /** 目标端（云）摘要；未知时按 empty 展示。 */
+  cloudSummary?: StorageSummary | null;
   onClose: () => void;
   onSave: (s: AppSettings) => void | Promise<void>;
   onImport: (lib: LibraryData) => void;
   onSignOut: () => void;
   onRestoreSampleData?: () => void;
+  /** 用户确认 Use Target / Overwrite Target 时回调；Cancel 不调用。 */
+  onStorageSwitchConfirm?: (
+    choice: 'use_target' | 'overwrite_target',
+    targetMode: StorageMode
+  ) => void | Promise<void>;
 }) {
   const [tab, setTab] = useState<Tab>('general');
   const [draft, setDraft] = useState<AppSettings>(settings);
@@ -163,6 +176,7 @@ export function SettingsDialog({
   const [importError, setImportError] = useState<string | null>(null);
   const [pendingEnvelope, setPendingEnvelope] = useState<LibraryEnvelope | null>(null);
   const [pendingSummary, setPendingSummary] = useState<ImportSummary | null>(null);
+  const [pendingSwitchMode, setPendingSwitchMode] = useState<StorageMode | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const i18n = useI18n(draft.locale ?? 'en');
 
@@ -173,12 +187,38 @@ export function SettingsDialog({
       setImportError(null);
       setPendingEnvelope(null);
       setPendingSummary(null);
+      setPendingSwitchMode(null);
     }
   }, [open, settings]);
 
   const update = (patch: Partial<AppSettings>) => setDraft((d) => ({ ...d, ...patch }));
   const updateAI = (patch: Partial<AppSettings['ai']>) =>
     setDraft((d) => ({ ...d, ai: { ...d.ai, ...patch } }));
+
+  const requestStorageMode = (mode: StorageMode) => {
+    // 与已持久化模式相同：直接改草稿；不同则先确认（REQ-004-AC-001）。
+    if (mode === settings.storageMode) {
+      update({ storageMode: mode });
+      return;
+    }
+    setPendingSwitchMode(mode);
+  };
+
+  const localSummary: StorageSummary = {
+    exists: library.bookmarks.length > 0,
+    revision: null,
+    updatedAt: null,
+    bookmarkCount: library.bookmarks.length,
+    byteSize: 0,
+  };
+  const switchSourceMode = settings.storageMode;
+  const switchTargetMode = pendingSwitchMode ?? 'cloud';
+  const switchSourceSummary = switchSourceMode === 'local' ? localSummary : (cloudSummary ?? {
+    exists: false, revision: null, updatedAt: null, bookmarkCount: null, byteSize: 0,
+  });
+  const switchTargetSummary = switchTargetMode === 'cloud' ? (cloudSummary ?? {
+    exists: false, revision: null, updatedAt: null, bookmarkCount: null, byteSize: 0,
+  }) : localSummary;
 
   const handleExport = () => {
     const doc = buildExportEnvelopeFromUi(library, { now: new Date().toISOString() });
@@ -347,7 +387,7 @@ export function SettingsDialog({
                   <StorageRadio
                     mode="local"
                     current={draft.storageMode}
-                    onSelect={(m) => update({ storageMode: m })}
+                    onSelect={requestStorageMode}
                     label={i18n.t('settings.storage.local')}
                     icon="HardDrive"
                     hint="Data stays on this device. No sync across machines."
@@ -355,7 +395,7 @@ export function SettingsDialog({
                   <StorageRadio
                     mode="cloud"
                     current={draft.storageMode}
-                    onSelect={(m) => update({ storageMode: m })}
+                    onSelect={requestStorageMode}
                     label={i18n.t('settings.storage.cloud')}
                     icon="Cloud"
                     hint={user ? 'Sync across devices while signed in.' : 'Sign in required to use cloud storage.'}
@@ -537,6 +577,28 @@ export function SettingsDialog({
           setPendingSummary(null);
         }}
         onConfirm={handleConfirmImport}
+      />
+      <StorageSwitchDialog
+        open={pendingSwitchMode !== null}
+        sourceMode={switchSourceMode}
+        targetMode={switchTargetMode}
+        sourceSummary={switchSourceSummary}
+        targetSummary={switchTargetSummary}
+        onCancel={() => setPendingSwitchMode(null)}
+        onUseTarget={() => {
+          if (!pendingSwitchMode) return;
+          const target = pendingSwitchMode;
+          update({ storageMode: target });
+          setPendingSwitchMode(null);
+          void onStorageSwitchConfirm?.('use_target', target);
+        }}
+        onOverwriteTarget={() => {
+          if (!pendingSwitchMode) return;
+          const target = pendingSwitchMode;
+          update({ storageMode: target });
+          setPendingSwitchMode(null);
+          void onStorageSwitchConfirm?.('overwrite_target', target);
+        }}
       />
     </Modal>
   );
