@@ -264,6 +264,7 @@ function BookmarkCard({
   return (
     <div
       draggable
+      data-bookmark-id={b.id}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       onClick={onClick}
@@ -336,6 +337,7 @@ function BookmarkRow({
   return (
     <div
       draggable
+      data-bookmark-id={b.id}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       onClick={onClick}
@@ -394,6 +396,7 @@ function MasonryTile({
   return (
     <div
       draggable
+      data-bookmark-id={b.id}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       onClick={onClick}

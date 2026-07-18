@@ -31,11 +31,16 @@ import {
 import {
   applyCategoryDeleteDecision,
   applyCategoryLibraryResult,
+  assignBookmarkToCategory,
   CategoryFormDialog,
   DeleteCategoryDialog,
+  InvalidCategoryMoveError,
+  MoveCategoryDialog,
+  moveCategoryUnder,
   runCreateCategory,
   runDeleteCategory,
   shouldConfirmCategoryDelete,
+  toCategoryLibrary,
 } from './features/categories';
 import { createBrowserStorageAdapters } from './services/storage';
 import { normalizeBookmarkUrl } from './domain/commands';
@@ -165,6 +170,7 @@ export default function App() {
   const [categoryFormOpen, setCategoryFormOpen] = useState(false);
   const [categoryDeleteId, setCategoryDeleteId] = useState<string | null>(null);
   const [categoryRecursiveConfirm, setCategoryRecursiveConfirm] = useState(false);
+  const [categoryMoveId, setCategoryMoveId] = useState<string | null>(null);
   // 防止“未水合的种子数据”在加载本机库前被自动保存覆盖。
   const [libraryHydrated, setLibraryHydrated] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -316,10 +322,38 @@ export default function App() {
   }, []);
 
   const moveToCategory = useCallback((bookmarkId: string, categoryId: string) => {
-    setBookmarks((prev) => prev.map((b) => (b.id === bookmarkId ? { ...b, categoryId } : b)));
-    const cat = cats.find((c) => c.id === categoryId);
-    flashToast(`已移动到「${cat?.name ?? '分类'}」`);
-  }, [cats, flashToast]);
+    // REQ-011-AC-003：书签拖入分类后更新 categoryId 并显示英文提示。
+    try {
+      const result = assignBookmarkToCategory(
+        toCategoryLibrary({ bookmarks, categories: cats, collections: cols, tags: tagList }),
+        { bookmarkId, categoryId }
+      );
+      const applied = applyCategoryLibraryResult(result.library, bookmarks, cats);
+      setBookmarks(applied.bookmarks);
+      flashToast(result.message);
+    } catch {
+      flashToast('Failed to move bookmark');
+    }
+  }, [bookmarks, cats, cols, flashToast, tagList]);
+
+  const handleMoveCategory = useCallback((categoryId: string, newParentId: string | null) => {
+    // REQ-011-AC-001 / REQ-011-AC-002：合法移动更新 parentId；非法抛错并保持原树。
+    try {
+      const next = moveCategoryUnder(
+        toCategoryLibrary({ bookmarks, categories: cats, collections: cols, tags: tagList }),
+        { categoryId, newParentId }
+      );
+      const applied = applyCategoryLibraryResult(next, bookmarks, cats);
+      setCats(applied.categories);
+      flashToast('Category moved');
+    } catch (error) {
+      if (error instanceof InvalidCategoryMoveError) {
+        flashToast(error.message);
+        return;
+      }
+      flashToast('Failed to move category');
+    }
+  }, [bookmarks, cats, cols, flashToast, tagList]);
 
   const addToCollection = useCallback((bookmarkId: string, collectionId: string) => {
     setBookmarks((prev) => prev.map((b) => {
@@ -659,12 +693,14 @@ export default function App() {
                 expanded={state.expandedCategories}
                 onToggleExpand={(id) => setState((s) => ({ ...s, expandedCategories: { ...s.expandedCategories, [id]: !(s.expandedCategories[id] ?? false) } }))}
                 onSelect={(sel: Selection) => setState((s) => ({ ...s, selection: sel, filters: emptyFilters }))}
-                onDropToCategory={moveToCategory}
-                onDropToCollection={addToCollection}
+                onDropToCategory={(categoryId, bookmarkId) => moveToCategory(bookmarkId, categoryId)}
+                onDropToCollection={(collectionId, bookmarkId) => addToCollection(bookmarkId, collectionId)}
                 onOpenInsights={() => setInsightsOpen(true)}
                 onNewBookmark={() => { setNewUrl(''); setNewOpen(true); }}
                 onNewCategory={() => setCategoryFormOpen(true)}
                 onDeleteCategory={requestDeleteCategory}
+                onMoveCategory={(categoryId, newParentId) => handleMoveCategory(categoryId, newParentId)}
+                onRequestMoveCategory={(categoryId) => setCategoryMoveId(categoryId)}
                 insightCount={insights.length}
               />
             </div>
@@ -794,6 +830,17 @@ export default function App() {
           onCancel={() => applyCategoryDelete('cancel')}
           onMoveThenDelete={() => applyCategoryDelete('move-then-delete')}
           onRecursiveDelete={() => applyCategoryDelete('recursive-delete')}
+        />
+      )}
+      {categoryMoveId && (
+        <MoveCategoryDialog
+          categoryId={categoryMoveId}
+          categories={cats}
+          onCancel={() => setCategoryMoveId(null)}
+          onConfirm={(newParentId) => {
+            handleMoveCategory(categoryMoveId, newParentId);
+            setCategoryMoveId(null);
+          }}
         />
       )}
       <InsightsDialog

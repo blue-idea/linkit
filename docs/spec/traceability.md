@@ -40,7 +40,7 @@
 | TASK-012 | 书签状态与访问 | REQ-008-AC-001~004 | done | `ui/src/domain/commands/bookmark-state.ts`、`ui/src/features/bookmarks/visit.ts`、`ui/src/features/bookmarks/external-url.ts`、`ui/src/components/DetailPanel.tsx`、`ui/src/App.tsx` | `ui/src/domain/commands/bookmark-state.test.ts`、`ui/src/features/bookmarks/visit.test.ts`、`ui/tests/e2e/bookmark-state.spec.ts` | `docs/spec/ac/TASK-012-AC.md` | 2026-07-18 |
 | TASK-013 | 排序与筛选 | REQ-008-AC-004；REQ-009-AC-001~004 | done | `ui/src/domain/query/index.ts`、`ui/src/config/query.ts`、`ui/src/App.tsx`、`ui/src/components/ContentArea.tsx` | `ui/src/domain/query/query.test.ts`、`ui/tests/e2e/bookmark-query.spec.ts` | `docs/spec/ac/TASK-013-AC.md` | 2026-07-18 |
 | TASK-014 | 分类 CRUD 与删除 | REQ-010-AC-001~005 | done | `ui/src/domain/categories/index.ts`、`ui/src/features/categories/*`、`ui/src/components/Sidebar.tsx`、`ui/src/App.tsx` | `ui/src/domain/categories/categories.test.ts`、`ui/src/features/categories/delete-confirm.test.ts`、`ui/tests/e2e/category-crud.spec.ts` | `docs/spec/ac/TASK-014-AC.md` | 2026-07-18 |
-| TASK-015 | 分类与书签拖拽 | REQ-011-AC-001~003；REQ-024-AC-006 | 待开始 | — | — | — | — |
+| TASK-015 | 分类与书签拖拽 | REQ-011-AC-001~003；REQ-024-AC-006 | done | `ui/src/features/categories/drag/*`、`ui/src/components/Sidebar.tsx`、`ui/src/App.tsx`、`ui/src/components/ContentArea.tsx` | `ui/src/features/categories/drag/drag.test.ts`、`ui/tests/e2e/category-drag.spec.ts` | `docs/spec/ac/TASK-015-AC.md` | 2026-07-18 |
 | TASK-016 | 主题 CRUD 与成员 | REQ-012-AC-001~004；REQ-026-AC-003 | 待开始 | — | — | — | — |
 | TASK-017 | 手动主题组合 | REQ-013-AC-001~002 | 待开始 | — | — | — | — |
 | TASK-018 | 标签管理 | REQ-014-AC-001~003 | 待开始 | — | — | — | — |

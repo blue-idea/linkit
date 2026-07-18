@@ -2,6 +2,7 @@ import type { Bookmark, Category, Collection, Tag } from '../types';
 import type { Selection } from '../state';
 import { Icon, TagPill, AIBadge } from './ui';
 import { tagColors } from '../colors';
+import { CategoryDndContext, CategoryDndItem } from '../features/categories';
 
 function SectionLabel({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) {
   return (
@@ -60,6 +61,7 @@ function NavRow({
       className={`group flex items-center gap-2 pr-2 rounded-lg mx-1.5 transition-all cursor-pointer no-select ${
         active ? 'bg-accent-500/20 text-ink-100 shadow-[inset_0_0_0_1px_rgba(45,127,249,0.3)]' : 'text-ink-200 hover:bg-ink-700/50'
       } ${dragOver ? 'drop-target' : ''}`}
+      data-category-drop={label}
       style={{ paddingLeft: 12 + depth * 16 }}
     >
       {expandable ? (
@@ -101,6 +103,8 @@ export function Sidebar({
   onNewBookmark,
   onNewCategory,
   onDeleteCategory,
+  onMoveCategory,
+  onRequestMoveCategory,
   insightCount,
 }: {
   categories: Category[];
@@ -117,6 +121,8 @@ export function Sidebar({
   onNewBookmark: () => void;
   onNewCategory: () => void;
   onDeleteCategory: (categoryId: string) => void;
+  onMoveCategory: (categoryId: string, newParentId: string) => void;
+  onRequestMoveCategory: (categoryId: string) => void;
   insightCount: number;
 }) {
   const [dragOverId, setDragOverId] = useStateDrag();
@@ -140,36 +146,70 @@ export function Sidebar({
       const c = cat.color ? tagColors[cat.color] : null;
       return (
         <div key={cat.id}>
-          <NavRow
-            active={active}
-            icon={cat.icon}
-            iconColor={c?.text}
-            label={cat.name}
-            count={countForCat(cat.id)}
-            depth={depth}
-            expandable={kids.length > 0}
-            expanded={isExpanded}
-            onToggleExpand={() => onToggleExpand(cat.id)}
-            onClick={() => onSelect({ kind: 'category', id: cat.id })}
-            onDropBookmark={(bid) => onDropToCategory(cat.id, bid)}
-            dragOver={dragOverId === cat.id}
-            onDragOver={(e) => { e.preventDefault(); setDragOverId(cat.id); }}
-            onDragLeave={() => setDragOverId(null)}
-            trailing={
-              <button
-                type="button"
-                aria-label="Delete category"
-                title="Delete category"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeleteCategory(cat.id);
-                }}
-                className="opacity-70 group-hover:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-coral-400 flex items-center justify-center transition"
+          <CategoryDndItem categoryId={cat.id}>
+            {({ setDropRef, setDragHandleProps, isOver, isDragging, transformStyle }) => (
+              <div
+                ref={setDropRef}
+                style={{ transform: transformStyle, opacity: isDragging ? 0.6 : 1 }}
+                className={isOver ? 'ring-1 ring-accent-400/50 rounded-lg' : undefined}
               >
-                <Icon name="Trash2" size={11} />
-              </button>
-            }
-          />
+                <NavRow
+                  active={active}
+                  icon={cat.icon}
+                  iconColor={c?.text}
+                  label={cat.name}
+                  count={countForCat(cat.id)}
+                  depth={depth}
+                  expandable={kids.length > 0}
+                  expanded={isExpanded}
+                  onToggleExpand={() => onToggleExpand(cat.id)}
+                  onClick={() => onSelect({ kind: 'category', id: cat.id })}
+                  onDropBookmark={(bid) => onDropToCategory(cat.id, bid)}
+                  dragOver={dragOverId === cat.id}
+                  onDragOver={(e) => { e.preventDefault(); setDragOverId(cat.id); }}
+                  onDragLeave={() => setDragOverId(null)}
+                  trailing={
+                    <span className="flex items-center gap-0.5">
+                      <button
+                        type="button"
+                        aria-label="Drag category"
+                        title="Drag category"
+                        className="opacity-70 group-hover:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-accent-300 flex items-center justify-center transition cursor-grab"
+                        {...setDragHandleProps}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Icon name="Pin" size={11} />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Move category"
+                        title="Move category"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRequestMoveCategory(cat.id);
+                        }}
+                        className="opacity-70 group-hover:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-accent-300 flex items-center justify-center transition"
+                      >
+                        <Icon name="Folder" size={11} />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Delete category"
+                        title="Delete category"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteCategory(cat.id);
+                        }}
+                        className="opacity-70 group-hover:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-coral-400 flex items-center justify-center transition"
+                      >
+                        <Icon name="Trash2" size={11} />
+                      </button>
+                    </span>
+                  }
+                />
+              </div>
+            )}
+          </CategoryDndItem>
           {kids.length > 0 && isExpanded && <div className="animate-fade-in">{renderTree(cat.id, depth + 1)}</div>}
         </div>
       );
@@ -260,7 +300,9 @@ export function Sidebar({
         >
           收藏分类
         </SectionLabel>
-        {renderTree(null, 0)}
+        <CategoryDndContext onMoveCategory={onMoveCategory}>
+          {renderTree(null, 0)}
+        </CategoryDndContext>
 
         {/* Collections */}
         <SectionLabel
