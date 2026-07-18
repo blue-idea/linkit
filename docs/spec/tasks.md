@@ -741,13 +741,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-034 · 实现真实语义搜索适配与关键词降级**
+- [x] **TASK-034 · 实现真实语义搜索适配与关键词降级**
 
-  > 依赖：TASK-021、TASK-032 · 预计：3–4 小时
+  > 依赖：TASK-021、TASK-032 · 预计：3–4 小时 · 状态：done · 2026-07-18
 
-  - [ ] 实现本地候选筛选、最小字段发送和 AI 重排。
-  - [ ] 校验返回 ID 属于候选集、score 有效且结果仅来自库内。
-  - [ ] AI 失败或无结果时回退关键词并禁止公网推荐。
+  - [x] 实现本地候选筛选、最小字段发送和 AI 重排。
+  - [x] 校验返回 ID 属于候选集、score 有效且结果仅来自库内。
+  - [x] AI 失败或无结果时回退关键词并禁止公网推荐。
 
   **验证方式：**
   ```powershell
@@ -755,7 +755,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
   pnpm --dir ui exec playwright test -g "语义搜索|关键词降级"
   ```
 
-  **验收证据：** 候选/结果 ID 对比、降级截图和外部 URL 缺失证明。
+  **验收证据：** 候选/结果 ID 对比、降级截图 `TASK-034-keyword-fallback.png` / `TASK-034-semantic-empty.png`。
 
   _需求: REQ-018  
   验收标准：REQ-018-AC-001~003  
@@ -1025,7 +1025,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-031 | SecretStore 与 AI 授权 | Unit/Security/E2E | done | REQ-019、025 |
 | TASK-032 | AI 客户端与降级 | API/Security | done | REQ-019、027 |
 | TASK-033 | AI 分析与重分析 | API/E2E | done | REQ-006、020 |
-| TASK-034 | 语义搜索 | API/E2E | 待开始 | REQ-018 |
+| TASK-034 | 语义搜索 | API/E2E | done | REQ-018 |
 | TASK-035 | AI 主题与去重 | Unit/API/E2E | 待开始 | REQ-013、020 |
 | TASK-036 | 推荐与知识网络 | Unit/E2E | 待开始 | REQ-021 |
 | TASK-037 | 真实 AI 验收 | API/E2E | BLOCKED | REQ-006、013、018~021 |

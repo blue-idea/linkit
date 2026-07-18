@@ -30,4 +30,6 @@ const (
 	AIMaxRetries = 2
 	// AIRetryBaseDelay 为带抖动退避的基础延迟。
 	AIRetryBaseDelay = 50 * time.Millisecond
+	// AIMaxSemanticCandidates 限制送入 AI 重排的本地候选数量。
+	AIMaxSemanticCandidates = 40
 )
