@@ -19,7 +19,7 @@ test.describe('书签 CRUD', () => {
     await page.getByRole('button', { name: '新增', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'New Bookmark' })).toBeVisible();
 
-    await page.getByLabel('Bookmark URL').fill('https://example.test/new-bookmark');
+    await page.getByRole('textbox', { name: 'Bookmark URL' }).fill('https://example.test/new-bookmark');
     await page.getByLabel('Bookmark title hint').fill('Manual Entry Bookmark');
     await page.getByRole('button', { name: 'Analyze' }).click();
 
