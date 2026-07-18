@@ -33,20 +33,25 @@ describe('性能数据生成器', () => {
   });
 
   // REQ-026-AC-001~003、REQ-028-AC-005~007：10,000 条基线必须通过完整 Schema 与引用校验。
-  test('生成器创建 10,000 个唯一书签并保持全部引用有效', async () => {
-    const performanceData = await loadPerformanceDataModule();
-    const generate = performanceData.generatePerformanceLibrary;
+  // CI coverage 插桩会显著拉长生成+校验耗时，单独放宽超时避免临界失败。
+  test(
+    '生成器创建 10,000 个唯一书签并保持全部引用有效',
+    async () => {
+      const performanceData = await loadPerformanceDataModule();
+      const generate = performanceData.generatePerformanceLibrary;
 
-    expect(generate).toBeTypeOf('function');
-    if (!generate) throw new Error('Performance data generator is required');
+      expect(generate).toBeTypeOf('function');
+      if (!generate) throw new Error('Performance data generator is required');
 
-    const library = generate({ bookmarkCount: 10_000, seed: 'task-004-validation' });
-    const bookmarkIds = library.data.bookmarks.map(({ id }) => id);
+      const library = generate({ bookmarkCount: 10_000, seed: 'task-004-validation' });
+      const bookmarkIds = library.data.bookmarks.map(({ id }) => id);
 
-    expect(library.data.bookmarks).toHaveLength(10_000);
-    expect(new Set(bookmarkIds).size).toBe(10_000);
-    expect(validateLibraryEnvelope(library)).toEqual({ success: true, data: library });
-  });
+      expect(library.data.bookmarks).toHaveLength(10_000);
+      expect(new Set(bookmarkIds).size).toBe(10_000);
+      expect(validateLibraryEnvelope(library)).toEqual({ success: true, data: library });
+    },
+    30_000
+  );
 
   // REQ-026-AC-002：性能数据出现重复实体 ID 时必须返回结构化错误，禁止静默接受。
   test('生成数据在书签 ID 被改为重复值时返回 DUPLICATE_ENTITY_ID', async () => {
