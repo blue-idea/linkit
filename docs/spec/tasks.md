@@ -698,20 +698,20 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-032 · 实现 OpenAI-compatible 客户端与错误降级**
+- [x] **TASK-032 · 实现 OpenAI-compatible 客户端与错误降级**
 
-  > 依赖：TASK-009、TASK-031 · 预计：3–4 小时
+  > 依赖：TASK-009、TASK-031 · 预计：3–4 小时 · 状态：done · 2026-07-18
 
-  - [ ] 实现 API Base 规范化、Chat Completions、超时、有限重试和大小限制。
-  - [ ] 实现 consent/Key 二次检查、严格 JSON 解析和 AppError 映射。
-  - [ ] 使用本地 HTTP 测试服务器覆盖 401、429、5xx、超时和无效响应。
+  - [x] 实现 API Base 规范化、Chat Completions、超时、有限重试和大小限制。
+  - [x] 实现 consent/Key 二次检查、严格 JSON 解析和 AppError 映射。
+  - [x] 使用本地 HTTP 测试服务器覆盖 401、429、5xx、超时和无效响应。
 
   **验证方式：**
   ```powershell
   go test ./internal/ai/... -cover
   ```
 
-  **验收证据：** AI 契约测试、重试次数、错误码和无外部请求的 consent 失败证明。
+  **验收证据：** AI 契约测试、重试次数、错误码和无外部请求的 consent 失败证明；覆盖率 80.0%。
 
   _需求: REQ-019、REQ-027  
   验收标准：REQ-019-AC-002~005、REQ-027-AC-002  
@@ -1023,7 +1023,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-029 | 存储切换与冲突 | Unit/E2E | done | REQ-003、004 |
 | TASK-030 | 远程 Supabase 验收 | API/Security/E2E | BLOCKED | REQ-001、003、004、025 |
 | TASK-031 | SecretStore 与 AI 授权 | Unit/Security/E2E | done | REQ-019、025 |
-| TASK-032 | AI 客户端与降级 | API/Security | 待开始 | REQ-019、027 |
+| TASK-032 | AI 客户端与降级 | API/Security | done | REQ-019、027 |
 | TASK-033 | AI 分析与重分析 | API/E2E | 待开始 | REQ-006、020 |
 | TASK-034 | 语义搜索 | API/E2E | 待开始 | REQ-018 |
 | TASK-035 | AI 主题与去重 | Unit/API/E2E | 待开始 | REQ-013、020 |
