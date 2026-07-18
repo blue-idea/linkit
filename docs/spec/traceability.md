@@ -55,7 +55,7 @@
 | TASK-027 | Supabase Auth | REQ-001-AC-001~006；REQ-002-AC-003 | done | `ui/src/repositories/auth.ts`、`ui/src/auth.ts`、`ui/src/components/LoginScreen.tsx`、`ui/src/features/auth/auth-flow.ts` | `ui/src/repositories/auth.test.ts`、`ui/src/features/auth/*.test.*`、`ui/tests/e2e/auth.spec.ts`、`ui/scripts/supabase-auth-api-test.mjs` | `docs/spec/ac/TASK-027-AC.md` | 2026-07-18 |
 | TASK-028 | CloudRepository | REQ-003-AC-001~005；REQ-027-AC-002~003 | done | `ui/src/repositories/cloud.ts`、`ui/src/repositories/cloud-draft-sync.ts`、`ui/src/repositories/supabase-cloud-client.ts`、`ui/src/config/cloud-repository.ts` | `ui/src/repositories/cloud.test.ts`、`ui/src/repositories/cloud-draft-sync.test.ts`、`ui/scripts/supabase-revision-api-test.mjs` | `docs/spec/ac/TASK-028-AC.md` | 2026-07-18 |
 | TASK-029 | 存储切换与冲突 | REQ-003-AC-005；REQ-004-AC-001~004 | done | `ui/src/services/storage-coordinator/index.ts`、`ui/src/features/storage/*`、`ui/src/components/SettingsDialog.tsx`、`ui/src/App.tsx` | `ui/src/services/storage-coordinator/index.test.ts`、`ui/tests/e2e/storage-switch.spec.ts` | `docs/spec/ac/TASK-029-AC.md` | 2026-07-18 |
-| TASK-030 | 远程 Supabase 验收 | REQ-001-AC-001~004；REQ-003-AC-001~005；REQ-004-AC-001~004；REQ-025-AC-003~005 | BLOCKED | — | — | — | — |
+| TASK-030 | 远程 Supabase 验收 | REQ-001-AC-001~004；REQ-003-AC-001~005；REQ-004-AC-001~004；REQ-025-AC-003~005 | done | `ui/scripts/cloud-remote-test.mjs`、`ui/package.json`（`test:cloud:remote`）、`ui/.env.test`（本机，不提交） | `pnpm --dir ui run test:cloud:remote`（17 PASS 0 FAIL） | `docs/spec/ac/TASK-030-AC.md` | 2026-07-18 |
 | TASK-031 | SecretStore 与 AI 授权 | REQ-019-AC-001、004~006；REQ-025-AC-001~002 | done | `internal/secretstore/*`、`ui/src/features/settings/ai-consent/*`、`ui/src/services/secrets/browser-secret-store.ts`、`ui/src/components/SettingsDialog.tsx`、`main.go` | `internal/secretstore/service_test.go`、`ui/src/features/settings/ai-consent/ai-consent.test.ts`、`ui/tests/e2e/ai-consent.spec.ts` | `docs/spec/ac/TASK-031-AC.md` | 2026-07-18 |
 | TASK-032 | AI 客户端与降级 | REQ-019-AC-002~005；REQ-027-AC-002 | 待开始 | — | — | — | — |
 | TASK-033 | AI 分析与重分析 | REQ-006-AC-002~003；REQ-020-AC-001~002 | 待开始 | — | — | — | — |
@@ -111,3 +111,4 @@
 | 2026-07-18 | TASK-023 更新为 done，补充 i18n、五分区设置与四主题 | 默认 English、中英切换、主题持久化与 AC 已验收 |
 | 2026-07-18 | TASK-024 更新为 done，补充导入导出 UX 与覆盖确认 | 版本化导出、覆盖确认、无效拒绝与双语言截图已验收 |
 | 2026-07-18 | TASK-025 更新为 done，补充本地 MVP 旅程与视觉回归 | 三次操作预算、串联旅程与 Baseline 比对已验收；本地 MVP 波次完成 |
+| 2026-07-18 | TASK-030 更新为 done，解除 BLOCKED，补充远程 Supabase 验收脚本与 AC 报告 | 远程 `linkit` 项目 Schema/RLS/trigger/revision 核验通过；17 PASS 0 FAIL |
