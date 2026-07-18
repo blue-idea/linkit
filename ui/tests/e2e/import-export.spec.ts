@@ -2,7 +2,12 @@ import { expect, test } from '@playwright/test';
 import { mkdir, readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { enterLocalMode, expectLoginGate } from './helpers';
+import {
+  enterLocalMode,
+  expectLoginGate,
+  readPersistedBookmarkCount,
+  waitForPersistedLocalLibrary,
+} from './helpers';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const evidenceDirectory = resolve(here, '../../../docs/spec/evidence');
@@ -87,30 +92,17 @@ test.describe('JSON import export', () => {
   // REQ-005-AC-003
   test('JSON import rejects invalid file without changing library', async ({ page }) => {
     await expect(page.getByText('Lattice', { exact: true })).toBeVisible();
-    const dialog = await openSettingsGeneral(page);
-    const bookmarkCountBefore = await page.evaluate(() => {
-      const raw = localStorage.getItem('lattice.library');
-      if (!raw) return -1;
-      try {
-        return (JSON.parse(raw) as { bookmarks?: unknown[] }).bookmarks?.length ?? -1;
-      } catch {
-        return -1;
-      }
-    });
+    // 避开 App 900ms debounce 自动保存窗口，避免 before=-1 / after=seed 的假失败。
+    await waitForPersistedLocalLibrary(page);
+    const bookmarkCountBefore = await readPersistedBookmarkCount(page);
+    expect(bookmarkCountBefore).toBeGreaterThan(0);
 
+    const dialog = await openSettingsGeneral(page);
     await dialog.locator('[data-testid="import-file-input"]').setInputFiles(resolve(fixtures, 'invalid-library.json'));
     await expect(dialog.getByTestId('import-error')).toHaveText('Import file is invalid');
     await expect(page.getByRole('dialog', { name: 'Overwrite current library?' })).toHaveCount(0);
 
-    const bookmarkCountAfter = await page.evaluate(() => {
-      const raw = localStorage.getItem('lattice.library');
-      if (!raw) return -1;
-      try {
-        return (JSON.parse(raw) as { bookmarks?: unknown[] }).bookmarks?.length ?? -1;
-      } catch {
-        return -1;
-      }
-    });
+    const bookmarkCountAfter = await readPersistedBookmarkCount(page);
     expect(bookmarkCountAfter).toBe(bookmarkCountBefore);
 
     await mkdir(evidenceDirectory, { recursive: true });

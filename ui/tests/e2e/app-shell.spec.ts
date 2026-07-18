@@ -3,6 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { waitForViewItems } from './helpers';
 
 const evidenceDirectory = resolve(
   dirname(fileURLToPath(import.meta.url)),
@@ -136,6 +137,8 @@ test.describe('主窗口 快捷键 拖入 URL 键盘可访问', () => {
 
   // REQ-024-AC-005
   test('拖入 URL shall 打开 New Bookmark 确认流程且确认前不保存', async ({ page }) => {
+    // 等待视图 hydration，避免 before=0 / after=seed 的竞态 flaky。
+    await waitForViewItems(page);
     const before = await page.locator('[data-view-item]').count();
 
     await page.evaluate(() => {
