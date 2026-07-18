@@ -99,6 +99,8 @@ export function Sidebar({
   onDropToCollection,
   onOpenInsights,
   onNewBookmark,
+  onNewCategory,
+  onDeleteCategory,
   insightCount,
 }: {
   categories: Category[];
@@ -113,6 +115,8 @@ export function Sidebar({
   onDropToCollection: (collectionId: string, bookmarkId: string) => void;
   onOpenInsights: () => void;
   onNewBookmark: () => void;
+  onNewCategory: () => void;
+  onDeleteCategory: (categoryId: string) => void;
   insightCount: number;
 }) {
   const [dragOverId, setDragOverId] = useStateDrag();
@@ -151,6 +155,20 @@ export function Sidebar({
             dragOver={dragOverId === cat.id}
             onDragOver={(e) => { e.preventDefault(); setDragOverId(cat.id); }}
             onDragLeave={() => setDragOverId(null)}
+            trailing={
+              <button
+                type="button"
+                aria-label="Delete category"
+                title="Delete category"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteCategory(cat.id);
+                }}
+                className="opacity-70 group-hover:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-coral-400 flex items-center justify-center transition"
+              >
+                <Icon name="Trash2" size={11} />
+              </button>
+            }
           />
           {kids.length > 0 && isExpanded && <div className="animate-fade-in">{renderTree(cat.id, depth + 1)}</div>}
         </div>
@@ -229,7 +247,13 @@ export function Sidebar({
         {/* Categories */}
         <SectionLabel
           right={
-            <button className="text-ink-400 hover:text-ink-100 transition" title="新建分类">
+            <button
+              type="button"
+              aria-label="New category"
+              className="text-ink-400 hover:text-ink-100 transition"
+              title="New category"
+              onClick={onNewCategory}
+            >
               <Icon name="Plus" size={12} />
             </button>
           }

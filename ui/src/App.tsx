@@ -28,6 +28,15 @@ import {
   DeleteBookmarkDialog,
   shouldConfirmBookmarkDelete,
 } from './features/bookmarks';
+import {
+  applyCategoryDeleteDecision,
+  applyCategoryLibraryResult,
+  CategoryFormDialog,
+  DeleteCategoryDialog,
+  runCreateCategory,
+  runDeleteCategory,
+  shouldConfirmCategoryDelete,
+} from './features/categories';
 import { createBrowserStorageAdapters } from './services/storage';
 import { normalizeBookmarkUrl } from './domain/commands';
 import {
@@ -35,6 +44,7 @@ import {
   filterBookmarks,
   type SortKey,
 } from './domain/query';
+import { collectCategorySubtreeIds } from './domain/categories';
 import { openExternalUrl } from './features/bookmarks/external-url';
 
 /* ---------- window chrome ---------- */
@@ -152,6 +162,9 @@ export default function App() {
   const [syncing, setSyncing] = useState(false);
   const [seedConfirmOpen, setSeedConfirmOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [categoryFormOpen, setCategoryFormOpen] = useState(false);
+  const [categoryDeleteId, setCategoryDeleteId] = useState<string | null>(null);
+  const [categoryRecursiveConfirm, setCategoryRecursiveConfirm] = useState(false);
   // 防止“未水合的种子数据”在加载本机库前被自动保存覆盖。
   const [libraryHydrated, setLibraryHydrated] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -218,7 +231,16 @@ export default function App() {
     if (sel.kind === 'starred') list = list.filter((b) => b.starred);
     else if (sel.kind === 'recent') list = list.filter((b) => Date.now() - new Date(b.createdAt).getTime() < 7 * 86400000);
     else if (sel.kind === 'category') {
-      const childIds = collectCategoryIds(sel.id, cats);
+      const childIds = collectCategorySubtreeIds(
+        cats.map((c) => ({
+          id: c.id,
+          name: c.name,
+          icon: c.icon,
+          parentId: c.parentId,
+          color: c.color ?? 'gray',
+        })),
+        sel.id
+      );
       list = list.filter((b) => childIds.has(b.categoryId));
     } else if (sel.kind === 'collection') {
       const col = cols.find((c) => c.id === sel.id);
@@ -376,6 +398,91 @@ export default function App() {
     setDeleteTargetId(null);
     flashToast('Bookmark deleted');
   }, [deleteTargetId, flashToast]);
+
+  const handleCreateCategory = useCallback((name: string) => {
+    const parentId =
+      state.selection.kind === 'category' ? state.selection.id : null;
+    const result = runCreateCategory({
+      bookmarks,
+      categories: cats,
+      collections: cols,
+      tags: tagList,
+      name,
+      parentId,
+    });
+    if (!result.ok) {
+      flashToast(result.error.message);
+      return;
+    }
+    const applied = applyCategoryLibraryResult(result.value, bookmarks, cats);
+    setCats(applied.categories);
+    setBookmarks(applied.bookmarks);
+    setCategoryFormOpen(false);
+    flashToast('Category created');
+  }, [bookmarks, cats, cols, flashToast, state.selection, tagList]);
+
+  const requestDeleteCategory = useCallback((categoryId: string) => {
+    const childCount = cats.filter((c) => c.parentId === categoryId).length;
+    const bookmarkCount = bookmarks.filter((b) => b.categoryId === categoryId).length;
+    if (shouldConfirmCategoryDelete({ childCount, bookmarkCount })) {
+      setCategoryDeleteId(categoryId);
+      setCategoryRecursiveConfirm(false);
+      return;
+    }
+    const result = runDeleteCategory({
+      bookmarks,
+      categories: cats,
+      collections: cols,
+      tags: tagList,
+      id: categoryId,
+      strategy: 'move-then-delete',
+    });
+    if (!result.ok) {
+      flashToast(result.error.message);
+      return;
+    }
+    const applied = applyCategoryLibraryResult(result.value, bookmarks, cats);
+    setCats(applied.categories);
+    setBookmarks(applied.bookmarks);
+    flashToast('Category deleted');
+  }, [bookmarks, cats, cols, flashToast, tagList]);
+
+  const applyCategoryDelete = useCallback((strategy: 'move-then-delete' | 'recursive-delete' | 'cancel') => {
+    if (!categoryDeleteId) return;
+    const decision = applyCategoryDeleteDecision({
+      choice: strategy,
+      recursiveConfirmed: strategy === 'recursive-delete' ? categoryRecursiveConfirm : undefined,
+    });
+    if (decision === 'cancelled') {
+      setCategoryDeleteId(null);
+      setCategoryRecursiveConfirm(false);
+      return;
+    }
+    if (decision === 'await-recursive-confirm') {
+      setCategoryRecursiveConfirm(true);
+      return;
+    }
+
+    const result = runDeleteCategory({
+      bookmarks,
+      categories: cats,
+      collections: cols,
+      tags: tagList,
+      id: categoryDeleteId,
+      strategy: decision,
+      recursiveConfirmed: decision === 'recursive-delete',
+    });
+    if (!result.ok) {
+      flashToast(result.error.message);
+      return;
+    }
+    const applied = applyCategoryLibraryResult(result.value, bookmarks, cats);
+    setCats(applied.categories);
+    setBookmarks(applied.bookmarks);
+    setCategoryDeleteId(null);
+    setCategoryRecursiveConfirm(false);
+    flashToast('Category deleted');
+  }, [bookmarks, categoryDeleteId, categoryRecursiveConfirm, cats, cols, flashToast, tagList]);
 
   const handleSaveSettings = useCallback(async (s: AppSettings) => {
     setSettings(s);
@@ -556,6 +663,8 @@ export default function App() {
                 onDropToCollection={addToCollection}
                 onOpenInsights={() => setInsightsOpen(true)}
                 onNewBookmark={() => { setNewUrl(''); setNewOpen(true); }}
+                onNewCategory={() => setCategoryFormOpen(true)}
+                onDeleteCategory={requestDeleteCategory}
                 insightCount={insights.length}
               />
             </div>
@@ -669,6 +778,24 @@ export default function App() {
           onConfirm={confirmDeleteBookmark}
         />
       )}
+      {categoryFormOpen && (
+        <CategoryFormDialog
+          mode="create"
+          onCancel={() => setCategoryFormOpen(false)}
+          onSubmit={handleCreateCategory}
+        />
+      )}
+      {categoryDeleteId && (
+        <DeleteCategoryDialog
+          name={cats.find((c) => c.id === categoryDeleteId)?.name ?? 'Category'}
+          childCount={cats.filter((c) => c.parentId === categoryDeleteId).length}
+          bookmarkCount={bookmarks.filter((b) => b.categoryId === categoryDeleteId).length}
+          awaitingRecursiveConfirm={categoryRecursiveConfirm}
+          onCancel={() => applyCategoryDelete('cancel')}
+          onMoveThenDelete={() => applyCategoryDelete('move-then-delete')}
+          onRecursiveDelete={() => applyCategoryDelete('recursive-delete')}
+        />
+      )}
       <InsightsDialog
         open={insightsOpen}
         insights={insights}
@@ -728,15 +855,3 @@ export default function App() {
   );
 }
 
-/* collect a category id and all its descendants */
-function collectCategoryIds(rootId: string, cats: Category[]): Set<string> {
-  const ids = new Set<string>([rootId]);
-  let added = true;
-  while (added) {
-    added = false;
-    for (const c of cats) {
-      if (c.parentId && ids.has(c.parentId) && !ids.has(c.id)) { ids.add(c.id); added = true; }
-    }
-  }
-  return ids;
-}
