@@ -7,6 +7,7 @@ import (
 
 	"github.com/blue-idea/collection/config"
 	"github.com/blue-idea/collection/internal/localstore"
+	"github.com/blue-idea/collection/internal/metadata"
 	"github.com/blue-idea/collection/internal/platform"
 	"github.com/blue-idea/collection/internal/settingsstore"
 	"github.com/wailsapp/wails/v2"
@@ -29,6 +30,7 @@ func main() {
 		log.Fatalf("Unable to initialise settings service: %v", err)
 	}
 	nativeFileService := platform.NewService()
+	metadataService := metadata.NewService()
 
 	err = wails.Run(&options.App{
 		Title:  config.AppTitle,
@@ -51,6 +53,7 @@ func main() {
 			localDocumentService,
 			settingsService,
 			nativeFileService,
+			metadataService,
 		},
 	})
 	if err != nil {
