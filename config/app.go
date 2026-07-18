@@ -1,6 +1,8 @@
 package config
 
 const (
+	// AppVersion 用于导出信封标识生成文件的应用版本。
+	AppVersion = "0.1.0"
 	// AppTitle 是原生窗口显示的应用名称。
 	AppTitle = "Linkit"
 	// AppWidth 与 AppHeight 为三栏主界面提供默认可用空间。
