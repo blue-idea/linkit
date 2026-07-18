@@ -2,6 +2,7 @@
 **/.env
 **/.env.*
 !**/.env.example
+!**/.env.test.example
 
 # SDD 测试账号与环境信息
 /docs/spec/info.md

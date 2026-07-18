@@ -17,6 +17,11 @@
     "test:e2e": "playwright test tests/e2e",
     "test:visual": "playwright test tests/visual",
     "test:visual:update": "playwright test tests/visual --update-snapshots",
+    "supabase:start": "supabase start --workdir ..",
+    "supabase:status": "supabase status --workdir ..",
+    "supabase:reset": "supabase db reset --workdir ..",
+    "supabase:types": "supabase gen types typescript --local --workdir .. > src/database.types.ts",
+    "test:supabase": "supabase test db --workdir .. && node ./scripts/supabase-rls-api-test.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "verify:quality-config": "node verify-quality-config.mjs"
   },

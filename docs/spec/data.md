@@ -292,11 +292,9 @@ Supabase JS 等价调用应使用 `.update({ data, schema_version: schemaVersion
 
 ### 6.5 远程验证状态
 
-当前 `ui/.env` 配置的项目 ref 为 `yqfnyttbcdgntizadqit`，但 Supabase MCP 返回无权限。因此：
-
-- 本文以仓库 migration 为当前结构依据。
-- 远程表结构、RLS、触发器与数据类型验证状态为 `BLOCKED`。
-- STEP 6 执行云存储任务前必须提供可访问项目或使用 Supabase CLI 本地环境完成真实验证。
+- 本地：Supabase CLI 已初始化（`supabase/`），`db reset` + pgTAP/API RLS 测试在 TASK-026 通过。
+- 远程：MCP 已创建可访问项目 `linkit`（ref `zheqhjsctvkuzmtohrnm`，`ap-southeast-1`），已应用 `user_bookmarks` migration 与双用户 seed。
+- TASK-030 仍负责完整远程 Auth/冲突旅程验收；客户端 `.env` 需指向该项目的 publishable key（勿提交密钥）。
 
 ---
 

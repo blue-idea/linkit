@@ -51,7 +51,7 @@
 | TASK-023 | 设置、主题与 i18n | REQ-023-AC-001~006 | done | `ui/src/i18n/*`、`ui/src/features/settings/*`、`ui/src/components/SettingsDialog.tsx`、`ui/src/components/LoginScreen.tsx`、`ui/src/features/shell/WindowChrome.tsx`、`ui/src/config/i18n.ts` | `ui/src/i18n/i18n.test.ts`、`ui/src/features/settings/settings-ui.test.ts`、`ui/tests/e2e/settings-i18n.spec.ts` | `docs/spec/ac/TASK-023-AC.md` | 2026-07-18 |
 | TASK-024 | 导入导出 UX | REQ-005-AC-001~003；REQ-023-AC-005~006 | done | `ui/src/features/import-export/*`、`ui/src/components/SettingsDialog.tsx`、`ui/src/storage.ts`、`ui/src/i18n/catalogs.ts` | `ui/src/features/import-export/*.test.ts`、`ui/tests/e2e/import-export.spec.ts`、`ui/tests/fixtures/*` | `docs/spec/ac/TASK-024-AC.md` | 2026-07-18 |
 | TASK-025 | 本地 MVP 回归 | REQ-002、006~017、023~024；REQ-028-AC-001~004 | done | `ui/tests/e2e/local-mvp/*` | `ui/tests/e2e/local-mvp/*.spec.ts`、`ui/tests/e2e/local-mvp/visual.spec.ts-snapshots/*` | `docs/spec/ac/TASK-025-AC.md` | 2026-07-18 |
-| TASK-026 | Supabase 本地与 RLS | REQ-003-AC-002~003；REQ-025-AC-003~005 | 待开始 | — | — | — | — |
+| TASK-026 | Supabase 本地与 RLS | REQ-003-AC-002~003；REQ-025-AC-003~005 | done | `supabase/migrations/20260715112414_create_user_bookmarks.sql`、`supabase/seed.sql`、`ui/src/database.types.ts`、`ui/scripts/supabase-rls-api-test.mjs` | `supabase/tests/database/user_bookmarks_rls_test.sql`、`pnpm --dir ui test:supabase` | `docs/spec/ac/TASK-026-AC.md` | 2026-07-18 |
 | TASK-027 | Supabase Auth | REQ-001-AC-001~006；REQ-002-AC-003 | 待开始 | — | — | — | — |
 | TASK-028 | CloudRepository | REQ-003-AC-001~005；REQ-027-AC-002~003 | 待开始 | — | — | — | — |
 | TASK-029 | 存储切换与冲突 | REQ-003-AC-005；REQ-004-AC-001~004 | 待开始 | — | — | — | — |
