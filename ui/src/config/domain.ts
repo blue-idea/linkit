@@ -77,5 +77,8 @@ export const DOMAIN_CONFIG = {
     tagDeleted: 'tag.deleted',
     bookmarkTagChanged: 'bookmark.tag.changed',
     bookmarkSuggestedTagAccepted: 'bookmark.suggested-tag.accepted',
+    aiCollectionConfirmed: 'ai.collection.confirmed',
+    duplicateMerged: 'bookmark.duplicate.merged',
+    duplicateDeleted: 'bookmark.duplicate.deleted',
   },
 } as const;

@@ -763,13 +763,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-035 · 实现 AI 主题生成与去重确认**
+- [x] **TASK-035 · 实现 AI 主题生成与去重确认**
 
-  > 依赖：TASK-016、TASK-017、TASK-032 · 预计：3–4 小时
+  > 依赖：TASK-016、TASK-017、TASK-032 · 预计：3–4 小时 · 状态：done · 2026-07-19
 
-  - [ ] 实现目标主题名称、描述、标签与库内成员预览。
-  - [ ] 实现重复候选、匹配理由、字段差异、合并和删除命令。
-  - [ ] 保证所有建议在用户确认前零副作用。
+  - [x] 实现目标主题名称、描述、标签与库内成员预览。
+  - [x] 实现重复候选、匹配理由、字段差异、合并和删除命令。
+  - [x] 保证所有建议在用户确认前零副作用。
 
   **验证方式：**
   ```powershell
@@ -1007,9 +1007,9 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-013 | 排序与筛选 | Unit | done | REQ-008、009 |
 | TASK-014 | 分类 CRUD 与删除 | Unit/E2E | done | REQ-010 |
 | TASK-015 | 分类与书签拖拽 | Unit/E2E | done | REQ-011、024 |
-| TASK-016 | 主题 CRUD 与成员 | Unit/E2E | 待开始 | REQ-012、026 |
-| TASK-017 | 手动主题组合 | Unit/E2E | 待开始 | REQ-013 |
-| TASK-018 | 标签管理 | Unit/E2E | 待开始 | REQ-014 |
+| TASK-016 | 主题 CRUD 与成员 | Unit/E2E | done | REQ-012、026 |
+| TASK-017 | 手动主题组合 | Unit/E2E | done | REQ-013 |
+| TASK-018 | 标签管理 | Unit/E2E | done | REQ-014 |
 | TASK-019 | 三种基础视图 | E2E/Manual | 已完成 | REQ-015、028 |
 | TASK-020 | 三种聚合视图 | Unit/E2E | 已完成 | REQ-016、028 |
 | TASK-021 | Spotlight 关键词与 URL | Unit/E2E | 已完成 | REQ-017 |
@@ -1026,7 +1026,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-032 | AI 客户端与降级 | API/Security | done | REQ-019、027 |
 | TASK-033 | AI 分析与重分析 | API/E2E | done | REQ-006、020 |
 | TASK-034 | 语义搜索 | API/E2E | done | REQ-018 |
-| TASK-035 | AI 主题与去重 | Unit/API/E2E | 待开始 | REQ-013、020 |
+| TASK-035 | AI 主题与去重 | Unit/API/E2E | done | REQ-013、020 |
 | TASK-036 | 推荐与知识网络 | Unit/E2E | 待开始 | REQ-021 |
 | TASK-037 | 真实 AI 验收 | API/E2E | BLOCKED | REQ-006、013、018~021 |
 | TASK-038 | 收藏洞察 | Unit/E2E | 待开始 | REQ-022 |

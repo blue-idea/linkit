@@ -11,6 +11,12 @@ import (
 	"github.com/blue-idea/collection/config"
 )
 
+type stubCompleter struct{ content json.RawMessage }
+
+func (stub stubCompleter) ChatCompletions(ChatRequest) (ChatResult, error) {
+	return ChatResult{ContentJSON: stub.content}, nil
+}
+
 func TestAnalyzeBookmarkReturnsValidatedSuggestions(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		raw, _ := io.ReadAll(request.Body)
@@ -174,4 +180,49 @@ func TestAnalyzeBookmarkMapsMissingKey(t *testing.T) {
 		ContentText: "C",
 	})
 	assertCodedError(t, err, config.ErrorCodeSecretNotConfigured, false)
+}
+
+func TestGenerateCollectionReturnsOnlyLibraryCandidateIDs(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+		writer.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(writer, `{
+			"choices":[{"message":{"content":"{\"name\":\"Frontend Research\",\"description\":\"A focused reading list\",\"suggestedTags\":[\"frontend\",\"research\"],\"bookmarkIds\":[\"bookmark-1\",\"bookmark-2\"]}"}}]
+		}`)
+	}))
+	t.Cleanup(server.Close)
+
+	service := NewService(WithCompleter(NewClient(
+		WithHTTPClient(server.Client()),
+		WithKeyLoader(stubKeyLoader{key: "sk-test"}),
+		WithConsentChecker(&stubConsent{granted: true}),
+	)))
+
+	// REQ-013-AC-003：AI 主题仅返回资料库候选成员，且不写入资料库。
+	result, err := service.GenerateCollection(GenerateCollectionRequest{
+		Context: AIContext{APIBase: server.URL + "/v1", Model: "m", Locale: "en"},
+		Goal:    "Build a frontend research collection",
+		BookmarkCandidates: []BookmarkCandidate{
+			{ID: "bookmark-1", Title: "React", Description: "React docs", TagLabels: []string{"frontend"}},
+			{ID: "bookmark-2", Title: "CSS", Description: "CSS guide", TagLabels: []string{"frontend"}},
+		},
+	})
+	if err != nil {
+		t.Fatalf("GenerateCollection returned error: %v", err)
+	}
+	if result.Name != "Frontend Research" || len(result.BookmarkIDs) != 2 {
+		t.Fatalf("Unexpected collection preview: %+v", result)
+	}
+}
+
+func TestGenerateCollectionRejectsUnknownBookmarkID(t *testing.T) {
+	service := NewService(WithCompleter(stubCompleter{content: json.RawMessage(`{
+		"name":"Unsafe","description":"x","suggestedTags":[],"bookmarkIds":["bookmark-outside-library"]
+	}`)}))
+
+	_, err := service.GenerateCollection(GenerateCollectionRequest{
+		Context:            AIContext{APIBase: "https://api.example.test/v1", Model: "m", Locale: "en"},
+		Goal:               "Find related bookmarks",
+		BookmarkCandidates: []BookmarkCandidate{{ID: "bookmark-1", Title: "React"}},
+	})
+	assertCodedError(t, err, config.ErrorCodeAIResponseInvalid, true)
 }
