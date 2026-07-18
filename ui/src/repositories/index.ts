@@ -24,6 +24,11 @@ export { RepositoryError } from './types';
 export { createAuthRepository } from './auth';
 export type { AuthClient, AuthRepository, AuthSession, SignUpResult } from './auth';
 export { createSupabaseAuthClient } from './supabase-auth-client';
+export { createCloudRepository } from './cloud';
+export type { CloudBookmarksClient, CloudRepository, CloudRepositoryOptions } from './cloud';
+export { createSupabaseCloudClient } from './supabase-cloud-client';
+export { buildCloudDraftJson, saveCloudLibraryWithDraft } from './cloud-draft-sync';
+export type { CloudDraftBindings, SaveCloudLibraryWithDraftOptions } from './cloud-draft-sync';
 
 export interface MemoryRepositoryOptions {
   source: StorageMode;
