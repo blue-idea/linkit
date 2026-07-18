@@ -27,6 +27,7 @@ import {
   applySeedRestore,
   RecoveryDialog,
   shouldConfirmSeedRestore,
+  shouldRestoreAuthenticatedSession,
   useLocalStartup,
   persistUiSettings,
 } from './features/auth';
@@ -90,9 +91,20 @@ export default function App() {
   const [cats, setCats] = useState<Category[]>(seedCategories);
   const [cols, setCols] = useState<Collection[]>(seedCollections);
   const [tagList, setTagList] = useState<Tag[]>(seedTags);
+  const [emailConfirmationRequired, setEmailConfirmationRequired] = useState(false);
+  const [authSubmitting, setAuthSubmitting] = useState(false);
   const settings = startup.settings ?? defaultSettings;
   const setSettings = startup.setSettings;
   const authed = startup.view === 'main';
+
+  // REQ-001-AC-004：恢复已有 Supabase session 后直接进入主界面。
+  const sessionMode = startup.sessionMode;
+  const markAuthenticated = startup.markAuthenticated;
+  useEffect(() => {
+    if (shouldRestoreAuthenticatedSession(auth.session, sessionMode)) {
+      markAuthenticated();
+    }
+  }, [auth.session, sessionMode, markAuthenticated]);
 
   const [state, setState] = useState<AppState>({
     selection: { kind: 'all' },
@@ -924,16 +936,36 @@ export default function App() {
   if (startup.view === 'login') {
     return (
       <LoginScreen
-        loading={false}
+        loading={authSubmitting || auth.loading}
         error={auth.error}
+        emailConfirmationRequired={emailConfirmationRequired}
         locale={settings.locale ?? 'en'}
         onSignIn={async (email, password) => {
-          const { error } = await auth.signIn(email, password);
-          if (!error) startup.markAuthenticated();
+          setEmailConfirmationRequired(false);
+          setAuthSubmitting(true);
+          try {
+            const { error } = await auth.signIn(email, password);
+            // REQ-001-AC-001 / REQ-001-AC-003
+            if (!error) startup.markAuthenticated();
+          } finally {
+            setAuthSubmitting(false);
+          }
         }}
         onSignUp={async (email, password) => {
-          const { error } = await auth.signUp(email, password);
-          if (!error) startup.markAuthenticated();
+          setEmailConfirmationRequired(false);
+          setAuthSubmitting(true);
+          try {
+            const { error, result } = await auth.signUp(email, password);
+            if (error || !result) return;
+            // REQ-001-AC-002：有 session 进主界面；REQ-001-AC-006：无 session 显示 Check your email。
+            if (result.status === 'authenticated') {
+              startup.markAuthenticated();
+              return;
+            }
+            setEmailConfirmationRequired(true);
+          } finally {
+            setAuthSubmitting(false);
+          }
         }}
         onUseLocal={() => {
           void startup.enterLocalMode(settings);

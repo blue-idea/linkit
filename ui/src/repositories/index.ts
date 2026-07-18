@@ -21,6 +21,9 @@ export type {
   StorageSummary,
 } from './types';
 export { RepositoryError } from './types';
+export { createAuthRepository } from './auth';
+export type { AuthClient, AuthRepository, AuthSession, SignUpResult } from './auth';
+export { createSupabaseAuthClient } from './supabase-auth-client';
 
 export interface MemoryRepositoryOptions {
   source: StorageMode;

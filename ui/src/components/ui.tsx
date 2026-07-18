@@ -229,6 +229,7 @@ export function Button({
   className = '',
   onClick,
   disabled,
+  type = 'button',
   'aria-label': ariaLabel,
   'aria-pressed': ariaPressed,
 }: {
@@ -239,6 +240,7 @@ export function Button({
   className?: string;
   onClick?: () => void;
   disabled?: boolean;
+  type?: 'button' | 'submit' | 'reset';
   'aria-label'?: string;
   'aria-pressed'?: boolean;
 }) {
@@ -251,7 +253,7 @@ export function Button({
   const sizes = { sm: 'text-xs px-2.5 py-1.5 rounded-md gap-1.5', md: 'text-sm px-3 py-2 rounded-lg gap-2' };
   return (
     <button
-      type="button"
+      type={type}
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}

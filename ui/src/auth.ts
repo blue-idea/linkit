@@ -1,86 +1,121 @@
-import { useEffect, useState, useCallback } from 'react';
-import type { Session, User } from '@supabase/supabase-js';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { createAuthRepository, type AuthSession, type SignUpResult } from './repositories/auth';
+import { createSupabaseAuthClient } from './repositories/supabase-auth-client';
 import { isSupabaseConfigured, supabase } from './supabase';
-
-const missingCloudConfigMessage = 'Cloud auth is not configured';
+import { RepositoryError } from './repositories/types';
 
 export interface AuthState {
-  user: User | null;
-  session: Session | null;
+  user: { id: string; email: string | null } | null;
+  session: AuthSession | null;
   loading: boolean;
   error: string | null;
-  signUp: (email: string, password: string) => Promise<{ error: string | null }>;
+  signUp: (
+    email: string,
+    password: string
+  ) => Promise<{ error: string | null; result: SignUpResult | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
+function toErrorMessage(error: unknown): string {
+  if (error instanceof RepositoryError) return error.message;
+  if (error instanceof Error) return error.message;
+  return 'Authentication request failed';
+}
+
 export function useAuth(): AuthState {
-  const [session, setSession] = useState<Session | null>(null);
+  const repository = useMemo(
+    () => createAuthRepository({ client: createSupabaseAuthClient(supabase) }),
+    []
+  );
+  const [session, setSession] = useState<AuthSession | null>(null);
   const [loading, setLoading] = useState(isSupabaseConfigured);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // 无 Supabase 配置时立即结束加载，保证本地模式登录门可用（含 CI E2E）。
-    if (!supabase) {
+    if (!isSupabaseConfigured) {
       setLoading(false);
       return;
     }
 
     let mounted = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      setSession(data.session);
+    repository
+      .getSession()
+      .then((next) => {
+        if (!mounted) return;
+        setSession(next);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (!mounted) return;
+        setError(toErrorMessage(err));
+        setLoading(false);
+      });
+
+    let unsubscribe: () => void = () => undefined;
+    try {
+      unsubscribe = repository.onAuthStateChange((next) => {
+        setSession(next);
+      });
+    } catch (err) {
+      setError(toErrorMessage(err));
       setLoading(false);
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
-      setSession(sess);
-    });
+    }
+
     return () => {
       mounted = false;
-      sub.subscription.unsubscribe();
+      unsubscribe();
     };
-  }, []);
+  }, [repository]);
 
-  const signUp = useCallback(async (email: string, password: string) => {
-    setError(null);
-    if (!supabase) {
-      setError(missingCloudConfigMessage);
-      return { error: missingCloudConfigMessage };
-    }
-    const { data, error: err } = await supabase.auth.signUp({ email, password });
-    if (err) {
-      setError(err.message);
-      return { error: err.message };
-    }
-    // signUp with email confirmation off returns a session immediately
-    if (data.session) setSession(data.session);
-    return { error: null };
-  }, []);
+  const signUp = useCallback(
+    async (email: string, password: string) => {
+      setError(null);
+      try {
+        const result = await repository.signUp(email, password);
+        if (result.status === 'authenticated') {
+          setSession(result.session);
+        }
+        return { error: null, result };
+      } catch (err) {
+        const message = toErrorMessage(err);
+        setError(message);
+        return { error: message, result: null };
+      }
+    },
+    [repository]
+  );
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    setError(null);
-    if (!supabase) {
-      setError(missingCloudConfigMessage);
-      return { error: missingCloudConfigMessage };
-    }
-    const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
-    if (err) {
-      setError(err.message);
-      return { error: err.message };
-    }
-    if (data.session) setSession(data.session);
-    return { error: null };
-  }, []);
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      setError(null);
+      try {
+        const next = await repository.signInWithPassword(email, password);
+        setSession(next);
+        return { error: null };
+      } catch (err) {
+        const message = toErrorMessage(err);
+        setError(message);
+        return { error: message };
+      }
+    },
+    [repository]
+  );
 
   const signOut = useCallback(async () => {
-    if (supabase) {
-      await supabase.auth.signOut();
+    try {
+      if (isSupabaseConfigured) {
+        await repository.signOut();
+      }
+    } catch {
+      // 退出时仍清除本地会话视图，避免卡在已认证界面。
     }
     setSession(null);
-  }, []);
+  }, [repository]);
 
   return {
-    user: session?.user ?? null,
+    user: session ? { id: session.userId, email: session.email } : null,
     session,
     loading,
     error,

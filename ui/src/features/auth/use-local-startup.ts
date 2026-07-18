@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { AppSettings as UiSettings, ThemeId } from '../../types';
 import { getDefaultAppSettings } from '../../services/settings';
 import { bootstrapApp, createBrowserStorageAdapters, type BootstrapPhase } from '../../services/storage';
@@ -113,6 +113,6 @@ export function useLocalStartup(authLoading: boolean) {
       // REQ-002-AC-003：退出登录只清会话，不清除本机资料库。
       setSessionMode('signed_out');
     },
-    markAuthenticated: () => setSessionMode('authenticated'),
+    markAuthenticated: useCallback(() => setSessionMode('authenticated'), []),
   };
 }

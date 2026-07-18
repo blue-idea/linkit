@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import type { User } from '@supabase/supabase-js';
 import type { AppSettings, LibraryData, StorageMode, ThemeId, UiLocale } from '../types';
 import { themes, applyTheme } from '../themes';
 import { Icon, Button, AIBadge } from './ui';
@@ -150,7 +149,7 @@ export function SettingsDialog({
 }: {
   open: boolean;
   settings: AppSettings;
-  user: User | null;
+  user: { id: string; email: string | null } | null;
   library: LibraryData;
   onClose: () => void;
   onSave: (s: AppSettings) => void | Promise<void>;

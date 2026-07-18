@@ -13,6 +13,8 @@ export interface SessionState {
 export interface SessionSlice {
   session: SessionState;
   useLocalMode(): void;
+  markAuthenticated(userId: string): void;
+  markSignedOut(): void;
   setSessionError(error: AppError): void;
 }
 

@@ -9,6 +9,7 @@ export function LoginScreen({
   onUseLocal,
   loading,
   error,
+  emailConfirmationRequired = false,
   locale = 'en',
 }: {
   onSignIn: (email: string, password: string) => void;
@@ -16,6 +17,8 @@ export function LoginScreen({
   onUseLocal: () => void;
   loading: boolean;
   error: string | null;
+  /** REQ-001-AC-006：注册成功但无 session 时显示 Check your email。 */
+  emailConfirmationRequired?: boolean;
   /** 无偏好时默认 en（REQ-023-AC-004）。 */
   locale?: UiLocale;
 }) {
@@ -87,6 +90,16 @@ export function LoginScreen({
               />
             </div>
 
+            {emailConfirmationRequired && (
+              <div
+                role="status"
+                className="rounded-lg bg-mint-500/10 border border-mint-400/30 px-3 py-2 text-[12px] text-mint-300 flex items-center gap-2"
+              >
+                <Icon name="Mail" size={13} />
+                {i18n.t('auth.checkEmail')}
+              </div>
+            )}
+
             {error && (
               <div className="rounded-lg bg-coral-500/10 border border-coral-400/30 px-3 py-2 text-[12px] text-coral-400 flex items-center gap-2">
                 <Icon name="AlertCircle" size={13} />
@@ -94,7 +107,7 @@ export function LoginScreen({
               </div>
             )}
 
-            <Button variant="primary" className="w-full" disabled={loading}>
+            <Button type="submit" variant="primary" className="w-full" disabled={loading}>
               {loading
                 ? locale === 'zh'
                   ? '请稍候…'
