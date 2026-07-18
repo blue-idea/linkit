@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.3.0
+> 版本：1.4.0
 > 日期：2026-07-18  
-> 状态：已定稿（TASK-003 已完成）
+> 状态：已定稿（TASK-007 已完成）
 
 ---
 
@@ -32,7 +32,7 @@
 | TASK-004 | 测试 Factory 与性能数据 | REQ-026-AC-001~004；REQ-028-AC-005~007 | done | `ui/src/config/test-data.ts`、`ui/src/testing/factories/index.ts`、`ui/src/testing/performance-data/index.ts` | `ui/src/tests/factories/factories.test.ts`、`ui/src/tests/performance-data/performance-data.test.ts` | `docs/spec/ac/TASK-004-AC.md` | 2026-07-18 |
 | TASK-005 | Store、命令与 Repository | REQ-026-AC-001~004；REQ-027-AC-002~003 | done | `ui/src/domain/commands/*`、`ui/src/repositories/*`、`ui/src/store/*`、`ui/src/config/domain.ts`、`ui/src/config/repository.ts`、`ui/src/config/store.ts` | `ui/src/domain/commands/membership.test.ts`、`ui/src/repositories/memory.test.ts`、`ui/src/store/app-store.test.ts` | `docs/spec/ac/TASK-005-AC.md` | 2026-07-18 |
 | TASK-006 | 本地原子资料库与云草稿 | REQ-002-AC-002；REQ-003-AC-004~005；REQ-027-AC-003 | done | `config/errors.go`、`config/storage.go`、`internal/localstore/*`、`main.go` | `internal/localstore/*_test.go`、`internal/scaffold/scaffold_test.go` | `docs/spec/ac/TASK-006-AC.md` | 2026-07-18 |
-| TASK-007 | 本地设置服务 | REQ-019-AC-001、REQ-019-AC-006；REQ-023-AC-003~006 | 待开始 | — | — | — | — |
+| TASK-007 | 本地设置服务 | REQ-019-AC-001、REQ-019-AC-006；REQ-023-AC-003~006 | done | `internal/settingsstore/*`、`config/storage.go`、`config/errors.go`、`main.go`、`ui/src/services/settings/*`、`ui/src/config/settings.ts`、`ui/src/domain/schemas.ts` | `internal/settingsstore/*_test.go`、`ui/src/services/settings/settings.test.ts` | `docs/spec/ac/TASK-007-AC.md` | 2026-07-18 |
 | TASK-008 | 原生导入导出服务 | REQ-005-AC-001~003；REQ-025-AC-002 | 待开始 | — | — | — | — |
 | TASK-009 | 网页元数据与外部 URL | REQ-006-AC-001~003；REQ-008-AC-002；REQ-025-AC-001 | 待开始 | — | — | — | — |
 | TASK-010 | 本地模式启动恢复 | REQ-001-AC-005；REQ-002-AC-001~004 | 待开始 | — | — | — | — |
@@ -96,3 +96,4 @@
 | 2026-07-16 | TASK-001 标记为 BLOCKED，并补充实现、测试与 AC 证据 | 工程骨架已实现；三个 AC 仍需原生桌面或下游持久化能力验收 |
 | 2026-07-16 | 矩阵更新为 1.1.0，TASK-001 改绑 REQ-027-AC-004，平台任务采用单平台完整旅程加另一平台构建门禁 | 用户确认平台验收策略并修正任务与 AC 职责边界 |
 | 2026-07-16 | TASK-001 更新为 done，并补充最终实现、测试、AC 报告与完成日期 | REQ-027-AC-004 已通过真实工程契约、双平台构建与 macOS 启动验证 |
+| 2026-07-18 | TASK-007 更新为 done，补充 settingsstore 与前端 settings 服务路径 | 本机设置原子读写、默认值、consent 失效与 Unit AC 已验收 |

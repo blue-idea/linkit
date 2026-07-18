@@ -6,6 +6,7 @@ import (
 
 	"github.com/blue-idea/collection/config"
 	"github.com/blue-idea/collection/internal/localstore"
+	"github.com/blue-idea/collection/internal/settingsstore"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -20,6 +21,10 @@ func main() {
 	localDocumentService, err := localstore.NewDefaultService()
 	if err != nil {
 		log.Fatalf("Unable to initialise local document service: %v", err)
+	}
+	settingsService, err := settingsstore.NewDefaultService()
+	if err != nil {
+		log.Fatalf("Unable to initialise settings service: %v", err)
 	}
 
 	err = wails.Run(&options.App{
@@ -37,6 +42,7 @@ func main() {
 		},
 		Bind: []interface{}{
 			localDocumentService,
+			settingsService,
 		},
 	})
 	if err != nil {

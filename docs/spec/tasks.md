@@ -150,13 +150,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-007 · 实现本地设置服务与默认配置**
+- [x] **TASK-007 · 实现本地设置服务与默认配置**
 
   > 依赖：TASK-001、TASK-003 · 预计：2–3 小时
 
-  - [ ] 实现 settings.json 原子读写、默认值、版本校验和损坏恢复。
-  - [ ] 保存 storageMode、theme、locale、AI Base/Model、consent 和 lastCloudRevision。
-  - [ ] API Base 改变时自动清除不匹配 consent。
+  - [x] 实现 settings.json 原子读写、默认值、版本校验和损坏恢复。
+  - [x] 保存 storageMode、theme、locale、AI Base/Model、consent 和 lastCloudRevision。
+  - [x] API Base 改变时自动清除不匹配 consent。
 
   **验证方式：**
   ```powershell
@@ -998,7 +998,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-004 | 测试 Factory 与性能数据 | Unit/Performance | done | REQ-026、028 |
 | TASK-005 | Store、命令与 Repository | Unit | done | REQ-026、027 |
 | TASK-006 | 本地原子资料库与云草稿 | Unit/API | done | REQ-002、003、027 |
-| TASK-007 | 本地设置服务 | Unit | 待开始 | REQ-019、023 |
+| TASK-007 | 本地设置服务 | Unit | done | REQ-019、023 |
 | TASK-008 | 原生导入导出服务 | Unit/Manual | 待开始 | REQ-005、025 |
 | TASK-009 | 网页元数据与外部 URL | API/Security | 待开始 | REQ-006、008、025 |
 | TASK-010 | 本地模式启动恢复 | Unit/E2E | 待开始 | REQ-001、002 |
