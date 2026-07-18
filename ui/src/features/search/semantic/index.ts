@@ -1,14 +1,13 @@
-export { detectSpotlightHttpUrl, normalizeSpotlightUrl } from './url';
 export {
   buildSemanticCandidates,
   validateSemanticResults,
   runSemanticSearch,
-  wailsSemanticClient,
-} from './semantic';
+} from './run';
 export type {
   SemanticCandidate,
   SemanticHit,
   SemanticRerankClient,
   SemanticSearchOutcome,
   SemanticSearchMode,
-} from './semantic';
+} from './run';
+export { wailsSemanticClient } from './client';

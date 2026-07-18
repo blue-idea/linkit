@@ -1172,6 +1172,15 @@ export default function App() {
         tags={tagList}
         categories={cats}
         collections={cols}
+        aiContext={
+          settings.ai?.apiBase && settings.ai?.model
+            ? {
+                apiBase: settings.ai.apiBase,
+                model: settings.ai.model,
+                locale: settings.locale === 'zh' ? 'zh' : 'en',
+              }
+            : null
+        }
         onSelect={(id) => setState((s) => ({ ...s, selectedBookmarkId: id }))}
         onClose={() => setSpotlightOpen(false)}
         onNewFromUrl={(url) => {
