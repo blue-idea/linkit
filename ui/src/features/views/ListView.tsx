@@ -119,11 +119,12 @@ function ListItem({
       </div>
       <button
         type="button"
+        aria-label={item.starred ? `Unstar ${item.title}` : `Star ${item.title}`}
         onClick={(e) => {
           e.stopPropagation();
           onToggleStar();
         }}
-        className={`w-6 h-6 rounded-md flex items-center justify-center transition ${
+        className={`w-6 h-6 rounded-md flex items-center justify-center transition focus-ring ${
           item.starred ? 'text-amber-400' : 'text-ink-500 opacity-0 group-hover:opacity-100'
         }`}
       >
