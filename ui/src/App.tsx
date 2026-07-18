@@ -97,6 +97,8 @@ import {
   type CollectionSuggestion,
   type DuplicatePreview,
 } from './features/ai';
+import { ExploreDialog, recommendLibraryBookmarks, suggestThemeGaps } from './features/explore';
+import { KnowledgeGraphDialog, buildKnowledgeGraph } from './features/knowledge-graph';
 
 export default function App() {
   const auth = useAuth();
@@ -140,6 +142,8 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [aiCollectionPreview, setAICollectionPreview] = useState<CollectionSuggestion | null>(null);
   const [duplicatePreview, setDuplicatePreview] = useState<DuplicatePreview | null>(null);
+  const [exploreOpen, setExploreOpen] = useState(false);
+  const [knowledgeGraphOpen, setKnowledgeGraphOpen] = useState(false);
   const [cloudConflictOpen, setCloudConflictOpen] = useState(false);
   const [cloudConflictRevision, setCloudConflictRevision] = useState<number | null>(null);
   const [draftRecoveryOpen, setDraftRecoveryOpen] = useState(false);
@@ -1156,6 +1160,7 @@ export default function App() {
             onDragStartBookmark={() => {}}
             onOpenAICollection={() => { void openAICollection(); }}
             onOpenDuplicates={openDuplicates}
+            onOpenExplore={() => setExploreOpen(true)}
           />
         }
         detail={
@@ -1179,6 +1184,7 @@ export default function App() {
             }}
             onOpenHealth={() => setHealthOpen(true)}
             onReanalyze={() => setReanalyzeOpen(true)}
+            onOpenKnowledgeGraph={() => setKnowledgeGraphOpen(true)}
             onDelete={() => selectedBookmark && requestDeleteBookmark(selectedBookmark.id)}
             onClose={() => setState((s) => ({ ...s, selectedBookmarkId: null }))}
           />
@@ -1410,6 +1416,42 @@ export default function App() {
           }
           setDuplicatePreview(null);
         }} />
+      )}
+      {exploreOpen && (() => {
+        const domainLibrary = toCategoryLibrary(entities());
+        const anchorId = selectedBookmark?.id ?? domainLibrary.bookmarks[0]?.id ?? '';
+        const recommendations = recommendLibraryBookmarks(domainLibrary, anchorId);
+        const themeGaps = suggestThemeGaps(domainLibrary);
+        return <ExploreDialog
+          recommendations={recommendations}
+          themeGaps={themeGaps}
+          bookmarkLabels={Object.fromEntries(bookmarks.map((bookmark) => [bookmark.id, bookmark.title]))}
+          collectionLabels={Object.fromEntries(cols.map((collection) => [collection.id, collection.name]))}
+          onClose={() => setExploreOpen(false)}
+          onSelect={(bookmarkId) => {
+            setState((current) => ({ ...current, selectedBookmarkId: bookmarkId }));
+            setExploreOpen(false);
+          }}
+          onConfirmGap={(collectionId, bookmarkId) => {
+            const result = runSetMembership({ ...entities(), collectionId, bookmarkId, member: true });
+            if (result.ok) {
+              const applied = applyCollectionLibraryResult(result.value, bookmarks);
+              setBookmarks(applied.bookmarks);
+              setCols(applied.collections);
+              flashToast('Bookmark added to collection');
+            }
+          }}
+        />;
+      })()}
+      {knowledgeGraphOpen && selectedBookmark && (
+        <KnowledgeGraphDialog
+          graph={buildKnowledgeGraph(toCategoryLibrary(entities()), selectedBookmark.id)}
+          onClose={() => setKnowledgeGraphOpen(false)}
+          onSelect={(bookmarkId) => {
+            setState((current) => ({ ...current, selectedBookmarkId: bookmarkId }));
+            setKnowledgeGraphOpen(false);
+          }}
+        />
       )}
       <InsightsDialog
         open={insightsOpen}
