@@ -88,8 +88,8 @@ export function saveSettings(s: AppSettings) {
   }
 }
 
-export function exportLibrary(lib: LibraryData, filename = 'lattice-export.json') {
-  const blob = new Blob([JSON.stringify(lib, null, 2)], { type: 'application/json' });
+export function exportLibrary(payload: unknown, filename = 'linkit-export.json') {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -98,19 +98,14 @@ export function exportLibrary(lib: LibraryData, filename = 'lattice-export.json'
   URL.revokeObjectURL(url);
 }
 
-export function importLibrary(file: File): Promise<LibraryData> {
+/** 读取导入文件原文；解析与确认由 import-export 模块负责。 */
+export function importLibrary(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
-      try {
-        const lib = JSON.parse(reader.result as string) as LibraryData;
-        if (!lib.bookmarks || !Array.isArray(lib.bookmarks)) throw new Error('格式无效');
-        resolve(lib);
-      } catch (e) {
-        reject(e);
-      }
+      resolve(String(reader.result ?? ''));
     };
-    reader.onerror = () => reject(reader.error);
+    reader.onerror = () => reject(reader.error ?? new Error('Failed to read import file'));
     reader.readAsText(file);
   });
 }

@@ -1,0 +1,71 @@
+{
+  "format": "linkit-library",
+  "schemaVersion": 1,
+  "revision": 0,
+  "updatedAt": "2026-07-18T08:00:00.000Z",
+  "data": {
+    "bookmarks": [
+      {
+        "id": "import-bookmark-1",
+        "title": "Imported Alpha",
+        "url": "https://example.test/imported-alpha",
+        "domain": "example.test",
+        "favicon": null,
+        "description": "",
+        "notes": "",
+        "tagIds": [
+          "import-tag-1"
+        ],
+        "categoryId": "import-cat-1",
+        "collectionIds": [
+          "import-col-1"
+        ],
+        "createdAt": "2026-07-18T08:00:00.000Z",
+        "updatedAt": "2026-07-18T08:00:00.000Z",
+        "lastVisitedAt": null,
+        "visitCount": 0,
+        "starred": false,
+        "pinned": false,
+        "readStatus": "unread",
+        "health": "ok",
+        "healthCheckedAt": null,
+        "healthHttpStatus": null,
+        "healthFingerprint": null,
+        "healthErrorCode": null,
+        "aiSummary": "",
+        "aiSuggestedTags": [],
+        "thumbnail": null
+      }
+    ],
+    "categories": [
+      {
+        "id": "import-cat-1",
+        "name": "Imported Category",
+        "icon": "Bookmark",
+        "parentId": null,
+        "color": "blue"
+      }
+    ],
+    "collections": [
+      {
+        "id": "import-col-1",
+        "name": "Imported Theme",
+        "emoji": "📚",
+        "color": "blue",
+        "description": "",
+        "bookmarkIds": [
+          "import-bookmark-1"
+        ],
+        "createdAt": "2026-07-18T08:00:00.000Z",
+        "updatedAt": "2026-07-18T08:00:00.000Z"
+      }
+    ],
+    "tags": [
+      {
+        "id": "import-tag-1",
+        "label": "ImportedTag",
+        "color": "blue"
+      }
+    ]
+  }
+}

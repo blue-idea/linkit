@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.19.0  
+> 版本：1.20.0  
 > 日期：2026-07-18  
-> 状态：已定稿（TASK-023 已完成）
+> 状态：已定稿（TASK-024 已完成）
 
 ---
 
@@ -49,7 +49,7 @@
 | TASK-021 | Spotlight 关键词与 URL | REQ-017-AC-001~004 | done | `ui/src/domain/search/*`、`ui/src/features/search/*`、`ui/src/components/Spotlight.tsx`、`ui/src/App.tsx` | `ui/src/domain/search/search.test.ts`、`ui/src/features/search/url.test.ts`、`ui/tests/e2e/spotlight.spec.ts` | `docs/spec/ac/TASK-021-AC.md` | 2026-07-18 |
 | TASK-022 | 主窗口、快捷键与无障碍 | REQ-024-AC-001~006；REQ-028-AC-004 | done | `ui/src/features/shell/*`、`ui/src/App.tsx`、`ui/src/components/Dialogs.tsx`、`ui/src/components/SettingsDialog.tsx` | `ui/src/features/shell/shell.test.ts`、`ui/tests/e2e/app-shell.spec.ts`、`ui/tests/e2e/app-shell.spec.ts-snapshots/*` | `docs/spec/ac/TASK-022-AC.md` | 2026-07-18 |
 | TASK-023 | 设置、主题与 i18n | REQ-023-AC-001~006 | done | `ui/src/i18n/*`、`ui/src/features/settings/*`、`ui/src/components/SettingsDialog.tsx`、`ui/src/components/LoginScreen.tsx`、`ui/src/features/shell/WindowChrome.tsx`、`ui/src/config/i18n.ts` | `ui/src/i18n/i18n.test.ts`、`ui/src/features/settings/settings-ui.test.ts`、`ui/tests/e2e/settings-i18n.spec.ts` | `docs/spec/ac/TASK-023-AC.md` | 2026-07-18 |
-| TASK-024 | 导入导出 UX | REQ-005-AC-001~003；REQ-023-AC-005~006 | 待开始 | — | — | — | — |
+| TASK-024 | 导入导出 UX | REQ-005-AC-001~003；REQ-023-AC-005~006 | done | `ui/src/features/import-export/*`、`ui/src/components/SettingsDialog.tsx`、`ui/src/storage.ts`、`ui/src/i18n/catalogs.ts` | `ui/src/features/import-export/*.test.ts`、`ui/tests/e2e/import-export.spec.ts`、`ui/tests/fixtures/*` | `docs/spec/ac/TASK-024-AC.md` | 2026-07-18 |
 | TASK-025 | 本地 MVP 回归 | REQ-002、006~017、023~024；REQ-028-AC-001~004 | 待开始 | — | — | — | — |
 | TASK-026 | Supabase 本地与 RLS | REQ-003-AC-002~003；REQ-025-AC-003~005 | 待开始 | — | — | — | — |
 | TASK-027 | Supabase Auth | REQ-001-AC-001~006；REQ-002-AC-003 | 待开始 | — | — | — | — |
@@ -109,3 +109,4 @@
 | 2026-07-18 | TASK-017 更新为 done，补充手动拖出主题组合 | 预览/取消无副作用/确认双向成员已验收 |
 | 2026-07-18 | TASK-018 更新为 done，补充标签维护与筛选 | 唯一性、引用清理、侧栏计数与建议采纳已验收 |
 | 2026-07-18 | TASK-023 更新为 done，补充 i18n、五分区设置与四主题 | 默认 English、中英切换、主题持久化与 AC 已验收 |
+| 2026-07-18 | TASK-024 更新为 done，补充导入导出 UX 与覆盖确认 | 版本化导出、覆盖确认、无效拒绝与双语言截图已验收 |
