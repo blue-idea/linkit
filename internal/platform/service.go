@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/blue-idea/collection/config"
@@ -28,13 +29,16 @@ type ImportFileResult struct {
 
 type Option func(*Service)
 
+type urlOpener func(rawURL string) error
+
 type Service struct {
-	ctx      context.Context
-	dialogs  fileDialogs
-	maxBytes int64
-	now      func() time.Time
-	readFile func(path string) ([]byte, error)
+	ctx       context.Context
+	dialogs   fileDialogs
+	maxBytes  int64
+	now       func() time.Time
+	readFile  func(path string) ([]byte, error)
 	writeFile func(path string, content []byte, permission os.FileMode) error
+	openURL   urlOpener
 }
 
 func NewService(options ...Option) *Service {
@@ -43,6 +47,7 @@ func NewService(options ...Option) *Service {
 		now:       time.Now,
 		readFile:  os.ReadFile,
 		writeFile: os.WriteFile,
+		openURL:   defaultOpenURL,
 	}
 	for _, option := range options {
 		option(service)
@@ -63,6 +68,10 @@ func WithClock(now func() time.Time) Option {
 
 func WithMaxDocumentBytes(maxBytes int64) Option {
 	return func(service *Service) { service.maxBytes = maxBytes }
+}
+
+func WithURLOpener(openURL urlOpener) Option {
+	return func(service *Service) { service.openURL = openURL }
 }
 
 // SetContext 在 Wails OnStartup 时注入运行时上下文，供原生对话框使用。
@@ -124,4 +133,15 @@ func (service *Service) SelectImportFile() (ImportFileResult, error) {
 		ByteSize:     &size,
 		DocumentJSON: string(content),
 	}, nil
+}
+
+// OpenExternalURL 使用系统浏览器打开 HTTP(S) URL；失败时返回错误，前端不得增加访问计数。
+func (service *Service) OpenExternalURL(rawURL string) error {
+	if err := validateExternalURL(rawURL); err != nil {
+		return err
+	}
+	if err := service.openURL(strings.TrimSpace(rawURL)); err != nil {
+		return newServiceError(config.ErrorCodeExternalOpenFailed, config.ErrorMessageExternalOpenFailed, true, err)
+	}
+	return nil
 }
