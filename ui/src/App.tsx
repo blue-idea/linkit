@@ -30,6 +30,7 @@ import {
 } from './features/bookmarks';
 import { createBrowserStorageAdapters } from './services/storage';
 import { normalizeBookmarkUrl } from './domain/commands';
+import { openExternalUrl } from './features/bookmarks/external-url';
 
 /* ---------- window chrome ---------- */
 function WindowChrome({
@@ -222,6 +223,10 @@ export default function App() {
       list = list.filter((b) => b.health === sel.status);
     }
     if (state.filters.onlyStarred) list = list.filter((b) => b.starred);
+    // REQ-008-AC-004：按阅读状态交集筛选。
+    if (state.filters.readStatus !== 'all') {
+      list = list.filter((b) => (b.readStatus ?? 'unread') === state.filters.readStatus);
+    }
     if (state.filters.tagIds.length) list = list.filter((b) => state.filters.tagIds.every((t) => b.tags.includes(t)));
     if (state.filters.dateRange !== 'all') {
       const days = state.filters.dateRange === '7d' ? 7 : state.filters.dateRange === '30d' ? 30 : 90;
@@ -247,8 +252,28 @@ export default function App() {
   }, []);
 
   const toggleStar = useCallback((id: string) => {
+    // REQ-008-AC-001：星标切换后立即更新界面并由自动保存持久化。
     setBookmarks((prev) => prev.map((b) => (b.id === id ? { ...b, starred: !b.starred } : b)));
   }, []);
+
+  const togglePin = useCallback((id: string) => {
+    // REQ-008-AC-001：置顶切换后立即更新界面并由自动保存持久化。
+    setBookmarks((prev) => prev.map((b) => (b.id === id ? { ...b, pinned: !b.pinned } : b)));
+  }, []);
+
+  const handleVisit = useCallback(async () => {
+    if (!selectedBookmark) return;
+    // REQ-008-AC-002：仅在外部打开成功后增加 visitCount。
+    try {
+      await openExternalUrl(selectedBookmark.url);
+      updateBookmark(selectedBookmark.id, {
+        lastVisitedAt: new Date().toISOString(),
+        visitCount: selectedBookmark.visitCount + 1,
+      });
+    } catch {
+      flashToast('Failed to open external URL');
+    }
+  }, [flashToast, selectedBookmark, updateBookmark]);
 
   const toggleCollection = useCallback((bookmarkId: string, collectionId: string) => {
     setBookmarks((prev) => prev.map((b) => {
@@ -548,6 +573,7 @@ export default function App() {
               onClearTagFilter={(id) => setFilters({ tagIds: state.filters.tagIds.filter((t) => t !== id) })}
               onDateRange={(r) => setFilters({ dateRange: r })}
               onToggleStarredFilter={() => setFilters({ onlyStarred: !state.filters.onlyStarred })}
+              onReadStatusFilter={(status) => setFilters({ readStatus: status })}
               onAcceptAICollection={acceptAICollection}
               onDismissAICollection={() => {}}
               onNewBookmark={() => { setNewUrl(''); setNewOpen(true); }}
@@ -565,13 +591,9 @@ export default function App() {
                 collections={cols}
                 onUpdate={(patch) => selectedBookmark && updateBookmark(selectedBookmark.id, patch)}
                 onToggleStar={() => selectedBookmark && toggleStar(selectedBookmark.id)}
-                onTogglePin={() => selectedBookmark && updateBookmark(selectedBookmark.id, { pinned: !selectedBookmark.pinned })}
+                onTogglePin={() => selectedBookmark && togglePin(selectedBookmark.id)}
                 onToggleCollection={(cid) => selectedBookmark && toggleCollection(selectedBookmark.id, cid)}
-                onVisit={() => {
-                  if (!selectedBookmark) return;
-                  updateBookmark(selectedBookmark.id, { lastVisitedAt: new Date().toISOString(), visitCount: selectedBookmark.visitCount + 1 });
-                  window.open(selectedBookmark.url, '_blank');
-                }}
+                onVisit={() => { void handleVisit(); }}
                 onOpenHealth={() => setHealthOpen(true)}
                 onDelete={() => selectedBookmark && requestDeleteBookmark(selectedBookmark.id)}
                 onClose={() => setState((s) => ({ ...s, selectedBookmarkId: null }))}

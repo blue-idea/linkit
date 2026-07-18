@@ -3,10 +3,22 @@ import type { Bookmark, Category, Collection, Tag } from '../types';
 import { Icon, TagPill, Favicon, MiniBrowser, Sparkline, AIBadge, Button, Kbd } from './ui';
 import { tagColors } from '../colors';
 
-function StatPill({ icon, label, value, color = 'gray' }: { icon: string; label: string; value: string; color?: keyof typeof tagColors }) {
+function StatPill({
+  icon,
+  label,
+  value,
+  color = 'gray',
+  'aria-label': ariaLabel,
+}: {
+  icon: string;
+  label: string;
+  value: string;
+  color?: keyof typeof tagColors;
+  'aria-label'?: string;
+}) {
   const c = tagColors[color];
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-ink-800/60 hairline px-2.5 py-2">
+    <div className="flex items-center gap-2 rounded-lg bg-ink-800/60 hairline px-2.5 py-2" aria-label={ariaLabel}>
       <span className={`w-7 h-7 rounded-md ${c.soft} flex items-center justify-center`}>
         <Icon name={icon} size={14} className={c.text} />
       </span>
@@ -124,11 +136,36 @@ export function DetailPanel({
       <div className="flex-1 overflow-y-auto scroll-thin">
         {/* Actions */}
         <div className="px-4 py-3 flex items-center gap-2">
-          <Button variant="primary" size="sm" icon="ExternalLink" onClick={onVisit} className="flex-1">访问</Button>
-          <Button variant="subtle" size="sm" icon="Star" onClick={onToggleStar} className={b.starred ? 'text-amber-400' : ''}>
+          <Button
+            variant="primary"
+            size="sm"
+            icon="ExternalLink"
+            onClick={onVisit}
+            className="flex-1"
+            aria-label="Open bookmark URL"
+          >
+            Visit
+          </Button>
+          <Button
+            variant="subtle"
+            size="sm"
+            icon="Star"
+            onClick={onToggleStar}
+            className={b.starred ? 'text-amber-400' : ''}
+            aria-label="Toggle star"
+            aria-pressed={b.starred}
+          >
             <Icon name="Star" size={13} fill={b.starred ? 'currentColor' : 'none'} />
           </Button>
-          <Button variant="subtle" size="sm" onClick={onTogglePin} className={b.pinned ? 'text-amber-400' : ''} icon="Pin" />
+          <Button
+            variant="subtle"
+            size="sm"
+            onClick={onTogglePin}
+            className={b.pinned ? 'text-amber-400' : ''}
+            icon="Pin"
+            aria-label="Toggle pin"
+            aria-pressed={b.pinned}
+          />
           {onDelete && (
             <button
               type="button"
@@ -141,6 +178,25 @@ export function DetailPanel({
             </button>
           )}
         </div>
+
+        {/* REQ-008-AC-003：阅读状态仅允许四种枚举 */}
+        <Field label="Read status">
+          <select
+            aria-label="Read status"
+            value={b.readStatus ?? 'unread'}
+            onChange={(e) =>
+              onUpdate({
+                readStatus: e.target.value as NonNullable<Bookmark['readStatus']>,
+              })
+            }
+            className="w-full rounded-lg bg-ink-800/60 hairline text-[12px] text-ink-100 px-3 py-2 focus-ring"
+          >
+            <option value="unread">Unread</option>
+            <option value="reading">Reading</option>
+            <option value="read">Read</option>
+            <option value="archived">Archived</option>
+          </select>
+        </Field>
 
         {/* Preview */}
         <div className="px-4 pb-2">
@@ -164,7 +220,7 @@ export function DetailPanel({
 
         {/* Stats */}
         <div className="px-4 py-2 grid grid-cols-2 gap-2">
-          <StatPill icon="Eye" label="访问次数" value={String(b.visitCount)} color="blue" />
+          <StatPill icon="Eye" label="访问次数" value={String(b.visitCount)} color="blue" aria-label="Visit count" />
           <StatPill icon="Clock" label="最近访问" value={lastVisit ? relTime(lastVisit) : '从未'} color="green" />
           <StatPill icon="Plus" label="收藏于" value={`${created.getMonth() + 1}月${created.getDate()}日`} color="violet" />
           <StatPill icon="Calendar" label="距今" value={relDays(created)} color="amber" />

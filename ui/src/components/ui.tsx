@@ -212,6 +212,8 @@ export function Button({
   className = '',
   onClick,
   disabled,
+  'aria-label': ariaLabel,
+  'aria-pressed': ariaPressed,
 }: {
   children?: ReactNode;
   variant?: 'primary' | 'ghost' | 'subtle' | 'danger';
@@ -220,6 +222,8 @@ export function Button({
   className?: string;
   onClick?: () => void;
   disabled?: boolean;
+  'aria-label'?: string;
+  'aria-pressed'?: boolean;
 }) {
   const variants = {
     primary: 'bg-accent-600 hover:bg-accent-500 text-white shadow-sm',
@@ -230,8 +234,11 @@ export function Button({
   const sizes = { sm: 'text-xs px-2.5 py-1.5 rounded-md gap-1.5', md: 'text-sm px-3 py-2 rounded-lg gap-2' };
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={disabled}
+      aria-label={ariaLabel}
+      aria-pressed={ariaPressed}
       className={`inline-flex items-center justify-center font-medium transition-all focus-ring ${variants[variant]} ${sizes[size]} disabled:opacity-40 disabled:cursor-not-allowed ${className}`}
     >
       {icon && <Icon name={icon} size={size === 'sm' ? 13 : 15} />}

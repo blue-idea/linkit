@@ -30,7 +30,7 @@ interface AppState {
   };
   ui: {
     selection: { kind: string; id?: string };
-    filters: { query: string; tagIds: string[]; dateRange: string; onlyStarred: boolean };
+    filters: { query: string; tagIds: string[]; dateRange: string; onlyStarred: boolean; readStatus: string };
     view: string;
     selectedBookmarkId: string | null;
     panel: string | null;
@@ -95,7 +95,7 @@ describe('Zustand App Store', () => {
     expect(state.sync).toMatchObject({ activeMode: 'local', revision: seed.library.revision, status: 'idle' });
     expect(state.ui).toMatchObject({
       selection: { kind: 'all' },
-      filters: { query: '', tagIds: [], dateRange: 'all', onlyStarred: false },
+      filters: { query: '', tagIds: [], dateRange: 'all', onlyStarred: false, readStatus: 'all' },
       view: 'card',
       selectedBookmarkId: null,
     });
