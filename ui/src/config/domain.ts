@@ -12,6 +12,14 @@ export const DOMAIN_CONFIG = {
       code: 'COLLECTION_NOT_FOUND',
       message: 'Collection was not found',
     },
+    collectionNameInvalid: {
+      code: 'COLLECTION_NAME_INVALID',
+      message: 'Collection name is required',
+    },
+    collectionEmojiInvalid: {
+      code: 'COLLECTION_EMOJI_INVALID',
+      message: 'Collection emoji is required',
+    },
     readStatusInvalid: {
       code: 'READ_STATUS_INVALID',
       message: 'Read status must be unread, reading, read or archived',
@@ -35,6 +43,9 @@ export const DOMAIN_CONFIG = {
   },
   events: {
     collectionMembershipChanged: 'bookmark.collection-membership.changed',
+    collectionCreated: 'collection.created',
+    collectionUpdated: 'collection.updated',
+    collectionDeleted: 'collection.deleted',
     bookmarkCreated: 'bookmark.created',
     bookmarkUpdated: 'bookmark.updated',
     bookmarkDeleted: 'bookmark.deleted',

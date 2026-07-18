@@ -347,13 +347,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ## 波次 2 · 组织、视图与本地完整 MVP
 
-- [ ] **TASK-016 · 实现主题 CRUD 与双向成员关系**
+- [x] **TASK-016 · 实现主题 CRUD 与双向成员关系**
 
   > 依赖：TASK-005、TASK-011 · 预计：3–4 小时
 
-  - [ ] 实现主题创建、编辑、删除和成员加入/移除命令。
-  - [ ] 保证 Collection.bookmarkIds 与 Bookmark.collectionIds 双向一致。
-  - [ ] 接入侧栏、详情和主题成员视图。
+  - [x] 实现主题创建、编辑、删除和成员加入/移除命令。
+  - [x] 保证 Collection.bookmarkIds 与 Bookmark.collectionIds 双向一致。
+  - [x] 接入侧栏、详情和主题成员视图。
 
   **验证方式：**
   ```powershell

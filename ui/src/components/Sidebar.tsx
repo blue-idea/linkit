@@ -105,6 +105,9 @@ export function Sidebar({
   onDeleteCategory,
   onMoveCategory,
   onRequestMoveCategory,
+  onNewCollection,
+  onEditCollection,
+  onDeleteCollection,
   insightCount,
 }: {
   categories: Category[];
@@ -123,6 +126,9 @@ export function Sidebar({
   onDeleteCategory: (categoryId: string) => void;
   onMoveCategory: (categoryId: string, newParentId: string) => void;
   onRequestMoveCategory: (categoryId: string) => void;
+  onNewCollection: () => void;
+  onEditCollection: (collectionId: string) => void;
+  onDeleteCollection: (collectionId: string) => void;
   insightCount: number;
 }) {
   const [dragOverId, setDragOverId] = useStateDrag();
@@ -307,7 +313,13 @@ export function Sidebar({
         {/* Collections */}
         <SectionLabel
           right={
-            <button className="text-ink-400 hover:text-ink-100 transition" title="新建主题">
+            <button
+              type="button"
+              aria-label="New collection"
+              className="text-ink-400 hover:text-ink-100 transition"
+              title="New collection"
+              onClick={onNewCollection}
+            >
               <Icon name="Plus" size={12} />
             </button>
           }
@@ -318,19 +330,48 @@ export function Sidebar({
           const active = selection.kind === 'collection' && selection.id === col.id;
           const c = tagColors[col.color];
           return (
-            <NavRow
-              key={col.id}
-              active={active}
-              emoji={col.emoji}
-              label={col.name}
-              count={col.bookmarkIds.length}
-              onClick={() => onSelect({ kind: 'collection', id: col.id })}
-              onDropBookmark={(bid) => onDropToCollection(col.id, bid)}
-              dragOver={dragOverId === col.id}
-              onDragOver={(e) => { e.preventDefault(); setDragOverId(col.id); }}
-              onDragLeave={() => setDragOverId(null)}
-              trailing={<span className={`w-1.5 h-1.5 rounded-full ${c.dot} opacity-70`} />}
-            />
+            <div key={col.id} className="group relative">
+              <NavRow
+                active={active}
+                emoji={col.emoji}
+                label={col.name}
+                count={col.bookmarkIds.length}
+                onClick={() => onSelect({ kind: 'collection', id: col.id })}
+                onDropBookmark={(bid) => onDropToCollection(col.id, bid)}
+                dragOver={dragOverId === col.id}
+                onDragOver={(e) => { e.preventDefault(); setDragOverId(col.id); }}
+                onDragLeave={() => setDragOverId(null)}
+                trailing={
+                  <span className="flex items-center gap-0.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${c.dot} opacity-70`} />
+                    <button
+                      type="button"
+                      aria-label="Edit collection"
+                      title="Edit collection"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditCollection(col.id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-ink-100 flex items-center justify-center transition"
+                    >
+                      <Icon name="PenTool" size={11} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Delete collection"
+                      title="Delete collection"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteCollection(col.id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-coral-400 flex items-center justify-center transition"
+                    >
+                      <Icon name="Trash2" size={11} />
+                    </button>
+                  </span>
+                }
+              />
+            </div>
           );
         })}
 
