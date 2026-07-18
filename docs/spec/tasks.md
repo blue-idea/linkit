@@ -434,13 +434,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-020 · 实现 Timeline、Tag Aggregation、Theme Space**
+- [x] **TASK-020 · 实现 Timeline、Tag Aggregation、Theme Space**
 
   > 依赖：TASK-016、TASK-018、TASK-019 · 预计：3–4 小时
 
-  - [ ] 实现 createdAt/lastVisitedAt 时间分组和 Never Visited。
-  - [ ] 实现标签聚合与主题空间容器视图。
-  - [ ] 使用虚拟化并生成三视图视觉证据。
+  - [x] 实现 createdAt/lastVisitedAt 时间分组和 Never Visited。
+  - [x] 实现标签聚合与主题空间容器视图。
+  - [x] 使用虚拟化并生成三视图视觉证据。
 
   **验证方式：**
   ```powershell
@@ -1011,7 +1011,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-017 | 手动主题组合 | Unit/E2E | 待开始 | REQ-013 |
 | TASK-018 | 标签管理 | Unit/E2E | 待开始 | REQ-014 |
 | TASK-019 | 三种基础视图 | E2E/Manual | 已完成 | REQ-015、028 |
-| TASK-020 | 三种聚合视图 | Unit/E2E | 待开始 | REQ-016、028 |
+| TASK-020 | 三种聚合视图 | Unit/E2E | 已完成 | REQ-016、028 |
 | TASK-021 | Spotlight 关键词与 URL | Unit/E2E | 待开始 | REQ-017 |
 | TASK-022 | 主窗口、快捷键与无障碍 | E2E/Security | 待开始 | REQ-024、028 |
 | TASK-023 | 设置、主题与 i18n | Unit/E2E | 待开始 | REQ-023 |

@@ -7,6 +7,9 @@ import {
   CardView,
   ListView,
   MasonryView,
+  TimelineView,
+  TagAggregationView,
+  ThemeSpaceView,
   presentBookmarks,
 } from '../features/views';
 
@@ -180,6 +183,9 @@ function Toolbar({
             { value: 'card', icon: 'LayoutGrid', ariaLabel: 'Card view' },
             { value: 'list', icon: 'List', ariaLabel: 'List view' },
             { value: 'masonry', icon: 'Columns3', ariaLabel: 'Masonry view' },
+            { value: 'timeline', icon: 'Clock', ariaLabel: 'Timeline view' },
+            { value: 'tag-aggregation', icon: 'Tags', ariaLabel: 'Tag Aggregation view' },
+            { value: 'theme-space', icon: 'Boxes', ariaLabel: 'Theme Space view' },
           ]}
         />
       </div>
@@ -334,6 +340,8 @@ export function ContentArea({
   );
   // REQ-015：三视图共享 Presenter 元数据投影。
   const presented = useMemo(() => presentBookmarks(sorted, tags), [sorted, tags]);
+  // Theme Space 以全库主题成员为容器数据源。
+  const presentedAll = useMemo(() => presentBookmarks(allBookmarks, tags), [allBookmarks, tags]);
   const showAI = selection.kind === 'collection' && !aiDismissed;
   const composeSet = useMemo(() => new Set(composeSelectedIds), [composeSelectedIds]);
 
@@ -406,7 +414,7 @@ export function ContentArea({
         </div>
       )}
 
-      {bookmarks.length === 0 ? (
+      {bookmarks.length === 0 && density !== 'theme-space' ? (
         <EmptyState onNew={onNewBookmark} onSpotlight={onOpenSpotlight} />
       ) : density === 'card' ? (
         <CardView
@@ -424,9 +432,34 @@ export function ContentArea({
           onToggleStar={onToggleStar}
           onDragStart={startDrag}
         />
-      ) : (
+      ) : density === 'masonry' ? (
         <MasonryView
           items={presented}
+          isSelected={(id) => selectedId === id || composeSet.has(id)}
+          onSelect={(id, e) => handleCardClick(e, id)}
+          onDragStart={startDrag}
+        />
+      ) : density === 'timeline' ? (
+        <TimelineView
+          items={presented}
+          bookmarks={bookmarks}
+          isSelected={(id) => selectedId === id || composeSet.has(id)}
+          onSelect={(id, e) => handleCardClick(e, id)}
+          onDragStart={startDrag}
+        />
+      ) : density === 'tag-aggregation' ? (
+        <TagAggregationView
+          items={presented}
+          bookmarks={bookmarks}
+          tags={tags}
+          isSelected={(id) => selectedId === id || composeSet.has(id)}
+          onSelect={(id, e) => handleCardClick(e, id)}
+          onDragStart={startDrag}
+        />
+      ) : (
+        <ThemeSpaceView
+          items={presentedAll}
+          collections={collections}
           isSelected={(id) => selectedId === id || composeSet.has(id)}
           onSelect={(id, e) => handleCardClick(e, id)}
           onDragStart={startDrag}

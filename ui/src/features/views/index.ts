@@ -5,3 +5,6 @@ export type { LayoutRect } from './layout';
 export { CardView } from './CardView';
 export { ListView } from './ListView';
 export { MasonryView } from './MasonryView';
+export { TimelineView } from './TimelineView';
+export { TagAggregationView } from './TagAggregationView';
+export { ThemeSpaceView } from './ThemeSpaceView';
