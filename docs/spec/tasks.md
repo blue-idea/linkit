@@ -587,13 +587,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-027 · 实现 Supabase Auth 与注册分支**
+- [x] **TASK-027 · 实现 Supabase Auth 与注册分支**
 
-  > 依赖：TASK-010、TASK-026 · 预计：3–4 小时
+  > 依赖：TASK-010、TASK-026 · 预计：3–4 小时 · 状态：done · 2026-07-18
 
-  - [ ] 实现 signUp、signInWithPassword、getSession、onAuthStateChange 和 signOut Repository。
-  - [ ] 有 session 时进入主界面；无 session 时显示 `Check your email`。
-  - [ ] 覆盖无效凭据、会话恢复、loading gate 和退出后本地数据保留。
+  - [x] 实现 signUp、signInWithPassword、getSession、onAuthStateChange 和 signOut Repository。
+  - [x] 有 session 时进入主界面；无 session 时显示 `Check your email`。
+  - [x] 覆盖无效凭据、会话恢复、loading gate 和退出后本地数据保留。
 
   **验证方式：**
   ```powershell
@@ -1018,7 +1018,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-024 | 导入导出 UX | E2E | done | REQ-005、023 |
 | TASK-025 | 本地 MVP 回归 | E2E | done | 本地 MVP |
 | TASK-026 | Supabase 本地与 RLS | API/Security | done | REQ-003、025 |
-| TASK-027 | Supabase Auth | API/E2E | 待开始 | REQ-001、002 |
+| TASK-027 | Supabase Auth | API/E2E | done | REQ-001、002 |
 | TASK-028 | CloudRepository | Unit/API | 待开始 | REQ-003、027 |
 | TASK-029 | 存储切换与冲突 | Unit/E2E | 待开始 | REQ-003、004 |
 | TASK-030 | 远程 Supabase 验收 | API/Security/E2E | BLOCKED | REQ-001、003、004、025 |
