@@ -129,13 +129,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ## 波次 1 · 本地基础与书签闭环
 
-- [ ] **TASK-006 · 实现本地原子资料库与云草稿服务**
+- [x] **TASK-006 · 实现本地原子资料库与云草稿服务**
 
   > 依赖：TASK-001、TASK-003 · 预计：3–4 小时
 
-  - [ ] 实现 AppData 路径、临时写入、原子替换、`.bak` 和 revision。
-  - [ ] 实现 cloud-draft 的读写、dirty 状态和清理门禁。
-  - [ ] 使用临时目录测试写入失败、损坏正式文件和备份恢复。
+  - [x] 实现 AppData 路径、临时写入、原子替换、`.bak` 和 revision。
+  - [x] 实现 cloud-draft 的读写、dirty 状态和清理门禁。
+  - [x] 使用临时目录测试写入失败、损坏正式文件和备份恢复。
 
   **验证方式：**
   ```powershell
@@ -997,7 +997,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-003 | 数据 Schema 与迁移 | Unit | done | REQ-026 |
 | TASK-004 | 测试 Factory 与性能数据 | Unit/Performance | done | REQ-026、028 |
 | TASK-005 | Store、命令与 Repository | Unit | done | REQ-026、027 |
-| TASK-006 | 本地原子资料库与云草稿 | Unit/API | 待开始 | REQ-002、003、027 |
+| TASK-006 | 本地原子资料库与云草稿 | Unit/API | done | REQ-002、003、027 |
 | TASK-007 | 本地设置服务 | Unit | 待开始 | REQ-019、023 |
 | TASK-008 | 原生导入导出服务 | Unit/Manual | 待开始 | REQ-005、025 |
 | TASK-009 | 网页元数据与外部 URL | API/Security | 待开始 | REQ-006、008、025 |
