@@ -43,7 +43,15 @@ export function TagPill({
       <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
       {label}
       {onRemove && (
-        <button onClick={(e) => { e.stopPropagation(); onRemove(); }} className="ml-0.5 opacity-60 hover:opacity-100">
+        <button
+          type="button"
+          aria-label={`Remove tag ${label}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}
+          className="ml-0.5 opacity-60 hover:opacity-100 focus-ring rounded-sm"
+        >
           <Icon name="X" size={10} />
         </button>
       )}

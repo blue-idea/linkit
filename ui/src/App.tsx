@@ -4,7 +4,7 @@ import type { AppState, Filters, Selection } from './state';
 import { emptyFilters } from './state';
 import { bookmarks as seedBookmarks, categories as seedCategories, collections as seedCollections, tags as seedTags } from './data';
 import { aiBuildInsights } from './ai';
-import { Icon, Kbd } from './components/ui';
+import { Icon } from './components/ui';
 import { Sidebar } from './components/Sidebar';
 import { ContentArea } from './components/ContentArea';
 import { DetailPanel } from './components/DetailPanel';
@@ -12,6 +12,13 @@ import { Spotlight } from './components/Spotlight';
 import { NewBookmarkDialog, InsightsDialog, HealthDialog } from './components/Dialogs';
 import { LoginScreen } from './components/LoginScreen';
 import { SettingsDialog } from './components/SettingsDialog';
+import {
+  AppShell,
+  useEscapeOverlayStack,
+  useGlobalShortcuts,
+  useWindowUrlDrop,
+  type OverlayKind,
+} from './features/shell';
 import { useAuth } from './auth';
 import { loadCloudLibrary, saveCloudLibrary } from './cloud';
 import { loadLocalLibrary, saveLocalLibrary } from './storage';
@@ -75,88 +82,6 @@ import {
 } from './domain/query';
 import { collectCategorySubtreeIds } from './domain/categories';
 import { openExternalUrl } from './features/bookmarks/external-url';
-
-/* ---------- window chrome ---------- */
-function WindowChrome({
-  onSpotlight,
-  onNew,
-  onSettings,
-  user,
-  storageMode,
-  sidebarOpen,
-  detailOpen,
-  onToggleSidebar,
-  onToggleDetail,
-}: {
-  onSpotlight: () => void;
-  onNew: () => void;
-  onSettings: () => void;
-  user: { email: string } | null;
-  storageMode: string;
-  sidebarOpen: boolean;
-  detailOpen: boolean;
-  onToggleSidebar: () => void;
-  onToggleDetail: () => void;
-}) {
-  return (
-    <div className="h-11 shrink-0 glass-strong border-b border-white/5 flex items-center px-4 gap-3 no-select relative">
-      <div className="flex items-center gap-2">
-        <span className="w-3 h-3 rounded-full bg-coral-500 hover:brightness-110 transition cursor-pointer" />
-        <span className="w-3 h-3 rounded-full bg-amber-500 hover:brightness-110 transition cursor-pointer" />
-        <span className="w-3 h-3 rounded-full bg-mint-500 hover:brightness-110 transition cursor-pointer" />
-      </div>
-
-      <button
-        onClick={onToggleSidebar}
-        className={`w-7 h-7 rounded-md flex items-center justify-center transition ${sidebarOpen ? 'text-ink-200 hover:bg-ink-700/60' : 'text-ink-500 hover:bg-ink-700/60'}`}
-        title="切换侧边栏"
-      >
-        <Icon name="PanelLeft" size={14} />
-      </button>
-
-      <div className="flex items-center gap-1.5 text-[12px] font-semibold text-ink-100">
-        <span className="w-4 h-4 rounded bg-gradient-to-br from-accent-500 to-mint-500 flex items-center justify-center">
-          <Icon name="Boxes" size={10} className="text-white" />
-        </span>
-        Lattice
-        <span className="text-ink-600 font-normal hidden sm:inline">—</span>
-        <span className="text-[12px] text-ink-400 font-normal hidden sm:inline">网址收藏管理</span>
-      </div>
-
-      <div className="ml-auto flex items-center gap-2">
-        <span className="hidden md:flex items-center gap-1.5 text-[10px] text-ink-400 px-2 py-1 rounded-md bg-ink-800/50 hairline">
-          <Icon name={storageMode === 'cloud' ? 'Cloud' : 'HardDrive'} size={10} />
-          {storageMode === 'cloud' ? '云存储' : '本地存储'}
-        </span>
-        {user && (
-          <span className="hidden lg:flex items-center gap-1.5 text-[11px] text-ink-300 max-w-[160px]">
-            <Icon name="User" size={11} className="text-ink-400" />
-            <span className="truncate">{user.email}</span>
-          </span>
-        )}
-        <button onClick={onSpotlight} className="flex items-center gap-2 rounded-md bg-ink-800/60 hairline px-2.5 py-1 text-[11px] text-ink-400 hover:text-ink-200 transition">
-          <Icon name="Search" size={11} />
-          <span className="hidden sm:inline">搜索</span>
-          <span className="flex items-center gap-0.5"><Kbd>⌘</Kbd><Kbd>K</Kbd></span>
-        </button>
-        <button onClick={onNew} className="flex items-center gap-1.5 rounded-md bg-ink-800/60 hairline px-2.5 py-1 text-[11px] text-ink-400 hover:text-ink-200 transition">
-          <Icon name="Plus" size={11} />
-          <span className="hidden sm:inline">新增</span>
-        </button>
-        <button onClick={onSettings} className="w-7 h-7 rounded-md bg-ink-800/60 hairline text-ink-400 hover:text-ink-200 flex items-center justify-center transition" title="设置">
-          <Icon name="Settings" size={13} />
-        </button>
-        <button
-          onClick={onToggleDetail}
-          className={`w-7 h-7 rounded-md flex items-center justify-center transition ${detailOpen ? 'text-ink-200 hover:bg-ink-700/60' : 'text-ink-500 hover:bg-ink-700/60'}`}
-          title="切换详情面板"
-        >
-          <Icon name="PanelRight" size={14} />
-        </button>
-      </div>
-    </div>
-  );
-}
 
 export default function App() {
   const auth = useAuth();
@@ -833,35 +758,124 @@ export default function App() {
     markSignedOut();
   }, [auth, markSignedOut]);
 
-  /* ---------- keyboard shortcuts ---------- */
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const meta = e.metaKey || e.ctrlKey;
-      const key = e.key.toLowerCase();
-      // REQ-017-AC-001：Cmd/Ctrl+K 打开 Spotlight。
-      if (meta && key === 'k') { e.preventDefault(); setSpotlightOpen(true); }
-      else if (meta && key === 'n') { e.preventDefault(); setNewUrl(''); setNewOpen(true); }
-      else if (meta && key === 'i') { e.preventDefault(); setInsightsOpen(true); }
-      else if (meta && e.key === ',') { e.preventDefault(); setSettingsOpen(true); }
-      else if (meta && key === '1') setState((s) => ({ ...s, density: 'card' }));
-      else if (meta && key === '2') setState((s) => ({ ...s, density: 'list' }));
-      else if (meta && key === '3') setState((s) => ({ ...s, density: 'masonry' }));
-      else if (meta && e.key === '\\') { e.preventDefault(); setSidebarOpen((v) => !v); }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+  /* ---------- keyboard shortcuts / Esc / URL drop ---------- */
+  const shortcutHandlers = useMemo(
+    () => ({
+      onSpotlight: () => setSpotlightOpen(true),
+      onNewBookmark: () => {
+        setNewUrl('');
+        setNewOpen(true);
+      },
+      onInsights: () => setInsightsOpen(true),
+      onSettings: () => setSettingsOpen(true),
+      onDensity: (density: ViewDensity) => setState((s) => ({ ...s, density })),
+      onToggleSidebar: () => setSidebarOpen((v) => !v),
+    }),
+    []
+  );
+  useGlobalShortcuts(shortcutHandlers);
+
+  const overlayOpen = useMemo(
+    () => ({
+      'seed-confirm': seedConfirmOpen,
+      'delete-bookmark': Boolean(deleteTargetId),
+      'delete-category': Boolean(categoryDeleteId),
+      'delete-collection': Boolean(collectionDeleteId),
+      'category-form': categoryFormOpen,
+      'category-move': Boolean(categoryMoveId),
+      'collection-form': Boolean(collectionForm),
+      compose: Boolean(composePreview),
+      spotlight: spotlightOpen,
+      'new-bookmark': newOpen,
+      insights: insightsOpen,
+      health: healthOpen,
+      settings: settingsOpen,
+    }),
+    [
+      seedConfirmOpen,
+      deleteTargetId,
+      categoryDeleteId,
+      collectionDeleteId,
+      categoryFormOpen,
+      categoryMoveId,
+      collectionForm,
+      composePreview,
+      spotlightOpen,
+      newOpen,
+      insightsOpen,
+      healthOpen,
+      settingsOpen,
+    ]
+  );
+
+  const closeOverlay = useCallback((kind: OverlayKind) => {
+    switch (kind) {
+      case 'seed-confirm':
+        setSeedConfirmOpen(false);
+        break;
+      case 'delete-bookmark':
+        setDeleteTargetId(null);
+        break;
+      case 'delete-category':
+        setCategoryDeleteId(null);
+        setCategoryRecursiveConfirm(false);
+        break;
+      case 'delete-collection':
+        setCollectionDeleteId(null);
+        break;
+      case 'category-form':
+        setCategoryFormOpen(false);
+        break;
+      case 'category-move':
+        setCategoryMoveId(null);
+        break;
+      case 'collection-form':
+        setCollectionForm(null);
+        break;
+      case 'compose':
+        cancelCompose();
+        setComposePreview(null);
+        break;
+      case 'spotlight':
+        setSpotlightOpen(false);
+        break;
+      case 'new-bookmark':
+        setNewOpen(false);
+        setNewUrl('');
+        break;
+      case 'insights':
+        setInsightsOpen(false);
+        break;
+      case 'health':
+        setHealthOpen(false);
+        break;
+      case 'settings':
+        setSettingsOpen(false);
+        break;
+    }
   }, []);
 
-  /* ---------- global drag-to-window for URL ingest ---------- */
+  useEscapeOverlayStack(overlayOpen, closeOverlay);
+
+  const openNewFromDroppedUrl = useCallback((url: string) => {
+    setNewUrl(url);
+    setNewOpen(true);
+  }, []);
+  useWindowUrlDrop(openNewFromDroppedUrl);
+
+  // 拖入高亮：仅用于视觉反馈，与入库逻辑分离。
   useEffect(() => {
-    const onDragOver = (e: DragEvent) => { if (e.dataTransfer?.types.includes('text/uri-list') || e.dataTransfer?.types.includes('text/plain')) { e.preventDefault(); setDragActive(true); } };
-    const onDragLeave = (e: DragEvent) => { if (e.relatedTarget === null) setDragActive(false); };
-    const onDrop = (e: DragEvent) => {
-      e.preventDefault();
-      setDragActive(false);
-      const uri = e.dataTransfer?.getData('text/uri-list') || e.dataTransfer?.getData('text/plain') || '';
-      if (uri && /^https?:\/\//i.test(uri)) { setNewUrl(uri); setNewOpen(true); }
+    const onDragOver = (e: DragEvent) => {
+      const types = e.dataTransfer?.types;
+      if (!types) return;
+      if (types.includes('text/uri-list') || types.includes('text/plain')) {
+        setDragActive(true);
+      }
     };
+    const onDragLeave = (e: DragEvent) => {
+      if (e.relatedTarget === null) setDragActive(false);
+    };
+    const onDrop = () => setDragActive(false);
     window.addEventListener('dragover', onDragOver);
     window.addEventListener('dragleave', onDragLeave);
     window.addEventListener('drop', onDrop);
@@ -928,120 +942,135 @@ export default function App() {
 
   return (
     <div className="h-screen w-screen workspace flex items-center justify-center p-0 md:p-6 overflow-hidden">
-      <div className="w-full h-full md:max-w-[1400px] md:max-h-[880px] rounded-none md:rounded-mac-xl glass-strong shadow-win overflow-hidden flex flex-col">
-        <WindowChrome
-          onSpotlight={() => setSpotlightOpen(true)}
-          onNew={() => { setNewUrl(''); setNewOpen(true); }}
-          onSettings={() => setSettingsOpen(true)}
-          user={auth.user ? { email: auth.user.email ?? '' } : null}
-          storageMode={settings.storageMode}
-          sidebarOpen={sidebarOpen}
-          detailOpen={detailOpen}
-          onToggleSidebar={() => setSidebarOpen((v) => !v)}
-          onToggleDetail={() => setDetailOpen((v) => !v)}
-        />
-
-        {syncing && (
-          <div className="h-0.5 bg-accent-500/30 overflow-hidden">
-            <div className="h-full w-1/3 bg-accent-500 animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
-          </div>
-        )}
-
-        <div className="flex-1 flex min-h-0">
-          {/* Sidebar */}
-          {sidebarOpen && (
-            <div className="w-[248px] shrink-0 hidden sm:block animate-slide-down">
-              <Sidebar
-                categories={cats}
-                collections={cols}
-                tags={tagList}
-                bookmarks={bookmarks}
-                selection={state.selection}
-                expanded={state.expandedCategories}
-                onToggleExpand={(id) => setState((s) => ({ ...s, expandedCategories: { ...s.expandedCategories, [id]: !(s.expandedCategories[id] ?? false) } }))}
-                onSelect={(sel: Selection) => setState((s) => ({ ...s, selection: sel, filters: emptyFilters }))}
-                onDropToCategory={(categoryId, bookmarkId) => moveToCategory(bookmarkId, categoryId)}
-                onDropToCollection={(collectionId, bookmarkId) => addToCollection(bookmarkId, collectionId)}
-                onOpenInsights={() => setInsightsOpen(true)}
-                onNewBookmark={() => { setNewUrl(''); setNewOpen(true); }}
-                onNewCategory={() => setCategoryFormOpen(true)}
-                onDeleteCategory={requestDeleteCategory}
-                onMoveCategory={(categoryId, newParentId) => handleMoveCategory(categoryId, newParentId)}
-                onRequestMoveCategory={(categoryId) => setCategoryMoveId(categoryId)}
-                onNewCollection={() => setCollectionForm({ mode: 'create' })}
-                onEditCollection={(id) => setCollectionForm({ mode: 'edit', id })}
-                onDeleteCollection={(id) => setCollectionDeleteId(id)}
-                onDropToCompose={handleComposeDrop}
-                insightCount={insights.length}
-              />
-            </div>
-          )}
-
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <ContentArea
-              bookmarks={visibleBookmarks}
-              allBookmarks={bookmarks}
-              tags={tagList}
-              categories={cats}
-              collections={cols}
-              selection={state.selection}
-              filters={state.filters}
-              density={state.density}
-              selectedId={state.selectedBookmarkId}
-              composeSelectedIds={composeSelectedIds}
-              sort={sortKey}
-              onSort={(next) => setSortKey(next as SortKey)}
-              onDensity={(d: ViewDensity) => setState((s) => ({ ...s, density: d }))}
-              onSearch={(q) => setFilters({ query: q })}
-              onOpenSpotlight={() => setSpotlightOpen(true)}
-              onSelectBookmark={(id) => setState((s) => ({ ...s, selectedBookmarkId: id }))}
-              onToggleComposeSelect={(id, additive) => {
-                setComposeSelectedIds((prev) => toggleComposeSelection(prev, id, additive));
-              }}
-              onRequestCompose={() => openComposePreview(composeSelectedIds)}
-              onToggleStar={toggleStar}
-              onClearTagFilter={(id) => setFilters({ tagIds: state.filters.tagIds.filter((t) => t !== id) })}
-              onDateRange={(r) => setFilters({ dateRange: r })}
-              onToggleStarredFilter={() => setFilters({ onlyStarred: !state.filters.onlyStarred })}
-              onReadStatusFilter={(status) => setFilters({ readStatus: status })}
-              onClearFilters={() => {
-                // REQ-009-AC-004：清除筛选，恢复导航范围内完整结果。
-                const cleared = clearBookmarkFilters();
-                setFilters({ ...emptyFilters, ...cleared, query: '' });
-              }}
-              onAcceptAICollection={acceptAICollection}
-              onDismissAICollection={() => {}}
-              onNewBookmark={() => { setNewUrl(''); setNewOpen(true); }}
-              onDragStartBookmark={() => {}}
-            />
-          </div>
-
-          {/* Detail */}
-          {detailOpen && (
-            <div className="w-[320px] shrink-0 hidden lg:block animate-slide-down">
-              <DetailPanel
-                bookmark={selectedBookmark}
-                tags={tagList}
-                categories={cats}
-                collections={cols}
-                onUpdate={(patch) => selectedBookmark && updateBookmark(selectedBookmark.id, patch)}
-                onToggleStar={() => selectedBookmark && toggleStar(selectedBookmark.id)}
-                onTogglePin={() => selectedBookmark && togglePin(selectedBookmark.id)}
-                onToggleCollection={(cid) => selectedBookmark && toggleCollection(selectedBookmark.id, cid)}
-                onAddTag={handleAddTag}
-                onRemoveTag={handleRemoveTag}
-                onAcceptSuggestedTag={handleAcceptSuggestedTag}
-                onCreateTag={handleCreateTag}
-                onVisit={() => { void handleVisit(); }}
-                onOpenHealth={() => setHealthOpen(true)}
-                onDelete={() => selectedBookmark && requestDeleteBookmark(selectedBookmark.id)}
-                onClose={() => setState((s) => ({ ...s, selectedBookmarkId: null }))}
-              />
-            </div>
-          )}
-        </div>
-      </div>
+      <AppShell
+        syncing={syncing}
+        sidebarOpen={sidebarOpen}
+        detailOpen={detailOpen}
+        chrome={{
+          onSpotlight: () => setSpotlightOpen(true),
+          onNew: () => {
+            setNewUrl('');
+            setNewOpen(true);
+          },
+          onSettings: () => setSettingsOpen(true),
+          user: auth.user ? { email: auth.user.email ?? '' } : null,
+          storageMode: settings.storageMode,
+          sidebarOpen,
+          detailOpen,
+          onToggleSidebar: () => setSidebarOpen((v) => !v),
+          onToggleDetail: () => setDetailOpen((v) => !v),
+        }}
+        sidebar={
+          <Sidebar
+            categories={cats}
+            collections={cols}
+            tags={tagList}
+            bookmarks={bookmarks}
+            selection={state.selection}
+            expanded={state.expandedCategories}
+            onToggleExpand={(id) =>
+              setState((s) => ({
+                ...s,
+                expandedCategories: {
+                  ...s.expandedCategories,
+                  [id]: !(s.expandedCategories[id] ?? false),
+                },
+              }))
+            }
+            onSelect={(sel: Selection) =>
+              setState((s) => ({ ...s, selection: sel, filters: emptyFilters }))
+            }
+            onDropToCategory={(categoryId, bookmarkId) => moveToCategory(bookmarkId, categoryId)}
+            onDropToCollection={(collectionId, bookmarkId) =>
+              addToCollection(bookmarkId, collectionId)
+            }
+            onOpenInsights={() => setInsightsOpen(true)}
+            onNewBookmark={() => {
+              setNewUrl('');
+              setNewOpen(true);
+            }}
+            onNewCategory={() => setCategoryFormOpen(true)}
+            onDeleteCategory={requestDeleteCategory}
+            onMoveCategory={(categoryId, newParentId) =>
+              handleMoveCategory(categoryId, newParentId)
+            }
+            onRequestMoveCategory={(categoryId) => setCategoryMoveId(categoryId)}
+            onNewCollection={() => setCollectionForm({ mode: 'create' })}
+            onEditCollection={(id) => setCollectionForm({ mode: 'edit', id })}
+            onDeleteCollection={(id) => setCollectionDeleteId(id)}
+            onDropToCompose={handleComposeDrop}
+            insightCount={insights.length}
+          />
+        }
+        content={
+          <ContentArea
+            bookmarks={visibleBookmarks}
+            allBookmarks={bookmarks}
+            tags={tagList}
+            categories={cats}
+            collections={cols}
+            selection={state.selection}
+            filters={state.filters}
+            density={state.density}
+            selectedId={state.selectedBookmarkId}
+            composeSelectedIds={composeSelectedIds}
+            sort={sortKey}
+            onSort={(next) => setSortKey(next as SortKey)}
+            onDensity={(d: ViewDensity) => setState((s) => ({ ...s, density: d }))}
+            onSearch={(q) => setFilters({ query: q })}
+            onOpenSpotlight={() => setSpotlightOpen(true)}
+            onSelectBookmark={(id) => setState((s) => ({ ...s, selectedBookmarkId: id }))}
+            onToggleComposeSelect={(id, additive) => {
+              setComposeSelectedIds((prev) => toggleComposeSelection(prev, id, additive));
+            }}
+            onRequestCompose={() => openComposePreview(composeSelectedIds)}
+            onToggleStar={toggleStar}
+            onClearTagFilter={(id) =>
+              setFilters({ tagIds: state.filters.tagIds.filter((t) => t !== id) })
+            }
+            onDateRange={(r) => setFilters({ dateRange: r })}
+            onToggleStarredFilter={() =>
+              setFilters({ onlyStarred: !state.filters.onlyStarred })
+            }
+            onReadStatusFilter={(status) => setFilters({ readStatus: status })}
+            onClearFilters={() => {
+              const cleared = clearBookmarkFilters();
+              setFilters({ ...emptyFilters, ...cleared, query: '' });
+            }}
+            onAcceptAICollection={acceptAICollection}
+            onDismissAICollection={() => {}}
+            onNewBookmark={() => {
+              setNewUrl('');
+              setNewOpen(true);
+            }}
+            onDragStartBookmark={() => {}}
+          />
+        }
+        detail={
+          <DetailPanel
+            bookmark={selectedBookmark}
+            tags={tagList}
+            categories={cats}
+            collections={cols}
+            onUpdate={(patch) => selectedBookmark && updateBookmark(selectedBookmark.id, patch)}
+            onToggleStar={() => selectedBookmark && toggleStar(selectedBookmark.id)}
+            onTogglePin={() => selectedBookmark && togglePin(selectedBookmark.id)}
+            onToggleCollection={(cid) =>
+              selectedBookmark && toggleCollection(selectedBookmark.id, cid)
+            }
+            onAddTag={handleAddTag}
+            onRemoveTag={handleRemoveTag}
+            onAcceptSuggestedTag={handleAcceptSuggestedTag}
+            onCreateTag={handleCreateTag}
+            onVisit={() => {
+              void handleVisit();
+            }}
+            onOpenHealth={() => setHealthOpen(true)}
+            onDelete={() => selectedBookmark && requestDeleteBookmark(selectedBookmark.id)}
+            onClose={() => setState((s) => ({ ...s, selectedBookmarkId: null }))}
+          />
+        }
+      />
 
       {/* Drag-to-ingest overlay */}
       {dragActive && (

@@ -5,7 +5,7 @@ import { Icon, Favicon, AIBadge, Button, Kbd, AnimateIn } from './ui';
 import { tagColors } from '../colors';
 
 /* ============ Modal shell ============ */
-function Modal({ open, onClose, children, width = 'max-w-lg' }: { open: boolean; onClose: () => void; children: React.ReactNode; width?: string }) {
+function Modal({ open, onClose, children, width = 'max-w-lg', 'aria-label': ariaLabel }: { open: boolean; onClose: () => void; children: React.ReactNode; width?: string; 'aria-label'?: string }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     if (open) window.addEventListener('keydown', onKey);
@@ -15,7 +15,13 @@ function Modal({ open, onClose, children, width = 'max-w-lg' }: { open: boolean;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-[3px]" />
-      <div className={`relative w-full ${width} rounded-mac-xl glass-strong ring-glow overflow-hidden animate-scale-in`} onClick={(e) => e.stopPropagation()}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={ariaLabel}
+        className={`relative w-full ${width} rounded-mac-xl glass-strong ring-glow overflow-hidden animate-scale-in`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {children}
       </div>
     </div>
@@ -131,7 +137,7 @@ export function NewBookmarkDialog({
   const cat = categories.find((c) => c.id === chosenCategory);
 
   return (
-    <Modal open={open} onClose={onClose} width="max-w-[520px]">
+    <Modal open={open} onClose={onClose} width="max-w-[520px]" aria-label="New Bookmark">
       <ModalHeader
         icon="Plus"
         title="New Bookmark"
@@ -335,7 +341,7 @@ export function InsightsDialog({
   const maxCat = Math.max(...catBars.map((x) => x[1]), 1);
 
   return (
-    <Modal open={open} onClose={onClose} width="max-w-[600px]">
+    <Modal open={open} onClose={onClose} width="max-w-[600px]" aria-label="Insights">
       <ModalHeader icon="Sparkles" title="收藏洞察报告" subtitle="AI 基于你近期的收藏行为生成" onClose={onClose} />
       <div className="max-h-[68vh] overflow-y-auto scroll-thin p-5 space-y-3">
         {/* summary stat band */}
@@ -444,7 +450,7 @@ export function HealthDialog({
   };
 
   return (
-    <Modal open={open} onClose={onClose} width="max-w-[520px]">
+    <Modal open={open} onClose={onClose} width="max-w-[520px]" aria-label="Health check">
       <ModalHeader icon="ShieldCheck" title="链接健康检测" subtitle="AI 定期检测链接是否失效或内容变更" onClose={onClose} />
       <div className="p-5 space-y-4">
         {/* scan control */}

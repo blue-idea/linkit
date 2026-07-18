@@ -7,7 +7,7 @@ import { exportLibrary, importLibrary } from '../storage';
 
 type Tab = 'general' | 'storage' | 'ai' | 'appearance';
 
-function Modal({ open, onClose, children, width = 'max-w-[640px]' }: { open: boolean; onClose: () => void; children: React.ReactNode; width?: string }) {
+function Modal({ open, onClose, children, width = 'max-w-[640px]', 'aria-label': ariaLabel = 'Settings' }: { open: boolean; onClose: () => void; children: React.ReactNode; width?: string; 'aria-label'?: string }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     if (open) window.addEventListener('keydown', onKey);
@@ -17,7 +17,13 @@ function Modal({ open, onClose, children, width = 'max-w-[640px]' }: { open: boo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-[3px]" />
-      <div className={`relative w-full ${width} rounded-mac-xl glass-strong ring-glow overflow-hidden animate-scale-in max-h-[88vh] flex flex-col`} onClick={(e) => e.stopPropagation()}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={ariaLabel}
+        className={`relative w-full ${width} rounded-mac-xl glass-strong ring-glow overflow-hidden animate-scale-in max-h-[88vh] flex flex-col`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {children}
       </div>
     </div>

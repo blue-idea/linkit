@@ -478,13 +478,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-022 · 重构主窗口、快捷键、拖入 URL 与可访问性**
+- [x] **TASK-022 · 重构主窗口、快捷键、拖入 URL 与可访问性**
 
   > 依赖：TASK-019~021 · 预计：3–4 小时
 
-  - [ ] 将 App.tsx 拆分为 AppShell、Sidebar、Content、Detail 与 Overlay 管理。
-  - [ ] 实现全部全局快捷键、Esc 层级关闭和窗口 URL 拖入。
-  - [ ] 增加焦点顺序、可见焦点、accessible name 和 axe 检查。
+  - [x] 将 App.tsx 拆分为 AppShell、Sidebar、Content、Detail 与 Overlay 管理。
+  - [x] 实现全部全局快捷键、Esc 层级关闭和窗口 URL 拖入。
+  - [x] 增加焦点顺序、可见焦点、accessible name 和 axe 检查。
 
   **验证方式：**
   ```powershell
@@ -1013,7 +1013,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-019 | 三种基础视图 | E2E/Manual | 已完成 | REQ-015、028 |
 | TASK-020 | 三种聚合视图 | Unit/E2E | 已完成 | REQ-016、028 |
 | TASK-021 | Spotlight 关键词与 URL | Unit/E2E | 已完成 | REQ-017 |
-| TASK-022 | 主窗口、快捷键与无障碍 | E2E/Security | 待开始 | REQ-024、028 |
+| TASK-022 | 主窗口、快捷键与无障碍 | E2E/Security | 已完成 | REQ-024、028 |
 | TASK-023 | 设置、主题与 i18n | Unit/E2E | 待开始 | REQ-023 |
 | TASK-024 | 导入导出 UX | E2E | 待开始 | REQ-005、023 |
 | TASK-025 | 本地 MVP 回归 | E2E | 待开始 | 本地 MVP |

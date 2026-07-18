@@ -66,8 +66,14 @@ function NavRow({
     >
       {expandable ? (
         <button
-          onClick={(e) => { e.stopPropagation(); onToggleExpand?.(); }}
-          className="w-4 h-4 flex items-center justify-center text-ink-400 hover:text-ink-100 shrink-0"
+          type="button"
+          aria-label={expanded ? `Collapse ${label}` : `Expand ${label}`}
+          aria-expanded={expanded}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleExpand?.();
+          }}
+          className="w-4 h-4 flex items-center justify-center text-ink-400 hover:text-ink-100 shrink-0 focus-ring rounded-sm"
         >
           <Icon name="ChevronRight" size={12} className={`transition-transform ${expanded ? 'rotate-90' : ''}`} />
         </button>

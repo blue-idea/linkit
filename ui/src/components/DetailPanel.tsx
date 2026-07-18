@@ -136,7 +136,12 @@ export function DetailPanel({
             {b.url}
           </a>
         </div>
-        <button onClick={onClose} className="w-7 h-7 rounded-lg hover:bg-ink-700/60 text-ink-400 hover:text-ink-100 flex items-center justify-center transition">
+        <button
+          type="button"
+          aria-label="Close detail panel"
+          onClick={onClose}
+          className="w-7 h-7 rounded-lg hover:bg-ink-700/60 text-ink-400 hover:text-ink-100 flex items-center justify-center transition focus-ring"
+        >
           <Icon name="X" size={15} />
         </button>
       </div>
