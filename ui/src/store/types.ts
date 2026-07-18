@@ -59,6 +59,7 @@ export interface Filters {
   tagIds: string[];
   dateRange: 'all' | '7d' | '30d' | '90d';
   onlyStarred: boolean;
+  readStatus: 'all' | 'unread' | 'reading' | 'read' | 'archived';
 }
 
 export interface UiState {

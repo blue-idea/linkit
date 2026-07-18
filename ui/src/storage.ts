@@ -42,6 +42,13 @@ function normalizeLocalBookmark(raw: Bookmark): Bookmark {
     visitCount: typeof raw.visitCount === 'number' ? raw.visitCount : 0,
     starred: Boolean(raw.starred),
     pinned: Boolean(raw.pinned),
+    readStatus:
+      raw.readStatus === 'unread' ||
+      raw.readStatus === 'reading' ||
+      raw.readStatus === 'read' ||
+      raw.readStatus === 'archived'
+        ? raw.readStatus
+        : 'unread',
   };
 }
 

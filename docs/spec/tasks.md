@@ -258,13 +258,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-012 · 实现书签标记、访问与阅读状态**
+- [x] **TASK-012 · 实现书签标记、访问与阅读状态**
 
   > 依赖：TASK-011 · 预计：2–3 小时
 
-  - [ ] 实现 starred、pinned、visitCount、lastVisitedAt 和 readStatus 命令。
-  - [ ] 接入详情与列表交互，保证外部 URL 打开失败不增加计数。
-  - [ ] 覆盖四种阅读状态和筛选结果。
+  - [x] 实现 starred、pinned、visitCount、lastVisitedAt 和 readStatus 命令。
+  - [x] 接入详情与列表交互，保证外部 URL 打开失败不增加计数。
+  - [x] 覆盖四种阅读状态和筛选结果。
 
   **验证方式：**
   ```powershell
@@ -1003,7 +1003,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-009 | 网页元数据与外部 URL | API/Security | done | REQ-006、008、025 |
 | TASK-010 | 本地模式启动恢复 | Unit/E2E | done | REQ-001、002 |
 | TASK-011 | 书签核心 CRUD | Unit/E2E | done | REQ-006、007 |
-| TASK-012 | 书签状态与访问 | Unit/E2E | 待开始 | REQ-008 |
+| TASK-012 | 书签状态与访问 | Unit/E2E | done | REQ-008 |
 | TASK-013 | 排序与筛选 | Unit | 待开始 | REQ-008、009 |
 | TASK-014 | 分类 CRUD 与删除 | Unit/E2E | 待开始 | REQ-010 |
 | TASK-015 | 分类与书签拖拽 | Unit/E2E | 待开始 | REQ-011、024 |

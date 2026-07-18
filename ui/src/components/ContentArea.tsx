@@ -112,6 +112,8 @@ function Toolbar({
   onOpenSpotlight,
   sort,
   onSort,
+  readStatus,
+  onReadStatus,
 }: {
   title: string;
   subtitle: string;
@@ -121,6 +123,8 @@ function Toolbar({
   onOpenSpotlight: () => void;
   sort: string;
   onSort: (s: string) => void;
+  readStatus: Filters['readStatus'];
+  onReadStatus: (status: Filters['readStatus']) => void;
 }) {
   return (
     <div className="px-5 pt-4 pb-3 flex items-center gap-3">
@@ -139,6 +143,18 @@ function Toolbar({
             className="w-44 rounded-lg bg-ink-800/70 hairline text-[12px] text-ink-100 placeholder:text-ink-400 pl-8 pr-2 py-1.5 focus-ring"
           />
         </div>
+        <select
+          aria-label="Filter by read status"
+          value={readStatus}
+          onChange={(e) => onReadStatus(e.target.value as Filters['readStatus'])}
+          className="rounded-lg bg-ink-800/70 hairline text-[12px] text-ink-200 px-2 py-1.5 focus-ring"
+        >
+          <option value="all">All status</option>
+          <option value="unread">Unread</option>
+          <option value="reading">Reading</option>
+          <option value="read">Read</option>
+          <option value="archived">Archived</option>
+        </select>
         <select
           value={sort}
           onChange={(e) => onSort(e.target.value)}
@@ -429,6 +445,7 @@ export function ContentArea({
   onClearTagFilter,
   onDateRange,
   onToggleStarredFilter,
+  onReadStatusFilter,
   onAcceptAICollection,
   onDismissAICollection,
   onNewBookmark,
@@ -453,6 +470,7 @@ export function ContentArea({
   onClearTagFilter: (id: string) => void;
   onDateRange: (r: Filters['dateRange']) => void;
   onToggleStarredFilter: () => void;
+  onReadStatusFilter: (status: Filters['readStatus']) => void;
   onAcceptAICollection: (ids: string[]) => void;
   onDismissAICollection: () => void;
   onNewBookmark: () => void;
@@ -475,6 +493,8 @@ export function ContentArea({
         onOpenSpotlight={onOpenSpotlight}
         sort={sort}
         onSort={onSort}
+        readStatus={filters.readStatus}
+        onReadStatus={onReadStatusFilter}
       />
       <FilterBar
         filters={filters}

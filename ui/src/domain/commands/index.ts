@@ -14,6 +14,18 @@ export type {
   DeleteBookmarkInput,
   UpdateBookmarkInput,
 } from './bookmarks';
+export {
+  filterBookmarksByReadStatus,
+  recordBookmarkVisit,
+  setBookmarkReadStatus,
+  toggleBookmarkPinned,
+  toggleBookmarkStarred,
+} from './bookmark-state';
+export type {
+  BookmarkIdInput,
+  ReadStatus,
+  SetReadStatusInput,
+} from './bookmark-state';
 
 export interface MembershipCommandInput extends Record<string, unknown> {
   bookmarkId: string;

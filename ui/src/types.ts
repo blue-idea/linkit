@@ -43,6 +43,8 @@ export interface Bookmark {
   visitCount: number;
   starred: boolean;
   pinned: boolean;
+  /** 阅读状态；缺省按 unread 处理。REQ-008-AC-003 */
+  readStatus?: 'unread' | 'reading' | 'read' | 'archived';
   thumbnail?: string; // gradient key for preview
   health?: 'ok' | 'changed' | 'broken';
   aiSummary?: string;

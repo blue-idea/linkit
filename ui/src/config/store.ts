@@ -8,6 +8,7 @@ export const STORE_CONFIG = {
     tagIds: [],
     dateRange: 'all',
     onlyStarred: false,
+    readStatus: 'all',
   },
   defaultView: 'card',
 } as const;
