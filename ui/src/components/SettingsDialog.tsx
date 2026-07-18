@@ -8,6 +8,16 @@ import { getSettingsSections } from '../i18n';
 import { useI18n } from '../i18n/use-i18n';
 import type { SettingsSectionKey } from '../config/i18n';
 import { resolveThemeLabel } from '../features/settings';
+import {
+  applyConfirmedImport,
+  buildExportEnvelopeFromUi,
+  localizeImportError,
+  parseImportText,
+  summarizeImport,
+  type ImportSummary,
+  ImportOverwriteDialog,
+} from '../features/import-export';
+import type { LibraryEnvelope } from '../domain/library';
 
 type Tab = SettingsSectionKey;
 
@@ -151,6 +161,9 @@ export function SettingsDialog({
   const [tab, setTab] = useState<Tab>('general');
   const [draft, setDraft] = useState<AppSettings>(settings);
   const [importMsg, setImportMsg] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [pendingEnvelope, setPendingEnvelope] = useState<LibraryEnvelope | null>(null);
+  const [pendingSummary, setPendingSummary] = useState<ImportSummary | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const i18n = useI18n(draft.locale ?? 'en');
 
@@ -158,6 +171,9 @@ export function SettingsDialog({
     if (open) {
       setDraft(settings);
       setImportMsg(null);
+      setImportError(null);
+      setPendingEnvelope(null);
+      setPendingSummary(null);
     }
   }, [open, settings]);
 
@@ -165,14 +181,40 @@ export function SettingsDialog({
   const updateAI = (patch: Partial<AppSettings['ai']>) =>
     setDraft((d) => ({ ...d, ai: { ...d.ai, ...patch } }));
 
-  const handleImport = async (file: File) => {
+  const handleExport = () => {
+    const doc = buildExportEnvelopeFromUi(library, { now: new Date().toISOString() });
+    exportLibrary(doc, 'linkit-export.json');
+  };
+
+  const handleImportFile = async (file: File) => {
+    setImportMsg(null);
+    setImportError(null);
     try {
-      const lib = await importLibrary(file);
-      onImport(lib);
-      setImportMsg(`Imported ${lib.bookmarks.length} bookmarks`);
-    } catch (e) {
-      setImportMsg(`Import failed: ${(e as Error).message}`);
+      const raw = await importLibrary(file);
+      const parsed = parseImportText(raw, new Date().toISOString());
+      if (!parsed.success) {
+        const localized = localizeImportError(parsed.error.key, draft.locale ?? 'en');
+        setImportError(localized.message);
+        return;
+      }
+      setPendingEnvelope(parsed.envelope);
+      setPendingSummary(summarizeImport(parsed.envelope));
+    } catch {
+      const localized = localizeImportError('IMPORT_INVALID', draft.locale ?? 'en');
+      setImportError(localized.message);
     }
+  };
+
+  const handleConfirmImport = () => {
+    if (!pendingEnvelope) return;
+    const applied = applyConfirmedImport(pendingEnvelope, true);
+    if (!applied) return;
+    onImport(applied);
+    setImportMsg(
+      i18n.t('import.success', { count: pendingEnvelope.data.bookmarks.length })
+    );
+    setPendingEnvelope(null);
+    setPendingSummary(null);
   };
 
   const sections = getSettingsSections(i18n).map((s) => ({
@@ -242,29 +284,30 @@ export function SettingsDialog({
               <div className="text-[11px] uppercase tracking-wider text-ink-500 font-semibold mb-2">
                 {i18n.t('settings.general.data')}
               </div>
-              <Row icon="Download" label={i18n.t('settings.general.export')} hint="Export all bookmarks as JSON">
-                <Button size="sm" variant="subtle" icon="Download" onClick={() => exportLibrary(library)}>
-                  Export
+              <Row icon="Download" label={i18n.t('settings.general.export')} hint={i18n.t('settings.general.exportHint')}>
+                <Button size="sm" variant="subtle" icon="Download" onClick={handleExport}>
+                  {i18n.t('export.button')}
                 </Button>
               </Row>
               <Row
                 icon="Upload"
                 label={i18n.t('settings.general.import')}
-                hint="Import from JSON (overwrites current library)"
+                hint={i18n.t('settings.general.importHint')}
               >
                 <input
                   ref={fileRef}
                   type="file"
-                  accept="application/json"
+                  accept="application/json,.json"
                   className="hidden"
+                  data-testid="import-file-input"
                   onChange={(e) => {
                     const f = e.target.files?.[0];
-                    if (f) handleImport(f);
+                    if (f) void handleImportFile(f);
                     e.target.value = '';
                   }}
                 />
                 <Button size="sm" variant="subtle" icon="Upload" onClick={() => fileRef.current?.click()}>
-                  Import
+                  {i18n.t('import.button')}
                 </Button>
               </Row>
               {onRestoreSampleData && (
@@ -277,6 +320,15 @@ export function SettingsDialog({
                     Restore sample data
                   </Button>
                 </Row>
+              )}
+              {importError && (
+                <div
+                  className="rounded-lg bg-coral-500/10 border border-coral-400/30 px-3 py-2 text-[12px] text-coral-400 flex items-center gap-2 mt-2"
+                  role="alert"
+                  data-testid="import-error"
+                >
+                  <Icon name="AlertCircle" size={13} /> {importError}
+                </div>
               )}
               {importMsg && (
                 <div className="rounded-lg bg-mint-500/10 border border-mint-400/30 px-3 py-2 text-[12px] text-mint-400 flex items-center gap-2 mt-2">
@@ -477,6 +529,16 @@ export function SettingsDialog({
           {i18n.t('settings.save')}
         </Button>
       </div>
+      <ImportOverwriteDialog
+        open={Boolean(pendingEnvelope && pendingSummary)}
+        summary={pendingSummary ?? { bookmarks: 0, categories: 0, collections: 0, tags: 0, schemaVersion: 1 }}
+        i18n={i18n}
+        onCancel={() => {
+          setPendingEnvelope(null);
+          setPendingSummary(null);
+        }}
+        onConfirm={handleConfirmImport}
+      />
     </Modal>
   );
 }

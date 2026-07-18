@@ -521,13 +521,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-024 · 接入导入导出 UX 与覆盖确认**
+- [x] **TASK-024 · 接入导入导出 UX 与覆盖确认**
 
-  > 依赖：TASK-008、TASK-022、TASK-023 · 预计：2–3 小时
+  > 依赖：TASK-008、TASK-022、TASK-023 · 预计：2–3 小时 · 状态：done · 2026-07-18
 
-  - [ ] 接入原生对话框、导入摘要、覆盖确认和成功/错误状态。
-  - [ ] 验证无效 JSON 不改变当前 Store 或持久化状态。
-  - [ ] 为默认 English 和中文翻译生成截图。
+  - [x] 接入原生对话框、导入摘要、覆盖确认和成功/错误状态。
+  - [x] 验证无效 JSON 不改变当前 Store 或持久化状态。
+  - [x] 为默认 English 和中文翻译生成截图。
 
   **验证方式：**
   ```powershell
@@ -1015,7 +1015,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-021 | Spotlight 关键词与 URL | Unit/E2E | 已完成 | REQ-017 |
 | TASK-022 | 主窗口、快捷键与无障碍 | E2E/Security | 已完成 | REQ-024、028 |
 | TASK-023 | 设置、主题与 i18n | Unit/E2E | done | REQ-023 |
-| TASK-024 | 导入导出 UX | E2E | 待开始 | REQ-005、023 |
+| TASK-024 | 导入导出 UX | E2E | done | REQ-005、023 |
 | TASK-025 | 本地 MVP 回归 | E2E | 待开始 | 本地 MVP |
 | TASK-026 | Supabase 本地与 RLS | API/Security | 待开始 | REQ-003、025 |
 | TASK-027 | Supabase Auth | API/E2E | 待开始 | REQ-001、002 |
