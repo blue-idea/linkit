@@ -34,10 +34,30 @@ type AnalyzeBookmarkRequest struct {
 
 // AnalyzeBookmarkResult 对齐 REQ-006-AC-002 / TASK-033 DTO（含可编辑 title）。
 type AnalyzeBookmarkResult struct {
-	Title                string   `json:"title"`
-	Summary              string   `json:"summary"`
-	SuggestedCategoryID  *string  `json:"suggestedCategoryId"`
-	SuggestedTags        []string `json:"suggestedTags"`
+	Title               string   `json:"title"`
+	Summary             string   `json:"summary"`
+	SuggestedCategoryID *string  `json:"suggestedCategoryId"`
+	SuggestedTags       []string `json:"suggestedTags"`
+}
+
+type BookmarkCandidate struct {
+	ID          string   `json:"id"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	TagLabels   []string `json:"tagLabels"`
+}
+
+type GenerateCollectionRequest struct {
+	Context            AIContext           `json:"context"`
+	Goal               string              `json:"goal"`
+	BookmarkCandidates []BookmarkCandidate `json:"bookmarkCandidates"`
+}
+
+type GenerateCollectionResult struct {
+	Name          string   `json:"name"`
+	Description   string   `json:"description"`
+	SuggestedTags []string `json:"suggestedTags"`
+	BookmarkIDs   []string `json:"bookmarkIds"`
 }
 
 type Service struct {
@@ -77,6 +97,62 @@ func (service *Service) AnalyzeBookmark(request AnalyzeBookmarkRequest) (Analyze
 // ReanalyzeBookmark 契约与 Analyze 相同，仅返回预览，不得写入资料库。
 func (service *Service) ReanalyzeBookmark(request AnalyzeBookmarkRequest) (AnalyzeBookmarkResult, error) {
 	return service.analyze(request)
+}
+
+// GenerateCollection 仅生成可编辑预览，不持有资料库写入能力。
+func (service *Service) GenerateCollection(request GenerateCollectionRequest) (GenerateCollectionResult, error) {
+	if service.completer == nil || strings.TrimSpace(request.Goal) == "" ||
+		strings.TrimSpace(request.Context.APIBase) == "" || strings.TrimSpace(request.Context.Model) == "" {
+		return GenerateCollectionResult{}, newServiceError(config.ErrorCodeInvalidArgument, config.ErrorMessageAIInvalidArgument, false, nil)
+	}
+
+	payload, err := json.Marshal(map[string]any{
+		"goal":               request.Goal,
+		"bookmarkCandidates": request.BookmarkCandidates,
+		"locale":             request.Context.Locale,
+	})
+	if err != nil {
+		return GenerateCollectionResult{}, newServiceError(config.ErrorCodeInvalidArgument, config.ErrorMessageAIInvalidArgument, false, err)
+	}
+	result, err := service.completer.ChatCompletions(ChatRequest{
+		Context: request.Context,
+		System:  `You are Linkit's collection planner. Reply with one JSON object only. Schema: {"name":"string","description":"string","suggestedTags":["string"],"bookmarkIds":["string"]}. bookmarkIds must only use provided candidate ids. Do not wrap in markdown.`,
+		User:    string(payload), SendsBookmarkContent: true,
+	})
+	if err != nil {
+		return GenerateCollectionResult{}, err
+	}
+	return parseGenerateCollectionResult(result.ContentJSON, request.BookmarkCandidates)
+}
+
+func parseGenerateCollectionResult(raw json.RawMessage, candidates []BookmarkCandidate) (GenerateCollectionResult, error) {
+	var result GenerateCollectionResult
+	if err := json.Unmarshal(raw, &result); err != nil {
+		return GenerateCollectionResult{}, newServiceError(config.ErrorCodeAIResponseInvalid, config.ErrorMessageAIResponseInvalid, true, err)
+	}
+	result.Name = strings.TrimSpace(result.Name)
+	result.Description = strings.TrimSpace(result.Description)
+	if result.Name == "" {
+		return GenerateCollectionResult{}, newServiceError(config.ErrorCodeAIResponseInvalid, config.ErrorMessageAIResponseInvalid, true, fmt.Errorf("name is required"))
+	}
+	allowed := make(map[string]struct{}, len(candidates))
+	for _, candidate := range candidates {
+		allowed[candidate.ID] = struct{}{}
+	}
+	seen := make(map[string]struct{}, len(result.BookmarkIDs))
+	ids := make([]string, 0, len(result.BookmarkIDs))
+	for _, id := range result.BookmarkIDs {
+		if _, ok := allowed[id]; !ok {
+			return GenerateCollectionResult{}, newServiceError(config.ErrorCodeAIResponseInvalid, config.ErrorMessageAIResponseInvalid, true, fmt.Errorf("bookmarkId is not in candidates"))
+		}
+		if _, duplicate := seen[id]; duplicate {
+			continue
+		}
+		seen[id] = struct{}{}
+		ids = append(ids, id)
+	}
+	result.BookmarkIDs = ids
+	return result, nil
 }
 
 func (service *Service) analyze(request AnalyzeBookmarkRequest) (AnalyzeBookmarkResult, error) {

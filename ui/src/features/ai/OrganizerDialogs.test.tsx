@@ -1,0 +1,36 @@
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import { describe, expect, test, vi } from 'vitest';
+import { AICollectionPreviewDialog, DuplicatePreviewDialog } from './OrganizerDialogs';
+
+describe('AI 整理对话框', () => {
+  test('主题预览允许编辑并仅在确认时提交选中成员', () => {
+    const onConfirm = vi.fn();
+    render(<AICollectionPreviewDialog preview={{
+      name: 'Frontend Research', description: 'Reading list', suggestedTags: ['frontend'],
+      bookmarkIds: ['b-1', 'b-2'],
+    }} bookmarks={[{ id: 'b-1', title: 'React' }, { id: 'b-2', title: 'CSS' }]}
+    onCancel={() => {}} onConfirm={onConfirm} />);
+
+    fireEvent.change(screen.getByLabelText('Collection name'), { target: { value: 'Edited collection' } });
+    fireEvent.click(screen.getByRole('checkbox', { name: 'CSS' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create collection' }));
+    expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({
+      name: 'Edited collection', acceptedBookmarkIds: ['b-1'],
+    }));
+  });
+
+  test('重复预览展示依据和差异并提供三个明确动作', () => {
+    const onDecision = vi.fn();
+    render(<DuplicatePreviewDialog preview={{
+      targetId: 'b-1', duplicateId: 'b-2', reason: 'Exact URL match',
+      differences: [{ field: 'title', target: 'React', duplicate: 'React Copy' }],
+    }} onDecision={onDecision} />);
+    const dialog = screen.getByRole('dialog', { name: 'Duplicate bookmark preview' });
+    expect(within(dialog).getByText('Exact URL match')).toBeInTheDocument();
+    expect(within(dialog).getByText('React Copy')).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Merge' }));
+    expect(onDecision).toHaveBeenCalledWith('merge');
+    expect(within(dialog).getByRole('button', { name: 'Delete duplicate' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+  });
+});

@@ -87,6 +87,16 @@ import {
 } from './domain/query';
 import { collectCategorySubtreeIds } from './domain/categories';
 import { openExternalUrl } from './features/bookmarks/external-url';
+import {
+  AICollectionPreviewDialog,
+  DuplicatePreviewDialog,
+  applyCollectionSuggestion,
+  applyDuplicateDecision,
+  buildDuplicatePreview,
+  generateCollectionPreview,
+  type CollectionSuggestion,
+  type DuplicatePreview,
+} from './features/ai';
 
 export default function App() {
   const auth = useAuth();
@@ -128,6 +138,8 @@ export default function App() {
   const [insightsOpen, setInsightsOpen] = useState(false);
   const [healthOpen, setHealthOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [aiCollectionPreview, setAICollectionPreview] = useState<CollectionSuggestion | null>(null);
+  const [duplicatePreview, setDuplicatePreview] = useState<DuplicatePreview | null>(null);
   const [cloudConflictOpen, setCloudConflictOpen] = useState(false);
   const [cloudConflictRevision, setCloudConflictRevision] = useState<number | null>(null);
   const [draftRecoveryOpen, setDraftRecoveryOpen] = useState(false);
@@ -416,6 +428,36 @@ export default function App() {
     setCols(nextCols);
     flashToast(`已将 ${ids.length} 项加入主题`);
   }, [bookmarks, cats, cols, flashToast, state.selection, tagList]);
+
+  const openAICollection = useCallback(async () => {
+    const goal = window.prompt('Describe the collection you want');
+    if (!goal?.trim()) return;
+    try {
+      const preview = await generateCollectionPreview({
+        context: {
+          apiBase: settings.ai?.apiBase || 'https://api.example.test/v1',
+          model: settings.ai?.model || 'unavailable',
+          locale: settings.locale === 'zh' ? 'zh' : 'en',
+        },
+        goal,
+        bookmarks: bookmarks.map((bookmark) => ({
+          id: bookmark.id, title: bookmark.title, description: bookmark.description,
+          tagLabels: bookmark.tags.map((id) => tagList.find((tag) => tag.id === id)?.label).filter((label): label is string => Boolean(label)),
+        })),
+      });
+      setAICollectionPreview(preview);
+    } catch (error) {
+      flashToast((error as { message?: string }).message ?? 'AI collection generation failed');
+    }
+  }, [bookmarks, flashToast, settings.ai?.apiBase, settings.ai?.model, settings.locale, tagList]);
+
+  const openDuplicates = useCallback(() => {
+    const pair = bookmarks.flatMap((bookmark, index) => bookmarks.slice(index + 1).map((candidate) => [bookmark, candidate] as const))
+      .find(([left, right]) => left.url.replace(/\/$/, '') === right.url.replace(/\/$/, '') || left.domain === right.domain);
+    if (!pair) { flashToast('No duplicate candidates found'); return; }
+    const preview = buildDuplicatePreview(toCategoryLibrary({ bookmarks, categories: cats, collections: cols, tags: tagList }), pair[0].id, pair[1].id);
+    if (preview) setDuplicatePreview(preview);
+  }, [bookmarks, cats, cols, flashToast, tagList]);
 
   const createBookmark = useCallback((b: Omit<Bookmark, 'id' | 'createdAt' | 'lastVisitedAt' | 'visitCount' | 'spark'>) => {
     // REQ-006-AC-004：规范化 URL 并生成唯一 ID；确认保存后才进入此路径。
@@ -1112,6 +1154,8 @@ export default function App() {
               setNewOpen(true);
             }}
             onDragStartBookmark={() => {}}
+            onOpenAICollection={() => { void openAICollection(); }}
+            onOpenDuplicates={openDuplicates}
           />
         }
         detail={
@@ -1323,6 +1367,49 @@ export default function App() {
           onCancel={handleCancelCompose}
           onConfirm={handleConfirmCompose}
         />
+      )}
+      {aiCollectionPreview && (
+        <AICollectionPreviewDialog
+          preview={aiCollectionPreview}
+          bookmarks={bookmarks}
+          onCancel={() => setAICollectionPreview(null)}
+          onConfirm={(confirmed) => {
+            const result = applyCollectionSuggestion(toCategoryLibrary(entities()), {
+              preview: confirmed,
+              confirmed: true,
+              acceptedBookmarkIds: confirmed.acceptedBookmarkIds,
+            });
+            if (result.ok) {
+              const applied = applyCollectionLibraryResult(result.value, bookmarks);
+              setBookmarks(applied.bookmarks);
+              setCols(applied.collections);
+              flashToast('Collection created');
+            }
+            setAICollectionPreview(null);
+          }}
+        />
+      )}
+      {duplicatePreview && (
+        <DuplicatePreviewDialog preview={duplicatePreview} onDecision={(action) => {
+          const result = applyDuplicateDecision(toCategoryLibrary(entities()), {
+            targetId: duplicatePreview.targetId,
+            duplicateId: duplicatePreview.duplicateId,
+            action,
+          });
+          if (result.ok && action !== 'cancel') {
+            const byId = new Map(result.value.bookmarks.map((bookmark) => [bookmark.id, bookmark]));
+            setBookmarks((current) => current.filter((bookmark) => byId.has(bookmark.id)).map((bookmark) => {
+              const domain = byId.get(bookmark.id)!;
+              return { ...bookmark, tags: [...domain.tagIds], categoryId: domain.categoryId ?? '', collectionIds: [...domain.collectionIds] };
+            }));
+            setCols(result.value.collections.map((collection) => ({
+              id: collection.id, name: collection.name, emoji: collection.emoji, color: collection.color,
+              description: collection.description, bookmarkIds: [...collection.bookmarkIds],
+            })));
+            flashToast(action === 'merge' ? 'Bookmarks merged' : 'Duplicate deleted');
+          }
+          setDuplicatePreview(null);
+        }} />
       )}
       <InsightsDialog
         open={insightsOpen}
