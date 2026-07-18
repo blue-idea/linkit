@@ -413,13 +413,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-019 · 实现 Card、List、Masonry 基础视图**
+- [x] **TASK-019 · 实现 Card、List、Masonry 基础视图**
 
   > 依赖：TASK-002、TASK-011、TASK-013 · 预计：3–4 小时
 
-  - [ ] 拆分视图组件并接入虚拟化与共享 BookmarkPresenter。
-  - [ ] 保证三视图元数据一致且 Masonry 布局不重叠。
-  - [ ] 建立三视图 Baseline 和 Diff。
+  - [x] 拆分视图组件并接入虚拟化与共享 BookmarkPresenter。
+  - [x] 保证三视图元数据一致且 Masonry 布局不重叠。
+  - [x] 建立三视图 Baseline 和 Diff。
 
   **验证方式：**
   ```powershell
@@ -1010,7 +1010,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-016 | 主题 CRUD 与成员 | Unit/E2E | 待开始 | REQ-012、026 |
 | TASK-017 | 手动主题组合 | Unit/E2E | 待开始 | REQ-013 |
 | TASK-018 | 标签管理 | Unit/E2E | 待开始 | REQ-014 |
-| TASK-019 | 三种基础视图 | E2E/Manual | 待开始 | REQ-015、028 |
+| TASK-019 | 三种基础视图 | E2E/Manual | 已完成 | REQ-015、028 |
 | TASK-020 | 三种聚合视图 | Unit/E2E | 待开始 | REQ-016、028 |
 | TASK-021 | Spotlight 关键词与 URL | Unit/E2E | 待开始 | REQ-017 |
 | TASK-022 | 主窗口、快捷键与无障碍 | E2E/Security | 待开始 | REQ-024、028 |

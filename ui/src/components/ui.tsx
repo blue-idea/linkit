@@ -57,17 +57,26 @@ export function Segmented<T extends string>({
   options,
   onChange,
   size = 'md',
+  'aria-label': ariaLabel,
 }: {
   value: T;
-  options: { value: T; icon?: string; label?: string }[];
+  options: { value: T; icon?: string; label?: string; ariaLabel?: string }[];
   onChange: (v: T) => void;
   size?: 'sm' | 'md';
+  'aria-label'?: string;
 }) {
   return (
-    <div className={`inline-flex items-center gap-0.5 p-0.5 rounded-lg bg-ink-800/70 hairline ${size === 'sm' ? 'text-[11px]' : 'text-xs'}`}>
+    <div
+      role="group"
+      aria-label={ariaLabel ?? 'View mode'}
+      className={`inline-flex items-center gap-0.5 p-0.5 rounded-lg bg-ink-800/70 hairline ${size === 'sm' ? 'text-[11px]' : 'text-xs'}`}
+    >
       {options.map((o) => (
         <button
           key={o.value}
+          type="button"
+          aria-label={o.ariaLabel ?? o.label ?? String(o.value)}
+          aria-pressed={value === o.value}
           onClick={() => onChange(o.value)}
           className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 font-medium transition-all ${
             value === o.value

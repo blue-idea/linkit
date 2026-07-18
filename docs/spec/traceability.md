@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.14.0  
+> 版本：1.15.0  
 > 日期：2026-07-18  
-> 状态：已定稿（TASK-018 已完成）
+> 状态：已定稿（TASK-019 已完成）
 
 ---
 
@@ -44,7 +44,7 @@
 | TASK-016 | 主题 CRUD 与成员 | REQ-012-AC-001~004；REQ-026-AC-003 | done | `ui/src/domain/collections/*`、`ui/src/features/collections/*`、`ui/src/components/Sidebar.tsx`、`ui/src/App.tsx`、`ui/src/config/domain.ts` | `ui/src/domain/collections/collections.test.ts`、`ui/src/features/collections/apply-collection-command.test.ts`、`ui/src/domain/commands/membership.test.ts`、`ui/tests/e2e/collection-crud.spec.ts` | `docs/spec/ac/TASK-016-AC.md` | 2026-07-18 |
 | TASK-017 | 手动主题组合 | REQ-013-AC-001~002 | done | `ui/src/features/collections/compose/*`、`ui/src/components/ContentArea.tsx`、`ui/src/components/Sidebar.tsx`、`ui/src/App.tsx` | `ui/src/features/collections/compose/compose.test.ts`、`ui/src/features/collections/compose/selection.test.ts`、`ui/tests/e2e/collection-compose.spec.ts` | `docs/spec/ac/TASK-017-AC.md` | 2026-07-18 |
 | TASK-018 | 标签管理 | REQ-014-AC-001~003 | done | `ui/src/domain/tags/*`、`ui/src/features/tags/*`、`ui/src/components/Sidebar.tsx`、`ui/src/components/DetailPanel.tsx`、`ui/src/App.tsx` | `ui/src/domain/tags/tags.test.ts`、`ui/src/features/tags/apply-tag-command.test.ts`、`ui/tests/e2e/tag-management.spec.ts` | `docs/spec/ac/TASK-018-AC.md` | 2026-07-18 |
-| TASK-019 | 三种基础视图 | REQ-015-AC-001~003；REQ-028-AC-004 | 待开始 | — | — | — | — |
+| TASK-019 | 三种基础视图 | REQ-015-AC-001~003；REQ-028-AC-004 | done | `ui/src/features/views/*`、`ui/src/components/ContentArea.tsx`、`ui/src/components/ui.tsx` | `ui/src/features/views/*.test.ts`、`ui/tests/e2e/base-views.spec.ts`、`ui/tests/e2e/base-views.spec.ts-snapshots/*` | `docs/spec/ac/TASK-019-AC.md` | 2026-07-18 |
 | TASK-020 | 三种聚合视图 | REQ-016-AC-001~004；REQ-028-AC-004 | 待开始 | — | — | — | — |
 | TASK-021 | Spotlight 关键词与 URL | REQ-017-AC-001~004 | 待开始 | — | — | — | — |
 | TASK-022 | 主窗口、快捷键与无障碍 | REQ-024-AC-001~006；REQ-028-AC-004 | 待开始 | — | — | — | — |
