@@ -30,7 +30,7 @@ test.describe('主题 CRUD', () => {
     await page.getByLabel('Collection emoji').fill('🎯');
     await page.getByRole('button', { name: 'Color coral' }).click();
     await page.getByLabel('Collection description').fill('Created by TASK-016 E2E');
-    await page.getByRole('button', { name: 'Create collection' }).click();
+    await page.getByRole('button', { name: 'Create collection', exact: true }).click();
 
     // 侧栏与详情面板可能同时出现同名文本，取侧栏首个即可。
     await expect(page.getByText('TASK016 Theme CRUD', { exact: true }).first()).toBeVisible();
@@ -70,7 +70,7 @@ test.describe('主题成员', () => {
   test('主题删除 shall 确认后移除主题并保留书签', async ({ page }) => {
     await page.getByRole('button', { name: 'New collection' }).click();
     await page.getByLabel('Collection name').fill('TASK016 Disposable');
-    await page.getByRole('button', { name: 'Create collection' }).click();
+    await page.getByRole('button', { name: 'Create collection', exact: true }).click();
     await expect(page.getByText('TASK016 Disposable', { exact: true }).first()).toBeVisible();
 
     const row = page.getByText('TASK016 Disposable', { exact: true }).first();

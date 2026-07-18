@@ -73,7 +73,7 @@ test.describe('Spotlight 关键词与 URL', () => {
 
   // REQ-017-AC-004
   test('URL 快捷入库 shall 打开 New Bookmark 预览且确认前不保存', async ({ page }) => {
-    const beforeCount = await page.locator('[data-view-item="card"], [data-view-item="list"], [data-view-item="masonry"]').count();
+    await expect(page.locator('[data-view-item]').first()).toBeVisible();
 
     await openSpotlightWithShortcut(page);
     await page.getByLabel('Spotlight search').fill('https://example.test/spotlight-url');
@@ -86,8 +86,9 @@ test.describe('Spotlight 关键词与 URL', () => {
     );
 
     await page.getByRole('button', { name: 'Cancel' }).click();
-    const afterCount = await page.locator('[data-view-item="card"], [data-view-item="list"], [data-view-item="masonry"]').count();
-    expect(afterCount).toBe(beforeCount);
+    await expect(page.getByRole('heading', { name: 'New Bookmark' })).toHaveCount(0);
+    // 确认前取消：资料库中不应出现该 URL 书签。
+    await expect(page.getByText('example.test/spotlight-url')).toHaveCount(0);
 
     await mkdir(evidenceDirectory, { recursive: true });
     await openSpotlightWithShortcut(page);
