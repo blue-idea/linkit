@@ -1,0 +1,123 @@
+import { useState } from 'react';
+import { Icon, Button } from '../../../components/ui';
+import type { ComposePreviewMember } from './index';
+
+/**
+ * 主题组合创建预览对话框（确认前不写库）。
+ * REQ-013-AC-001 / REQ-013-AC-002
+ */
+export function ComposePreviewDialog({
+  members,
+  onCancel,
+  onConfirm,
+}: {
+  members: ComposePreviewMember[];
+  onCancel: () => void;
+  onConfirm: (values: { name: string; emoji: string; description: string }) => void;
+}) {
+  const [name, setName] = useState('New collection');
+  const [emoji, setEmoji] = useState('🧩');
+  const [description, setDescription] = useState('');
+
+  return (
+    <div
+      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/55 p-4"
+      role="presentation"
+      onClick={onCancel}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="compose-preview-title"
+        className="w-full max-w-md rounded-mac-xl glass-strong shadow-win border border-white/10 p-5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start gap-3">
+          <span className="w-9 h-9 rounded-lg bg-accent-500/15 flex items-center justify-center shrink-0">
+            <Icon name="Library" size={16} className="text-accent-300" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 id="compose-preview-title" className="text-[15px] font-semibold text-ink-100">
+              Create collection from selection
+            </h2>
+            <p className="text-[12px] text-ink-400 mt-1">
+              Preview lists {members.length} selected bookmarks. Nothing is saved until you confirm.
+            </p>
+
+            <label className="block mt-3 text-[11px] font-medium text-ink-300 mb-1.5" htmlFor="compose-name">
+              Collection name
+            </label>
+            <input
+              id="compose-name"
+              aria-label="Compose collection name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full rounded-lg bg-ink-800/60 hairline px-3 py-2 text-[13px] text-ink-100 outline-none focus-ring"
+              autoFocus
+            />
+
+            <div className="mt-3 grid grid-cols-[88px_1fr] gap-2">
+              <div>
+                <label className="block text-[11px] font-medium text-ink-300 mb-1.5" htmlFor="compose-emoji">
+                  Emoji
+                </label>
+                <input
+                  id="compose-emoji"
+                  aria-label="Compose collection emoji"
+                  value={emoji}
+                  onChange={(e) => setEmoji(e.target.value)}
+                  className="w-full rounded-lg bg-ink-800/60 hairline px-3 py-2 text-[13px] text-ink-100 outline-none focus-ring text-center"
+                />
+              </div>
+              <div>
+                <span className="block text-[11px] font-medium text-ink-300 mb-1.5">Members</span>
+                <ul
+                  aria-label="Compose preview members"
+                  className="max-h-28 overflow-y-auto rounded-lg bg-ink-800/40 hairline px-2 py-1.5 space-y-1"
+                >
+                  {members.map((member) => (
+                    <li key={member.id} className="text-[12px] text-ink-200 truncate">
+                      {member.title}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <label className="block mt-3 text-[11px] font-medium text-ink-300 mb-1.5" htmlFor="compose-description">
+              Description
+            </label>
+            <textarea
+              id="compose-description"
+              aria-label="Compose collection description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={2}
+              className="w-full rounded-lg bg-ink-800/60 hairline px-3 py-2 text-[13px] text-ink-100 outline-none focus-ring resize-none"
+            />
+          </div>
+        </div>
+
+        <div className="mt-5 flex justify-end gap-2">
+          <Button variant="ghost" aria-label="Cancel compose collection" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            aria-label="Confirm compose collection"
+            disabled={!name.trim()}
+            onClick={() =>
+              onConfirm({
+                name: name.trim(),
+                emoji: emoji.trim() || '🧩',
+                description,
+              })
+            }
+          >
+            Create collection
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}

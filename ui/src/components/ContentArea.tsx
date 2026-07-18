@@ -255,7 +255,7 @@ function BookmarkCard({
   b: Bookmark;
   tags: Tag[];
   selected: boolean;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
   onDragStart: (e: React.DragEvent) => void;
   onDragEnd: () => void;
   onToggleStar: () => void;
@@ -328,7 +328,7 @@ function BookmarkRow({
   b: Bookmark;
   tags: Tag[];
   selected: boolean;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
   onDragStart: (e: React.DragEvent) => void;
   onDragEnd: () => void;
   onToggleStar: () => void;
@@ -388,7 +388,7 @@ function MasonryTile({
 }: {
   b: Bookmark;
   selected: boolean;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
   onDragStart: (e: React.DragEvent) => void;
   onDragEnd: () => void;
 }) {
@@ -456,12 +456,15 @@ export function ContentArea({
   filters,
   density,
   selectedId,
+  composeSelectedIds,
   sort,
   onSort,
   onDensity,
   onSearch,
   onOpenSpotlight,
   onSelectBookmark,
+  onToggleComposeSelect,
+  onRequestCompose,
   onToggleStar,
   onClearTagFilter,
   onDateRange,
@@ -482,12 +485,15 @@ export function ContentArea({
   filters: Filters;
   density: ViewDensity;
   selectedId: string | null;
+  composeSelectedIds: string[];
   sort: string;
   onSort: (s: string) => void;
   onDensity: (d: ViewDensity) => void;
   onSearch: (q: string) => void;
   onOpenSpotlight: () => void;
   onSelectBookmark: (id: string) => void;
+  onToggleComposeSelect: (id: string, additive: boolean) => void;
+  onRequestCompose: () => void;
   onToggleStar: (id: string) => void;
   onClearTagFilter: (id: string) => void;
   onDateRange: (r: Filters['dateRange']) => void;
@@ -508,6 +514,28 @@ export function ContentArea({
     [bookmarks, sort]
   );
   const showAI = selection.kind === 'collection' && !aiDismissed;
+  const composeSet = useMemo(() => new Set(composeSelectedIds), [composeSelectedIds]);
+
+  const startDrag = (e: React.DragEvent, bookmarkId: string) => {
+    // REQ-013-AC-001：若拖拽项属于多选集合，载荷携带全部所选 ID。
+    const payload =
+      composeSet.has(bookmarkId) && composeSelectedIds.length >= 2
+        ? JSON.stringify(composeSelectedIds)
+        : bookmarkId;
+    e.dataTransfer.setData('text/bookmark', payload);
+    e.dataTransfer.effectAllowed = 'move';
+    onDragStartBookmark(bookmarkId);
+  };
+
+  const handleCardClick = (e: React.MouseEvent, bookmarkId: string) => {
+    const additive = e.metaKey || e.ctrlKey;
+    if (additive) {
+      onToggleComposeSelect(bookmarkId, true);
+      return;
+    }
+    onToggleComposeSelect(bookmarkId, false);
+    onSelectBookmark(bookmarkId);
+  };
 
   return (
     <div className="h-full flex flex-col glass border-r border-white/5 min-w-0">
@@ -541,6 +569,22 @@ export function ContentArea({
         />
       )}
 
+      {composeSelectedIds.length >= 2 && (
+        <div className="mx-4 mb-2 flex items-center justify-between gap-2 rounded-lg bg-accent-500/10 hairline px-3 py-2">
+          <span className="text-[12px] text-ink-200">
+            {composeSelectedIds.length} bookmarks selected
+          </span>
+          <Button
+            size="sm"
+            variant="primary"
+            aria-label="Create collection from selection"
+            onClick={onRequestCompose}
+          >
+            Create collection
+          </Button>
+        </div>
+      )}
+
       {bookmarks.length === 0 ? (
         <EmptyState onNew={onNewBookmark} onSpotlight={onOpenSpotlight} />
       ) : (
@@ -552,9 +596,9 @@ export function ContentArea({
                   <BookmarkCard
                     b={b}
                     tags={tags}
-                    selected={selectedId === b.id}
-                    onClick={() => onSelectBookmark(b.id)}
-                    onDragStart={(e) => { e.dataTransfer.setData('text/bookmark', b.id); e.dataTransfer.effectAllowed = 'move'; onDragStartBookmark(b.id); }}
+                    selected={selectedId === b.id || composeSet.has(b.id)}
+                    onClick={(e) => handleCardClick(e, b.id)}
+                    onDragStart={(e) => startDrag(e, b.id)}
                     onDragEnd={() => {}}
                     onToggleStar={() => onToggleStar(b.id)}
                   />
@@ -570,9 +614,9 @@ export function ContentArea({
                   <BookmarkRow
                     b={b}
                     tags={tags}
-                    selected={selectedId === b.id}
-                    onClick={() => onSelectBookmark(b.id)}
-                    onDragStart={(e) => { e.dataTransfer.setData('text/bookmark', b.id); e.dataTransfer.effectAllowed = 'move'; onDragStartBookmark(b.id); }}
+                    selected={selectedId === b.id || composeSet.has(b.id)}
+                    onClick={(e) => handleCardClick(e, b.id)}
+                    onDragStart={(e) => startDrag(e, b.id)}
                     onDragEnd={() => {}}
                     onToggleStar={() => onToggleStar(b.id)}
                   />
@@ -587,9 +631,9 @@ export function ContentArea({
                 <div key={b.id} className="mb-3 break-inside-avoid animate-slide-up" style={{ animationDelay: `${Math.min(i * 24, 240)}ms` }}>
                   <MasonryTile
                     b={b}
-                    selected={selectedId === b.id}
-                    onClick={() => onSelectBookmark(b.id)}
-                    onDragStart={(e) => { e.dataTransfer.setData('text/bookmark', b.id); e.dataTransfer.effectAllowed = 'move'; onDragStartBookmark(b.id); }}
+                    selected={selectedId === b.id || composeSet.has(b.id)}
+                    onClick={(e) => handleCardClick(e, b.id)}
+                    onDragStart={(e) => startDrag(e, b.id)}
                     onDragEnd={() => {}}
                   />
                 </div>
