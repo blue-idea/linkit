@@ -21,8 +21,9 @@
     "supabase:status": "supabase status --workdir ..",
     "supabase:reset": "supabase db reset --workdir ..",
     "supabase:types": "supabase gen types typescript --local --workdir .. > src/database.types.ts",
-    "test:supabase": "supabase test db --workdir .. && node ./scripts/supabase-rls-api-test.mjs && node ./scripts/supabase-auth-api-test.mjs",
+    "test:supabase": "supabase test db --workdir .. && node ./scripts/supabase-rls-api-test.mjs && node ./scripts/supabase-auth-api-test.mjs && node ./scripts/supabase-revision-api-test.mjs",
     "test:supabase:auth": "node ./scripts/supabase-auth-api-test.mjs",
+    "test:supabase:revision": "node ./scripts/supabase-revision-api-test.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "verify:quality-config": "node verify-quality-config.mjs"
   },
