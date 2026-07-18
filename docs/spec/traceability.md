@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.12.0  
+> 版本：1.13.0  
 > 日期：2026-07-18  
-> 状态：已定稿（TASK-016 已完成）
+> 状态：已定稿（TASK-017 已完成）
 
 ---
 
@@ -42,7 +42,7 @@
 | TASK-014 | 分类 CRUD 与删除 | REQ-010-AC-001~005 | done | `ui/src/domain/categories/index.ts`、`ui/src/features/categories/*`、`ui/src/components/Sidebar.tsx`、`ui/src/App.tsx` | `ui/src/domain/categories/categories.test.ts`、`ui/src/features/categories/delete-confirm.test.ts`、`ui/tests/e2e/category-crud.spec.ts` | `docs/spec/ac/TASK-014-AC.md` | 2026-07-18 |
 | TASK-015 | 分类与书签拖拽 | REQ-011-AC-001~003；REQ-024-AC-006 | done | `ui/src/features/categories/drag/*`、`ui/src/components/Sidebar.tsx`、`ui/src/App.tsx`、`ui/src/components/ContentArea.tsx` | `ui/src/features/categories/drag/drag.test.ts`、`ui/tests/e2e/category-drag.spec.ts` | `docs/spec/ac/TASK-015-AC.md` | 2026-07-18 |
 | TASK-016 | 主题 CRUD 与成员 | REQ-012-AC-001~004；REQ-026-AC-003 | done | `ui/src/domain/collections/*`、`ui/src/features/collections/*`、`ui/src/components/Sidebar.tsx`、`ui/src/App.tsx`、`ui/src/config/domain.ts` | `ui/src/domain/collections/collections.test.ts`、`ui/src/features/collections/apply-collection-command.test.ts`、`ui/src/domain/commands/membership.test.ts`、`ui/tests/e2e/collection-crud.spec.ts` | `docs/spec/ac/TASK-016-AC.md` | 2026-07-18 |
-| TASK-017 | 手动主题组合 | REQ-013-AC-001~002 | 待开始 | — | — | — | — |
+| TASK-017 | 手动主题组合 | REQ-013-AC-001~002 | done | `ui/src/features/collections/compose/*`、`ui/src/components/ContentArea.tsx`、`ui/src/components/Sidebar.tsx`、`ui/src/App.tsx` | `ui/src/features/collections/compose/compose.test.ts`、`ui/src/features/collections/compose/selection.test.ts`、`ui/tests/e2e/collection-compose.spec.ts` | `docs/spec/ac/TASK-017-AC.md` | 2026-07-18 |
 | TASK-018 | 标签管理 | REQ-014-AC-001~003 | 待开始 | — | — | — | — |
 | TASK-019 | 三种基础视图 | REQ-015-AC-001~003；REQ-028-AC-004 | 待开始 | — | — | — | — |
 | TASK-020 | 三种聚合视图 | REQ-016-AC-001~004；REQ-028-AC-004 | 待开始 | — | — | — | — |
@@ -106,3 +106,4 @@
 | 2026-07-18 | TASK-014 更新为 done，补充分类树 CRUD 与三删除策略 | 树计数、创建重命名、移动/递归/取消删除已验收 |
 | 2026-07-18 | TASK-015 更新为 done，补充分类拖拽与书签归类 | 合法/非法移动、书签归类与键盘等价已验收 |
 | 2026-07-18 | TASK-016 更新为 done，补充主题 CRUD 与双向成员 | 创建/编辑/删除、成员对称与主题视图计数已验收 |
+| 2026-07-18 | TASK-017 更新为 done，补充手动拖出主题组合 | 预览/取消无副作用/确认双向成员已验收 |

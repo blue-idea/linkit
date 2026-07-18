@@ -20,6 +20,10 @@ export const DOMAIN_CONFIG = {
       code: 'COLLECTION_EMOJI_INVALID',
       message: 'Collection emoji is required',
     },
+    composeSelectionTooSmall: {
+      code: 'COMPOSE_SELECTION_TOO_SMALL',
+      message: 'Select at least two bookmarks to create a collection',
+    },
     readStatusInvalid: {
       code: 'READ_STATUS_INVALID',
       message: 'Read status must be unread, reading, read or archived',
@@ -46,6 +50,7 @@ export const DOMAIN_CONFIG = {
     collectionCreated: 'collection.created',
     collectionUpdated: 'collection.updated',
     collectionDeleted: 'collection.deleted',
+    collectionComposed: 'collection.composed',
     bookmarkCreated: 'bookmark.created',
     bookmarkUpdated: 'bookmark.updated',
     bookmarkDeleted: 'bookmark.deleted',

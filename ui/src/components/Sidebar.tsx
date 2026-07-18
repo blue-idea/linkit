@@ -108,6 +108,7 @@ export function Sidebar({
   onNewCollection,
   onEditCollection,
   onDeleteCollection,
+  onDropToCompose,
   insightCount,
 }: {
   categories: Category[];
@@ -129,9 +130,11 @@ export function Sidebar({
   onNewCollection: () => void;
   onEditCollection: (collectionId: string) => void;
   onDeleteCollection: (collectionId: string) => void;
+  onDropToCompose: (rawPayload: string) => void;
   insightCount: number;
 }) {
   const [dragOverId, setDragOverId] = useStateDrag();
+  const [composeDropActive, setComposeDropActive] = useState(false);
 
   const childrenOf = (parentId: string | null) => categories.filter((c) => c.parentId === parentId);
 
@@ -326,6 +329,28 @@ export function Sidebar({
         >
           收藏主题
         </SectionLabel>
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label="Create collection drop zone"
+          className={`mx-2 mb-1 rounded-lg border border-dashed px-2 py-2 text-[11px] transition ${
+            composeDropActive
+              ? 'border-accent-400/60 bg-accent-500/10 text-accent-200'
+              : 'border-ink-500/40 text-ink-400 hover:border-ink-400/60'
+          }`}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setComposeDropActive(true);
+          }}
+          onDragLeave={() => setComposeDropActive(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setComposeDropActive(false);
+            onDropToCompose(e.dataTransfer.getData('text/bookmark'));
+          }}
+        >
+          Drop selection to create collection
+        </div>
         {collections.map((col) => {
           const active = selection.kind === 'collection' && selection.id === col.id;
           const c = tagColors[col.color];

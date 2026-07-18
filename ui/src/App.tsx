@@ -44,13 +44,20 @@ import {
 } from './features/categories';
 import {
   applyCollectionLibraryResult,
+  buildComposePreview,
+  cancelCompose,
   CollectionFormDialog,
+  ComposePreviewDialog,
+  confirmComposeCollection,
   DeleteCollectionDialog,
+  parseComposeDragPayload,
   runCreateCollection,
   runDeleteCollection,
   runSetMembership,
   runUpdateCollection,
+  toggleComposeSelection,
   type CollectionFormValues,
+  type ComposePreview,
 } from './features/collections';
 import { createBrowserStorageAdapters } from './services/storage';
 import { normalizeBookmarkUrl } from './domain/commands';
@@ -185,6 +192,8 @@ export default function App() {
     null | { mode: 'create' } | { mode: 'edit'; id: string }
   >(null);
   const [collectionDeleteId, setCollectionDeleteId] = useState<string | null>(null);
+  const [composeSelectedIds, setComposeSelectedIds] = useState<string[]>([]);
+  const [composePreview, setComposePreview] = useState<ComposePreview | null>(null);
   // 防止“未水合的种子数据”在加载本机库前被自动保存覆盖。
   const [libraryHydrated, setLibraryHydrated] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -560,6 +569,66 @@ export default function App() {
     flashToast('Collection deleted');
   }, [bookmarks, cats, cols, collectionDeleteId, flashToast, state.selection, tagList]);
 
+  const openComposePreview = useCallback((bookmarkIds: string[]) => {
+    // REQ-013-AC-001：仅构建预览，确认前不写库。
+    const domainBookmarks = toCategoryLibrary({
+      bookmarks,
+      categories: cats,
+      collections: cols,
+      tags: tagList,
+    }).bookmarks;
+    const preview = buildComposePreview(bookmarkIds, domainBookmarks);
+    if ('ok' in preview && preview.ok === false) {
+      flashToast(preview.error.message);
+      return;
+    }
+    setComposePreview(preview as ComposePreview);
+  }, [bookmarks, cats, cols, flashToast, tagList]);
+
+  const handleComposeDrop = useCallback((rawPayload: string) => {
+    const ids = parseComposeDragPayload(rawPayload);
+    openComposePreview(ids.length >= 2 ? ids : composeSelectedIds.length >= 2 ? composeSelectedIds : ids);
+  }, [composeSelectedIds, openComposePreview]);
+
+  const handleConfirmCompose = useCallback((values: {
+    name: string;
+    emoji: string;
+    description: string;
+  }) => {
+    // REQ-013-AC-002：确认后一次创建主题与全部成员。
+    if (!composePreview) return;
+    const result = confirmComposeCollection(
+      toCategoryLibrary({
+        bookmarks,
+        categories: cats,
+        collections: cols,
+        tags: tagList,
+      }),
+      {
+        name: values.name,
+        emoji: values.emoji,
+        description: values.description,
+        bookmarkIds: composePreview.bookmarkIds,
+      }
+    );
+    if (!result.ok) {
+      flashToast(result.error.message);
+      return;
+    }
+    const applied = applyCollectionLibraryResult(result.value, bookmarks);
+    setCols(applied.collections);
+    setBookmarks(applied.bookmarks);
+    setComposePreview(null);
+    setComposeSelectedIds([]);
+    flashToast('Collection created');
+  }, [bookmarks, cats, cols, composePreview, flashToast, tagList]);
+
+  const handleCancelCompose = useCallback(() => {
+    // REQ-013-AC-001：取消不产生持久化副作用。
+    cancelCompose();
+    setComposePreview(null);
+  }, []);
+
   const requestDeleteCategory = useCallback((categoryId: string) => {
     const childCount = cats.filter((c) => c.parentId === categoryId).length;
     const bookmarkCount = bookmarks.filter((b) => b.categoryId === categoryId).length;
@@ -809,6 +878,7 @@ export default function App() {
                 onNewCollection={() => setCollectionForm({ mode: 'create' })}
                 onEditCollection={(id) => setCollectionForm({ mode: 'edit', id })}
                 onDeleteCollection={(id) => setCollectionDeleteId(id)}
+                onDropToCompose={handleComposeDrop}
                 insightCount={insights.length}
               />
             </div>
@@ -826,12 +896,17 @@ export default function App() {
               filters={state.filters}
               density={state.density}
               selectedId={state.selectedBookmarkId}
+              composeSelectedIds={composeSelectedIds}
               sort={sortKey}
               onSort={(next) => setSortKey(next as SortKey)}
               onDensity={(d: ViewDensity) => setState((s) => ({ ...s, density: d }))}
               onSearch={(q) => setFilters({ query: q })}
               onOpenSpotlight={() => setSpotlightOpen(true)}
               onSelectBookmark={(id) => setState((s) => ({ ...s, selectedBookmarkId: id }))}
+              onToggleComposeSelect={(id, additive) => {
+                setComposeSelectedIds((prev) => toggleComposeSelection(prev, id, additive));
+              }}
+              onRequestCompose={() => openComposePreview(composeSelectedIds)}
               onToggleStar={toggleStar}
               onClearTagFilter={(id) => setFilters({ tagIds: state.filters.tagIds.filter((t) => t !== id) })}
               onDateRange={(r) => setFilters({ dateRange: r })}
@@ -979,6 +1054,13 @@ export default function App() {
           memberCount={cols.find((c) => c.id === collectionDeleteId)?.bookmarkIds.length ?? 0}
           onCancel={() => setCollectionDeleteId(null)}
           onConfirm={confirmDeleteCollection}
+        />
+      )}
+      {composePreview && (
+        <ComposePreviewDialog
+          members={composePreview.members}
+          onCancel={handleCancelCompose}
+          onConfirm={handleConfirmCompose}
         />
       )}
       <InsightsDialog
