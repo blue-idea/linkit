@@ -14,8 +14,16 @@ import { LoginScreen } from './components/LoginScreen';
 import { SettingsDialog } from './components/SettingsDialog';
 import { useAuth } from './auth';
 import { loadCloudLibrary, saveCloudLibrary } from './cloud';
-import { loadLocalLibrary, saveLocalLibrary, loadSettings, saveSettings } from './storage';
+import { loadLocalLibrary, saveLocalLibrary } from './storage';
 import { applyTheme, defaultSettings } from './themes';
+import {
+  applySeedRestore,
+  RecoveryDialog,
+  shouldConfirmSeedRestore,
+  useLocalStartup,
+  persistUiSettings,
+} from './features/auth';
+import { createBrowserStorageAdapters } from './services/storage';
 
 /* ---------- window chrome ---------- */
 function WindowChrome({
@@ -101,12 +109,14 @@ function WindowChrome({
 
 export default function App() {
   const auth = useAuth();
-  const [authed, setAuthed] = useState(false); // true once user signs in OR picks local mode
-  const [settings, setSettings] = useState<AppSettings>(defaultSettings);
+  const startup = useLocalStartup(auth.loading);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>(seedBookmarks);
   const [cats, setCats] = useState<Category[]>(seedCategories);
   const [cols, setCols] = useState<Collection[]>(seedCollections);
   const [tagList, setTagList] = useState<Tag[]>(seedTags);
+  const settings = startup.settings ?? defaultSettings;
+  const setSettings = startup.setSettings;
+  const authed = startup.view === 'main';
 
   const [state, setState] = useState<AppState>({
     selection: { kind: 'all' },
@@ -127,18 +137,18 @@ export default function App() {
   const [dragActive, setDragActive] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [seedConfirmOpen, setSeedConfirmOpen] = useState(false);
+  // 防止“未水合的种子数据”在加载本机库前被自动保存覆盖。
+  const [libraryHydrated, setLibraryHydrated] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  /* ---------- init: load settings + apply theme ---------- */
-  useEffect(() => {
-    const s = loadSettings();
-    setSettings(s);
-    applyTheme(s.theme);
-  }, []);
+  const browserStorage = useMemo(() => createBrowserStorageAdapters(), []);
 
   /* ---------- when authed, load library from chosen storage ---------- */
   useEffect(() => {
-    if (!authed) return;
+    if (!authed) {
+      setLibraryHydrated(false);
+      return;
+    }
     if (settings.storageMode === 'cloud' && auth.user) {
       setSyncing(true);
       loadCloudLibrary(auth.user.id).then((lib) => {
@@ -148,16 +158,20 @@ export default function App() {
           setCols(lib.collections ?? seedCollections);
           setTagList(lib.tags ?? seedTags);
         }
+        setLibraryHydrated(true);
         setSyncing(false);
       });
     } else {
+      // REQ-002-AC-002：本地模式从本机恢复最后一次成功保存的资料库。
       const lib = loadLocalLibrary();
       if (lib) {
         setBookmarks(lib.bookmarks);
         setCats(lib.categories ?? seedCategories);
         setCols(lib.collections ?? seedCollections);
         setTagList(lib.tags ?? seedTags);
+        setState((s) => ({ ...s, selectedBookmarkId: lib.bookmarks[0]?.id ?? null }));
       }
+      setLibraryHydrated(true);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authed]);
@@ -169,7 +183,7 @@ export default function App() {
 
   /* ---------- debounced auto-save on library change ---------- */
   useEffect(() => {
-    if (!authed) return;
+    if (!authed || !libraryHydrated) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
       if (settings.storageMode === 'cloud' && auth.user) {
@@ -179,7 +193,7 @@ export default function App() {
       }
     }, 900);
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
-  }, [library, settings.storageMode, auth.user, authed]);
+  }, [library, settings.storageMode, auth.user, authed, libraryHydrated]);
 
   const insights = useMemo(() => aiBuildInsights(bookmarks), [bookmarks]);
 
@@ -270,12 +284,12 @@ export default function App() {
     flashToast('收藏已入库');
   }, [flashToast]);
 
-  const handleSaveSettings = useCallback((s: AppSettings) => {
+  const handleSaveSettings = useCallback(async (s: AppSettings) => {
     setSettings(s);
     applyTheme(s.theme);
-    saveSettings(s);
+    await persistUiSettings(s);
     flashToast('设置已保存');
-  }, [flashToast]);
+  }, [flashToast, setSettings]);
 
   const handleImport = useCallback((lib: LibraryData) => {
     setBookmarks(lib.bookmarks);
@@ -286,15 +300,39 @@ export default function App() {
     flashToast(`已导入 ${lib.bookmarks.length} 个收藏`);
   }, [flashToast]);
 
-  const handleSignOut = useCallback(async () => {
-    await auth.signOut();
-    setAuthed(false);
-    setSettingsOpen(false);
+  const applySampleLibrary = useCallback(() => {
     setBookmarks(seedBookmarks);
     setCats(seedCategories);
     setCols(seedCollections);
     setTagList(seedTags);
-  }, [auth]);
+    setState((s) => ({ ...s, selectedBookmarkId: seedBookmarks[0]?.id ?? null }));
+    saveLocalLibrary({
+      bookmarks: seedBookmarks,
+      categories: seedCategories,
+      collections: seedCollections,
+      tags: seedTags,
+    });
+    flashToast('Sample data restored');
+  }, [flashToast]);
+
+  const handleRestoreSampleData = useCallback(() => {
+    const hasLocalData = browserStorage.hasLocalLibraryData() || bookmarks.length > 0;
+    if (shouldConfirmSeedRestore(hasLocalData)) {
+      setSeedConfirmOpen(true);
+      return;
+    }
+    if (applySeedRestore({ hasLocalData, confirmed: false }) === 'applied') {
+      applySampleLibrary();
+    }
+  }, [applySampleLibrary, bookmarks.length, browserStorage]);
+
+  const markSignedOut = startup.markSignedOut;
+  const handleSignOut = useCallback(async () => {
+    // REQ-002-AC-003：Sign Out 返回认证界面且保留本机资料库。
+    await auth.signOut();
+    setSettingsOpen(false);
+    markSignedOut();
+  }, [auth, markSignedOut]);
 
   /* ---------- keyboard shortcuts ---------- */
   useEffect(() => {
@@ -335,20 +373,54 @@ export default function App() {
 
   const setFilters = (patch: Partial<Filters>) => setState((s) => ({ ...s, filters: { ...s.filters, ...patch } }));
 
-  /* ---------- loading gate ---------- */
-  if (auth.loading) {
-    return <div className="h-screen w-screen workspace flex items-center justify-center"><div className="w-7 h-7 rounded-full border-2 border-white/20 border-t-white animate-spin" /></div>;
+  /* ---------- loading gate：禁止在引导完成前闪登录或主界面 ---------- */
+  if (startup.view === 'loading') {
+    return (
+      <div className="h-screen w-screen workspace flex items-center justify-center" role="status" aria-label="Loading">
+        <div className="w-7 h-7 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+      </div>
+    );
+  }
+
+  if (startup.view === 'recovery') {
+    return (
+      <RecoveryDialog
+        onCancel={() => {
+          startup.setRecoveryPending(false);
+          startup.markSignedOut();
+        }}
+        onConfirm={() => {
+          const lib = loadLocalLibrary();
+          if (lib) {
+            setBookmarks(lib.bookmarks);
+            setCats(lib.categories ?? seedCategories);
+            setCols(lib.collections ?? seedCollections);
+            setTagList(lib.tags ?? seedTags);
+          }
+          startup.setRecoveryPending(false);
+          void startup.enterLocalMode(settings);
+        }}
+      />
+    );
   }
 
   /* ---------- login gate ---------- */
-  if (!authed) {
+  if (startup.view === 'login') {
     return (
       <LoginScreen
         loading={false}
         error={auth.error}
-        onSignIn={async (email, password) => { const { error } = await auth.signIn(email, password); if (!error) setAuthed(true); }}
-        onSignUp={async (email, password) => { const { error } = await auth.signUp(email, password); if (!error) setAuthed(true); }}
-        onUseLocal={() => { setAuthed(true); setSettings((s) => ({ ...s, storageMode: 'local' })); }}
+        onSignIn={async (email, password) => {
+          const { error } = await auth.signIn(email, password);
+          if (!error) startup.markAuthenticated();
+        }}
+        onSignUp={async (email, password) => {
+          const { error } = await auth.signUp(email, password);
+          if (!error) startup.markAuthenticated();
+        }}
+        onUseLocal={() => {
+          void startup.enterLocalMode(settings);
+        }}
       />
     );
   }
@@ -516,7 +588,39 @@ export default function App() {
         onSave={handleSaveSettings}
         onImport={handleImport}
         onSignOut={handleSignOut}
+        onRestoreSampleData={handleRestoreSampleData}
       />
+
+      {seedConfirmOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal="true" aria-labelledby="seed-confirm-title">
+          <div className="w-full max-w-md rounded-xl bg-ink-900 hairline p-6 shadow-win">
+            <h2 id="seed-confirm-title" className="text-[16px] font-semibold text-ink-100">
+              Replace current library?
+            </h2>
+            <p className="mt-2 text-[13px] text-ink-300">
+              Restoring sample data will replace your current local library. This cannot be undone from this dialog.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button type="button" className="rounded-md px-3 py-1.5 text-[12px] text-ink-300 hover:bg-ink-800" onClick={() => setSeedConfirmOpen(false)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="rounded-md bg-coral-500 px-3 py-1.5 text-[12px] font-medium text-white hover:brightness-110"
+                onClick={() => {
+                  if (applySeedRestore({ hasLocalData: true, confirmed: true }) === 'applied') {
+                    applySampleLibrary();
+                  }
+                  setSeedConfirmOpen(false);
+                  setSettingsOpen(false);
+                }}
+              >
+                Restore sample data
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

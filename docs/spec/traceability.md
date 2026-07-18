@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.6.0
+> 版本：1.7.0  
 > 日期：2026-07-18  
-> 状态：已定稿（TASK-009 已完成）
+> 状态：已定稿（TASK-010 已完成）
 
 ---
 
@@ -35,7 +35,7 @@
 | TASK-007 | 本地设置服务 | REQ-019-AC-001、REQ-019-AC-006；REQ-023-AC-003~006 | done | `internal/settingsstore/*`、`config/storage.go`、`config/errors.go`、`main.go`、`ui/src/services/settings/*`、`ui/src/config/settings.ts`、`ui/src/domain/schemas.ts` | `internal/settingsstore/*_test.go`、`ui/src/services/settings/settings.test.ts` | `docs/spec/ac/TASK-007-AC.md` | 2026-07-18 |
 | TASK-008 | 原生导入导出服务 | REQ-005-AC-001~003；REQ-025-AC-002 | done | `internal/platform/*`、`config/app.go`、`config/errors.go`、`main.go` | `internal/platform/*_test.go` | `docs/spec/ac/TASK-008-AC.md` | 2026-07-18 |
 | TASK-009 | 网页元数据与外部 URL | REQ-006-AC-001~003；REQ-008-AC-002；REQ-025-AC-001 | done | `internal/metadata/*`、`internal/httpurl/*`、`internal/platform/external_url.go`、`config/network.go`、`main.go` | `internal/metadata/*_test.go`、`internal/httpurl/*_test.go`、`internal/platform/external_url_test.go` | `docs/spec/ac/TASK-009-AC.md` | 2026-07-18 |
-| TASK-010 | 本地模式启动恢复 | REQ-001-AC-005；REQ-002-AC-001~004 | 待开始 | — | — | — | — |
+| TASK-010 | 本地模式启动恢复 | REQ-001-AC-005；REQ-002-AC-001~004 | done | `ui/src/services/storage/*`、`ui/src/features/auth/*`、`ui/src/App.tsx`、`ui/src/storage.ts`、`ui/src/components/ui.tsx`、`ui/src/components/SettingsDialog.tsx` | `ui/src/features/auth/startup-gate.test.ts`、`ui/src/services/storage/*test*`、`ui/src/storage.test.ts`、`ui/tests/e2e/local-startup.spec.ts` | `docs/spec/ac/TASK-010-AC.md` | 2026-07-18 |
 | TASK-011 | 书签核心 CRUD | REQ-006-AC-001、REQ-006-AC-003~004；REQ-007-AC-001~004 | 待开始 | — | — | — | — |
 | TASK-012 | 书签状态与访问 | REQ-008-AC-001~004 | 待开始 | — | — | — | — |
 | TASK-013 | 排序与筛选 | REQ-008-AC-004；REQ-009-AC-001~004 | 待开始 | — | — | — | — |
@@ -99,3 +99,4 @@
 | 2026-07-18 | TASK-007 更新为 done，补充 settingsstore 与前端 settings 服务路径 | 本机设置原子读写、默认值、consent 失效与 Unit AC 已验收 |
 | 2026-07-18 | TASK-008 更新为 done，补充 NativeFileService 路径 | 原生导入导出、导出信封与密钥拒绝 Unit AC 已验收 |
 | 2026-07-18 | TASK-009 更新为 done，补充 MetadataService 与 OpenExternalURL | 受限 HTTP 抓取、静态解析与外开门禁已验收 |
+| 2026-07-18 | TASK-010 更新为 done，补充启动门控与本地恢复旅程 | Loading gate、刷新恢复、退出保留与种子确认已验收 |

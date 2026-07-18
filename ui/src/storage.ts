@@ -1,14 +1,55 @@
-import type { AppSettings, LibraryData } from './types';
+import type { AppSettings, Bookmark, LibraryData, TagColor } from './types';
 import { defaultSettings } from './themes';
 
 const DATA_KEY = 'lattice.library';
 const SETTINGS_KEY = 'lattice.settings';
+const TAG_COLORS: TagColor[] = ['blue', 'green', 'amber', 'coral', 'violet', 'gray'];
+
+/**
+ * 将本机 JSON 中可能缺失的 UI 字段补齐，避免恢复后 Favicon 等组件崩溃。
+ * REQ-002-AC-002
+ */
+export function normalizeLocalLibrary(lib: LibraryData): LibraryData {
+  return {
+    ...lib,
+    bookmarks: (lib.bookmarks ?? []).map(normalizeLocalBookmark),
+    categories: lib.categories ?? [],
+    collections: lib.collections ?? [],
+    tags: lib.tags ?? [],
+  };
+}
+
+function normalizeLocalBookmark(raw: Bookmark): Bookmark {
+  const domain = typeof raw.domain === 'string' && raw.domain.trim() ? raw.domain : 'unknown';
+  const glyphFromDomain = domain.charAt(0).toUpperCase() || '?';
+  const favicon =
+    typeof raw.favicon === 'string' && raw.favicon.trim()
+      ? raw.favicon
+      : glyphFromDomain;
+  const faviconColor = TAG_COLORS.includes(raw.faviconColor as TagColor)
+    ? (raw.faviconColor as TagColor)
+    : 'blue';
+
+  return {
+    ...raw,
+    domain,
+    favicon,
+    faviconColor,
+    description: raw.description ?? '',
+    notes: raw.notes ?? '',
+    tags: Array.isArray(raw.tags) ? raw.tags : [],
+    collectionIds: Array.isArray(raw.collectionIds) ? raw.collectionIds : [],
+    visitCount: typeof raw.visitCount === 'number' ? raw.visitCount : 0,
+    starred: Boolean(raw.starred),
+    pinned: Boolean(raw.pinned),
+  };
+}
 
 export function loadLocalLibrary(): LibraryData | null {
   try {
     const raw = localStorage.getItem(DATA_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as LibraryData;
+    return normalizeLocalLibrary(JSON.parse(raw) as LibraryData);
   } catch {
     return null;
   }

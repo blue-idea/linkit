@@ -121,14 +121,26 @@ export function Sparkline({ data, color = 'blue', width = 80, height = 24 }: { d
 }
 
 /* ---------- Favicon block ---------- */
-export function Favicon({ glyph, color, size = 32, className = '' }: { glyph: string; color: TagColor; size?: number; className?: string }) {
-  const c = tagColors[color];
+export function Favicon({
+  glyph,
+  color,
+  size = 32,
+  className = '',
+}: {
+  glyph?: string | null;
+  color?: TagColor | null;
+  size?: number;
+  className?: string;
+}) {
+  // 本机恢复数据可能缺少颜色；回退 blue，避免整个主界面白屏。
+  const c = tagColors[color ?? 'blue'] ?? tagColors.blue;
+  const label = (glyph && String(glyph).trim()) || '?';
   return (
     <div
       className={`rounded-[7px] bg-gradient-to-br ${c.gradFrom} ${c.gradTo} flex items-center justify-center text-white hairline shrink-0 ${className}`}
       style={{ width: size, height: size, fontSize: size * 0.5 }}
     >
-      <span className="drop-shadow-sm">{glyph}</span>
+      <span className="drop-shadow-sm">{label}</span>
     </div>
   );
 }
