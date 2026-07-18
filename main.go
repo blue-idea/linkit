@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/blue-idea/collection/config"
+	"github.com/blue-idea/collection/internal/ai"
 	"github.com/blue-idea/collection/internal/localstore"
 	"github.com/blue-idea/collection/internal/metadata"
 	"github.com/blue-idea/collection/internal/platform"
@@ -36,6 +37,10 @@ func main() {
 	}
 	nativeFileService := platform.NewService()
 	metadataService := metadata.NewService()
+	aiService := ai.NewDefaultService(
+		ai.SecretKeyLoader{Secrets: secretService},
+		ai.SettingsConsentChecker{Settings: settingsService},
+	)
 
 	err = wails.Run(&options.App{
 		Title:  config.AppTitle,
@@ -60,6 +65,7 @@ func main() {
 			secretService,
 			nativeFileService,
 			metadataService,
+			aiService,
 		},
 	})
 	if err != nil {

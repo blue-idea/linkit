@@ -9,7 +9,7 @@ import { Sidebar } from './components/Sidebar';
 import { ContentArea } from './components/ContentArea';
 import { DetailPanel } from './components/DetailPanel';
 import { Spotlight } from './components/Spotlight';
-import { NewBookmarkDialog, InsightsDialog, HealthDialog } from './components/Dialogs';
+import { NewBookmarkDialog, InsightsDialog, HealthDialog, ReanalyzeBookmarkDialog } from './components/Dialogs';
 import { LoginScreen } from './components/LoginScreen';
 import { SettingsDialog } from './components/SettingsDialog';
 import {
@@ -124,6 +124,7 @@ export default function App() {
   const [spotlightOpen, setSpotlightOpen] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
   const [newUrl, setNewUrl] = useState('');
+  const [reanalyzeOpen, setReanalyzeOpen] = useState(false);
   const [insightsOpen, setInsightsOpen] = useState(false);
   const [healthOpen, setHealthOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -1133,6 +1134,7 @@ export default function App() {
               void handleVisit();
             }}
             onOpenHealth={() => setHealthOpen(true)}
+            onReanalyze={() => setReanalyzeOpen(true)}
             onDelete={() => selectedBookmark && requestDeleteBookmark(selectedBookmark.id)}
             onClose={() => setState((s) => ({ ...s, selectedBookmarkId: null }))}
           />
@@ -1185,11 +1187,60 @@ export default function App() {
         categories={cats}
         tags={tagList}
         collections={cols}
+        aiContext={
+          settings.ai?.apiBase && settings.ai?.model
+            ? {
+                apiBase: settings.ai.apiBase,
+                model: settings.ai.model,
+                locale: settings.locale === 'zh' ? 'zh' : 'en',
+              }
+            : null
+        }
         onClose={() => {
           setNewOpen(false);
           setNewUrl('');
         }}
         onCreate={createBookmark}
+      />
+      <ReanalyzeBookmarkDialog
+        open={reanalyzeOpen}
+        bookmark={selectedBookmark}
+        tags={tagList}
+        categories={cats}
+        aiContext={
+          settings.ai?.apiBase && settings.ai?.model
+            ? {
+                apiBase: settings.ai.apiBase,
+                model: settings.ai.model,
+                locale: settings.locale === 'zh' ? 'zh' : 'en',
+              }
+            : null
+        }
+        onClose={() => setReanalyzeOpen(false)}
+        onApply={(patch) => {
+          if (selectedBookmark) {
+            updateBookmark(selectedBookmark.id, patch);
+          }
+        }}
+        onCreateTag={(label) => {
+          const existing = tagList.find(
+            (tag) => tag.label.toLocaleLowerCase() === label.trim().toLocaleLowerCase()
+          );
+          if (existing) {
+            return existing.id;
+          }
+          const created = runCreateTag({ ...entities(), label });
+          if (!created.ok) {
+            return null;
+          }
+          const withTag = applyTagLibraryResult(created.value, bookmarks);
+          setTagList(withTag.tags);
+          setBookmarks(withTag.bookmarks);
+          const newTag = created.value.tags.find(
+            (tag) => tag.label.toLocaleLowerCase() === label.trim().toLocaleLowerCase()
+          );
+          return newTag?.id ?? null;
+        }}
       />
       {deleteTargetId && (
         <DeleteBookmarkDialog

@@ -58,7 +58,7 @@
 | TASK-030 | 远程 Supabase 验收 | REQ-001-AC-001~004；REQ-003-AC-001~005；REQ-004-AC-001~004；REQ-025-AC-003~005 | done | `ui/scripts/cloud-remote-test.mjs`、`ui/package.json`（`test:cloud:remote`）、`ui/.env.test`（本机，不提交） | `pnpm --dir ui run test:cloud:remote`（17 PASS 0 FAIL） | `docs/spec/ac/TASK-030-AC.md` | 2026-07-18 |
 | TASK-031 | SecretStore 与 AI 授权 | REQ-019-AC-001、004~006；REQ-025-AC-001~002 | done | `internal/secretstore/*`、`ui/src/features/settings/ai-consent/*`、`ui/src/services/secrets/browser-secret-store.ts`、`ui/src/components/SettingsDialog.tsx`、`main.go` | `internal/secretstore/service_test.go`、`ui/src/features/settings/ai-consent/ai-consent.test.ts`、`ui/tests/e2e/ai-consent.spec.ts` | `docs/spec/ac/TASK-031-AC.md` | 2026-07-18 |
 | TASK-032 | AI 客户端与降级 | REQ-019-AC-002~005；REQ-027-AC-002 | done | `internal/ai/*`、`config/errors.go`、`config/network.go` | `internal/ai/client_test.go`、`internal/ai/url_test.go`、`internal/ai/adapters_test.go` | `docs/spec/ac/TASK-032-AC.md` | 2026-07-18 |
-| TASK-033 | AI 分析与重分析 | REQ-006-AC-002~003；REQ-020-AC-001~002 | 待开始 | — | — | — | — |
+| TASK-033 | AI 分析与重分析 | REQ-006-AC-002~003；REQ-020-AC-001~002 | done | `internal/ai/service.go`、`ui/src/features/ai/bookmark-analysis/*`、`ui/src/components/Dialogs.tsx`、`ui/src/components/DetailPanel.tsx`、`main.go` | `internal/ai/service_test.go`、`ui/src/features/ai/bookmark-analysis/bookmark-analysis.test.ts`、`ui/tests/e2e/ai-bookmark-analysis.spec.ts` | `docs/spec/ac/TASK-033-AC.md` | 2026-07-18 |
 | TASK-034 | 语义搜索 | REQ-018-AC-001~003 | 待开始 | — | — | — | — |
 | TASK-035 | AI 主题与去重 | REQ-013-AC-003~004；REQ-020-AC-003~004 | 待开始 | — | — | — | — |
 | TASK-036 | 推荐与知识网络 | REQ-021-AC-001~004 | 待开始 | — | — | — | — |

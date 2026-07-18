@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 import type { Bookmark, Category, Collection, Tag, AIInsight } from '../types';
-import { resolveBookmarkAnalysis, fetchBookmarkMetadata } from '../features/bookmarks';
+import { fetchBookmarkMetadata } from '../features/bookmarks';
+import {
+  applyReanalyzeConfirmation,
+  buildInboundAnalysis,
+  mapAIFailureMessage,
+  wailsAnalyzeClient,
+  type AIContext,
+} from '../features/ai';
 import { Icon, Favicon, AIBadge, Button, Kbd, AnimateIn } from './ui';
 import { tagColors } from '../colors';
 
@@ -45,6 +52,18 @@ function ModalHeader({ icon, title, subtitle, onClose }: { icon: string; title: 
   );
 }
 
+function mapSuggestedLabelsToTagIds(labels: string[], tags: Tag[]): string[] {
+  const byLabel = new Map(tags.map((tag) => [tag.label.trim().toLowerCase(), tag.id]));
+  const ids: string[] = [];
+  for (const label of labels) {
+    const id = byLabel.get(label.trim().toLowerCase());
+    if (id && !ids.includes(id)) {
+      ids.push(id);
+    }
+  }
+  return ids;
+}
+
 /* ============ New Bookmark Dialog：分析确认后入库，失败则手动降级 ============ */
 export function NewBookmarkDialog({
   open,
@@ -52,6 +71,7 @@ export function NewBookmarkDialog({
   categories,
   tags,
   collections,
+  aiContext,
   onClose,
   onCreate,
 }: {
@@ -60,6 +80,7 @@ export function NewBookmarkDialog({
   categories: Category[];
   tags: Tag[];
   collections: Collection[];
+  aiContext: AIContext | null;
   onClose: () => void;
   onCreate: (b: Omit<Bookmark, 'id' | 'createdAt' | 'lastVisitedAt' | 'visitCount' | 'spark'>) => void;
 }) {
@@ -67,12 +88,14 @@ export function NewBookmarkDialog({
   const [title, setTitle] = useState('');
   const [stage, setStage] = useState<'input' | 'analyzing' | 'review'>('input');
   const [fallbackMessage, setFallbackMessage] = useState<string | null>(null);
-  const [analysisSource, setAnalysisSource] = useState<'metadata' | 'manual' | null>(null);
+  const [analysisSource, setAnalysisSource] = useState<'ai' | 'metadata' | 'manual' | null>(null);
   const [chosenTags, setChosenTags] = useState<string[]>([]);
   const [chosenCategory, setChosenCategory] = useState<string>('');
   const [chosenCollections, setChosenCollections] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
   const [description, setDescription] = useState('');
+  const [aiSummary, setAiSummary] = useState('');
+  const [pendingTagLabels, setPendingTagLabels] = useState<string[]>([]);
 
   useEffect(() => {
     if (open) {
@@ -86,26 +109,46 @@ export function NewBookmarkDialog({
       setChosenCollections([]);
       setNotes('');
       setDescription('');
+      setAiSummary('');
+      setPendingTagLabels([]);
     }
   }, [open, initialUrl]);
 
   const runAnalysis = async () => {
     setStage('analyzing');
     setFallbackMessage(null);
-    // REQ-006-AC-001：进入分析/确认，确认前不调用 onCreate。
-    const result = await resolveBookmarkAnalysis({
+    // REQ-006-AC-001 / REQ-006-AC-002：进入分析/确认，确认前不调用 onCreate。
+    const context: AIContext = aiContext ?? {
+      apiBase: 'https://api.example.test/v1',
+      model: 'unavailable',
+      locale: 'en',
+    };
+    const result = await buildInboundAnalysis({
       url,
       titleHint: title,
+      contentText: '',
+      categoryCandidates: categories.map((category) => ({ id: category.id, name: category.name })),
+      tagCandidates: tags.map((tag) => ({ id: tag.id, label: tag.label })),
+      context,
+      client: wailsAnalyzeClient,
       fetchMetadata: fetchBookmarkMetadata,
     });
     setTitle(result.preview.title);
     setDescription(result.preview.description);
-    setFallbackMessage(result.fallbackMessage);
+    setAiSummary(result.preview.aiSummary);
+    const alerts = [result.metadataErrorMessage, result.aiErrorMessage].filter(Boolean);
+    setFallbackMessage(alerts.length > 0 ? alerts.join(' ') : null);
     setAnalysisSource(result.source);
     if (result.preview.suggestedCategoryId) {
       setChosenCategory(result.preview.suggestedCategoryId);
     }
-    setChosenTags(result.preview.suggestedTags);
+    const matched = mapSuggestedLabelsToTagIds(result.preview.suggestedTags, tags);
+    setChosenTags(matched);
+    setPendingTagLabels(
+      result.preview.suggestedTags.filter(
+        (label) => !tags.some((tag) => tag.label.trim().toLowerCase() === label.trim().toLowerCase())
+      )
+    );
     setStage('review');
   };
 
@@ -128,7 +171,7 @@ export function NewBookmarkDialog({
       pinned: false,
       thumbnail: 'blue',
       health: 'ok',
-      aiSummary: '',
+      aiSummary: aiSummary.trim(),
       aiSuggestedTags: [],
     });
     onClose();
@@ -209,6 +252,9 @@ export function NewBookmarkDialog({
                 {fallbackMessage}
               </div>
             )}
+            {analysisSource === 'ai' && (
+              <div className="text-[11px] text-mint-400">AI analysis ready. Review suggestions before saving.</div>
+            )}
             {analysisSource === 'metadata' && (
               <div className="text-[11px] text-mint-400">Metadata loaded. Review and save when ready.</div>
             )}
@@ -233,6 +279,18 @@ export function NewBookmarkDialog({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Add a short description"
+                rows={2}
+                className="w-full rounded-lg bg-ink-800/60 hairline text-[12px] text-ink-100 placeholder:text-ink-500 px-3 py-2.5 outline-none focus-ring resize-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">AI summary</label>
+              <textarea
+                aria-label="AI summary"
+                value={aiSummary}
+                onChange={(e) => setAiSummary(e.target.value)}
+                placeholder="Optional AI summary"
                 rows={2}
                 className="w-full rounded-lg bg-ink-800/60 hairline text-[12px] text-ink-100 placeholder:text-ink-500 px-3 py-2.5 outline-none focus-ring resize-none"
               />
@@ -277,6 +335,14 @@ export function NewBookmarkDialog({
                     </button>
                   );
                 })}
+                {pendingTagLabels.map((label) => (
+                  <span
+                    key={`pending-${label}`}
+                    className="inline-flex items-center gap-1 rounded-full border border-dashed border-violet2-400/40 text-[11px] text-violet2-400 px-2 py-0.5"
+                  >
+                    <AIBadge label="" /> {label}
+                  </span>
+                ))}
               </div>
             </div>
 
@@ -313,6 +379,205 @@ export function NewBookmarkDialog({
             <Button variant="primary" icon="Check" onClick={submit}>
               Save bookmark
             </Button>
+          </div>
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+/* ============ Reanalyze Bookmark Dialog：预览确认后才写入 ============ */
+export function ReanalyzeBookmarkDialog({
+  open,
+  bookmark,
+  tags,
+  categories,
+  aiContext,
+  onClose,
+  onApply,
+  onCreateTag,
+}: {
+  open: boolean;
+  bookmark: Bookmark | null;
+  tags: Tag[];
+  categories: Category[];
+  aiContext: AIContext | null;
+  onClose: () => void;
+  onApply: (patch: Partial<Bookmark>) => void;
+  onCreateTag: (label: string) => string | null;
+}) {
+  const [stage, setStage] = useState<'idle' | 'loading' | 'preview' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [summary, setSummary] = useState('');
+  const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
+  const [acceptedLabels, setAcceptedLabels] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!open) {
+      setStage('idle');
+      setErrorMessage(null);
+      setSummary('');
+      setSuggestedTags([]);
+      setAcceptedLabels([]);
+    }
+  }, [open]);
+
+  const runReanalyze = async () => {
+    if (!bookmark) {
+      return;
+    }
+    setStage('loading');
+    setErrorMessage(null);
+    const context: AIContext = aiContext ?? {
+      apiBase: 'https://api.example.test/v1',
+      model: 'unavailable',
+      locale: 'en',
+    };
+    try {
+      const result = await (wailsAnalyzeClient.reanalyzeBookmark ?? wailsAnalyzeClient.analyzeBookmark)({
+        context,
+        url: bookmark.url,
+        title: bookmark.title,
+        contentText: bookmark.description || bookmark.notes || '',
+        categoryCandidates: categories.map((category) => ({ id: category.id, name: category.name })),
+        tagCandidates: tags.map((tag) => ({ id: tag.id, label: tag.label })),
+      });
+      // REQ-020-AC-001：仅展示预览，确认前不调用 onApply。
+      setSummary(result.summary);
+      setSuggestedTags(result.suggestedTags);
+      setAcceptedLabels(result.suggestedTags);
+      setStage('preview');
+    } catch (error) {
+      const record = error as { code?: string; message?: string };
+      setErrorMessage(mapAIFailureMessage(record));
+      setStage('error');
+    }
+  };
+
+  useEffect(() => {
+    if (open && bookmark && stage === 'idle') {
+      void runReanalyze();
+    }
+    // 仅在打开时触发一次。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, bookmark?.id]);
+
+  const confirm = () => {
+    if (!bookmark) {
+      return;
+    }
+    const resolveTagId = (label: string): string | null => {
+      const existing = tags.find((tag) => tag.label.trim().toLowerCase() === label.trim().toLowerCase());
+      if (existing) {
+        return existing.id;
+      }
+      if (!acceptedLabels.includes(label)) {
+        return null;
+      }
+      return onCreateTag(label);
+    };
+    const patch = applyReanalyzeConfirmation({
+      bookmark: {
+        id: bookmark.id,
+        title: bookmark.title,
+        aiSummary: bookmark.aiSummary,
+        tags: bookmark.tags,
+        aiSuggestedTags: bookmark.aiSuggestedTags ?? [],
+      },
+      preview: { summary, suggestedTags },
+      confirmed: true,
+      acceptedTagLabels: acceptedLabels,
+      resolveTagId,
+    });
+    if (patch) {
+      // REQ-020-AC-002：确认后写入摘要与采纳标签。
+      onApply(patch);
+    }
+    onClose();
+  };
+
+  const reject = () => {
+    applyReanalyzeConfirmation({
+      bookmark: {
+        id: bookmark?.id ?? '',
+        title: bookmark?.title ?? '',
+        aiSummary: bookmark?.aiSummary,
+        tags: bookmark?.tags ?? [],
+        aiSuggestedTags: bookmark?.aiSuggestedTags ?? [],
+      },
+      preview: { summary, suggestedTags },
+      confirmed: false,
+      acceptedTagLabels: [],
+      resolveTagId: () => null,
+    });
+    onClose();
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} width="max-w-lg" aria-label="Reanalyze bookmark">
+      <ModalHeader
+        icon="Sparkles"
+        title="Reanalyze"
+        subtitle="Review AI suggestions before applying"
+        onClose={onClose}
+      />
+      {stage === 'loading' && (
+        <div className="p-7" role="status" aria-label="Reanalyzing bookmark">
+          <div className="text-[14px] font-semibold text-ink-100">Generating preview…</div>
+        </div>
+      )}
+      {stage === 'error' && (
+        <div className="p-5 space-y-4">
+          <div role="alert" className="rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200">
+            {errorMessage}
+          </div>
+          <div className="flex justify-end">
+            <Button variant="ghost" onClick={onClose}>Close</Button>
+          </div>
+        </div>
+      )}
+      {stage === 'preview' && (
+        <div className="p-5 space-y-4">
+          <div>
+            <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Suggested summary</label>
+            <textarea
+              aria-label="Reanalyze summary preview"
+              value={summary}
+              onChange={(e) => setSummary(e.target.value)}
+              rows={3}
+              className="w-full rounded-lg bg-ink-800/60 hairline text-[12px] text-ink-100 px-3 py-2.5 outline-none focus-ring resize-none"
+            />
+          </div>
+          <div>
+            <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Suggested tags</label>
+            <div className="flex flex-wrap gap-1.5">
+              {suggestedTags.map((label) => {
+                const on = acceptedLabels.includes(label);
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() =>
+                      setAcceptedLabels((prev) =>
+                        on ? prev.filter((item) => item !== label) : [...prev, label]
+                      )
+                    }
+                    className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition ${
+                      on
+                        ? 'border-violet2-400/40 bg-violet2-500/15 text-violet2-200'
+                        : 'border-ink-600/50 text-ink-400'
+                    }`}
+                  >
+                    <AIBadge label="" /> {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={reject}>Reject</Button>
+            <Button variant="primary" icon="Check" onClick={confirm}>Confirm</Button>
           </div>
         </div>
       )}
