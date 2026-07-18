@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { Kbd } from './ui';
+import { Favicon, Kbd } from './ui';
 
 // REQ-024-AC-006：组件测试框架须能验证可访问控件名称与语义结构。
 describe('Kbd', () => {
@@ -10,5 +10,13 @@ describe('Kbd', () => {
     const shortcut = screen.getByText('⌘K');
     expect(shortcut.tagName).toBe('KBD');
     expect(shortcut.textContent).toBe('⌘K');
+  });
+});
+
+describe('Favicon', () => {
+  // REQ-002-AC-002：缺失颜色时不得抛错导致主界面崩溃。
+  it('[组件] 缺少 color/glyph 时 shall 安全回退渲染', () => {
+    render(<Favicon glyph={null} color={null} />);
+    expect(screen.getByText('?')).toBeInTheDocument();
   });
 });

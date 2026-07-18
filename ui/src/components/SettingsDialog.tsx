@@ -69,6 +69,7 @@ export function SettingsDialog({
   onSave,
   onImport,
   onSignOut,
+  onRestoreSampleData,
 }: {
   open: boolean;
   settings: AppSettings;
@@ -78,6 +79,7 @@ export function SettingsDialog({
   onSave: (s: AppSettings) => void;
   onImport: (lib: LibraryData) => void;
   onSignOut: () => void;
+  onRestoreSampleData?: () => void;
 }) {
   const [tab, setTab] = useState<Tab>('general');
   const [draft, setDraft] = useState<AppSettings>(settings);
@@ -141,7 +143,7 @@ export function SettingsDialog({
                 {user ? (
                   <Button size="sm" variant="danger" icon="LogOut" onClick={onSignOut}>退出登录</Button>
                 ) : (
-                  <span className="text-[11px] text-ink-400">本地</span>
+                  <Button size="sm" variant="subtle" icon="LogOut" onClick={onSignOut}>Back to login</Button>
                 )}
               </Row>
               <div className="h-px bg-white/5 my-2" />
@@ -153,6 +155,11 @@ export function SettingsDialog({
                 <input ref={fileRef} type="file" accept="application/json" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImport(f); e.target.value = ''; }} />
                 <Button size="sm" variant="subtle" icon="Upload" onClick={() => fileRef.current?.click()}>导入</Button>
               </Row>
+              {onRestoreSampleData && (
+                <Row icon="RefreshCw" label="Restore sample data" hint="Replace the current library with built-in sample bookmarks after confirmation">
+                  <Button size="sm" variant="danger" icon="RefreshCw" onClick={onRestoreSampleData}>Restore sample data</Button>
+                </Row>
+              )}
               {importMsg && (
                 <div className="rounded-lg bg-mint-500/10 border border-mint-400/30 px-3 py-2 text-[12px] text-mint-400 flex items-center gap-2 mt-2">
                   <Icon name="Check" size={13} /> {importMsg}
