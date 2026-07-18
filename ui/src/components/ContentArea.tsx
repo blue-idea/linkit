@@ -302,6 +302,7 @@ export function ContentArea({
   onDragStartBookmark,
   onOpenAICollection,
   onOpenDuplicates,
+  onOpenExplore,
 }: {
   bookmarks: Bookmark[];
   allBookmarks: Bookmark[];
@@ -333,6 +334,7 @@ export function ContentArea({
   onDragStartBookmark: (id: string) => void;
   onOpenAICollection: () => void;
   onOpenDuplicates: () => void;
+  onOpenExplore: () => void;
 }) {
   const [aiDismissed, setAiDismissed] = useState(false);
   const title = useSelectionTitle(selection, categories, collections);
@@ -395,6 +397,7 @@ export function ContentArea({
       <div className="mx-4 mb-2 flex justify-end gap-2">
         <Button size="sm" variant="ghost" icon="Sparkles" onClick={onOpenAICollection}>AI create collection</Button>
         <Button size="sm" variant="ghost" icon="Copy" onClick={onOpenDuplicates}>Find duplicates</Button>
+        <Button size="sm" variant="ghost" icon="Compass" onClick={onOpenExplore}>Explore library</Button>
       </div>
 
       {showAI && (

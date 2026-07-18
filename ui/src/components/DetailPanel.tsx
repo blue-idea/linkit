@@ -58,6 +58,7 @@ export function DetailPanel({
   onVisit,
   onOpenHealth,
   onReanalyze,
+  onOpenKnowledgeGraph,
   onDelete,
   onClose,
 }: {
@@ -76,6 +77,7 @@ export function DetailPanel({
   onVisit: () => void;
   onOpenHealth: () => void;
   onReanalyze?: () => void;
+  onOpenKnowledgeGraph?: () => void;
   onDelete?: () => void;
   onClose: () => void;
 }) {
@@ -170,6 +172,11 @@ export function DetailPanel({
               aria-label="Regenerate AI summary"
             >
               Reanalyze
+            </Button>
+          )}
+          {onOpenKnowledgeGraph && (
+            <Button variant="subtle" size="sm" icon="Share2" onClick={onOpenKnowledgeGraph} aria-label="Open knowledge network">
+              Network
             </Button>
           )}
           <Button
