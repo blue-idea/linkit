@@ -280,13 +280,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-013 · 实现排序与组合筛选引擎**
+- [x] **TASK-013 · 实现排序与组合筛选引擎**
 
   > 依赖：TASK-005、TASK-011、TASK-012 · 预计：2–3 小时
 
-  - [ ] 实现 recent visit、created、visits、title 和 pinned 分组排序。
-  - [ ] 实现星标、标签、时间、阅读状态交集筛选与清除。
-  - [ ] 使用表驱动测试覆盖稳定顺序和空值。
+  - [x] 实现 recent visit、created、visits、title 和 pinned 分组排序。
+  - [x] 实现星标、标签、时间、阅读状态交集筛选与清除。
+  - [x] 使用表驱动测试覆盖稳定顺序和空值。
 
   **验证方式：**
   ```powershell
@@ -1004,7 +1004,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-010 | 本地模式启动恢复 | Unit/E2E | done | REQ-001、002 |
 | TASK-011 | 书签核心 CRUD | Unit/E2E | done | REQ-006、007 |
 | TASK-012 | 书签状态与访问 | Unit/E2E | done | REQ-008 |
-| TASK-013 | 排序与筛选 | Unit | 待开始 | REQ-008、009 |
+| TASK-013 | 排序与筛选 | Unit | done | REQ-008、009 |
 | TASK-014 | 分类 CRUD 与删除 | Unit/E2E | 待开始 | REQ-010 |
 | TASK-015 | 分类与书签拖拽 | Unit/E2E | 待开始 | REQ-011、024 |
 | TASK-016 | 主题 CRUD 与成员 | Unit/E2E | 待开始 | REQ-012、026 |

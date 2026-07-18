@@ -30,6 +30,11 @@ import {
 } from './features/bookmarks';
 import { createBrowserStorageAdapters } from './services/storage';
 import { normalizeBookmarkUrl } from './domain/commands';
+import {
+  clearBookmarkFilters,
+  filterBookmarks,
+  type SortKey,
+} from './domain/query';
 import { openExternalUrl } from './features/bookmarks/external-url';
 
 /* ---------- window chrome ---------- */
@@ -135,6 +140,7 @@ export default function App() {
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [detailOpen, setDetailOpen] = useState(true);
+  const [sortKey, setSortKey] = useState<SortKey>('recent');
   const [spotlightOpen, setSpotlightOpen] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
   const [newUrl, setNewUrl] = useState('');
@@ -222,16 +228,20 @@ export default function App() {
     } else if (sel.kind === 'health') {
       list = list.filter((b) => b.health === sel.status);
     }
-    if (state.filters.onlyStarred) list = list.filter((b) => b.starred);
-    // REQ-008-AC-004：按阅读状态交集筛选。
-    if (state.filters.readStatus !== 'all') {
-      list = list.filter((b) => (b.readStatus ?? 'unread') === state.filters.readStatus);
-    }
-    if (state.filters.tagIds.length) list = list.filter((b) => state.filters.tagIds.every((t) => b.tags.includes(t)));
-    if (state.filters.dateRange !== 'all') {
-      const days = state.filters.dateRange === '7d' ? 7 : state.filters.dateRange === '30d' ? 30 : 90;
-      list = list.filter((b) => new Date(b.createdAt).getTime() > Date.now() - days * 86400000);
-    }
+
+    // REQ-008-AC-004 / REQ-009-AC-003：组合筛选走领域查询引擎。
+    const queryable = list.map((bookmark) => ({
+      ...bookmark,
+      tagIds: bookmark.tags,
+      readStatus: bookmark.readStatus ?? ('unread' as const),
+    }));
+    list = filterBookmarks(queryable, {
+      onlyStarred: state.filters.onlyStarred,
+      tagIds: state.filters.tagIds,
+      dateRange: state.filters.dateRange,
+      readStatus: state.filters.readStatus,
+    });
+
     if (state.filters.query.trim()) {
       const q = state.filters.query.toLowerCase();
       list = list.filter((b) => (b.title + b.description + b.domain).toLowerCase().includes(q));
@@ -563,8 +573,8 @@ export default function App() {
               filters={state.filters}
               density={state.density}
               selectedId={state.selectedBookmarkId}
-              sort="recent"
-              onSort={() => {}}
+              sort={sortKey}
+              onSort={(next) => setSortKey(next as SortKey)}
               onDensity={(d: ViewDensity) => setState((s) => ({ ...s, density: d }))}
               onSearch={(q) => setFilters({ query: q })}
               onOpenSpotlight={() => setSpotlightOpen(true)}
@@ -574,6 +584,11 @@ export default function App() {
               onDateRange={(r) => setFilters({ dateRange: r })}
               onToggleStarredFilter={() => setFilters({ onlyStarred: !state.filters.onlyStarred })}
               onReadStatusFilter={(status) => setFilters({ readStatus: status })}
+              onClearFilters={() => {
+                // REQ-009-AC-004：清除筛选，恢复导航范围内完整结果。
+                const cleared = clearBookmarkFilters();
+                setFilters({ ...emptyFilters, ...cleared, query: '' });
+              }}
               onAcceptAICollection={acceptAICollection}
               onDismissAICollection={() => {}}
               onNewBookmark={() => { setNewUrl(''); setNewOpen(true); }}

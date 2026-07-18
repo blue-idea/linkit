@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Bookmark, Category, Collection, Tag, ViewDensity } from '../types';
 import type { Filters, Selection } from '../state';
+import { sortBookmarks, type SortKey } from '../domain/query';
 import { Icon, TagPill, Segmented, Favicon, AIBadge, Button, AnimateIn } from './ui';
 import { thumbnailGradients } from '../colors';
 import { formatDate } from '../utils/format-date';
@@ -156,6 +157,7 @@ function Toolbar({
           <option value="archived">Archived</option>
         </select>
         <select
+          aria-label="Sort bookmarks"
           value={sort}
           onChange={(e) => onSort(e.target.value)}
           className="rounded-lg bg-ink-800/70 hairline text-[12px] text-ink-200 px-2 py-1.5 focus-ring"
@@ -181,12 +183,13 @@ function Toolbar({
 }
 
 /* ---------- Filter chips bar ---------- */
-function FilterBar({ filters, tags, onClearTag, onDateRange, onToggleStarred }: {
+function FilterBar({ filters, tags, onClearTag, onDateRange, onToggleStarred, onClearFilters }: {
   filters: Filters;
   tags: Tag[];
   onClearTag: (id: string) => void;
   onDateRange: (r: Filters['dateRange']) => void;
   onToggleStarred: () => void;
+  onClearFilters: () => void;
 }) {
   const dateOptions: { v: Filters['dateRange']; l: string }[] = [
     { v: 'all', l: '全部时间' },
@@ -194,13 +197,20 @@ function FilterBar({ filters, tags, onClearTag, onDateRange, onToggleStarred }: 
     { v: '30d', l: '近 30 天' },
     { v: '90d', l: '近 90 天' },
   ];
-  const active = filters.tagIds.length > 0 || filters.onlyStarred || filters.dateRange !== 'all';
+  const active =
+    filters.tagIds.length > 0 ||
+    filters.onlyStarred ||
+    filters.dateRange !== 'all' ||
+    filters.readStatus !== 'all';
   if (!active) return null;
   return (
     <div className="px-5 py-2 flex items-center gap-2 flex-wrap border-b border-white/5 animate-slide-down">
       <span className="text-[10px] text-ink-400 uppercase tracking-wider font-semibold">筛选</span>
       {filters.onlyStarred && (
         <TagPill label="仅星标" color="amber" onRemove={onToggleStarred} />
+      )}
+      {filters.readStatus !== 'all' && (
+        <TagPill label={`Status: ${filters.readStatus}`} color="violet" onRemove={onClearFilters} />
       )}
       {filters.tagIds.map((id) => {
         const t = tags.find((x) => x.id === id);
@@ -220,6 +230,14 @@ function FilterBar({ filters, tags, onClearTag, onDateRange, onToggleStarred }: 
           </button>
         ))}
       </div>
+      <button
+        type="button"
+        aria-label="Clear filters"
+        onClick={onClearFilters}
+        className="text-[11px] text-ink-400 hover:text-ink-100 px-2 py-0.5 rounded-md hover:bg-ink-700/60 transition"
+      >
+        Clear filters
+      </button>
     </div>
   );
 }
@@ -446,6 +464,7 @@ export function ContentArea({
   onDateRange,
   onToggleStarredFilter,
   onReadStatusFilter,
+  onClearFilters,
   onAcceptAICollection,
   onDismissAICollection,
   onNewBookmark,
@@ -471,6 +490,7 @@ export function ContentArea({
   onDateRange: (r: Filters['dateRange']) => void;
   onToggleStarredFilter: () => void;
   onReadStatusFilter: (status: Filters['readStatus']) => void;
+  onClearFilters: () => void;
   onAcceptAICollection: (ids: string[]) => void;
   onDismissAICollection: () => void;
   onNewBookmark: () => void;
@@ -479,7 +499,11 @@ export function ContentArea({
   const [aiDismissed, setAiDismissed] = useState(false);
   const title = useSelectionTitle(selection, categories, collections);
   const subtitle = `${bookmarks.length} 个收藏 · ${bookmarks.filter((b) => b.starred).length} 星标`;
-  const sorted = useSorted(bookmarks, sort);
+  // REQ-009-AC-001/002：排序与 pinned 分组由领域引擎负责。
+  const sorted = useMemo(
+    () => sortBookmarks(bookmarks, sort as SortKey),
+    [bookmarks, sort]
+  );
   const showAI = selection.kind === 'collection' && !aiDismissed;
 
   return (
@@ -502,6 +526,7 @@ export function ContentArea({
         onClearTag={onClearTagFilter}
         onDateRange={onDateRange}
         onToggleStarred={onToggleStarredFilter}
+        onClearFilters={onClearFilters}
       />
 
       {showAI && (
@@ -575,7 +600,6 @@ export function ContentArea({
 }
 
 /* ---------- hooks ---------- */
-import { useMemo } from 'react';
 function useSelectionTitle(selection: Selection, categories: Category[], collections: Collection[]) {
   return useMemo(() => {
     switch (selection.kind) {
@@ -588,16 +612,4 @@ function useSelectionTitle(selection: Selection, categories: Category[], collect
       case 'health': return selection.status === 'changed' ? '内容已更新' : '失效链接';
     }
   }, [selection, categories, collections]);
-}
-
-function useSorted(bookmarks: Bookmark[], sort: string) {
-  return useMemo(() => {
-    const arr = [...bookmarks];
-    switch (sort) {
-      case 'created': return arr.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
-      case 'visits': return arr.sort((a, b) => b.visitCount - a.visitCount);
-      case 'title': return arr.sort((a, b) => a.title.localeCompare(b.title));
-      default: return arr.sort((a, b) => +new Date(b.lastVisitedAt ?? b.createdAt) - +new Date(a.lastVisitedAt ?? a.createdAt));
-    }
-  }, [bookmarks, sort]);
 }
