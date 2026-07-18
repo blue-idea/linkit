@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.9.0  
+> 版本：1.10.0  
 > 日期：2026-07-18  
-> 状态：已定稿（TASK-012 已完成）
+> 状态：已定稿（TASK-013 已完成）
 
 ---
 
@@ -38,7 +38,7 @@
 | TASK-010 | 本地模式启动恢复 | REQ-001-AC-005；REQ-002-AC-001~004 | done | `ui/src/services/storage/*`、`ui/src/features/auth/*`、`ui/src/App.tsx`、`ui/src/storage.ts`、`ui/src/components/ui.tsx`、`ui/src/components/SettingsDialog.tsx` | `ui/src/features/auth/startup-gate.test.ts`、`ui/src/services/storage/*test*`、`ui/src/storage.test.ts`、`ui/tests/e2e/local-startup.spec.ts` | `docs/spec/ac/TASK-010-AC.md` | 2026-07-18 |
 | TASK-011 | 书签核心 CRUD | REQ-006-AC-001、REQ-006-AC-003~004；REQ-007-AC-001~004 | done | `ui/src/domain/commands/bookmarks.ts`、`ui/src/features/bookmarks/*`、`ui/src/components/Dialogs.tsx`、`ui/src/components/DetailPanel.tsx`、`ui/src/App.tsx` | `ui/src/domain/commands/bookmarks.test.ts`、`ui/src/features/bookmarks/analysis.test.ts`、`ui/tests/e2e/bookmark-crud.spec.ts` | `docs/spec/ac/TASK-011-AC.md` | 2026-07-18 |
 | TASK-012 | 书签状态与访问 | REQ-008-AC-001~004 | done | `ui/src/domain/commands/bookmark-state.ts`、`ui/src/features/bookmarks/visit.ts`、`ui/src/features/bookmarks/external-url.ts`、`ui/src/components/DetailPanel.tsx`、`ui/src/App.tsx` | `ui/src/domain/commands/bookmark-state.test.ts`、`ui/src/features/bookmarks/visit.test.ts`、`ui/tests/e2e/bookmark-state.spec.ts` | `docs/spec/ac/TASK-012-AC.md` | 2026-07-18 |
-| TASK-013 | 排序与筛选 | REQ-008-AC-004；REQ-009-AC-001~004 | 待开始 | — | — | — | — |
+| TASK-013 | 排序与筛选 | REQ-008-AC-004；REQ-009-AC-001~004 | done | `ui/src/domain/query/index.ts`、`ui/src/config/query.ts`、`ui/src/App.tsx`、`ui/src/components/ContentArea.tsx` | `ui/src/domain/query/query.test.ts`、`ui/tests/e2e/bookmark-query.spec.ts` | `docs/spec/ac/TASK-013-AC.md` | 2026-07-18 |
 | TASK-014 | 分类 CRUD 与删除 | REQ-010-AC-001~005 | 待开始 | — | — | — | — |
 | TASK-015 | 分类与书签拖拽 | REQ-011-AC-001~003；REQ-024-AC-006 | 待开始 | — | — | — | — |
 | TASK-016 | 主题 CRUD 与成员 | REQ-012-AC-001~004；REQ-026-AC-003 | 待开始 | — | — | — | — |
@@ -102,3 +102,4 @@
 | 2026-07-18 | TASK-010 更新为 done，补充启动门控与本地恢复旅程 | Loading gate、刷新恢复、退出保留与种子确认已验收 |
 | 2026-07-18 | TASK-011 更新为 done，补充书签 CRUD 命令与入库确认 UI | 分析确认、英文降级、编辑同步与删除确认已验收 |
 | 2026-07-18 | TASK-012 更新为 done，补充状态命令、访问门控与阅读筛选 | 星标/置顶、visit 成功计数、四态 readStatus 与筛选已验收 |
+| 2026-07-18 | TASK-013 更新为 done，补充 query 排序筛选引擎 | 四键排序、pinned 分组、交集筛选与清除已验收 |
