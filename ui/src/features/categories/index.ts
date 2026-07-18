@@ -1,4 +1,16 @@
 export {
+  CategoryDndContext,
+  CategoryDndItem,
+} from './drag/CategoryDnd';
+export { categoryDndId, parseCategoryDndId } from './drag/ids';
+export { MoveCategoryDialog } from './drag/MoveCategoryDialog';
+export {
+  InvalidCategoryMoveError,
+  assignBookmarkToCategory,
+  moveCategoryUnder,
+  resolveKeyboardCategoryMove,
+} from './drag/index';
+export {
   applyCategoryDeleteDecision,
   shouldConfirmCategoryDelete,
 } from './delete-confirm';
@@ -12,3 +24,5 @@ export {
   runRenameCategory,
   toCategoryLibrary,
 } from './apply-category-command';
+
+
