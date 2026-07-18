@@ -711,8 +711,9 @@ export default function App() {
   const handleSaveSettings = useCallback(async (s: AppSettings) => {
     setSettings(s);
     applyTheme(s.theme);
+    document.documentElement.lang = s.locale ?? 'en';
     await persistUiSettings(s);
-    flashToast('设置已保存');
+    flashToast(s.locale === 'zh' ? '设置已保存' : 'Settings saved');
   }, [flashToast, setSettings]);
 
   const handleImport = useCallback((lib: LibraryData) => {
@@ -925,6 +926,7 @@ export default function App() {
       <LoginScreen
         loading={false}
         error={auth.error}
+        locale={settings.locale ?? 'en'}
         onSignIn={async (email, password) => {
           const { error } = await auth.signIn(email, password);
           if (!error) startup.markAuthenticated();
@@ -955,6 +957,7 @@ export default function App() {
           onSettings: () => setSettingsOpen(true),
           user: auth.user ? { email: auth.user.email ?? '' } : null,
           storageMode: settings.storageMode,
+          locale: settings.locale ?? 'en',
           sidebarOpen,
           detailOpen,
           onToggleSidebar: () => setSidebarOpen((v) => !v),

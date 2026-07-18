@@ -499,13 +499,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-023 · 实现设置、四主题与中英国际化**
+- [x] **TASK-023 · 实现设置、四主题与中英国际化**
 
-  > 依赖：TASK-007、TASK-022 · 预计：3–4 小时
+  > 依赖：TASK-007、TASK-022 · 预计：3–4 小时 · 状态：done · 2026-07-18
 
-  - [ ] 接入 General、Storage、AI、Appearance、Language 设置页。
-  - [ ] 实现四主题、默认 English、中文切换和缺失键英文回退。
-  - [ ] 将现有中文硬编码 UI 和错误逐步替换为稳定 i18n key。
+  - [x] 接入 General、Storage、AI、Appearance、Language 设置页。
+  - [x] 实现四主题、默认 English、中文切换和缺失键英文回退。
+  - [x] 将现有中文硬编码 UI 和错误逐步替换为稳定 i18n key。
 
   **验证方式：**
   ```powershell
@@ -1014,7 +1014,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-020 | 三种聚合视图 | Unit/E2E | 已完成 | REQ-016、028 |
 | TASK-021 | Spotlight 关键词与 URL | Unit/E2E | 已完成 | REQ-017 |
 | TASK-022 | 主窗口、快捷键与无障碍 | E2E/Security | 已完成 | REQ-024、028 |
-| TASK-023 | 设置、主题与 i18n | Unit/E2E | 待开始 | REQ-023 |
+| TASK-023 | 设置、主题与 i18n | Unit/E2E | done | REQ-023 |
 | TASK-024 | 导入导出 UX | E2E | 待开始 | REQ-005、023 |
 | TASK-025 | 本地 MVP 回归 | E2E | 待开始 | 本地 MVP |
 | TASK-026 | Supabase 本地与 RLS | API/Security | 待开始 | REQ-003、025 |

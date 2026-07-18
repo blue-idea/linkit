@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 async function enterLocalMode(page: import('@playwright/test').Page) {
-  await page.getByRole('button', { name: '使用本地模式（无需登录）' }).click();
+  await page.getByRole('button', { name: 'Continue in local mode' }).click();
   await expect(page.getByText('Lattice', { exact: true })).toBeVisible();
 }
 
@@ -10,13 +10,13 @@ test.describe('书签 CRUD', () => {
     await page.goto('/');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
-    await expect(page.getByRole('button', { name: '使用本地模式（无需登录）' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Continue in local mode' })).toBeVisible();
     await enterLocalMode(page);
   });
 
   // REQ-006-AC-001 / REQ-006-AC-003 / REQ-006-AC-004
   test('书签新增 shall 先显示确认预览再入库且抓取失败时英文降级', async ({ page }) => {
-    await page.getByRole('button', { name: '新增', exact: true }).click();
+    await page.getByRole('button', { name: 'New', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'New Bookmark' })).toBeVisible();
 
     await page.getByRole('textbox', { name: 'Bookmark URL' }).fill('https://example.test/new-bookmark');

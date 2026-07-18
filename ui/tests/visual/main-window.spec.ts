@@ -14,8 +14,8 @@ test.describe('主窗口视觉回归', () => {
     await page.goto('/');
     await page.setViewportSize({ width: 1280, height: 720 });
 
-    await page.getByRole('button', { name: '使用本地模式（无需登录）' }).click();
-    await expect(page.getByRole('button', { name: '切换侧边栏' })).toBeVisible();
+    await page.getByRole('button', { name: 'Continue in local mode' }).click();
+    await expect(page.getByRole('button', { name: 'Toggle sidebar' })).toBeVisible();
 
     await expect(page).toHaveScreenshot('main-window-baseline.png', {
       fullPage: true,

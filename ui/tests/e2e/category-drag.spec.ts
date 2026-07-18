@@ -9,7 +9,7 @@ const evidenceDirectory = resolve(
 );
 
 async function enterLocalMode(page: import('@playwright/test').Page) {
-  await page.getByRole('button', { name: '使用本地模式（无需登录）' }).click();
+  await page.getByRole('button', { name: 'Continue in local mode' }).click();
   await expect(page.getByText('Lattice', { exact: true })).toBeVisible();
 }
 
@@ -37,7 +37,7 @@ test.describe('分类拖拽与书签归类', () => {
     await page.goto('/');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
-    await expect(page.getByRole('button', { name: '使用本地模式（无需登录）' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Continue in local mode' })).toBeVisible();
     await enterLocalMode(page);
   });
 
