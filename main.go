@@ -9,6 +9,7 @@ import (
 	"github.com/blue-idea/collection/internal/localstore"
 	"github.com/blue-idea/collection/internal/metadata"
 	"github.com/blue-idea/collection/internal/platform"
+	"github.com/blue-idea/collection/internal/secretstore"
 	"github.com/blue-idea/collection/internal/settingsstore"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -28,6 +29,10 @@ func main() {
 	settingsService, err := settingsstore.NewDefaultService()
 	if err != nil {
 		log.Fatalf("Unable to initialise settings service: %v", err)
+	}
+	secretService, err := secretstore.NewDefaultService()
+	if err != nil {
+		log.Fatalf("Unable to initialise secret service: %v", err)
 	}
 	nativeFileService := platform.NewService()
 	metadataService := metadata.NewService()
@@ -52,6 +57,7 @@ func main() {
 		Bind: []interface{}{
 			localDocumentService,
 			settingsService,
+			secretService,
 			nativeFileService,
 			metadataService,
 		},

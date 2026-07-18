@@ -44,7 +44,7 @@ export const defaultSettings = {
   storageMode: 'local' as const,
   theme: 'midnight' as ThemeId,
   locale: 'en' as UiLocale,
-  ai: { apiBase: '', model: '', apiKey: '' },
+  ai: { apiBase: '', model: '' },
 };
 
 export function applyTheme(theme: ThemeId) {

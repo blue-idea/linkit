@@ -19,7 +19,6 @@ function toUiSettings(
     ai: {
       apiBase: legacy.ai.apiBase,
       model: legacy.ai.model,
-      apiKey: legacy.ai.apiKey,
     },
   };
 }

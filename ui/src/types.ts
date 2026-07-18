@@ -84,7 +84,6 @@ export type UiLocale = 'en' | 'zh';
 export interface AISettings {
   apiBase: string;
   model: string;
-  apiKey: string;
 }
 
 export interface AppSettings {
