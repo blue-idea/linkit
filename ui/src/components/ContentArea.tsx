@@ -3,8 +3,12 @@ import type { Bookmark, Category, Collection, Tag, ViewDensity } from '../types'
 import type { Filters, Selection } from '../state';
 import { sortBookmarks, type SortKey } from '../domain/query';
 import { Icon, TagPill, Segmented, Favicon, AIBadge, Button, AnimateIn } from './ui';
-import { thumbnailGradients } from '../colors';
-import { formatDate } from '../utils/format-date';
+import {
+  CardView,
+  ListView,
+  MasonryView,
+  presentBookmarks,
+} from '../features/views';
 
 /* ---------- AI smart aggregation banner (Feature 2) ---------- */
 function SmartAggregation({
@@ -171,10 +175,11 @@ function Toolbar({
           value={density}
           onChange={onDensity}
           size="sm"
+          aria-label="View density"
           options={[
-            { value: 'card', icon: 'LayoutGrid' },
-            { value: 'list', icon: 'List' },
-            { value: 'masonry', icon: 'Columns3' },
+            { value: 'card', icon: 'LayoutGrid', ariaLabel: 'Card view' },
+            { value: 'list', icon: 'List', ariaLabel: 'List view' },
+            { value: 'masonry', icon: 'Columns3', ariaLabel: 'Masonry view' },
           ]}
         />
       </div>
@@ -238,192 +243,6 @@ function FilterBar({ filters, tags, onClearTag, onDateRange, onToggleStarred, on
       >
         Clear filters
       </button>
-    </div>
-  );
-}
-
-/* ---------- Bookmark Card (visual) ---------- */
-function BookmarkCard({
-  b,
-  tags,
-  selected,
-  onClick,
-  onDragStart,
-  onDragEnd,
-  onToggleStar,
-}: {
-  b: Bookmark;
-  tags: Tag[];
-  selected: boolean;
-  onClick: (e: React.MouseEvent) => void;
-  onDragStart: (e: React.DragEvent) => void;
-  onDragEnd: () => void;
-  onToggleStar: () => void;
-}) {
-  const bTags = b.tags.map((id) => tags.find((t) => t.id === id)).filter(Boolean) as Tag[];
-  return (
-    <div
-      draggable
-      data-bookmark-id={b.id}
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      onClick={onClick}
-      className={`group rounded-mac-lg p-3 cursor-pointer transition-all duration-200 hairline ${
-        selected
-          ? 'bg-accent-500/15 ring-1 ring-accent-400/40 shadow-card'
-          : 'bg-ink-800/50 hover:bg-ink-700/60 hover:shadow-card hover:-translate-y-0.5'
-      }`}
-    >
-      <div className="flex items-start gap-2.5">
-        <Favicon glyph={b.favicon} color={b.faviconColor} size={28} />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <div className="text-[13px] font-semibold text-ink-100 leading-snug line-clamp-2 flex-1">{b.title}</div>
-            {b.pinned && <Icon name="Pin" size={11} className="text-amber-400 shrink-0" />}
-            {b.health === 'changed' && <Icon name="RefreshCw" size={11} className="text-amber-400 shrink-0" />}
-          </div>
-          <div className="text-[11px] text-ink-400 mt-0.5 truncate">{b.domain}</div>
-        </div>
-        <button
-          onClick={(e) => { e.stopPropagation(); onToggleStar(); }}
-          className={`w-6 h-6 rounded-md flex items-center justify-center transition-all shrink-0 ${
-            b.starred ? 'text-amber-400' : 'text-ink-500 opacity-0 group-hover:opacity-100 hover:text-amber-400'
-          }`}
-        >
-          <Icon name="Star" size={13} fill={b.starred ? 'currentColor' : 'none'} />
-        </button>
-      </div>
-      {b.aiSummary && (
-        <p className="mt-2.5 text-[11px] text-ink-300 leading-relaxed line-clamp-2 flex gap-1.5">
-          <AIBadge label="" />
-          <span className="flex-1">{b.aiSummary}</span>
-        </p>
-      )}
-      <div className="mt-2.5 flex items-center justify-between gap-2">
-        <div className="flex flex-wrap gap-1 min-w-0">
-          {bTags.slice(0, 3).map((t) => (
-            <TagPill key={t.id} label={t.label} color={t.color} size="xs" />
-          ))}
-          {bTags.length > 3 && <span className="text-[10px] text-ink-400 self-center">+{bTags.length - 3}</span>}
-        </div>
-        <span className="flex items-center gap-1 text-[10px] text-ink-400 shrink-0">
-          <Icon name="Clock" size={10} />
-          {formatDate(b.createdAt)}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/* ---------- List row (info density) ---------- */
-function BookmarkRow({
-  b,
-  tags,
-  selected,
-  onClick,
-  onDragStart,
-  onDragEnd,
-  onToggleStar,
-}: {
-  b: Bookmark;
-  tags: Tag[];
-  selected: boolean;
-  onClick: (e: React.MouseEvent) => void;
-  onDragStart: (e: React.DragEvent) => void;
-  onDragEnd: () => void;
-  onToggleStar: () => void;
-}) {
-  const bTags = b.tags.map((id) => tags.find((t) => t.id === id)).filter(Boolean) as Tag[];
-  return (
-    <div
-      draggable
-      data-bookmark-id={b.id}
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      onClick={onClick}
-      className={`group grid grid-cols-[28px_1fr_auto_auto] items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors ${
-        selected ? 'bg-accent-500/15' : 'hover:bg-ink-700/40'
-      }`}
-    >
-      <Favicon glyph={b.favicon} color={b.faviconColor} size={28} />
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-[13px] font-medium text-ink-100 truncate">{b.title}</span>
-          {b.pinned && <Icon name="Pin" size={11} className="text-amber-400 shrink-0" />}
-          {b.health === 'changed' && <Icon name="RefreshCw" size={11} className="text-amber-400 shrink-0" />}
-        </div>
-        <div className="text-[11px] text-ink-400 truncate flex items-center gap-2">
-          <span>{b.domain}</span>
-          {b.aiSummary && <span className="text-ink-500">· {b.aiSummary.slice(0, 48)}…</span>}
-        </div>
-      </div>
-      <div className="hidden sm:flex items-center gap-1">
-        {bTags.slice(0, 2).map((t) => (
-          <TagPill key={t.id} label={t.label} color={t.color} size="xs" />
-        ))}
-      </div>
-      <div className="hidden md:flex items-center gap-1 text-[11px] text-ink-400">
-        <Icon name="Clock" size={11} />
-        <span className="tabular-nums">{formatDate(b.createdAt)}</span>
-      </div>
-      <button
-        onClick={(e) => { e.stopPropagation(); onToggleStar(); }}
-        className={`w-6 h-6 rounded-md flex items-center justify-center transition ${
-          b.starred ? 'text-amber-400' : 'text-ink-500 opacity-0 group-hover:opacity-100 hover:text-amber-400'
-        }`}
-      >
-        <Icon name="Star" size={13} fill={b.starred ? 'currentColor' : 'none'} />
-      </button>
-    </div>
-  );
-}
-
-/* ---------- Masonry tile (compact visual) ---------- */
-function MasonryTile({
-  b,
-  selected,
-  onClick,
-  onDragStart,
-  onDragEnd,
-}: {
-  b: Bookmark;
-  selected: boolean;
-  onClick: (e: React.MouseEvent) => void;
-  onDragStart: (e: React.DragEvent) => void;
-  onDragEnd: () => void;
-}) {
-  const grad = b.thumbnail ? thumbnailGradients[b.thumbnail] : thumbnailGradients.gray;
-  return (
-    <div
-      draggable
-      data-bookmark-id={b.id}
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      onClick={onClick}
-      className={`group rounded-mac-lg overflow-hidden cursor-pointer transition-all duration-200 hairline ${
-        selected ? 'ring-1 ring-accent-400/40' : 'hover:shadow-card hover:-translate-y-0.5'
-      }`}
-    >
-      <div className={`relative bg-gradient-to-br ${grad} aspect-[4/3]`}>
-        <div className="absolute inset-0 p-3 flex flex-col">
-          <Favicon glyph={b.favicon} color={b.faviconColor} size={24} />
-          <div className="mt-auto">
-            <div className="text-[12px] font-semibold text-white leading-tight line-clamp-2 drop-shadow">{b.title}</div>
-            <div className="text-[10px] text-white/70 mt-0.5">{b.domain}</div>
-          </div>
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-        {b.starred && (
-          <Icon name="Star" size={14} className="absolute top-2.5 right-2.5 text-amber-400 drop-shadow" fill="currentColor" />
-        )}
-      </div>
-      <div className="px-2.5 py-2 bg-ink-800/60 flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-[10px] text-ink-400">
-          <Icon name="Clock" size={10} />
-          <span className="tabular-nums">{formatDate(b.createdAt)}</span>
-        </div>
-        {b.aiSummary && <AIBadge label="" />}
-      </div>
     </div>
   );
 }
@@ -513,6 +332,8 @@ export function ContentArea({
     () => sortBookmarks(bookmarks, sort as SortKey),
     [bookmarks, sort]
   );
+  // REQ-015：三视图共享 Presenter 元数据投影。
+  const presented = useMemo(() => presentBookmarks(sorted, tags), [sorted, tags]);
   const showAI = selection.kind === 'collection' && !aiDismissed;
   const composeSet = useMemo(() => new Set(composeSelectedIds), [composeSelectedIds]);
 
@@ -587,60 +408,29 @@ export function ContentArea({
 
       {bookmarks.length === 0 ? (
         <EmptyState onNew={onNewBookmark} onSpotlight={onOpenSpotlight} />
+      ) : density === 'card' ? (
+        <CardView
+          items={presented}
+          isSelected={(id) => selectedId === id || composeSet.has(id)}
+          onSelect={(id, e) => handleCardClick(e, id)}
+          onToggleStar={onToggleStar}
+          onDragStart={startDrag}
+        />
+      ) : density === 'list' ? (
+        <ListView
+          items={presented}
+          isSelected={(id) => selectedId === id || composeSet.has(id)}
+          onSelect={(id, e) => handleCardClick(e, id)}
+          onToggleStar={onToggleStar}
+          onDragStart={startDrag}
+        />
       ) : (
-        <div className="flex-1 overflow-y-auto scroll-thin px-4 pb-6 pt-2">
-          {density === 'card' && (
-            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-              {sorted.map((b, i) => (
-                <AnimateIn key={b.id} delay={Math.min(i * 28, 280)}>
-                  <BookmarkCard
-                    b={b}
-                    tags={tags}
-                    selected={selectedId === b.id || composeSet.has(b.id)}
-                    onClick={(e) => handleCardClick(e, b.id)}
-                    onDragStart={(e) => startDrag(e, b.id)}
-                    onDragEnd={() => {}}
-                    onToggleStar={() => onToggleStar(b.id)}
-                  />
-                </AnimateIn>
-              ))}
-            </div>
-          )}
-
-          {density === 'list' && (
-            <div className="rounded-mac-lg bg-ink-850/40 hairline divide-y divide-white/5 overflow-hidden">
-              {sorted.map((b, i) => (
-                <AnimateIn key={b.id} delay={Math.min(i * 18, 200)}>
-                  <BookmarkRow
-                    b={b}
-                    tags={tags}
-                    selected={selectedId === b.id || composeSet.has(b.id)}
-                    onClick={(e) => handleCardClick(e, b.id)}
-                    onDragStart={(e) => startDrag(e, b.id)}
-                    onDragEnd={() => {}}
-                    onToggleStar={() => onToggleStar(b.id)}
-                  />
-                </AnimateIn>
-              ))}
-            </div>
-          )}
-
-          {density === 'masonry' && (
-            <div className="columns-2 sm:columns-3 xl:columns-4 2xl:columns-5 gap-3 [column-fill:_balance]">
-              {sorted.map((b, i) => (
-                <div key={b.id} className="mb-3 break-inside-avoid animate-slide-up" style={{ animationDelay: `${Math.min(i * 24, 240)}ms` }}>
-                  <MasonryTile
-                    b={b}
-                    selected={selectedId === b.id || composeSet.has(b.id)}
-                    onClick={(e) => handleCardClick(e, b.id)}
-                    onDragStart={(e) => startDrag(e, b.id)}
-                    onDragEnd={() => {}}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <MasonryView
+          items={presented}
+          isSelected={(id) => selectedId === id || composeSet.has(id)}
+          onSelect={(id, e) => handleCardClick(e, id)}
+          onDragStart={startDrag}
+        />
       )}
     </div>
   );
