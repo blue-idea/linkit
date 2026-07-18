@@ -14,6 +14,12 @@ const (
 	ErrorCodeSecretWriteFailed   = "SECRET_WRITE_FAILED"
 	ErrorCodeSecretReadFailed    = "SECRET_READ_FAILED"
 	ErrorCodeSecretNotConfigured = "SECRET_NOT_CONFIGURED"
+	ErrorCodeAIUnauthorized      = "AI_UNAUTHORIZED"
+	ErrorCodeAIRateLimited       = "AI_RATE_LIMITED"
+	ErrorCodeAITimeout           = "AI_TIMEOUT"
+	ErrorCodeAIResponseInvalid   = "AI_RESPONSE_INVALID"
+	ErrorCodeAIConsentRequired   = "AI_CONSENT_REQUIRED"
+	ErrorCodeAIRequestFailed     = "AI_REQUEST_FAILED"
 
 	ErrorMessageInvalidArgument     = "Invalid local document request"
 	ErrorMessageDocumentInvalid     = "Library document is invalid"
@@ -30,6 +36,13 @@ const (
 	ErrorMessageSecretReadFailed    = "Failed to read secret"
 	ErrorMessageSecretNotConfigured = "AI API Key is not configured"
 	ErrorMessageSecretEmpty         = "Secret value must not be empty"
+	ErrorMessageAIUnauthorized      = "AI service rejected the API key"
+	ErrorMessageAIRateLimited       = "AI service rate limit exceeded"
+	ErrorMessageAITimeout           = "AI request timed out"
+	ErrorMessageAIResponseInvalid   = "AI response could not be normalized"
+	ErrorMessageAIConsentRequired   = "AI data consent is required for this API Base"
+	ErrorMessageAIRequestFailed     = "AI request failed"
+	ErrorMessageAIInvalidArgument   = "AI request arguments are invalid"
 
 	// SecretServiceName 与 OS Keychain / Credential Manager 服务名对齐。
 	SecretServiceName = "Linkit"

@@ -17,4 +17,17 @@ const (
 	MetadataMaxContentRunes = 8_000
 	// HTTPUserAgent 标识 Linkit 版本，避免伪装浏览器。
 	HTTPUserAgent = "Linkit/" + AppVersion + " (+desktop)"
+
+	// AITotalTimeout 限制单次 Chat Completions 请求总耗时。
+	AITotalTimeout = 30 * time.Second
+	// AIConnectTimeout 限制建立 AI 连接等待时间。
+	AIConnectTimeout = 5 * time.Second
+	// AIResponseHeaderTimeout 限制等待 AI 响应头的时间。
+	AIResponseHeaderTimeout = 10 * time.Second
+	// AIMaxResponseBytes 达到上限后立即停止读取响应体。
+	AIMaxResponseBytes int64 = 1 * 1024 * 1024
+	// AIMaxRetries 是可重试失败后的额外尝试次数（总尝试 = 1 + AIMaxRetries）。
+	AIMaxRetries = 2
+	// AIRetryBaseDelay 为带抖动退避的基础延迟。
+	AIRetryBaseDelay = 50 * time.Millisecond
 )
