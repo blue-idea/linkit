@@ -42,6 +42,16 @@ import {
   shouldConfirmCategoryDelete,
   toCategoryLibrary,
 } from './features/categories';
+import {
+  applyCollectionLibraryResult,
+  CollectionFormDialog,
+  DeleteCollectionDialog,
+  runCreateCollection,
+  runDeleteCollection,
+  runSetMembership,
+  runUpdateCollection,
+  type CollectionFormValues,
+} from './features/collections';
 import { createBrowserStorageAdapters } from './services/storage';
 import { normalizeBookmarkUrl } from './domain/commands';
 import {
@@ -171,6 +181,10 @@ export default function App() {
   const [categoryDeleteId, setCategoryDeleteId] = useState<string | null>(null);
   const [categoryRecursiveConfirm, setCategoryRecursiveConfirm] = useState(false);
   const [categoryMoveId, setCategoryMoveId] = useState<string | null>(null);
+  const [collectionForm, setCollectionForm] = useState<
+    null | { mode: 'create' } | { mode: 'edit'; id: string }
+  >(null);
+  const [collectionDeleteId, setCollectionDeleteId] = useState<string | null>(null);
   // 防止“未水合的种子数据”在加载本机库前被自动保存覆盖。
   const [libraryHydrated, setLibraryHydrated] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -314,12 +328,27 @@ export default function App() {
   }, [flashToast, selectedBookmark, updateBookmark]);
 
   const toggleCollection = useCallback((bookmarkId: string, collectionId: string) => {
-    setBookmarks((prev) => prev.map((b) => {
-      if (b.id !== bookmarkId) return b;
-      const has = b.collectionIds.includes(collectionId);
-      return { ...b, collectionIds: has ? b.collectionIds.filter((x) => x !== collectionId) : [...b.collectionIds, collectionId] };
-    }));
-  }, []);
+    // REQ-012-AC-003 / REQ-026-AC-003：详情操作同步两侧成员引用。
+    const bookmark = bookmarks.find((b) => b.id === bookmarkId);
+    if (!bookmark) return;
+    const member = !bookmark.collectionIds.includes(collectionId);
+    const result = runSetMembership({
+      bookmarks,
+      categories: cats,
+      collections: cols,
+      tags: tagList,
+      bookmarkId,
+      collectionId,
+      member,
+    });
+    if (!result.ok) {
+      flashToast(result.error.message);
+      return;
+    }
+    const applied = applyCollectionLibraryResult(result.value, bookmarks);
+    setBookmarks(applied.bookmarks);
+    setCols(applied.collections);
+  }, [bookmarks, cats, cols, flashToast, tagList]);
 
   const moveToCategory = useCallback((bookmarkId: string, categoryId: string) => {
     // REQ-011-AC-003：书签拖入分类后更新 categoryId 并显示英文提示。
@@ -356,23 +385,51 @@ export default function App() {
   }, [bookmarks, cats, cols, flashToast, tagList]);
 
   const addToCollection = useCallback((bookmarkId: string, collectionId: string) => {
-    setBookmarks((prev) => prev.map((b) => {
-      if (b.id !== bookmarkId) return b;
-      if (b.collectionIds.includes(collectionId)) return b;
-      return { ...b, collectionIds: [...b.collectionIds, collectionId] };
-    }));
-    const col = cols.find((c) => c.id === collectionId);
+    // REQ-012-AC-003：拖入主题时同步 Collection.bookmarkIds 与 Bookmark.collectionIds。
+    const result = runSetMembership({
+      bookmarks,
+      categories: cats,
+      collections: cols,
+      tags: tagList,
+      bookmarkId,
+      collectionId,
+      member: true,
+    });
+    if (!result.ok) {
+      flashToast(result.error.message);
+      return;
+    }
+    const applied = applyCollectionLibraryResult(result.value, bookmarks);
+    setBookmarks(applied.bookmarks);
+    setCols(applied.collections);
+    const col = applied.collections.find((c) => c.id === collectionId);
     flashToast(`已加入主题「${col?.name ?? ''}」`);
-  }, [cols, flashToast]);
+  }, [bookmarks, cats, cols, flashToast, tagList]);
 
   const acceptAICollection = useCallback((ids: string[]) => {
     if (state.selection.kind !== 'collection') return;
     const colId = state.selection.id;
-    setBookmarks((prev) => prev.map((b) => ids.includes(b.id) && !b.collectionIds.includes(colId)
-      ? { ...b, collectionIds: [...b.collectionIds, colId] }
-      : b));
+    let nextBookmarks = bookmarks;
+    let nextCols = cols;
+    for (const bookmarkId of ids) {
+      const result = runSetMembership({
+        bookmarks: nextBookmarks,
+        categories: cats,
+        collections: nextCols,
+        tags: tagList,
+        bookmarkId,
+        collectionId: colId,
+        member: true,
+      });
+      if (!result.ok) continue;
+      const applied = applyCollectionLibraryResult(result.value, nextBookmarks);
+      nextBookmarks = applied.bookmarks;
+      nextCols = applied.collections;
+    }
+    setBookmarks(nextBookmarks);
+    setCols(nextCols);
     flashToast(`已将 ${ids.length} 项加入主题`);
-  }, [state.selection, flashToast]);
+  }, [bookmarks, cats, cols, flashToast, state.selection, tagList]);
 
   const createBookmark = useCallback((b: Omit<Bookmark, 'id' | 'createdAt' | 'lastVisitedAt' | 'visitCount' | 'spark'>) => {
     // REQ-006-AC-004：规范化 URL 并生成唯一 ID；确认保存后才进入此路径。
@@ -454,6 +511,54 @@ export default function App() {
     setCategoryFormOpen(false);
     flashToast('Category created');
   }, [bookmarks, cats, cols, flashToast, state.selection, tagList]);
+
+  const handleSaveCollection = useCallback((values: CollectionFormValues) => {
+    // REQ-012-AC-001：创建或编辑主题后刷新侧栏并持久化。
+    if (!collectionForm) return;
+    const entities = {
+      bookmarks,
+      categories: cats,
+      collections: cols,
+      tags: tagList,
+    };
+    const result =
+      collectionForm.mode === 'create'
+        ? runCreateCollection({ ...entities, ...values })
+        : runUpdateCollection({ ...entities, id: collectionForm.id, ...values });
+    if (!result.ok) {
+      flashToast(result.error.message);
+      return;
+    }
+    const applied = applyCollectionLibraryResult(result.value, bookmarks);
+    setCols(applied.collections);
+    setBookmarks(applied.bookmarks);
+    setCollectionForm(null);
+    flashToast(collectionForm.mode === 'create' ? 'Collection created' : 'Collection saved');
+  }, [bookmarks, cats, cols, collectionForm, flashToast, tagList]);
+
+  const confirmDeleteCollection = useCallback(() => {
+    // REQ-012-AC-002：确认删除主题但保留成员书签。
+    if (!collectionDeleteId) return;
+    const result = runDeleteCollection({
+      bookmarks,
+      categories: cats,
+      collections: cols,
+      tags: tagList,
+      id: collectionDeleteId,
+    });
+    if (!result.ok) {
+      flashToast(result.error.message);
+      return;
+    }
+    const applied = applyCollectionLibraryResult(result.value, bookmarks);
+    setCols(applied.collections);
+    setBookmarks(applied.bookmarks);
+    if (state.selection.kind === 'collection' && state.selection.id === collectionDeleteId) {
+      setState((s) => ({ ...s, selection: { kind: 'all' } }));
+    }
+    setCollectionDeleteId(null);
+    flashToast('Collection deleted');
+  }, [bookmarks, cats, cols, collectionDeleteId, flashToast, state.selection, tagList]);
 
   const requestDeleteCategory = useCallback((categoryId: string) => {
     const childCount = cats.filter((c) => c.parentId === categoryId).length;
@@ -701,6 +806,9 @@ export default function App() {
                 onDeleteCategory={requestDeleteCategory}
                 onMoveCategory={(categoryId, newParentId) => handleMoveCategory(categoryId, newParentId)}
                 onRequestMoveCategory={(categoryId) => setCategoryMoveId(categoryId)}
+                onNewCollection={() => setCollectionForm({ mode: 'create' })}
+                onEditCollection={(id) => setCollectionForm({ mode: 'edit', id })}
+                onDeleteCollection={(id) => setCollectionDeleteId(id)}
                 insightCount={insights.length}
               />
             </div>
@@ -841,6 +949,36 @@ export default function App() {
             handleMoveCategory(categoryMoveId, newParentId);
             setCategoryMoveId(null);
           }}
+        />
+      )}
+      {collectionForm && (
+        <CollectionFormDialog
+          mode={collectionForm.mode}
+          initial={
+            collectionForm.mode === 'edit'
+              ? (() => {
+                  const current = cols.find((c) => c.id === collectionForm.id);
+                  return current
+                    ? {
+                        name: current.name,
+                        emoji: current.emoji,
+                        color: current.color,
+                        description: current.description,
+                      }
+                    : undefined;
+                })()
+              : undefined
+          }
+          onCancel={() => setCollectionForm(null)}
+          onSubmit={handleSaveCollection}
+        />
+      )}
+      {collectionDeleteId && (
+        <DeleteCollectionDialog
+          name={cols.find((c) => c.id === collectionDeleteId)?.name ?? 'Collection'}
+          memberCount={cols.find((c) => c.id === collectionDeleteId)?.bookmarkIds.length ?? 0}
+          onCancel={() => setCollectionDeleteId(null)}
+          onConfirm={confirmDeleteCollection}
         />
       )}
       <InsightsDialog
