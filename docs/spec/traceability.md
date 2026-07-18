@@ -56,7 +56,7 @@
 | TASK-028 | CloudRepository | REQ-003-AC-001~005；REQ-027-AC-002~003 | done | `ui/src/repositories/cloud.ts`、`ui/src/repositories/cloud-draft-sync.ts`、`ui/src/repositories/supabase-cloud-client.ts`、`ui/src/config/cloud-repository.ts` | `ui/src/repositories/cloud.test.ts`、`ui/src/repositories/cloud-draft-sync.test.ts`、`ui/scripts/supabase-revision-api-test.mjs` | `docs/spec/ac/TASK-028-AC.md` | 2026-07-18 |
 | TASK-029 | 存储切换与冲突 | REQ-003-AC-005；REQ-004-AC-001~004 | done | `ui/src/services/storage-coordinator/index.ts`、`ui/src/features/storage/*`、`ui/src/components/SettingsDialog.tsx`、`ui/src/App.tsx` | `ui/src/services/storage-coordinator/index.test.ts`、`ui/tests/e2e/storage-switch.spec.ts` | `docs/spec/ac/TASK-029-AC.md` | 2026-07-18 |
 | TASK-030 | 远程 Supabase 验收 | REQ-001-AC-001~004；REQ-003-AC-001~005；REQ-004-AC-001~004；REQ-025-AC-003~005 | BLOCKED | — | — | — | — |
-| TASK-031 | SecretStore 与 AI 授权 | REQ-019-AC-001、004~006；REQ-025-AC-001~002 | 待开始 | — | — | — | — |
+| TASK-031 | SecretStore 与 AI 授权 | REQ-019-AC-001、004~006；REQ-025-AC-001~002 | done | `internal/secretstore/*`、`ui/src/features/settings/ai-consent/*`、`ui/src/services/secrets/browser-secret-store.ts`、`ui/src/components/SettingsDialog.tsx`、`main.go` | `internal/secretstore/service_test.go`、`ui/src/features/settings/ai-consent/ai-consent.test.ts`、`ui/tests/e2e/ai-consent.spec.ts` | `docs/spec/ac/TASK-031-AC.md` | 2026-07-18 |
 | TASK-032 | AI 客户端与降级 | REQ-019-AC-002~005；REQ-027-AC-002 | 待开始 | — | — | — | — |
 | TASK-033 | AI 分析与重分析 | REQ-006-AC-002~003；REQ-020-AC-001~002 | 待开始 | — | — | — | — |
 | TASK-034 | 语义搜索 | REQ-018-AC-001~003 | 待开始 | — | — | — | — |

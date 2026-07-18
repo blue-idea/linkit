@@ -97,6 +97,16 @@ func TestProjectSkeleton(t *testing.T) {
 		assertPathExists(t, filepath.Join(repositoryRoot, "internal", "settingsstore", "service.go"))
 	})
 
+	// TASK-031：SecretStore 必须绑定，且前端仅通过 status 接口感知配置。
+	t.Run("Wails 入口绑定 SecretService", func(t *testing.T) {
+		mainSource := readFile(t, filepath.Join(repositoryRoot, "main.go"))
+
+		assertContains(t, mainSource, expectedModulePath+"/internal/secretstore")
+		assertContains(t, mainSource, "secretstore.NewDefaultService")
+		assertContains(t, mainSource, "secretService")
+		assertPathExists(t, filepath.Join(repositoryRoot, "internal", "secretstore", "service.go"))
+	})
+
 	// TASK-008：原生导入导出服务必须绑定并在启动时注入上下文。
 	t.Run("Wails 入口绑定 NativeFileService", func(t *testing.T) {
 		mainSource := readFile(t, filepath.Join(repositoryRoot, "main.go"))

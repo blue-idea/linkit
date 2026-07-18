@@ -19,8 +19,10 @@ import {
 import {
   StorageSwitchDialog,
 } from '../features/storage';
+import { AIConsentDialog, buildConsentRecord } from '../features/settings';
 import type { LibraryEnvelope } from '../domain/library';
 import type { StorageSummary } from '../repositories';
+import { deleteAIKey, getAIKeyStatus, setAIKey } from '../services/secrets/browser-secret-store';
 
 type Tab = SettingsSectionKey;
 
@@ -177,6 +179,9 @@ export function SettingsDialog({
   const [pendingEnvelope, setPendingEnvelope] = useState<LibraryEnvelope | null>(null);
   const [pendingSummary, setPendingSummary] = useState<ImportSummary | null>(null);
   const [pendingSwitchMode, setPendingSwitchMode] = useState<StorageMode | null>(null);
+  const [keyDraft, setKeyDraft] = useState('');
+  const [keyConfigured, setKeyConfigured] = useState(false);
+  const [consentOpen, setConsentOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const i18n = useI18n(draft.locale ?? 'en');
 
@@ -188,6 +193,9 @@ export function SettingsDialog({
       setPendingEnvelope(null);
       setPendingSummary(null);
       setPendingSwitchMode(null);
+      setKeyDraft('');
+      setConsentOpen(false);
+      void getAIKeyStatus().then((status) => setKeyConfigured(status.configured));
     }
   }, [open, settings]);
 
@@ -456,14 +464,31 @@ export function SettingsDialog({
                 <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">API Key</label>
                 <input
                   type="password"
-                  value={draft.ai.apiKey}
-                  onChange={(e) => updateAI({ apiKey: e.target.value })}
-                  placeholder="sk-…"
+                  value={keyDraft}
+                  onChange={(e) => setKeyDraft(e.target.value)}
+                  placeholder={keyConfigured ? '•••••••• (configured)' : 'sk-…'}
+                  aria-label="API Key"
                   className="w-full rounded-lg bg-ink-800/60 hairline text-[13px] text-ink-100 placeholder:text-ink-500 px-3 py-2.5 outline-none focus-ring font-mono"
                 />
-                <p className="text-[10px] text-ink-500 mt-1.5">
-                  The key stays on this device and is never uploaded. Leave empty to disable AI.
+                <p className="text-[10px] text-ink-500 mt-1.5" data-testid="ai-key-status">
+                  {keyConfigured
+                    ? 'API Key is configured on this device. Enter a new value to replace it.'
+                    : 'The key stays on this device and is never uploaded. Leave empty to keep unset.'}
                 </p>
+                {keyConfigured && (
+                  <button
+                    type="button"
+                    className="mt-2 text-[11px] text-coral-400 hover:underline"
+                    onClick={() => {
+                      void deleteAIKey().then(() => {
+                        setKeyConfigured(false);
+                        setKeyDraft('');
+                      });
+                    }}
+                  >
+                    Remove API Key
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -559,6 +584,20 @@ export function SettingsDialog({
           icon="Check"
           onClick={() => {
             void (async () => {
+              const apiBase = draft.ai.apiBase.trim();
+              // 有 API Base 且本会话尚未确认授权时，先展示说明（REQ-019-AC-005）。
+              if (apiBase) {
+                const granted = sessionStorage.getItem(`linkit.ai.consent.${apiBase}`);
+                if (!granted) {
+                  setConsentOpen(true);
+                  return;
+                }
+              }
+              if (keyDraft.trim()) {
+                await setAIKey(keyDraft.trim());
+                setKeyConfigured(true);
+                setKeyDraft('');
+              }
               // 必须等待持久化完成，避免 E2E reload 早于写入。
               await onSave(draft);
               onClose();
@@ -598,6 +637,37 @@ export function SettingsDialog({
           update({ storageMode: target });
           setPendingSwitchMode(null);
           void onStorageSwitchConfirm?.('overwrite_target', target);
+        }}
+      />
+      <AIConsentDialog
+        open={consentOpen}
+        apiBase={draft.ai.apiBase}
+        onCancel={() => setConsentOpen(false)}
+        onConfirm={() => {
+          void (async () => {
+            const apiBase = draft.ai.apiBase.trim();
+            if (apiBase) {
+              sessionStorage.setItem(`linkit.ai.consent.${apiBase}`, '1');
+              // 同步写入领域 consent 记录到本机设置适配层。
+              const adapters = await import('../services/storage/browser-adapters').then((m) =>
+                m.createBrowserStorageAdapters()
+              );
+              const current = await adapters.loadSettings();
+              await adapters.saveSettings({
+                ...current.settings,
+                ai: { apiBase: draft.ai.apiBase, model: draft.ai.model },
+                aiConsent: buildConsentRecord(apiBase, new Date().toISOString()),
+              });
+            }
+            setConsentOpen(false);
+            if (keyDraft.trim()) {
+              await setAIKey(keyDraft.trim());
+              setKeyConfigured(true);
+              setKeyDraft('');
+            }
+            await onSave(draft);
+            onClose();
+          })();
         }}
       />
     </Modal>

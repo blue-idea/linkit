@@ -11,6 +11,9 @@ const (
 	ErrorCodeExternalOpenFailed  = "EXTERNAL_OPEN_FAILED"
 	ErrorCodeLocalReadFailed     = "LOCAL_READ_FAILED"
 	ErrorCodeLocalWriteFailed    = "LOCAL_WRITE_FAILED"
+	ErrorCodeSecretWriteFailed   = "SECRET_WRITE_FAILED"
+	ErrorCodeSecretReadFailed    = "SECRET_READ_FAILED"
+	ErrorCodeSecretNotConfigured = "SECRET_NOT_CONFIGURED"
 
 	ErrorMessageInvalidArgument     = "Invalid local document request"
 	ErrorMessageDocumentInvalid     = "Library document is invalid"
@@ -23,4 +26,13 @@ const (
 	ErrorMessageLocalReadFailed     = "Failed to read local document"
 	ErrorMessageLocalWriteFailed    = "Failed to write local document"
 	ErrorMessageCloudDraftDirty     = "Cloud draft is dirty"
+	ErrorMessageSecretWriteFailed   = "Failed to write secret"
+	ErrorMessageSecretReadFailed    = "Failed to read secret"
+	ErrorMessageSecretNotConfigured = "AI API Key is not configured"
+	ErrorMessageSecretEmpty         = "Secret value must not be empty"
+
+	// SecretServiceName 与 OS Keychain / Credential Manager 服务名对齐。
+	SecretServiceName = "Linkit"
+	// AIAPIKeySecretKey 是 AI Key 的逻辑键；前端仅可见 configured 状态。
+	AIAPIKeySecretKey = "linkit.ai.api-key"
 )

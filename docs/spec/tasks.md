@@ -676,13 +676,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ## 波次 4 · AI、洞察与健康
 
-- [ ] **TASK-031 · 实现 SecretStore、AI 设置与数据授权**
+- [x] **TASK-031 · 实现 SecretStore、AI 设置与数据授权**
 
-  > 依赖：TASK-007、TASK-023 · 预计：3–4 小时
+  > 依赖：TASK-007、TASK-023 · 预计：3–4 小时 · 状态：done · 2026-07-18
 
-  - [ ] 实现 Windows Credential Manager/macOS Keychain 适配接口及内存测试替身。
-  - [ ] 前端只读取 configured 状态，不暴露 Key 明文。
-  - [ ] 实现首次 consent、按 API Base 记忆和地址变化失效。
+  - [x] 实现 Windows Credential Manager/macOS Keychain 适配接口及内存测试替身。
+  - [x] 前端只读取 configured 状态，不暴露 Key 明文。
+  - [x] 实现首次 consent、按 API Base 记忆和地址变化失效。
 
   **验证方式：**
   ```powershell
@@ -1022,7 +1022,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-028 | CloudRepository | Unit/API | done | REQ-003、027 |
 | TASK-029 | 存储切换与冲突 | Unit/E2E | done | REQ-003、004 |
 | TASK-030 | 远程 Supabase 验收 | API/Security/E2E | BLOCKED | REQ-001、003、004、025 |
-| TASK-031 | SecretStore 与 AI 授权 | Unit/Security/E2E | 待开始 | REQ-019、025 |
+| TASK-031 | SecretStore 与 AI 授权 | Unit/Security/E2E | done | REQ-019、025 |
 | TASK-032 | AI 客户端与降级 | API/Security | 待开始 | REQ-019、027 |
 | TASK-033 | AI 分析与重分析 | API/E2E | 待开始 | REQ-006、020 |
 | TASK-034 | 语义搜索 | API/E2E | 待开始 | REQ-018 |
