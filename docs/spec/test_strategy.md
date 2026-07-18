@@ -156,11 +156,11 @@ environments:
     url: "Wails development application"
     db: "isolated AppData test directory"
   local_supabase:
-    url: "BLOCKED until Supabase CLI initialization"
-    db: "seeded local Postgres"
+    url: "http://127.0.0.1:54321"
+    db: "seeded local Postgres (supabase/seed.sql)"
   staging:
-    url: "N/A"
-    db: "BLOCKED until an authorized Supabase project is provided"
+    url: "https://zheqhjsctvkuzmtohrnm.supabase.co"
+    db: "linkit staging — schema seeded; full remote AC remains TASK-030"
   prod:
     url: "N/A"
     smoke_only: true
