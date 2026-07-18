@@ -30,7 +30,7 @@
 | TASK-002 | 测试与 CI 框架 | REQ-024-AC-006；REQ-028-AC-004 | done | `ui/vitest.config.ts`、`ui/playwright.config.ts`、`config/test/coverage.mjs`、`ui/.husky/*`、`.github/workflows/*` | `ui/src/utils/format-date.test.ts`、`ui/src/components/ui.test.tsx`、`ui/tests/e2e/*`、`ui/tests/visual/*`、`ui/verify-quality-config.mjs` | `docs/spec/ac/TASK-002-AC.md` | 2026-07-18 |
 | TASK-003 | 数据 Schema 与迁移 | REQ-026-AC-001~004 | done | `ui/src/domain/schemas.ts`、`ui/src/domain/validation.ts`、`ui/src/domain/migration.ts`、`ui/src/domain/library.ts` | `ui/src/domain/library.test.ts` | `docs/spec/ac/TASK-003-AC.md` | 2026-07-18 |
 | TASK-004 | 测试 Factory 与性能数据 | REQ-026-AC-001~004；REQ-028-AC-005~007 | done | `ui/src/config/test-data.ts`、`ui/src/testing/factories/index.ts`、`ui/src/testing/performance-data/index.ts` | `ui/src/tests/factories/factories.test.ts`、`ui/src/tests/performance-data/performance-data.test.ts` | `docs/spec/ac/TASK-004-AC.md` | 2026-07-18 |
-| TASK-005 | Store、命令与 Repository | REQ-026-AC-001~004；REQ-027-AC-002~003 | 待开始 | — | — | — | — |
+| TASK-005 | Store、命令与 Repository | REQ-026-AC-001~004；REQ-027-AC-002~003 | done | `ui/src/domain/commands/*`、`ui/src/repositories/*`、`ui/src/store/*`、`ui/src/config/domain.ts`、`ui/src/config/repository.ts`、`ui/src/config/store.ts` | `ui/src/domain/commands/membership.test.ts`、`ui/src/repositories/memory.test.ts`、`ui/src/store/app-store.test.ts` | `docs/spec/ac/TASK-005-AC.md` | 2026-07-18 |
 | TASK-006 | 本地原子资料库与云草稿 | REQ-002-AC-002；REQ-003-AC-004~005；REQ-027-AC-003 | 待开始 | — | — | — | — |
 | TASK-007 | 本地设置服务 | REQ-019-AC-001、REQ-019-AC-006；REQ-023-AC-003~006 | 待开始 | — | — | — | — |
 | TASK-008 | 原生导入导出服务 | REQ-005-AC-001~003；REQ-025-AC-002 | 待开始 | — | — | — | — |

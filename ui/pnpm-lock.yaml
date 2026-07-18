@@ -26,6 +26,9 @@ importers:
       zod:
         specifier: 4.0.1
         version: 4.0.1
+      zustand:
+        specifier: 5.0.12
+        version: 5.0.12(@types/react@18.3.31)(react@18.3.1)
     devDependencies:
       '@axe-core/playwright':
         specifier: ^4.10.2
@@ -2115,6 +2118,24 @@ packages:
   zod@4.0.1:
     resolution: {integrity: sha512-3ayMCwqt0I18sfM+jC4t06mieo1n5B7jeH7GtPvCmzSfnecxO8+qBLtD56wOLccc3TJOMHUhiaG36ck6dtmKeQ==}
 
+  zustand@5.0.12:
+    resolution: {integrity: sha512-i77ae3aZq4dhMlRhJVCYgMLKuSiZAaUPAct2AksxQ+gOtimhGMdXljRT21P5BNpeT4kXlLIckvkPM029OljD7g==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+      immer: '>=9.0.6'
+      react: '>=18.0.0'
+      use-sync-external-store: '>=1.2.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      immer:
+        optional: true
+      react:
+        optional: true
+      use-sync-external-store:
+        optional: true
+
 snapshots:
 
   '@adobe/css-tools@4.5.0': {}
@@ -4057,3 +4078,8 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   zod@4.0.1: {}
+
+  zustand@5.0.12(@types/react@18.3.31)(react@18.3.1):
+    optionalDependencies:
+      '@types/react': 18.3.31
+      react: 18.3.1
