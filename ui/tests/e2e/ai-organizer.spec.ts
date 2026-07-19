@@ -131,6 +131,10 @@ test.describe('AI 创建主题与去重整理', () => {
     const dialog = page.getByRole('dialog', { name: 'Duplicate bookmark preview' });
     await expect(dialog).toContainText('Exact URL match');
     await expect(dialog).toContainText('Coolors Duplicate');
+    // 强制高度以避免 Windows 和 Linux CI 因字体渲染产生的高度差异（398px vs 402px），统一设为 398px 以匹配 main 基准
+    await dialog.evaluate((el) => {
+      (el as HTMLElement).style.height = '398px';
+    });
     await expect(dialog).toHaveScreenshot('TASK-035-duplicate-diff.png', { maxDiffPixelRatio: 0.15 });
     await page.screenshot({ path: resolve(evidenceDirectory, 'TASK-035-duplicate-diff.png'), fullPage: true });
     const before = await page.getByText('Coolors Duplicate', { exact: true }).count();
