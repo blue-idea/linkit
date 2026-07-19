@@ -232,7 +232,14 @@ export function Sidebar({
   };
 
   return (
-    <div className="h-full flex flex-col glass border-r border-white/5">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onSelect({ kind: 'all' });
+        }
+      }}
+      className="h-full flex flex-col glass border-r border-white/5"
+    >
       {/* Brand + new */}
       <div className="px-3 pt-3 pb-2 flex items-center gap-2">
         <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent-500 to-mint-500 flex items-center justify-center hairline shrink-0">
@@ -251,7 +258,14 @@ export function Sidebar({
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto scroll-thin pb-4">
+      <div
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            onSelect({ kind: 'all' });
+          }
+        }}
+        className="flex-1 overflow-y-auto scroll-thin pb-4"
+      >
         {/* Library */}
         <SectionLabel>资料库</SectionLabel>
         <NavRow
