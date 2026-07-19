@@ -58,6 +58,47 @@ export function createBrowserStorageAdapters(storage: Storage = localStorage): B
         // 旧格式：原型 LibraryData 与领域 Schema 不完全一致，仅用于信号“有本机数据”。
         // 实际书签仍由 App 通过 loadLocalLibrary 读取。
         if (isLegacyLibraryData(parsed)) {
+          const legacy = parsed as Record<string, unknown>;
+          const legacyBookmarks = Array.isArray(legacy.bookmarks) ? legacy.bookmarks : [];
+          const legacyCategories = Array.isArray(legacy.categories) ? legacy.categories : [];
+          const legacyCollections = Array.isArray(legacy.collections) ? legacy.collections : [];
+          const legacyTags = Array.isArray(legacy.tags) ? legacy.tags : [];
+
+          const bookmarks = legacyBookmarks.map((item: unknown) => {
+            const bm = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
+            return {
+              id: String(bm.id || ''),
+              title: String(bm.title || ''),
+              url: String(bm.url || ''),
+              domain: String(bm.domain || ''),
+              favicon: (bm.favicon as string | null) || null,
+              description: String(bm.description || ''),
+              notes: String(bm.notes || ''),
+              tagIds: (Array.isArray(bm.tagIds) ? bm.tagIds : Array.isArray(bm.tags) ? bm.tags : []) as string[],
+              categoryId: (bm.categoryId as string | null) || null,
+              collectionIds: (Array.isArray(bm.collectionIds) ? bm.collectionIds : []) as string[],
+              createdAt: String(bm.createdAt || new Date().toISOString()),
+              updatedAt: String(bm.updatedAt || new Date().toISOString()),
+              lastVisitedAt: (bm.lastVisitedAt as string | null) || (bm.lastVisited as string | null) || null,
+              visitCount: typeof bm.visitCount === 'number' ? bm.visitCount : 0,
+              starred: Boolean(bm.starred),
+              pinned: Boolean(bm.pinned),
+              readStatus: ['unread', 'reading', 'read', 'archived'].includes(bm.readStatus as string)
+                ? (bm.readStatus as 'unread' | 'reading' | 'read' | 'archived')
+                : 'unread',
+              health: ['ok', 'changed', 'broken'].includes(bm.health as string)
+                ? (bm.health as 'ok' | 'changed' | 'broken')
+                : 'ok',
+              healthCheckedAt: (bm.healthCheckedAt as string | null) || null,
+              healthHttpStatus: typeof bm.healthHttpStatus === 'number' ? bm.healthHttpStatus : null,
+              healthFingerprint: (bm.healthFingerprint as string | null) || null,
+              healthErrorCode: (bm.healthErrorCode as string | null) || null,
+              aiSummary: String(bm.aiSummary || ''),
+              aiSuggestedTags: (Array.isArray(bm.aiSuggestedTags) ? bm.aiSuggestedTags : []) as string[],
+              thumbnail: (bm.thumbnail as string | null) || null,
+            };
+          });
+
           return {
             state: 'found',
             snapshot: {
@@ -67,7 +108,40 @@ export function createBrowserStorageAdapters(storage: Storage = localStorage): B
                 schemaVersion: 1,
                 revision: 0,
                 updatedAt: new Date().toISOString(),
-                data: { bookmarks: [], categories: [], collections: [], tags: [] },
+                data: {
+                  bookmarks,
+                  categories: legacyCategories.map((item: unknown) => {
+                    const cat = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
+                    return {
+                      id: String(cat.id || ''),
+                      name: String(cat.name || ''),
+                      icon: String(cat.icon || ''),
+                      parentId: (cat.parentId as string | null) || null,
+                      color: (cat.color as 'blue' | 'green' | 'amber' | 'coral' | 'violet' | 'gray' | null) || null,
+                    };
+                  }),
+                  collections: legacyCollections.map((item: unknown) => {
+                    const col = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
+                    return {
+                      id: String(col.id || ''),
+                      name: String(col.name || ''),
+                      emoji: String(col.emoji || ''),
+                      color: (col.color as 'blue' | 'green' | 'amber' | 'coral' | 'violet' | 'gray') || 'blue',
+                      description: String(col.description || ''),
+                      bookmarkIds: (Array.isArray(col.bookmarkIds) ? col.bookmarkIds : []) as string[],
+                      createdAt: String(col.createdAt || new Date().toISOString()),
+                      updatedAt: String(col.updatedAt || new Date().toISOString()),
+                    };
+                  }),
+                  tags: legacyTags.map((item: unknown) => {
+                    const tag = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
+                    return {
+                      id: String(tag.id || ''),
+                      label: String(tag.label || ''),
+                      color: (tag.color as 'blue' | 'green' | 'amber' | 'coral' | 'violet' | 'gray') || 'blue',
+                    };
+                  }),
+                },
               },
             },
           };
