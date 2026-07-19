@@ -3,7 +3,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import type { BookmarkPresentation } from './presenter';
 import { Icon, TagPill, Favicon } from '../../components/ui';
 import { INITIAL_VIRTUAL_VIEW_RECT } from '../../config/virtualization';
-import { BookmarkItemActions, type BookmarkItemActionHandlers } from './BookmarkItemActions';
+import type { BookmarkItemActionHandlers } from './BookmarkItemActions';
 
 const ROW_ESTIMATE = 84;
 
@@ -122,44 +122,60 @@ function ListItem({
       <div className="grid grid-cols-[28px_1fr_auto_auto] items-center gap-3">
         <Favicon glyph={item.favicon} color={item.faviconColor} size={28} />
         <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-[13px] font-medium text-ink-100 truncate">{item.title}</span>
-          {item.pinned && <Icon name="Pin" size={11} className="text-amber-400 shrink-0" />}
-          {item.health === 'changed' && (
-            <Icon name="RefreshCw" size={11} className="text-amber-400 shrink-0" />
-          )}
-        </div>
-        <div className="text-[11px] text-ink-400 truncate flex items-center gap-2">
-          <span>{item.domain}</span>
-          {item.summary && (
-            <span className="text-ink-500">· {item.summary.slice(0, 48)}…</span>
-          )}
-        </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] font-medium text-ink-100 truncate">{item.title}</span>
+            {item.pinned && <Icon name="Pin" size={11} className="text-amber-400 shrink-0" />}
+            {item.health === 'changed' && (
+              <Icon name="RefreshCw" size={11} className="text-amber-400 shrink-0" />
+            )}
+          </div>
+          <div className="text-[11px] text-ink-400 truncate flex items-center gap-2">
+            <span>{item.domain}</span>
+            {item.summary && (
+              <span className="text-ink-500">· {item.summary.slice(0, 48)}…</span>
+            )}
+          </div>
         </div>
         <div className="hidden sm:flex items-center gap-1">
-        {item.tags.slice(0, 2).map((tag) => (
-          <TagPill key={tag.id} label={tag.label} color={tag.color} size="xs" />
-        ))}
+          {item.tags.slice(0, 2).map((tag) => (
+            <TagPill key={tag.id} label={tag.label} color={tag.color} size="xs" />
+          ))}
         </div>
         <div className="hidden md:flex items-center gap-1 text-[11px] text-ink-400">
-        <Icon name="Eye" size={11} />
-        <span className="tabular-nums">{item.visitCount}</span>
+          <Icon name="Eye" size={11} />
+          <span className="tabular-nums">{item.visitCount}</span>
         </div>
         <button
-        type="button"
-        aria-label={item.starred ? `Unstar ${item.title}` : `Star ${item.title}`}
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggleStar();
-        }}
-        className={`w-6 h-6 rounded-md flex items-center justify-center transition focus-ring ${
-          item.starred ? 'text-amber-400' : 'text-ink-500 opacity-0 group-hover:opacity-100'
-        }`}
-      >
-        <Icon name="Star" size={13} fill={item.starred ? 'currentColor' : 'none'} />
+          type="button"
+          aria-label={item.starred ? `Unstar ${item.title}` : `Star ${item.title}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleStar();
+          }}
+          className={`w-6 h-6 rounded-md flex items-center justify-center transition focus-ring ${
+            item.starred ? 'text-amber-400' : 'text-ink-500 opacity-0 group-hover:opacity-100'
+          }`}
+        >
+          <Icon name="Star" size={13} fill={item.starred ? 'currentColor' : 'none'} />
         </button>
+        <div className={`col-span-3 flex items-center justify-between gap-2 transition-opacity ${selectionMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+          {selectionMode ? (
+            <label className="text-[10px] text-ink-400 flex items-center gap-1" onClick={(event) => event.stopPropagation()}>
+              <input
+                aria-label={`Select bookmark ${item.title}`}
+                type="checkbox"
+                checked={bulkSelected}
+                onChange={(event) => onToggleSelect(event.target.checked)}
+              /> Select
+            </label>
+          ) : <span />}
+          <div className="flex items-center gap-2">
+            <button aria-label="Edit bookmark" onClick={(event) => { event.stopPropagation(); onEdit(); }} className="text-[10px] text-ink-300 hover:text-accent-300">Edit</button>
+            <button aria-label="Move bookmark" onClick={(event) => { event.stopPropagation(); onMove(); }} className="text-[10px] text-ink-300 hover:text-accent-300">Move</button>
+            <button aria-label="Delete bookmark" onClick={(event) => { event.stopPropagation(); onDelete(); }} className="text-[10px] text-coral-400 hover:text-coral-300">Delete</button>
+          </div>
+        </div>
       </div>
-      <BookmarkItemActions title={item.title} selected={bulkSelected} selectionMode={selectionMode} onToggleSelect={onToggleSelect} onEdit={onEdit} onMove={onMove} onDelete={onDelete} />
     </div>
   );
 }
