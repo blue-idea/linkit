@@ -14,13 +14,30 @@ env:
   GO_VERSION: '1.26'
   PNPM_VERSION: '10.33.0'
   WAILS_VERSION: v2.13.0
+  NFPM_VERSION: v2.47.0
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            platform: linux/amd64
+            deb_arch: amd64
+          - runner: ubuntu-24.04-arm
+            platform: linux/arm64
+            deb_arch: arm64
+
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev xdg-utils
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -46,10 +63,30 @@ jobs:
       - name: Build frontend
         run: pnpm --dir ui build
 
+      - name: Install nFPM
+        run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@${{ env.NFPM_VERSION }}
+
       - name: Build Wails desktop app
-        run: go run github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }} build -clean -platform linux/amd64
+        run: go run github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }} build -clean -platform ${{ matrix.platform }} -tags webkit2_41
+
+      - name: Copy architecture-specific binary
+        run: cp build/bin/linkit build/bin/linkit-${{ matrix.deb_arch }}
+
+      - name: Build Debian package
+        env:
+          NFPM_ARCH: ${{ matrix.deb_arch }}
+          PACKAGE_VERSION: ${{ inputs.tag }}
+          PACKAGE_RELEASE: '1'
+        run: nfpm pkg --packager deb --target build/bin/linkit_${{ inputs.tag }}_${{ matrix.deb_arch }}.deb
+
+      - name: Verify release artifacts
+        run: |
+          test -x "build/bin/linkit-${{ matrix.deb_arch }}"
+          test -f "build/bin/linkit_${{ inputs.tag }}_${{ matrix.deb_arch }}.deb"
 
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${{ inputs.tag }}" --generate-notes build/bin/*
+        run: |
+          gh release view "${{ inputs.tag }}" >/dev/null 2>&1 || gh release create "${{ inputs.tag }}" --target "$GITHUB_SHA" --generate-notes || true
+          gh release upload "${{ inputs.tag }}" build/bin/linkit-${{ matrix.deb_arch }} build/bin/linkit_${{ inputs.tag }}_${{ matrix.deb_arch }}.deb --clobber
