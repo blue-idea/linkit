@@ -1090,6 +1090,32 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-049 · Spotlight 搜索结果回车直接访问**
+
+  > 依赖：TASK-012、TASK-021、TASK-048 · 预计：1–2 小时 · 状态：done · 2026-07-19
+
+  - [x] 扩展 Spotlight 搜索结果的键盘确认语义：Enter 对当前高亮书签执行 `Open directly`。
+  - [x] 保留鼠标点击搜索结果的详情定位行为，避免与直接访问混淆。
+  - [x] 复用 `visitBookmark` 编排，保证外部打开成功后才更新 visitCount 和 lastVisitedAt。
+  - [x] 覆盖 Unit、E2E 与截图证据。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/components/Spotlight.test.tsx
+  pnpm --dir ui exec playwright test tests/e2e/spotlight.spec.ts --workers=1
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui build
+  ```
+
+  **验收证据：** Spotlight 组件测试、Spotlight E2E、`TASK-049-spotlight-direct-open.png`。
+
+  _需求: REQ-017、REQ-008
+  验收标准：REQ-017-AC-005、REQ-008-AC-002
+  _测试类型: Unit + E2E
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1142,6 +1168,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-046 | 六主题皮肤与浅色主题 | Unit/E2E/Manual | done | REQ-023、028 |
 | TASK-047 | 本地存储目录与数据迁移 | Unit/E2E | done | REQ-023、025、027、029 |
 | TASK-048 | 书签项直接访问入口 | Unit/E2E | done | REQ-008 |
+| TASK-049 | Spotlight 搜索结果回车直接访问 | Unit/E2E | done | REQ-017、008 |
 
 ---
 
@@ -1158,3 +1185,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 1.5.0 | 2026-07-19 | 已定稿 | 新增 TASK-046，参考 `ck/project` 优化六主题皮肤并加入 Daylight 与 Paper |
 | 1.6.0 | 2026-07-19 | 已定稿 | 新增 TASK-047，覆盖 REQ-029 本地存储目录选择与数据迁移 |
 | 1.7.0 | 2026-07-19 | 已定稿 | 新增 TASK-048，六种书签视图提供区别于右侧详情 Visit 的直接访问入口 |
+| 1.8.0 | 2026-07-19 | 已定稿 | 新增 TASK-049，Spotlight 搜索结果 Enter 确认直接访问高亮书签网站 |

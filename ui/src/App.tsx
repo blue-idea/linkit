@@ -1338,6 +1338,9 @@ export default function App() {
             : null
         }
         onSelect={(id) => setState((s) => ({ ...s, selectedBookmarkId: id }))}
+        onOpenDirectly={(id) => {
+          void handleVisitBookmark(id);
+        }}
         onClose={() => setSpotlightOpen(false)}
         onNewFromUrl={(url) => {
           // 先写入 URL 再打开对话框，避免空 initialUrl 竞态。

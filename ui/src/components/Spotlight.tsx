@@ -23,6 +23,7 @@ export function Spotlight({
   tags,
   aiContext,
   onSelect,
+  onOpenDirectly,
   onClose,
   onNewFromUrl,
 }: {
@@ -33,6 +34,7 @@ export function Spotlight({
   collections: Collection[];
   aiContext: AIContext | null;
   onSelect: (id: string) => void;
+  onOpenDirectly: (id: string) => void;
   onClose: () => void;
   onNewFromUrl: (url: string) => void;
 }) {
@@ -151,7 +153,8 @@ export function Spotlight({
           const normalized = normalizeSpotlightUrl(query);
           if (normalized.ok) onNewFromUrl(normalized.url);
         } else if (list[active]) {
-          onSelect(list[active].id);
+          // REQ-017-AC-005：键盘确认走直达访问，区别于点击结果定位详情。
+          onOpenDirectly(list[active].id);
           onClose();
         }
       }
@@ -162,7 +165,7 @@ export function Spotlight({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, list, active, isUrl, query, onSelect, onClose, onNewFromUrl]);
+  }, [open, list, active, isUrl, query, onOpenDirectly, onClose, onNewFromUrl]);
 
   if (!open) return null;
 

@@ -1003,6 +1003,18 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
     ui_state: "The selected bookmark is visible and Spotlight is closed"
     side_effects: []
 
+- id: REQ-017-AC-005
+  ears: >
+    When 用户在 Spotlight 搜索结果中按 Enter 确认当前高亮书签,
+    the Linkit shall 直接打开该书签网站，并复用访问成功后记录访问的编排.
+  test_type: Unit + E2E
+  expected:
+    ui_state: "Spotlight is closed after the highlighted result is opened directly"
+    side_effects:
+      - "The highlighted bookmark URL is opened directly"
+      - "The highlighted bookmark becomes visited only after the external open succeeds"
+      - "The Enter confirmation does not select the bookmark for the detail panel"
+
 - id: REQ-017-AC-004
   ears: >
     When Spotlight 输入为有效 http 或 https URL,
@@ -1835,3 +1847,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 1.6.0 | 2026-07-19 | 已定稿 | 用户确认参考 `ck/project` 优化主题皮肤，并新增 Daylight 与 Paper 浅色主题；业务功能和设置流程保持不变 |
 | 1.7.0 | 2026-07-19 | 已定稿 | 新增 REQ-029：可配置本地存储目录，位置变更时自动迁移应用数据（不含密钥） |
 | 1.8.0 | 2026-07-19 | 已定稿 | 新增 REQ-008-AC-005：六种书签视图提供区别于右侧详情 Visit 的直接访问入口 |
+| 1.9.0 | 2026-07-19 | 已定稿 | 新增 REQ-017-AC-005：Spotlight 搜索结果 Enter 确认直接访问高亮书签网站 |
