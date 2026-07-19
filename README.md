@@ -85,11 +85,16 @@ cp ui/.env.test.example ui/.env
 ```
 
 #### 3. Start Development Mode
-Run Wails development environment:
+Run Wails with the **dev identity** so AppData / Keychain use `Linkit-Dev` and stay isolated from release installs:
 ```bash
-wails dev
+# Windows
+./scripts/dev.ps1
+
+# macOS / Linux
+./scripts/dev.sh
 ```
-This boots up the desktop application shell and monitors both frontend and backend changes.
+Equivalent: `wails dev -tags dev`. Do **not** use plain `wails dev` for daily testing if you also verify release builds on the same machine.
+
 *Alternatively, you can run the React frontend prototype independently:*
 ```bash
 cd ui && pnpm dev
@@ -97,7 +102,7 @@ cd ui && pnpm dev
 Open `http://localhost:5173/` in your browser.
 
 #### 4. Build Production Application
-Compile the frontend assets and compile the native binary into `build/bin/`:
+Compile without the `dev` tag so the app uses the clean `Linkit` identity slot:
 ```bash
 wails build
 ```

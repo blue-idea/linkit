@@ -85,11 +85,16 @@ cp ui/.env.test.example ui/.env
 ```
 
 #### 3. 运行开发环境
-在项目根目录启动 Wails 调试服务：
+使用**开发身份**启动 Wails，使 AppData / Keychain 使用 `Linkit-Dev`，与正式安装隔离：
 ```bash
-wails dev
+# Windows
+./scripts/dev.ps1
+
+# macOS / Linux
+./scripts/dev.sh
 ```
-该命令会自动编译 Go 后端并启动前端的 Vite 监听服务，生成一个带有热更新的桌面客户端壳。
+等价命令：`wails dev -tags dev`。若同一台机器还要验证 Release 安装包，请勿日常使用不带 `-tags dev` 的 `wails dev`。
+
 *如果只需开发前端 React 原型界面：*
 ```bash
 cd ui && pnpm dev
@@ -97,7 +102,7 @@ cd ui && pnpm dev
 然后在浏览器中访问 `http://localhost:5173/`。
 
 #### 4. 打包发布应用
-构建出对应您操作系统的原生免安装 / 安装包：
+正式构建**不要**加 `dev` tag，产物使用干净的 `Linkit` 身份槽：
 ```bash
 wails build
 ```
