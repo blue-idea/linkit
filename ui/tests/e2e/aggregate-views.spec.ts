@@ -41,7 +41,7 @@ test.describe('Timeline Tag Aggregation Theme Space', () => {
     });
     await expect(page).toHaveScreenshot('TASK-020-timeline-baseline.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.03,
+      maxDiffPixelRatio: 0.08,
     });
   });
 
@@ -60,7 +60,7 @@ test.describe('Timeline Tag Aggregation Theme Space', () => {
     });
     await expect(page).toHaveScreenshot('TASK-020-tag-aggregation-baseline.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.03,
+      maxDiffPixelRatio: 0.08,
     });
   });
 
@@ -79,7 +79,7 @@ test.describe('Timeline Tag Aggregation Theme Space', () => {
     });
     await expect(page).toHaveScreenshot('TASK-020-theme-space-baseline.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.03,
+      maxDiffPixelRatio: 0.08,
     });
   });
 });

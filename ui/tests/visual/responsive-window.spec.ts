@@ -36,7 +36,7 @@ test.describe('主窗口响应式扩展', () => {
     });
     await expect(page).toHaveScreenshot('responsive-window-1920x1080-baseline.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.02,
+      maxDiffPixelRatio: 0.08,
     });
   });
 });

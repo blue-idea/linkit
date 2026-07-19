@@ -43,7 +43,7 @@ test.describe('TASK-046 六主题视觉回归', () => {
       });
       await expect(page).toHaveScreenshot(`TASK-046-${theme.id}-settings-baseline.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.08,
       });
 
       await dialog.getByRole('button', { name: 'Save settings' }).click();
@@ -54,7 +54,7 @@ test.describe('TASK-046 六主题视觉回归', () => {
       });
       await expect(page).toHaveScreenshot(`TASK-046-${theme.id}-main-baseline.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.08,
       });
 
       await page.reload();

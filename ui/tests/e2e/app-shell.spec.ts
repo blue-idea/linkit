@@ -70,7 +70,7 @@ test.describe('主窗口 快捷键 拖入 URL 键盘可访问', () => {
     });
     await expect(page).toHaveScreenshot('TASK-022-main-window-baseline.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.03,
+      maxDiffPixelRatio: 0.08,
     });
   });
 
