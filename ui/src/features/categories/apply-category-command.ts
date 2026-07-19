@@ -2,6 +2,7 @@ import {
   createCategory as createCategoryCommand,
   deleteCategory as deleteCategoryCommand,
   renameCategory as renameCategoryCommand,
+  setCategoryIcon as setCategoryIconCommand,
   type DeleteCategoryStrategy,
 } from '../../domain/categories';
 import type { LibraryData } from '../../domain/library';
@@ -150,5 +151,22 @@ export function runDeleteCategory(input: {
     id: input.id,
     strategy: input.strategy,
     recursiveConfirmed: input.recursiveConfirmed,
+  });
+}
+
+/** fix_task 1.2：应用分类图标与颜色变更。 */
+export function runSetCategoryIcon(input: {
+  bookmarks: Bookmark[];
+  categories: Category[];
+  collections: Collection[];
+  tags: Tag[];
+  id: string;
+  icon: string;
+  color?: string;
+}) {
+  return setCategoryIconCommand(toCategoryLibrary(input), {
+    id: input.id,
+    icon: input.icon,
+    color: input.color,
   });
 }

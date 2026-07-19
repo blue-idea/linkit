@@ -49,6 +49,16 @@ interface CategoryModule {
     categories: LibraryData['categories'],
     input: { categoryId: string; newParentId: string | null }
   ) => boolean;
+  setCategoryIcon: (
+    library: LibraryData,
+    input: { id: string; icon: string; color?: string }
+  ) =>
+    | { ok: true; value: LibraryData; events: Array<{ type: string; payload: Record<string, unknown> }> }
+    | { ok: false; error: { code: string; message: string } };
+  listCategoryIconCandidates: () => string[];
+  isCategoryIconCandidate: (icon: string) => boolean;
+  listCategoryColorCandidates: () => string[];
+  isCategoryColorCandidate: (color: string) => boolean;
 }
 
 async function loadCategories(): Promise<Partial<CategoryModule>> {
@@ -204,5 +214,93 @@ describe('分类树与领域命令', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.value).toEqual(library);
+  });
+
+  // fix_task 1.2：分类图标必须来自受控候选列表。
+  test('listCategoryIconCandidates 返回扩充后的受控候选图标', async () => {
+    const { listCategoryIconCandidates, isCategoryIconCandidate } = await loadCategories();
+    expect(listCategoryIconCandidates).toBeTypeOf('function');
+    expect(isCategoryIconCandidate).toBeTypeOf('function');
+    if (!listCategoryIconCandidates || !isCategoryIconCandidate) {
+      throw new Error('category icon candidates helpers are required');
+    }
+
+    const candidates = listCategoryIconCandidates();
+    expect(candidates.length).toBeGreaterThan(40);
+    expect(new Set(candidates).size).toBe(candidates.length);
+    expect(candidates).toContain('Folder');
+    expect(candidates).toContain('Rocket');
+    expect(isCategoryIconCandidate('Folder')).toBe(true);
+    expect(isCategoryIconCandidate('NotARealIcon')).toBe(false);
+  });
+
+  // fix_task 1.2：图标颜色候选为受控 token。
+  test('listCategoryColorCandidates 返回受控颜色 token', async () => {
+    const { listCategoryColorCandidates, isCategoryColorCandidate } = await loadCategories();
+    expect(listCategoryColorCandidates).toBeTypeOf('function');
+    expect(isCategoryColorCandidate).toBeTypeOf('function');
+    if (!listCategoryColorCandidates || !isCategoryColorCandidate) {
+      throw new Error('category color candidates helpers are required');
+    }
+
+    const colors = listCategoryColorCandidates();
+    expect(colors).toEqual(['blue', 'green', 'amber', 'coral', 'violet', 'gray']);
+    expect(isCategoryColorCandidate('coral')).toBe(true);
+    expect(isCategoryColorCandidate('magenta')).toBe(false);
+  });
+
+  // fix_task 1.2：设置分类图标与颜色成功路径。
+  test('setCategoryIcon 更新候选图标与颜色', async () => {
+    const { setCategoryIcon, listCategoryIconCandidates } = await loadCategories();
+    expect(setCategoryIcon).toBeTypeOf('function');
+    expect(listCategoryIconCandidates).toBeTypeOf('function');
+    if (!setCategoryIcon || !listCategoryIconCandidates) {
+      throw new Error('setCategoryIcon is required');
+    }
+
+    const library = sampleLibrary();
+    const original = library.categories.find((c) => c.id === 'cat-root');
+    expect(original).toBeTruthy();
+    const candidates = listCategoryIconCandidates();
+    const nextIcon = candidates.find((icon) => icon !== original?.icon) ?? candidates[0];
+    const result = setCategoryIcon(library, { id: 'cat-root', icon: nextIcon, color: 'coral' });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.categories.find((c) => c.id === 'cat-root')).toMatchObject({
+      icon: nextIcon,
+      color: 'coral',
+    });
+    expect(result.events).toEqual([
+      {
+        type: 'category.icon.changed',
+        payload: { categoryId: 'cat-root', icon: nextIcon, color: 'coral' },
+      },
+    ]);
+    // 领域命令不得就地修改入参资料库
+    expect(library.categories.find((c) => c.id === 'cat-root')).toMatchObject({
+      icon: original?.icon,
+      color: original?.color,
+    });
+  });
+
+  // fix_task 1.2：拒绝非法图标、非法颜色与未知分类。
+  test('setCategoryIcon 拒绝非法图标颜色与未知分类', async () => {
+    const { setCategoryIcon } = await loadCategories();
+    expect(setCategoryIcon).toBeTypeOf('function');
+    if (!setCategoryIcon) throw new Error('setCategoryIcon is required');
+
+    const library = sampleLibrary();
+    expect(setCategoryIcon(library, { id: 'cat-root', icon: 'NotARealIcon', color: 'blue' })).toEqual({
+      ok: false,
+      error: { code: 'CATEGORY_ICON_INVALID', message: 'Category icon must be a supported candidate' },
+    });
+    expect(setCategoryIcon(library, { id: 'cat-root', icon: 'Folder', color: 'magenta' })).toEqual({
+      ok: false,
+      error: { code: 'CATEGORY_COLOR_INVALID', message: 'Category color must be a supported candidate' },
+    });
+    expect(setCategoryIcon(library, { id: 'missing', icon: 'Folder', color: 'blue' })).toEqual({
+      ok: false,
+      error: { code: 'CATEGORY_NOT_FOUND', message: 'Category was not found' },
+    });
   });
 });
