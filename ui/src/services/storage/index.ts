@@ -3,6 +3,7 @@ export type { BootstrapDependencies, BootstrapPhase, BootstrapResult, SettingsLo
 export { createLocalRepository } from './local-repository';
 export type { LocalDocumentBindings } from './local-repository';
 export { createBrowserStorageAdapters } from './browser-adapters';
+export { createPreferredStorageAdapters, isDesktopGoStorageAvailable } from './desktop-adapters';
 export { createDataRootBindings, resetBrowserDataRootForTests } from './data-root';
 export type {
   DataRootBindings,
@@ -11,3 +12,4 @@ export type {
   MigrateDataRootResult,
   SelectDirectoryResult,
 } from './data-root';
+export type { BrowserStorageAdapters } from './browser-adapters';

@@ -63,7 +63,7 @@ interface AppError {
 | `HEALTH_SCAN_CANCELLED` | 用户取消健康扫描 | 否 |
 | `DATA_ROOT_TARGET_OCCUPIED` | 目标目录已包含 Linkit 数据 | 否 |
 | `DATA_ROOT_MIGRATE_FAILED` | 数据根迁移复制、校验或指针切换失败 | 是 |
-| `DATA_ROOT_INVALID` | 目标路径无效、不可写或为源目录子路径 | 否 |
+| `DATA_ROOT_INVALID` | 目标路径无效或不可写 | 否 |
 
 ### 2.3 时间与 ID
 
@@ -192,6 +192,10 @@ interface SelectDirectoryResult {
 interface MigrateDataRootRequest {
   targetPath: string;
   confirmed: boolean;
+  /** 可选：迁移前将当前资料库信封写入源根后再复制。 */
+  libraryDocumentJson?: string;
+  /** 可选：迁移前将当前设置写入源根后再复制。 */
+  settingsJson?: string;
 }
 
 interface MigrateDataRootResult {
@@ -201,6 +205,8 @@ interface MigrateDataRootResult {
 ```
 
 - `confirmed` 为 false 时返回 `INVALID_ARGUMENT`，不写盘。
+- 若提供 `libraryDocumentJson` / `settingsJson`，迁移前先写入源数据根，确保内存态/浏览器态数据也会落到目标。
+- 源与快照均无任何可迁移文件时返回 `DATA_ROOT_MIGRATE_FAILED`，不得报告成功。
 - 目标已含 Linkit 数据时返回 `DATA_ROOT_TARGET_OCCUPIED`。
 - 成功后更新引导根 `data-root.json`，删除源中已迁文件，后续读写使用新数据根。
 - 失败时返回 `DATA_ROOT_MIGRATE_FAILED` 或 `DATA_ROOT_INVALID`，保持原根，清理目标残留。

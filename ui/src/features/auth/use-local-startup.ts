@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { AppSettings as UiSettings, ThemeId } from '../../types';
 import { getDefaultAppSettings } from '../../services/settings';
-import { bootstrapApp, createBrowserStorageAdapters, type BootstrapPhase } from '../../services/storage';
+import { bootstrapApp, createPreferredStorageAdapters, type BootstrapPhase } from '../../services/storage';
 import { loadSettings as loadLegacySettings } from '../../storage';
 import { applyTheme } from '../../themes';
 import { resolveStartupView, type StartupView } from './startup-gate';
@@ -26,7 +26,7 @@ function toUiSettings(
 export async function persistUiSettings(settings: UiSettings): Promise<void> {
   const { saveSettings } = await import('../../storage');
   saveSettings(settings);
-  const adapters = createBrowserStorageAdapters();
+  const adapters = createPreferredStorageAdapters();
   await adapters.saveSettings({
     ...getDefaultAppSettings(),
     storageMode: settings.storageMode,
@@ -43,7 +43,7 @@ export async function persistUiSettings(settings: UiSettings): Promise<void> {
  * 启动时并行完成设置引导，并决定是否自动进入本地模式。
  */
 export function useLocalStartup(authLoading: boolean) {
-  const adapters = useMemo(() => createBrowserStorageAdapters(), []);
+  const adapters = useMemo(() => createPreferredStorageAdapters(), []);
   const [bootstrapPhase, setBootstrapPhase] = useState<BootstrapPhase | null>(null);
   const [settings, setSettings] = useState<UiSettings | null>(null);
   const [sessionMode, setSessionMode] = useState<'signed_out' | 'local' | 'authenticated'>('signed_out');

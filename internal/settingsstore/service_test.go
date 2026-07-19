@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/blue-idea/collection/config"
+	"github.com/blue-idea/collection/internal/localstore"
 )
 
 const fixedTimeText = "2026-07-18T09:00:00Z"
@@ -33,8 +34,12 @@ func TestDefaultRootDir(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewDefaultService returned error: %v", err)
 	}
-	if service.rootDir != root {
-		t.Fatalf("Unexpected default service root: got %q, want %q", service.rootDir, root)
+	resolved, err := localstore.ResolveEffectiveDataRoot(root)
+	if err != nil {
+		t.Fatalf("ResolveEffectiveDataRoot returned error: %v", err)
+	}
+	if service.rootDir != resolved {
+		t.Fatalf("Unexpected default service root: got %q, want resolved %q", service.rootDir, resolved)
 	}
 }
 

@@ -27,17 +27,25 @@ describe('数据根浏览器适配器', () => {
     });
   });
 
-  // REQ-029-AC-002：确认后持久化新数据根。
-  test('确认迁移后更新数据根', async () => {
+  // REQ-029-AC-002：确认迁移后更新数据根，并携带资料库/设置快照。
+  test('确认迁移后更新数据根并写入快照', async () => {
     const bindings = createDataRootBindings();
     (window as unknown as { __linkitSelectDirectory: () => string }).__linkitSelectDirectory = () => 'D:\\LinkitData';
     const selected = await bindings.selectDataRootDirectory();
     expect(selected).toEqual({ state: 'selected', path: 'D:\\LinkitData' });
 
-    const result = await bindings.migrateDataRoot({ targetPath: 'D:\\LinkitData', confirmed: true });
+    const result = await bindings.migrateDataRoot({
+      targetPath: 'D:\\LinkitData',
+      confirmed: true,
+      libraryDocumentJson: '{"format":"linkit-library","schemaVersion":1,"revision":1}',
+      settingsJson: '{"settingsVersion":1,"storageMode":"local","theme":"midnight","locale":"en"}',
+    });
     expect(result.dataRoot).toBe('D:\\LinkitData');
+    expect(result.migratedFiles).toEqual(expect.arrayContaining(['library.json', 'settings.json']));
     const info = await bindings.getDataRoot();
     expect(info.isCustom).toBe(true);
     expect(info.dataRoot).toBe('D:\\LinkitData');
+    expect(window.localStorage.getItem('linkit.library.v1')).toContain('linkit-library');
+    expect(window.localStorage.getItem('linkit.settings.v1')).toContain('midnight');
   });
 });

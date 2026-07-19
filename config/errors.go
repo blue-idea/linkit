@@ -23,6 +23,7 @@ const (
 	ErrorCodeDataRootTargetOccupied  = "DATA_ROOT_TARGET_OCCUPIED"
 	ErrorCodeDataRootMigrateFailed   = "DATA_ROOT_MIGRATE_FAILED"
 	ErrorCodeDataRootInvalid         = "DATA_ROOT_INVALID"
+	ErrorCodeDataRootEmpty           = "DATA_ROOT_EMPTY"
 
 	ErrorMessageInvalidArgument     = "Invalid local document request"
 	ErrorMessageDocumentInvalid     = "Library document is invalid"
@@ -49,6 +50,7 @@ const (
 	ErrorMessageDataRootTargetOccupied = "Target directory already contains Linkit data"
 	ErrorMessageDataRootMigrateFailed  = "Failed to migrate local data directory"
 	ErrorMessageDataRootInvalid        = "Target data directory is invalid"
+	ErrorMessageDataRootEmpty          = "No library or settings data available to migrate"
 
 	// SecretServiceName 与 OS Keychain / Credential Manager 服务名对齐。
 	SecretServiceName = "Linkit"

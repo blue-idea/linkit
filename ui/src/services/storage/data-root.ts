@@ -14,6 +14,10 @@ export interface SelectDirectoryResult {
 export interface MigrateDataRootRequest {
   targetPath: string;
   confirmed: boolean;
+  /** 当前资料库信封 JSON；源目录无文件时用于落盘再迁移。 */
+  libraryDocumentJson?: string;
+  /** 当前设置 JSON；与资料库一并迁移。 */
+  settingsJson?: string;
 }
 
 export interface MigrateDataRootResult {
@@ -32,7 +36,13 @@ const BROWSER_DATA_ROOT_KEY = 'linkit.data-root.v1';
 type WailsLocalstore = {
   GetDataRoot?: () => Promise<DataRootInfo>;
   SelectDataRootDirectory?: () => Promise<SelectDirectoryResult>;
-  MigrateDataRoot?: (request: MigrateDataRootRequest) => Promise<MigrateDataRootResult>;
+  /** Wails 扁平参数：避免结构体绑定丢失快照字段。 */
+  MigrateDataRoot?: (
+    targetPath: string,
+    confirmed: boolean,
+    libraryDocumentJson: string,
+    settingsJson: string
+  ) => Promise<MigrateDataRootResult>;
 };
 
 function readWailsLocalstore(): WailsLocalstore | null {
@@ -78,7 +88,12 @@ export function createDataRootBindings(storage: Storage = localStorage): DataRoo
     async migrateDataRoot(request) {
       const wails = readWailsLocalstore();
       if (wails?.MigrateDataRoot) {
-        return wails.MigrateDataRoot(request);
+        return wails.MigrateDataRoot(
+          request.targetPath,
+          request.confirmed,
+          request.libraryDocumentJson ?? '',
+          request.settingsJson ?? ''
+        );
       }
       if (!request.confirmed) {
         throw Object.assign(new Error('Invalid local document request'), { code: 'INVALID_ARGUMENT' });
@@ -93,8 +108,31 @@ export function createDataRootBindings(storage: Storage = localStorage): DataRoo
           code: 'DATA_ROOT_TARGET_OCCUPIED',
         });
       }
+      const hasSnapshot = Boolean(request.libraryDocumentJson?.trim() || request.settingsJson?.trim());
+      if (!hasSnapshot && !storage.getItem(BROWSER_DATA_ROOT_KEY)) {
+        // 浏览器替身无法复制真实文件；无快照时模拟空迁移失败，避免假成功。
+        const existingLibrary = storage.getItem('linkit.library.v1') ?? storage.getItem('lattice.library');
+        const existingSettings = storage.getItem('linkit.settings.v1') ?? storage.getItem('lattice.settings');
+        if (!existingLibrary && !existingSettings) {
+          throw Object.assign(new Error('Failed to migrate local data directory'), {
+            code: 'DATA_ROOT_MIGRATE_FAILED',
+          });
+        }
+      }
+      if (request.libraryDocumentJson?.trim()) {
+        storage.setItem('linkit.library.v1', request.libraryDocumentJson);
+      }
+      if (request.settingsJson?.trim()) {
+        storage.setItem('linkit.settings.v1', request.settingsJson);
+      }
       storage.setItem(BROWSER_DATA_ROOT_KEY, target);
-      return { dataRoot: target, migratedFiles: ['library.json', 'settings.json'] };
+      return {
+        dataRoot: target,
+        migratedFiles: [
+          ...(request.libraryDocumentJson?.trim() ? ['library.json'] : []),
+          ...(request.settingsJson?.trim() ? ['settings.json'] : []),
+        ],
+      };
     },
   };
 }
