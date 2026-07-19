@@ -65,7 +65,7 @@
 | TASK-037 | 真实 AI 验收 | REQ-006-AC-002~003；REQ-013-AC-003~004；REQ-018-AC-001~003；REQ-019-AC-002~005；REQ-020-AC-001~004；REQ-021-AC-001~004 | BLOCKED | — | — | — | — |
 | TASK-038 | 收藏洞察 | REQ-022-AC-001 | done | `ui/src/features/insights/*`、`ui/src/App.tsx` | `ui/src/features/insights/insights.test.ts`、`ui/tests/e2e/insights.spec.ts`、`ui/tests/e2e/insights.spec.ts-snapshots/*` | `docs/spec/ac/TASK-038-AC.md` | 2026-07-19 |
 | TASK-039 | 链接健康 | REQ-022-AC-002~004 | done | `internal/health/*`、`config/events.go`、`config/network.go`、`main.go`、`ui/src/features/health/*`、`ui/src/components/Sidebar.tsx`、`ui/src/components/ContentArea.tsx`、`ui/src/App.tsx` | `internal/health/service_test.go`、`ui/src/features/health/health.test.ts`、`ui/tests/e2e/health-scan.spec.ts` | `docs/spec/ac/TASK-039-AC.md` | 2026-07-19 |
-| TASK-040 | 安全与隐私测试 | REQ-003~005、019~020、025、027 的安全与破坏性操作 AC | 待开始 | — | — | — | — |
+| TASK-040 | 安全与隐私测试 | REQ-003~005、019~020、025、027 的安全与破坏性操作 AC | done | `go.mod`、`go.sum`、`ui/scripts/test-env.mjs`、`ui/scripts/security-scan.mjs`、`ui/scripts/supabase-*-api-test.mjs`、`ui/package.json` | `ui/scripts/test-env.test.mjs`、`pnpm --dir ui test:security`、`pnpm --dir ui test:cloud:remote`、`govulncheck ./...` | `docs/spec/ac/TASK-040-AC.md` | 2026-07-19 |
 | TASK-041 | 性能预算 | REQ-028-AC-005~008 | 待开始 | — | — | — | — |
 | TASK-042 | Windows 桌面验收 | REQ-005、008、024；REQ-027-AC-001、004；REQ-028-AC-004 | 待开始 | — | — | — | — |
 | TASK-043 | macOS 桌面验收 | REQ-024；REQ-027-AC-001、004；REQ-028-AC-004 | 待开始 | — | — | — | — |

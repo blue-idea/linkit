@@ -3,12 +3,9 @@
  * 通过本地 PostgREST 真实验证本人 CRUD、跨用户空结果、未认证读写边界。
  */
 import { createClient } from '@supabase/supabase-js';
+import { resolveSupabaseTestConfig } from './test-env.mjs';
 
-const API_URL = process.env.LINKIT_TEST_SUPABASE_URL ?? 'http://127.0.0.1:54321';
-const ANON_KEY =
-  process.env.LINKIT_TEST_SUPABASE_PUBLISHABLE_KEY ??
-  process.env.LINKIT_TEST_SUPABASE_ANON_KEY ??
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
+const { apiUrl: API_URL, anonKey: ANON_KEY } = resolveSupabaseTestConfig();
 
 const USER_A = {
   email: process.env.LINKIT_TEST_USER_A_EMAIL ?? 'user-a@linkit.test',
