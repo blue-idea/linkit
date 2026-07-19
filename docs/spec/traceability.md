@@ -76,6 +76,7 @@
 | TASK-048 | 书签项直接访问入口 | REQ-008-AC-005 | done | `ui/src/features/views/BookmarkItemActions.tsx`、`ui/src/features/views/CardView.tsx`、`ui/src/features/views/ListView.tsx`、`ui/src/features/views/MasonryView.tsx`、`ui/src/features/views/CompactRow.tsx`、`ui/src/features/views/TimelineView.tsx`、`ui/src/features/views/TagAggregationView.tsx`、`ui/src/features/views/ThemeSpaceView.tsx`、`ui/src/components/ContentArea.tsx`、`ui/src/App.tsx` | `ui/src/features/views/BookmarkItemActions.test.tsx`、`ui/src/features/bookmarks/visit.test.ts`、`ui/tests/e2e/bookmark-actions.spec.ts` | `docs/spec/ac/TASK-048-AC.md` | `docs/spec/evidence/TASK-048-evidence.md`、`TASK-048-direct-access*.png` |
 | TASK-049 | Spotlight 回车直接访问 | REQ-017-AC-005；REQ-008-AC-002 | done | `ui/src/components/Spotlight.tsx`、`ui/src/App.tsx` | `ui/src/components/Spotlight.test.tsx`、`ui/tests/e2e/spotlight.spec.ts` | `docs/spec/ac/TASK-049-AC.md` | `docs/spec/evidence/TASK-049-evidence.md`、`TASK-049-spotlight-direct-open.png` |
 | TASK-050 | Collection Emoji 候选菜单 | REQ-012-AC-005；REQ-012-AC-001 | done | `ui/src/config/collection-icons.ts`、`ui/src/features/collections/CollectionFormDialog.tsx` | `ui/src/features/collections/CollectionFormDialog.test.tsx`、`ui/tests/e2e/collection-crud.spec.ts` | `docs/spec/ac/TASK-050-AC.md` | `docs/spec/evidence/TASK-050-evidence.md`、`TASK-050-collection-emoji-menu.png` |
+| TASK-051 | 新建书签 URL 唯一性 warning | REQ-006-AC-005；REQ-006-AC-004 | done | `ui/src/domain/commands/bookmarks.ts`、`ui/src/config/domain.ts`、`ui/src/components/Dialogs.tsx`、`ui/src/App.tsx` | `ui/src/domain/commands/bookmarks.test.ts`、`ui/tests/e2e/bookmark-crud.spec.ts` | `docs/spec/ac/TASK-051-AC.md` | `docs/spec/evidence/TASK-051-evidence.md`、`TASK-051-duplicate-url-warning.png` |
 
 ---
 
@@ -84,7 +85,7 @@
 | REQ 范围 | 主要 TASK |
 |----------|-----------|
 | REQ-001~005 | TASK-006、008、010、024、026~030、040、042、044 |
-| REQ-006~009 | TASK-009、011~013、025、033、037、044、048 |
+| REQ-006~009 | TASK-009、011~013、025、033、037、044、048、051 |
 | REQ-010~014 | TASK-014~018、025、035、044 |
 | REQ-015~018 | TASK-019~021、025、034、037、041、044 |
 | REQ-019~022 | TASK-007、031~040、044 |
@@ -122,6 +123,7 @@
 | 2026-07-19 | 新增 TASK-048 书签项直接访问追溯 | 六种视图共享 `Open bookmark directly`，并与右侧详情 `Visit` 区分 |
 | 2026-07-19 | 新增 TASK-049 Spotlight 回车直接访问追溯 | 搜索结果 Enter 确认复用访问编排直接打开网站，点击结果仍定位详情 |
 | 2026-07-19 | 新增 TASK-050 Collection Emoji 候选菜单追溯 | 侧栏新建/编辑主题时可通过候选菜单选择主题图标 |
+| 2026-07-19 | 新增 TASK-051 新建书签 URL 唯一性追溯 | 创建书签时重复 URL 显示 warning 并阻止进入分析、确认或保存下一步 |
 | 2026-07-19 | 新增 TASK-046 与六主题皮肤追溯 | 用户确认参考 `ck/project` 优化主题样式，并新增 Daylight 与 Paper |
 | 2026-07-19 | TASK-046 更新为 done，补充六主题实现、测试、AC 与视觉证据 | 六主题持久化、12 组 Baseline/Actual/Diff 和回归测试完成 |
 | 2026-07-19 | 新增 TASK-047 与 REQ-029 追溯行 | 用户确认可配置本地存储目录并在变更时自动迁移应用数据 |

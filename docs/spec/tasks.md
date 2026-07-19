@@ -1142,6 +1142,32 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-051 · 新建书签 URL 唯一性 warning**
+
+  > 依赖：TASK-011、TASK-033 · 预计：— 小时 · 状态：done · 2026-07-19
+
+  - [x] 在书签领域命令中按规范化 URL 检查重复，重复时返回 `BOOKMARK_URL_DUPLICATE`。
+  - [x] 在 New Bookmark 输入阶段检测当前资料库已存在的 URL，显示英文 warning 并阻止进入 Analyze/review。
+  - [x] 在 App 保存入口保留重复 URL 兜底，防止绕过输入阶段后创建重复书签。
+  - [x] 覆盖 Unit、E2E 与截图证据。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/domain/commands/bookmarks.test.ts
+  pnpm --dir ui exec playwright test tests/e2e/bookmark-crud.spec.ts --workers=1
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui build
+  ```
+
+  **验收证据：** 书签领域命令测试、书签 CRUD E2E、`TASK-051-duplicate-url-warning.png`。
+
+  _需求: REQ-006
+  验收标准：REQ-006-AC-005、REQ-006-AC-004
+  _测试类型: Unit + E2E
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1196,6 +1222,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-048 | 书签项直接访问入口 | Unit/E2E | done | REQ-008 |
 | TASK-049 | Spotlight 搜索结果回车直接访问 | Unit/E2E | done | REQ-017、008 |
 | TASK-050 | Collection Emoji 候选图标菜单 | Unit/E2E | done | REQ-012 |
+| TASK-051 | 新建书签 URL 唯一性 warning | Unit/E2E | done | REQ-006 |
 
 ---
 
@@ -1214,3 +1241,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 1.7.0 | 2026-07-19 | 已定稿 | 新增 TASK-048，六种书签视图提供区别于右侧详情 Visit 的直接访问入口 |
 | 1.8.0 | 2026-07-19 | 已定稿 | 新增 TASK-049，Spotlight 搜索结果 Enter 确认直接访问高亮书签网站 |
 | 1.9.0 | 2026-07-19 | 已定稿 | 新增 TASK-050，侧栏新建/编辑 Collection 时通过候选 Emoji 菜单选择主题图标 |
+| 2.0.0 | 2026-07-19 | 已定稿 | 新增 TASK-051，新建书签 URL 规范化后唯一，重复时 warning 并阻止下一步 |

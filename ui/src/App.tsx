@@ -87,7 +87,7 @@ import {
   runRemoveTagFromBookmark,
 } from './features/tags';
 import { createPreferredStorageAdapters } from './services/storage';
-import { normalizeBookmarkUrl } from './domain/commands';
+import { isBookmarkUrlDuplicate, normalizeBookmarkUrl } from './domain/commands';
 import {
   toUiLibraryFromEnvelope,
 } from './features/import-export';
@@ -543,6 +543,11 @@ export default function App() {
       flashToast('Invalid bookmark URL');
       return;
     }
+    // REQ-006-AC-005：保存入口保留兜底去重，防止绕过 New Bookmark 输入校验。
+    if (isBookmarkUrlDuplicate(bookmarks, normalized.url)) {
+      flashToast('Bookmark URL already exists');
+      return;
+    }
     const id = 'b-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6);
     const full: Bookmark = {
       ...b,
@@ -566,7 +571,7 @@ export default function App() {
     }
     setState((s) => ({ ...s, selectedBookmarkId: id }));
     flashToast('Bookmark saved');
-  }, [flashToast]);
+  }, [bookmarks, flashToast]);
 
   const requestDeleteBookmark = useCallback((id: string) => {
     // REQ-007-AC-003：删除前弹出确认。
@@ -1354,6 +1359,7 @@ export default function App() {
         open={newOpen}
         initialUrl={newUrl}
         activeCategoryId={state.selection.kind === 'category' ? state.selection.id : null}
+        bookmarks={bookmarks}
         categories={cats}
         tags={tagList}
         collections={cols}

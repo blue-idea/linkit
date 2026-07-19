@@ -49,6 +49,18 @@ export function normalizeBookmarkUrl(raw: string): { ok: true; url: string; doma
   }
 }
 
+function bookmarkUrlKey(url: string): string {
+  return url.replace(/\/+$/, '');
+}
+
+export function isBookmarkUrlDuplicate(
+  bookmarks: ReadonlyArray<{ url: string }>,
+  normalizedUrl: string
+): boolean {
+  const candidate = bookmarkUrlKey(normalizedUrl);
+  return bookmarks.some((bookmark) => bookmarkUrlKey(bookmark.url) === candidate);
+}
+
 function defaultIdFactory(): string {
   return `bookmark-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -120,6 +132,10 @@ export function createBookmark(
   const normalized = normalizeBookmarkUrl(input.url);
   if (!normalized.ok) {
     return { ok: false, error: { ...DOMAIN_CONFIG.errors.bookmarkUrlInvalid } };
+  }
+  // REQ-006-AC-005：创建前按规范化 URL 去重，避免同一网页重复入库。
+  if (isBookmarkUrlDuplicate(library.bookmarks, normalized.url)) {
+    return { ok: false, error: { ...DOMAIN_CONFIG.errors.bookmarkUrlDuplicate } };
   }
 
   const id = (input.idFactory ?? defaultIdFactory)();

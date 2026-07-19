@@ -83,6 +83,28 @@ describe('书签领域命令', () => {
     });
   });
 
+  // REQ-006-AC-005：创建书签时 URL 必须唯一，规范化后重复应阻止创建。
+  test('createBookmark 在 URL 已存在时返回 BOOKMARK_URL_DUPLICATE 且不修改资料库', async () => {
+    const { createBookmark } = await loadCommands();
+    expect(createBookmark).toBeTypeOf('function');
+    if (!createBookmark) throw new Error('createBookmark is required');
+
+    const library = createCoreJourneySeed().library.data;
+    const before = library.bookmarks.length;
+    const result = createBookmark(library, {
+      url: 'example.test/reference/',
+      title: 'Duplicate URL',
+      idFactory: () => 'bookmark-duplicate',
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      error: { code: 'BOOKMARK_URL_DUPLICATE', message: 'Bookmark URL already exists' },
+    });
+    expect(library.bookmarks).toHaveLength(before);
+    expect(library.bookmarks.some((bookmark) => bookmark.id === 'bookmark-duplicate')).toBe(false);
+  });
+
   test('createBookmark 同步主题成员引用', async () => {
     const { createBookmark } = await loadCommands();
     expect(createBookmark).toBeTypeOf('function');

@@ -8,6 +8,7 @@ import {
   wailsAnalyzeClient,
   type AIContext,
 } from '../features/ai';
+import { isBookmarkUrlDuplicate, normalizeBookmarkUrl } from '../domain/commands';
 import { Icon, Favicon, AIBadge, Button, Kbd, AnimateIn } from './ui';
 import { tagColors } from '../colors';
 
@@ -69,6 +70,7 @@ export function NewBookmarkDialog({
   open,
   initialUrl,
   activeCategoryId = null,
+  bookmarks,
   categories,
   tags,
   collections,
@@ -80,6 +82,7 @@ export function NewBookmarkDialog({
   initialUrl: string;
   /** 主界面当前分类视图 ID；有值时锁定归属并禁止 AI/手动改类。 */
   activeCategoryId?: string | null;
+  bookmarks: Pick<Bookmark, 'url'>[];
   categories: Category[];
   tags: Tag[];
   collections: Collection[];
@@ -99,6 +102,7 @@ export function NewBookmarkDialog({
   const [description, setDescription] = useState('');
   const [aiSummary, setAiSummary] = useState('');
   const [pendingTagLabels, setPendingTagLabels] = useState<string[]>([]);
+  const [urlWarning, setUrlWarning] = useState<string | null>(null);
   const categoryLocked = Boolean(activeCategoryId?.trim());
 
   useEffect(() => {
@@ -116,12 +120,21 @@ export function NewBookmarkDialog({
       setDescription('');
       setAiSummary('');
       setPendingTagLabels([]);
+      setUrlWarning(null);
     }
   }, [open, initialUrl, activeCategoryId]);
 
   const runAnalysis = async () => {
+    const normalized = normalizeBookmarkUrl(url);
+    // REQ-006-AC-005：重复 URL 在输入阶段弹出 warning，并阻止进入分析/确认步骤。
+    if (normalized.ok && isBookmarkUrlDuplicate(bookmarks, normalized.url)) {
+      setUrlWarning('Bookmark URL already exists');
+      setStage('input');
+      return;
+    }
     setStage('analyzing');
     setFallbackMessage(null);
+    setUrlWarning(null);
     // REQ-006-AC-001 / REQ-006-AC-002：进入分析/确认，确认前不调用 onCreate。
     const context: AIContext = aiContext ?? {
       apiBase: 'https://api.example.test/v1',
@@ -209,12 +222,23 @@ export function NewBookmarkDialog({
                 autoFocus
                 aria-label="Bookmark URL"
                 value={url}
-                onChange={(e) => setUrl(e.target.value)}
+                onChange={(e) => {
+                  setUrl(e.target.value);
+                  setUrlWarning(null);
+                }}
                 onKeyDown={(e) => { if (e.key === 'Enter' && url.trim()) void runAnalysis(); }}
                 placeholder="https://…"
                 className="flex-1 bg-transparent text-[13px] text-ink-100 placeholder:text-ink-500 outline-none"
               />
             </div>
+            {urlWarning && (
+              <div
+                role="alert"
+                className="mt-2 rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-200"
+              >
+                {urlWarning}
+              </div>
+            )}
           </div>
           <div>
             <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">
