@@ -24,10 +24,18 @@ jobs:
         include:
           - runner: ubuntu-24.04
             platform: linux/amd64
+            os: linux
             deb_arch: amd64
           - runner: ubuntu-24.04-arm
             platform: linux/arm64
+            os: linux
             deb_arch: arm64
+          - runner: windows-latest
+            platform: windows/amd64
+            os: windows
+          - runner: macos-latest
+            platform: darwin/universal
+            os: macos
 
     runs-on: ${{ matrix.runner }}
     steps:
@@ -35,6 +43,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Linux build dependencies
+        if: matrix.os == 'linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev xdg-utils
@@ -64,29 +73,89 @@ jobs:
         run: pnpm --dir ui build
 
       - name: Install nFPM
+        if: matrix.os == 'linux'
         run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@${{ env.NFPM_VERSION }}
 
-      - name: Build Wails desktop app
+      - name: Build Wails desktop app (Linux)
+        if: matrix.os == 'linux'
         run: go run github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }} build -clean -platform ${{ matrix.platform }} -tags webkit2_41
 
-      - name: Copy architecture-specific binary
+      - name: Install NSIS (Windows)
+        if: matrix.os == 'windows'
+        run: choco install nsis -y
+
+      - name: Build Wails desktop app (Windows)
+        if: matrix.os == 'windows'
+        run: go run github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }} build -clean -platform ${{ matrix.platform }} -nsis
+
+      - name: Install create-dmg (macOS)
+        if: matrix.os == 'macos'
+        run: brew install create-dmg
+
+      - name: Build Wails desktop app (macOS)
+        if: matrix.os == 'macos'
+        run: go run github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }} build -clean -platform ${{ matrix.platform }}
+
+      - name: Build DMG (macOS)
+        if: matrix.os == 'macos'
+        run: |
+          create-dmg \
+            --volname "Linkit" \
+            --window-size 600 400 \
+            --app-drop-link 400 200 \
+            "build/bin/Linkit.dmg" \
+            "build/bin/Linkit.app"
+
+      - name: Copy architecture-specific binary (Linux)
+        if: matrix.os == 'linux'
         run: cp build/bin/linkit build/bin/linkit-${{ matrix.deb_arch }}
 
-      - name: Build Debian package
+      - name: Build Debian package (Linux)
+        if: matrix.os == 'linux'
         env:
           NFPM_ARCH: ${{ matrix.deb_arch }}
           PACKAGE_VERSION: ${{ inputs.tag }}
           PACKAGE_RELEASE: '1'
         run: nfpm pkg --packager deb --target build/bin/linkit_${{ inputs.tag }}_${{ matrix.deb_arch }}.deb
 
-      - name: Verify release artifacts
+      - name: Verify release artifacts (Linux)
+        if: matrix.os == 'linux'
         run: |
           test -x "build/bin/linkit-${{ matrix.deb_arch }}"
           test -f "build/bin/linkit_${{ inputs.tag }}_${{ matrix.deb_arch }}.deb"
 
-      - name: Create GitHub release
+      - name: Verify release artifacts (Windows)
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "build/bin/linkit-amd64-installer.exe")) { throw "Installer not found" }
+
+      - name: Verify release artifacts (macOS)
+        if: matrix.os == 'macos'
+        run: |
+          test -f "build/bin/Linkit.dmg"
+
+      - name: Upload Linux artifacts
+        if: matrix.os == 'linux'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release view "${{ inputs.tag }}" >/dev/null 2>&1 || gh release create "${{ inputs.tag }}" --target "$GITHUB_SHA" --generate-notes || true
           gh release upload "${{ inputs.tag }}" build/bin/linkit-${{ matrix.deb_arch }} build/bin/linkit_${{ inputs.tag }}_${{ matrix.deb_arch }}.deb --clobber
+
+      - name: Upload Windows artifacts
+        if: matrix.os == 'windows'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "${{ inputs.tag }}" >/dev/null 2>&1 || gh release create "${{ inputs.tag }}" --target "$GITHUB_SHA" --generate-notes || true
+          gh release upload "${{ inputs.tag }}" build/bin/linkit-amd64-installer.exe --clobber
+
+      - name: Upload macOS artifacts
+        if: matrix.os == 'macos'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "${{ inputs.tag }}" >/dev/null 2>&1 || gh release create "${{ inputs.tag }}" --target "$GITHUB_SHA" --generate-notes || true
+          gh release upload "${{ inputs.tag }}" build/bin/Linkit.dmg --clobber
