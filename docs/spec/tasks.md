@@ -1116,6 +1116,32 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-050 · Collection Emoji 候选图标菜单**
+
+  > 依赖：TASK-016 · 预计：1–2 小时 · 状态：done · 2026-07-19
+
+  - [x] 在 `CollectionFormDialog` 中封装候选 Emoji 菜单，支持创建和编辑主题时选择图标。
+  - [x] 保留现有 Collection name、color、description 保存语义；编辑时保存前不改变现有主题。
+  - [x] 左侧栏创建/编辑路径均使用菜单选择结果并在保存后显示所选 Emoji。
+  - [x] 覆盖 Unit、E2E 与截图证据。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/features/collections/CollectionFormDialog.test.tsx
+  pnpm --dir ui exec playwright test tests/e2e/collection-crud.spec.ts --workers=1
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui build
+  ```
+
+  **验收证据：** Collection 表单组件测试、左侧栏创建/编辑 E2E、`TASK-050-collection-emoji-menu.png`。
+
+  _需求: REQ-012
+  验收标准：REQ-012-AC-005、REQ-012-AC-001
+  _测试类型: Unit + E2E
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1169,6 +1195,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-047 | 本地存储目录与数据迁移 | Unit/E2E | done | REQ-023、025、027、029 |
 | TASK-048 | 书签项直接访问入口 | Unit/E2E | done | REQ-008 |
 | TASK-049 | Spotlight 搜索结果回车直接访问 | Unit/E2E | done | REQ-017、008 |
+| TASK-050 | Collection Emoji 候选图标菜单 | Unit/E2E | done | REQ-012 |
 
 ---
 
@@ -1186,3 +1213,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 1.6.0 | 2026-07-19 | 已定稿 | 新增 TASK-047，覆盖 REQ-029 本地存储目录选择与数据迁移 |
 | 1.7.0 | 2026-07-19 | 已定稿 | 新增 TASK-048，六种书签视图提供区别于右侧详情 Visit 的直接访问入口 |
 | 1.8.0 | 2026-07-19 | 已定稿 | 新增 TASK-049，Spotlight 搜索结果 Enter 确认直接访问高亮书签网站 |
+| 1.9.0 | 2026-07-19 | 已定稿 | 新增 TASK-050，侧栏新建/编辑 Collection 时通过候选 Emoji 菜单选择主题图标 |

@@ -27,7 +27,8 @@ test.describe('主题 CRUD', () => {
     await page.getByRole('button', { name: 'New collection' }).click();
     await expect(page.getByRole('dialog', { name: 'New collection' })).toBeVisible();
     await page.getByLabel('Collection name').fill('TASK016 Theme CRUD');
-    await page.getByLabel('Collection emoji').fill('🎯');
+    await page.getByRole('button', { name: 'Choose collection icon' }).click();
+    await page.getByRole('menuitemradio', { name: 'Target' }).click();
     await page.getByRole('button', { name: 'Color coral' }).click();
     await page.getByLabel('Collection description').fill('Created by TASK-016 E2E');
     await page.getByRole('button', { name: 'Create collection', exact: true }).click();
@@ -40,6 +41,36 @@ test.describe('主题 CRUD', () => {
       path: resolve(evidenceDirectory, 'TASK-016-collection-create.png'),
       fullPage: true,
     });
+  });
+
+  // REQ-012-AC-005
+  test('主题新建和编辑 shall 通过候选菜单选择 Emoji 图标', async ({ page }) => {
+    await mkdir(evidenceDirectory, { recursive: true });
+
+    await page.getByRole('button', { name: 'New collection' }).click();
+    const createDialog = page.getByRole('dialog', { name: 'New collection' });
+    await expect(createDialog).toBeVisible();
+    await page.getByLabel('Collection name').fill('TASK050 Icon Menu');
+    await createDialog.getByRole('button', { name: 'Choose collection icon' }).click();
+    await expect(createDialog.getByRole('menu', { name: 'Collection icon options' })).toBeVisible();
+    await createDialog.screenshot({
+      path: resolve(evidenceDirectory, 'TASK-050-collection-emoji-menu.png'),
+    });
+    await createDialog.getByRole('menuitemradio', { name: 'Rocket' }).click();
+    await page.getByRole('button', { name: 'Create collection', exact: true }).click();
+    await expect(page.getByText('TASK050 Icon Menu', { exact: true }).first()).toBeVisible();
+    await expect(page.locator('div').filter({ hasText: '🚀' }).filter({ hasText: 'TASK050 Icon Menu' }).first()).toBeVisible();
+
+    const row = page.getByText('TASK050 Icon Menu', { exact: true }).first();
+    await row.hover();
+    await page.getByRole('button', { name: 'Edit collection' }).last().click();
+    const editDialog = page.getByRole('dialog', { name: 'Edit collection' });
+    await expect(editDialog).toBeVisible();
+    await editDialog.getByRole('button', { name: 'Choose collection icon' }).click();
+    await editDialog.getByRole('menuitemradio', { name: 'Sparkles' }).click();
+    await expect(page.locator('div').filter({ hasText: '🚀' }).filter({ hasText: 'TASK050 Icon Menu' }).first()).toBeVisible();
+    await page.getByRole('button', { name: 'Save collection', exact: true }).click();
+    await expect(page.locator('div').filter({ hasText: '✨' }).filter({ hasText: 'TASK050 Icon Menu' }).first()).toBeVisible();
   });
 
   // REQ-012-AC-004

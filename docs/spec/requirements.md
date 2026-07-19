@@ -780,6 +780,17 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
   expected:
     ui_state: "Collection view shows the exact current member set and count"
     side_effects: []
+
+- id: REQ-012-AC-005
+  ears: >
+    When 用户在侧栏新建或编辑主题并设置 Emoji,
+    the Linkit shall 提供候选图标菜单，允许用户选择不同 Emoji 作为主题图标.
+  test_type: Unit + E2E
+  expected:
+    ui_state: "The collection form shows a candidate icon menu and the sidebar renders the chosen icon after save"
+    side_effects:
+      - "The selected emoji is submitted with the collection form"
+      - "Existing collection fields are not changed before Save"
 ```
 
 ---
@@ -1848,3 +1859,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 1.7.0 | 2026-07-19 | 已定稿 | 新增 REQ-029：可配置本地存储目录，位置变更时自动迁移应用数据（不含密钥） |
 | 1.8.0 | 2026-07-19 | 已定稿 | 新增 REQ-008-AC-005：六种书签视图提供区别于右侧详情 Visit 的直接访问入口 |
 | 1.9.0 | 2026-07-19 | 已定稿 | 新增 REQ-017-AC-005：Spotlight 搜索结果 Enter 确认直接访问高亮书签网站 |
+| 2.0.0 | 2026-07-19 | 已定稿 | 新增 REQ-012-AC-005：侧栏新建/编辑主题时通过候选 Emoji 菜单选择主题图标 |
