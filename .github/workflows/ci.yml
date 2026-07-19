@@ -66,6 +66,9 @@ jobs:
       - name: Go tests
         run: go test ./...
 
+      - name: Go tests (dev identity)
+        run: go test -tags=dev ./config
+
       - name: Frontend build
         run: pnpm --dir ui build
 

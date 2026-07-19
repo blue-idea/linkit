@@ -52,8 +52,6 @@ const (
 	ErrorMessageDataRootInvalid        = "Target data directory is invalid"
 	ErrorMessageDataRootEmpty          = "No library or settings data available to migrate"
 
-	// SecretServiceName 与 OS Keychain / Credential Manager 服务名对齐。
-	SecretServiceName = "Linkit"
 	// AIAPIKeySecretKey 是 AI Key 的逻辑键；前端仅可见 configured 状态。
 	AIAPIKeySecretKey = "linkit.ai.api-key"
 )

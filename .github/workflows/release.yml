@@ -69,6 +69,20 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm --dir ui install --frozen-lockfile
 
+      - name: Assert release identity (no dev tag)
+        shell: bash
+        run: |
+          go test ./config -run 'TestReleaseIdentitySlot|TestIdentityIsolationInvariants' -count=1
+          out="$(go run ./scripts/check-identity)"
+          printf '%s\n' "$out"
+          printf '%s\n' "$out" | grep -qx 'profile=release'
+          printf '%s\n' "$out" | grep -qx 'secretService=Linkit'
+          printf '%s\n' "$out" | grep -qx 'title=Linkit'
+          if printf '%s\n' "$out" | grep -q 'Linkit-Dev'; then
+            echo "Release identity must not use Linkit-Dev" >&2
+            exit 1
+          fi
+
       - name: Build frontend
         run: pnpm --dir ui build
 
@@ -123,17 +137,31 @@ jobs:
         run: |
           test -x "build/bin/linkit-${{ matrix.deb_arch }}"
           test -f "build/bin/linkit_${{ inputs.tag }}_${{ matrix.deb_arch }}.deb"
+          if grep -aF "Linkit-Dev" "build/bin/linkit-${{ matrix.deb_arch }}"; then
+            echo "Release binary must not embed Linkit-Dev" >&2
+            exit 1
+          fi
 
       - name: Verify release artifacts (Windows)
         if: matrix.os == 'windows'
         shell: pwsh
         run: |
           if (-not (Test-Path "build/bin/linkit-amd64-installer.exe")) { throw "Installer not found" }
+          $exe = "build/bin/linkit.exe"
+          if (-not (Test-Path $exe)) { throw "linkit.exe not found" }
+          $ascii = [System.Text.Encoding]::ASCII.GetString([System.IO.File]::ReadAllBytes($exe))
+          if ($ascii.Contains("Linkit-Dev")) { throw "Release binary must not embed Linkit-Dev" }
 
       - name: Verify release artifacts (macOS)
         if: matrix.os == 'macos'
         run: |
           test -f "build/bin/Linkit.dmg"
+          binary="$(find build/bin/Linkit.app/Contents/MacOS -type f -perm -111 | head -n 1)"
+          test -n "$binary"
+          if grep -aF "Linkit-Dev" "$binary"; then
+            echo "Release binary must not embed Linkit-Dev" >&2
+            exit 1
+          fi
 
       - name: Upload Linux artifacts
         if: matrix.os == 'linux'
