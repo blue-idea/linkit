@@ -9,3 +9,12 @@
 
 - [X] 2.1 新建、编辑collection时Emoji需要弹出候选图标选项。
 - [X] 2.2 搜索结果，回车确认后，直接访问网站（open directyly)。
+
+## 3. 项目打包
+
+用 GitHub Actions（已配置好）
+你的项目已经有 desktop-build.yml，它会：
+在 windows-latest runner 上构建 Windows 版
+在 macos-latest runner 上构建 macOS 版
+只需推送代码，GitHub 免费提供3个平台的 runner。需要打包成安装包（.exe installer / .dmg）和linux 安装包，可以参考 打包.md 中的 CI 集成方案追加到 workflow 里。
+将安装包提交到github 的releases中。
