@@ -50,12 +50,14 @@ test.describe('书签 CRUD', () => {
     const title = await page.getByLabel('Edit bookmark title').first().textContent();
     expect(title).toBeTruthy();
 
-    await page.getByRole('button', { name: 'Delete bookmark' }).click();
+    // 详情面板删除走单条确认；列表上有多枚同名 Delete，不可全局定位。
+    const detail = page.getByRole('complementary', { name: 'Detail Panel' });
+    await detail.getByRole('button', { name: 'Delete bookmark' }).click();
     await expect(page.getByRole('dialog', { name: 'Delete this bookmark?' })).toBeVisible();
     await page.getByRole('button', { name: 'Cancel' }).click();
     await expect(page.getByText(title!, { exact: true }).first()).toBeVisible();
 
-    await page.getByRole('button', { name: 'Delete bookmark' }).click();
+    await detail.getByRole('button', { name: 'Delete bookmark' }).click();
     await page.getByRole('dialog', { name: 'Delete this bookmark?' }).getByRole('button', { name: 'Delete' }).click();
     await expect(page.getByText(title!, { exact: true })).toHaveCount(0);
   });

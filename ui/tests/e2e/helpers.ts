@@ -9,6 +9,26 @@ export async function enterLocalMode(page: Page) {
   await expect(page.getByText('Lattice', { exact: true })).toBeVisible();
 }
 
+/**
+ * 打开 Spotlight。勿点击 body 中心：TASK-045 后卡片上常驻 Edit/Move/Delete，
+ * 中心点击会误开编辑层（z-70）挡住 Spotlight（z-50）。
+ */
+export async function openSpotlight(page: Page) {
+  await page.getByLabel('Top bar').click();
+  await page.evaluate(() => {
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'k',
+        code: 'KeyK',
+        ctrlKey: true,
+        bubbles: true,
+        cancelable: true,
+      })
+    );
+  });
+  await expect(page.getByRole('dialog', { name: 'Spotlight' })).toBeVisible();
+}
+
 export async function expectLoginGate(page: Page) {
   await expect(page.getByRole('button', { name: 'Continue in local mode' })).toBeVisible();
 }

@@ -34,21 +34,7 @@ export async function resetApp(page: Page) {
   await expectLoginGate(page);
 }
 
-export async function openSpotlight(page: Page) {
-  await page.locator('body').click();
-  await page.evaluate(() => {
-    window.dispatchEvent(
-      new KeyboardEvent('keydown', {
-        key: 'k',
-        code: 'KeyK',
-        ctrlKey: true,
-        bubbles: true,
-        cancelable: true,
-      })
-    );
-  });
-  await expect(page.getByRole('dialog', { name: 'Spotlight' })).toBeVisible();
-}
+export { openSpotlight } from '../helpers';
 
 export async function openNewBookmark(page: Page, actions?: PrimaryActionCounter) {
   const button = page.getByRole('button', { name: 'New', exact: true });
