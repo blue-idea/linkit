@@ -365,6 +365,14 @@ export function ContentArea({
   const showAI = selection.kind === 'collection' && !aiDismissed;
   const composeSet = useMemo(() => new Set(composeSelectedIds), [composeSelectedIds]);
   const selectionAnchorRef = useRef<string | null>(null);
+  const bookmarkItemActions = {
+    selectionMode,
+    isBulkSelected: (id: string) => composeSet.has(id),
+    onToggleSelect: onToggleBookmarkSelection,
+    onEdit: onEditBookmark,
+    onMove: (id: string) => onMoveBookmarks([id]),
+    onDelete: (id: string) => onDeleteBookmarks([id]),
+  };
 
   const startDrag = (e: React.DragEvent, bookmarkId: string) => {
     // REQ-013-AC-001：若拖拽项属于多选集合，载荷携带全部所选 ID。
@@ -482,6 +490,7 @@ export function ContentArea({
         />
       ) : density === 'list' ? (
         <ListView
+          {...bookmarkItemActions}
           items={presented}
           isSelected={(id) => selectedId === id || composeSet.has(id)}
           onSelect={(id, e) => handleCardClick(e, id)}
@@ -490,6 +499,7 @@ export function ContentArea({
         />
       ) : density === 'masonry' ? (
         <MasonryView
+          {...bookmarkItemActions}
           items={presented}
           isSelected={(id) => selectedId === id || composeSet.has(id)}
           onSelect={(id, e) => handleCardClick(e, id)}
@@ -497,6 +507,7 @@ export function ContentArea({
         />
       ) : density === 'timeline' ? (
         <TimelineView
+          {...bookmarkItemActions}
           items={presented}
           bookmarks={bookmarks}
           isSelected={(id) => selectedId === id || composeSet.has(id)}
@@ -505,6 +516,7 @@ export function ContentArea({
         />
       ) : density === 'tag-aggregation' ? (
         <TagAggregationView
+          {...bookmarkItemActions}
           items={presented}
           bookmarks={bookmarks}
           tags={tags}
@@ -514,6 +526,7 @@ export function ContentArea({
         />
       ) : (
         <ThemeSpaceView
+          {...bookmarkItemActions}
           items={presentedAll}
           collections={collections}
           isSelected={(id) => selectedId === id || composeSet.has(id)}

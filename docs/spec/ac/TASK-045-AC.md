@@ -9,7 +9,7 @@
 
 | TASK ID | AC ID | QA 类型 | 实际结果摘要 | 状态 | 证据 | 错误详情 |
 |---------|-------|:-------:|------------|:----:|------|---------|
-| TASK-045 | REQ-007-AC-005~007 | Unit + E2E | 卡片和详情面板提供 Edit、Move、Delete；统一编辑包含 URL、Title、Description、Notes、Category、Tags、Collections、Read status 并成功保存 | PASS | `batch-actions.test.ts`；`bookmark-actions.spec.ts` | — |
+| TASK-045 | REQ-007-AC-005~007 | Unit + E2E | 六种视图的书签项底部及详情面板提供 Edit、Move、Delete；统一编辑包含全部字段并成功保存 | PASS | `batch-actions.test.ts`；`bookmark-actions.spec.ts` | — |
 | TASK-045 | REQ-007-AC-008 | Unit + E2E | checkbox、Ctrl/Cmd、Shift 范围选择与 Clear selection 均通过 | PASS | 4 条 Vitest；Playwright 批量旅程 | — |
 | TASK-045 | REQ-007-AC-009 | Unit + E2E | 批量删除显示选中数量、二次确认并清理主题引用 | PASS | `TASK-045-bookmark-actions.png`；视觉 Baseline | — |
 | TASK-045 | REQ-007-AC-010 | E2E | 默认隐藏复选框；Select 后显示，Done 后隐藏并清空选择 | PASS | `bookmark-actions.spec.ts` | — |

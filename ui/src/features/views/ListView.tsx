@@ -3,10 +3,11 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import type { BookmarkPresentation } from './presenter';
 import { Icon, TagPill, Favicon } from '../../components/ui';
 import { INITIAL_VIRTUAL_VIEW_RECT } from '../../config/virtualization';
+import { BookmarkItemActions, type BookmarkItemActionHandlers } from './BookmarkItemActions';
 
-const ROW_ESTIMATE = 56;
+const ROW_ESTIMATE = 84;
 
-type ListViewProps = {
+type ListViewProps = BookmarkItemActionHandlers & {
   items: BookmarkPresentation[];
   isSelected: (id: string) => boolean;
   onSelect: (id: string, e: React.MouseEvent) => void;
@@ -24,6 +25,12 @@ export function ListView({
   onSelect,
   onToggleStar,
   onDragStart,
+  selectionMode,
+  isBulkSelected,
+  onToggleSelect,
+  onEdit,
+  onMove,
+  onDelete,
 }: ListViewProps) {
   const parentRef = useRef<HTMLDivElement>(null);
   const virtualizer = useVirtualizer({
@@ -61,6 +68,12 @@ export function ListView({
                 onClick={(e) => onSelect(item.id, e)}
                 onDragStart={(e) => onDragStart(e, item.id)}
                 onToggleStar={() => onToggleStar(item.id)}
+                selectionMode={selectionMode}
+                bulkSelected={isBulkSelected(item.id)}
+                onToggleSelect={(selected) => onToggleSelect(item.id, selected)}
+                onEdit={() => onEdit(item.id)}
+                onMove={() => onMove(item.id)}
+                onDelete={() => onDelete(item.id)}
               />
             </div>
           );
@@ -76,12 +89,24 @@ function ListItem({
   onClick,
   onDragStart,
   onToggleStar,
+  selectionMode,
+  bulkSelected,
+  onToggleSelect,
+  onEdit,
+  onMove,
+  onDelete,
 }: {
   item: BookmarkPresentation;
   selected: boolean;
   onClick: (e: React.MouseEvent) => void;
   onDragStart: (e: React.DragEvent) => void;
   onToggleStar: () => void;
+  selectionMode: boolean;
+  bulkSelected: boolean;
+  onToggleSelect: (selected: boolean) => void;
+  onEdit: () => void;
+  onMove: () => void;
+  onDelete: () => void;
 }) {
   return (
     <div
@@ -90,12 +115,13 @@ function ListItem({
       data-view-item="list"
       onDragStart={onDragStart}
       onClick={onClick}
-      className={`group grid grid-cols-[28px_1fr_auto_auto] items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors ${
+      className={`group px-4 py-2.5 cursor-pointer transition-colors ${
         selected ? 'bg-accent-500/15' : 'hover:bg-ink-700/40'
       }`}
     >
-      <Favicon glyph={item.favicon} color={item.faviconColor} size={28} />
-      <div className="min-w-0">
+      <div className="grid grid-cols-[28px_1fr_auto_auto] items-center gap-3">
+        <Favicon glyph={item.favicon} color={item.faviconColor} size={28} />
+        <div className="min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-[13px] font-medium text-ink-100 truncate">{item.title}</span>
           {item.pinned && <Icon name="Pin" size={11} className="text-amber-400 shrink-0" />}
@@ -109,17 +135,17 @@ function ListItem({
             <span className="text-ink-500">· {item.summary.slice(0, 48)}…</span>
           )}
         </div>
-      </div>
-      <div className="hidden sm:flex items-center gap-1">
+        </div>
+        <div className="hidden sm:flex items-center gap-1">
         {item.tags.slice(0, 2).map((tag) => (
           <TagPill key={tag.id} label={tag.label} color={tag.color} size="xs" />
         ))}
-      </div>
-      <div className="hidden md:flex items-center gap-1 text-[11px] text-ink-400">
+        </div>
+        <div className="hidden md:flex items-center gap-1 text-[11px] text-ink-400">
         <Icon name="Eye" size={11} />
         <span className="tabular-nums">{item.visitCount}</span>
-      </div>
-      <button
+        </div>
+        <button
         type="button"
         aria-label={item.starred ? `Unstar ${item.title}` : `Star ${item.title}`}
         onClick={(e) => {
@@ -131,7 +157,9 @@ function ListItem({
         }`}
       >
         <Icon name="Star" size={13} fill={item.starred ? 'currentColor' : 'none'} />
-      </button>
+        </button>
+      </div>
+      <BookmarkItemActions title={item.title} selected={bulkSelected} selectionMode={selectionMode} onToggleSelect={onToggleSelect} onEdit={onEdit} onMove={onMove} onDelete={onDelete} />
     </div>
   );
 }

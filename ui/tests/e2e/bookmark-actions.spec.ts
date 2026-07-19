@@ -68,4 +68,28 @@ test.describe('书签操作与批量操作', () => {
     await main.getByRole('button', { name: 'Done selecting' }).click();
     await expect(main.getByRole('checkbox', { name: /Select bookmark/ })).toHaveCount(0);
   });
+
+  test('所有视图在书签项底部显示操作区并按选择模式显示复选框', async ({ page }) => {
+    const main = page.getByRole('main', { name: 'Content Area' });
+    const views = [
+      ['Card view', 'Card view'],
+      ['List view', 'List view'],
+      ['Masonry view', 'Masonry view'],
+      ['Timeline view', 'Timeline view'],
+      ['Tag Aggregation view', 'Tag Aggregation view'],
+      ['Theme Space view', 'Theme Space view'],
+    ] as const;
+
+    for (const [buttonName, regionName] of views) {
+      await main.getByRole('button', { name: buttonName }).click();
+      const view = main.getByLabel(regionName);
+      await expect(view.getByRole('button', { name: 'Edit bookmark' }).first()).toBeVisible();
+      await expect(view.getByRole('button', { name: 'Move bookmark' }).first()).toBeVisible();
+      await expect(view.getByRole('button', { name: 'Delete bookmark' }).first()).toBeVisible();
+      await expect(view.getByRole('checkbox', { name: /Select bookmark/ })).toHaveCount(0);
+      await main.getByRole('button', { name: 'Select bookmarks' }).click();
+      await expect(view.getByRole('checkbox', { name: /Select bookmark/ }).first()).toBeVisible();
+      await main.getByRole('button', { name: 'Done selecting' }).click();
+    }
+  });
 });
