@@ -15,26 +15,10 @@
  *   node ./scripts/cloud-remote-test.mjs
  */
 import { createClient } from '@supabase/supabase-js';
-import { readFileSync, existsSync } from 'fs';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { loadTestEnv } from './test-env.mjs';
 
 // ─── 加载环境变量（.env.test） ────────────────────────────────────────────
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const envPath = resolve(__dirname, '../.env.test');
-
-if (existsSync(envPath)) {
-  const lines = readFileSync(envPath, 'utf8').split('\n');
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
-    const eq = trimmed.indexOf('=');
-    if (eq === -1) continue;
-    const key = trimmed.slice(0, eq).trim();
-    const value = trimmed.slice(eq + 1).trim();
-    if (!process.env[key]) process.env[key] = value;
-  }
-}
+loadTestEnv();
 
 // ─── 门禁检查 ──────────────────────────────────────────────────────────────
 const API_URL = process.env.LINKIT_TEST_SUPABASE_URL;

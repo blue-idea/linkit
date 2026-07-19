@@ -874,13 +874,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ## 波次 5 · 安全、性能与交付验收
 
-- [ ] **TASK-040 · 执行安全与隐私专项测试**
+- [x] **TASK-040 · 执行安全与隐私专项测试**
 
-  > 依赖：TASK-026、TASK-031、TASK-032、TASK-039 · 预计：3–4 小时
+  > 依赖：TASK-026、TASK-031、TASK-032、TASK-039 · 预计：3–4 小时 · 状态：done · 2026-07-19
 
-  - [ ] 执行 secret scan、依赖漏洞、RLS、URL、导入和日志脱敏测试。
-  - [ ] 验证 AI Key 不进入 LibraryData、云、导出、截图或日志。
-  - [ ] 验证所有破坏性操作和未认证写入均无静默副作用。
+  - [x] 执行 secret scan、依赖漏洞、RLS、URL、导入和日志脱敏测试。
+  - [x] 验证 AI Key 不进入 LibraryData、云、导出、截图或日志。
+  - [x] 验证所有破坏性操作和未认证写入均无静默副作用。
 
   **验证方式：**
   ```powershell
@@ -1031,7 +1031,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-037 | 真实 AI 验收 | API/E2E | BLOCKED | REQ-006、013、018~021 |
 | TASK-038 | 收藏洞察 | Unit/E2E | done | REQ-022 |
 | TASK-039 | 链接健康 | API/E2E | done | REQ-022 |
-| TASK-040 | 安全与隐私测试 | Security/API | 待开始 | REQ-003~005、019~020、025、027 |
+| TASK-040 | 安全与隐私测试 | Security/API | done | REQ-003~005、019~020、025、027 |
 | TASK-041 | 性能预算 | Performance | 待开始 | REQ-028 |
 | TASK-042 | Windows 桌面验收 | E2E/Manual | 待开始 | REQ-005、008、024、027、028 |
 | TASK-043 | macOS 桌面验收 | E2E/Manual | 待开始 | REQ-024、027、028 |
