@@ -4,6 +4,7 @@ import type { BookmarkPresentation } from './presenter';
 import { Icon, TagPill, Favicon, AIBadge } from '../../components/ui';
 import { formatDate } from '../../utils/format-date';
 import { INITIAL_VIRTUAL_VIEW_RECT } from '../../config/virtualization';
+import { BookmarkItemActions } from './BookmarkItemActions';
 
 const COLUMNS = 3;
 const ROW_ESTIMATE = 168;
@@ -132,18 +133,6 @@ function CardItem({
           : 'bg-ink-800/50 hover:bg-ink-700/60 hover:shadow-card hover:-translate-y-0.5'
       }`}
     >
-      <div className="mb-2 flex items-center justify-between gap-2">
-        {selectionMode ? (
-          <label className="text-[10px] text-ink-400" onClick={(event) => event.stopPropagation()}>
-            <input aria-label={`Select bookmark ${item.title}`} type="checkbox" checked={bulkSelected} onChange={(event) => onToggleSelect(event.target.checked)} /> Select
-          </label>
-        ) : <span />}
-        <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100">
-          <button aria-label="Edit bookmark" onClick={(event) => { event.stopPropagation(); onEdit(); }} className="text-[10px] text-ink-300 hover:text-accent-300">Edit</button>
-          <button aria-label="Move bookmark" onClick={(event) => { event.stopPropagation(); onMove(); }} className="text-[10px] text-ink-300 hover:text-accent-300">Move</button>
-          <button aria-label="Delete bookmark" onClick={(event) => { event.stopPropagation(); onDelete(); }} className="text-[10px] text-coral-400 hover:text-coral-300">Delete</button>
-        </div>
-      </div>
       <div className="flex items-start gap-2.5">
         <Favicon glyph={item.favicon} color={item.faviconColor} size={28} />
         <div className="min-w-0 flex-1">
@@ -194,6 +183,7 @@ function CardItem({
           {formatDate(item.createdAt)}
         </span>
       </div>
+      <BookmarkItemActions title={item.title} selected={bulkSelected} selectionMode={selectionMode} onToggleSelect={onToggleSelect} onEdit={onEdit} onMove={onMove} onDelete={onDelete} />
     </div>
   );
 }

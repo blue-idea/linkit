@@ -439,11 +439,11 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 
 - id: REQ-007-AC-005
   ears: >
-    When 用户查看书签卡片或已打开的详情面板,
-    the Linkit shall 提供可见且带文字标签的 Edit、Move 和 Delete 操作入口.
+    When 用户查看任一书签视图或已打开的详情面板,
+    the Linkit shall 在每个书签项底部提供可见且带文字标签的 Edit、Move 和 Delete 操作入口.
   test_type: E2E
   expected:
-    ui_state: "Edit, Move and Delete actions are visible without hidden gestures or scrolling"
+    ui_state: "Edit, Move and Delete actions are visible at the bottom of bookmark items in every view"
     side_effects: []
 
 - id: REQ-007-AC-006

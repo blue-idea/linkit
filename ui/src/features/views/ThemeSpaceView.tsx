@@ -4,8 +4,9 @@ import type { BookmarkPresentation } from './presenter';
 import { CompactRow } from './CompactRow';
 import { groupBookmarksByThemes } from '../../domain/views';
 import type { Collection } from '../../types';
+import type { BookmarkItemActionHandlers } from './BookmarkItemActions';
 
-type ThemeSpaceViewProps = {
+type ThemeSpaceViewProps = BookmarkItemActionHandlers & {
   items: BookmarkPresentation[];
   collections: Collection[];
   isSelected: (id: string) => boolean;
@@ -23,6 +24,12 @@ export function ThemeSpaceView({
   isSelected,
   onSelect,
   onDragStart,
+  selectionMode,
+  isBulkSelected,
+  onToggleSelect,
+  onEdit,
+  onMove,
+  onDelete,
 }: ThemeSpaceViewProps) {
   const parentRef = useRef<HTMLDivElement>(null);
   const byId = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
@@ -36,7 +43,7 @@ export function ThemeSpaceView({
     count: containers.length,
     getScrollElement: () => parentRef.current,
     // 容器高度随成员数变化；预估后由 measureElement 校正。
-    estimateSize: (index) => 72 + containers[index].count * 52,
+    estimateSize: (index) => 72 + containers[index].count * 82,
     overscan: 4,
   });
 
@@ -85,6 +92,12 @@ export function ThemeSpaceView({
                       selected={isSelected(item.id)}
                       onClick={(e) => onSelect(item.id, e)}
                       onDragStart={(e) => onDragStart(e, item.id)}
+                      selectionMode={selectionMode}
+                      isBulkSelected={isBulkSelected}
+                      onToggleSelect={onToggleSelect}
+                      onEdit={onEdit}
+                      onMove={onMove}
+                      onDelete={onDelete}
                     />
                   ))}
                 </div>

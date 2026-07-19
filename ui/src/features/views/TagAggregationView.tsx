@@ -5,8 +5,9 @@ import { CompactRow } from './CompactRow';
 import { groupBookmarksByTags } from '../../domain/views';
 import { Icon, TagPill } from '../../components/ui';
 import type { Tag, TagColor } from '../../types';
+import type { BookmarkItemActionHandlers } from './BookmarkItemActions';
 
-type TagAggregationViewProps = {
+type TagAggregationViewProps = BookmarkItemActionHandlers & {
   items: BookmarkPresentation[];
   bookmarks: Array<{ id: string; tags: string[] }>;
   tags: Tag[];
@@ -37,6 +38,12 @@ export function TagAggregationView({
   isSelected,
   onSelect,
   onDragStart,
+  selectionMode,
+  isBulkSelected,
+  onToggleSelect,
+  onEdit,
+  onMove,
+  onDelete,
 }: TagAggregationViewProps) {
   const parentRef = useRef<HTMLDivElement>(null);
   const byId = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
@@ -70,7 +77,7 @@ export function TagAggregationView({
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: (index) => (rows[index]?.kind === 'header' ? 44 : 52),
+    estimateSize: (index) => (rows[index]?.kind === 'header' ? 44 : 82),
     overscan: 10,
   });
 
@@ -108,6 +115,12 @@ export function TagAggregationView({
                   selected={isSelected(row.item.id)}
                   onClick={(e) => onSelect(row.item.id, e)}
                   onDragStart={(e) => onDragStart(e, row.item.id)}
+                  selectionMode={selectionMode}
+                  isBulkSelected={isBulkSelected}
+                  onToggleSelect={onToggleSelect}
+                  onEdit={onEdit}
+                  onMove={onMove}
+                  onDelete={onDelete}
                 />
               )}
             </div>

@@ -7,8 +7,9 @@ import {
 } from '../../domain/views';
 import { Icon } from '../../components/ui';
 import { CompactRow } from './CompactRow';
+import type { BookmarkItemActionHandlers } from './BookmarkItemActions';
 
-type TimelineViewProps = {
+type TimelineViewProps = BookmarkItemActionHandlers & {
   items: BookmarkPresentation[];
   bookmarks: Array<{ id: string; createdAt: string; lastVisitedAt: string | null }>;
   isSelected: (id: string) => boolean;
@@ -30,6 +31,12 @@ export function TimelineView({
   isSelected,
   onSelect,
   onDragStart,
+  selectionMode,
+  isBulkSelected,
+  onToggleSelect,
+  onEdit,
+  onMove,
+  onDelete,
 }: TimelineViewProps) {
   const [timeSource, setTimeSource] = useState<TimelineTimeSource>('createdAt');
   const parentRef = useRef<HTMLDivElement>(null);
@@ -62,7 +69,7 @@ export function TimelineView({
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: (index) => (rows[index]?.kind === 'header' ? 40 : 52),
+    estimateSize: (index) => (rows[index]?.kind === 'header' ? 40 : 82),
     overscan: 10,
   });
 
@@ -115,6 +122,12 @@ export function TimelineView({
                     selected={isSelected(row.item.id)}
                     onClick={(e) => onSelect(row.item.id, e)}
                     onDragStart={(e) => onDragStart(e, row.item.id)}
+                    selectionMode={selectionMode}
+                    isBulkSelected={isBulkSelected}
+                    onToggleSelect={onToggleSelect}
+                    onEdit={onEdit}
+                    onMove={onMove}
+                    onDelete={onDelete}
                   />
                 )}
               </div>

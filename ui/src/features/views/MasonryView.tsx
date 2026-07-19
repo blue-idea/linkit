@@ -3,8 +3,9 @@ import type { BookmarkPresentation } from './presenter';
 import { assignMasonryColumns } from './layout';
 import { Icon, Favicon } from '../../components/ui';
 import { thumbnailGradients } from '../../colors';
+import { BookmarkItemActions, type BookmarkItemActionHandlers } from './BookmarkItemActions';
 
-type MasonryViewProps = {
+type MasonryViewProps = BookmarkItemActionHandlers & {
   items: BookmarkPresentation[];
   isSelected: (id: string) => boolean;
   columnCount?: number;
@@ -22,6 +23,12 @@ export function MasonryView({
   columnCount = 3,
   onSelect,
   onDragStart,
+  selectionMode,
+  isBulkSelected,
+  onToggleSelect,
+  onEdit,
+  onMove,
+  onDelete,
 }: MasonryViewProps) {
   const columns = useMemo(
     () => assignMasonryColumns(items, columnCount),
@@ -51,6 +58,12 @@ export function MasonryView({
                 selected={isSelected(item.id)}
                 onClick={(e) => onSelect(item.id, e)}
                 onDragStart={(e) => onDragStart(e, item.id)}
+                selectionMode={selectionMode}
+                bulkSelected={isBulkSelected(item.id)}
+                onToggleSelect={(selected) => onToggleSelect(item.id, selected)}
+                onEdit={() => onEdit(item.id)}
+                onMove={() => onMove(item.id)}
+                onDelete={() => onDelete(item.id)}
               />
             ))}
           </div>
@@ -65,11 +78,23 @@ function MasonryTile({
   selected,
   onClick,
   onDragStart,
+  selectionMode,
+  bulkSelected,
+  onToggleSelect,
+  onEdit,
+  onMove,
+  onDelete,
 }: {
   item: BookmarkPresentation;
   selected: boolean;
   onClick: (e: React.MouseEvent) => void;
   onDragStart: (e: React.DragEvent) => void;
+  selectionMode: boolean;
+  bulkSelected: boolean;
+  onToggleSelect: (selected: boolean) => void;
+  onEdit: () => void;
+  onMove: () => void;
+  onDelete: () => void;
 }) {
   const grad = item.thumbnail
     ? thumbnailGradients[item.thumbnail as keyof typeof thumbnailGradients]
@@ -101,6 +126,7 @@ function MasonryTile({
         {item.summary && (
           <p className="text-[10px] text-ink-300 mt-1.5 line-clamp-3 leading-relaxed">{item.summary}</p>
         )}
+        <BookmarkItemActions title={item.title} selected={bulkSelected} selectionMode={selectionMode} onToggleSelect={onToggleSelect} onEdit={onEdit} onMove={onMove} onDelete={onDelete} />
       </div>
     </div>
   );
