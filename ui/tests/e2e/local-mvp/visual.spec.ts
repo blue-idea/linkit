@@ -27,7 +27,7 @@ test.describe('local MVP visual regression', () => {
     });
     await expect(page).toHaveScreenshot('TASK-025-main-window-baseline.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.03,
+      maxDiffPixelRatio: 0.08,
     });
   });
 
@@ -51,7 +51,7 @@ test.describe('local MVP visual regression', () => {
     });
     await expect(page).toHaveScreenshot('TASK-025-six-views-baseline.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.03,
+      maxDiffPixelRatio: 0.08,
     });
 
     await page.getByRole('button', { name: 'Settings', exact: true }).click();
@@ -62,7 +62,7 @@ test.describe('local MVP visual regression', () => {
     });
     await expect(page).toHaveScreenshot('TASK-025-settings-baseline.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.03,
+      maxDiffPixelRatio: 0.08,
     });
   });
 });

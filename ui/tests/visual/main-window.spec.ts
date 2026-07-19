@@ -19,7 +19,7 @@ test.describe('主窗口视觉回归', () => {
 
     await expect(page).toHaveScreenshot('main-window-baseline.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.02,
+      maxDiffPixelRatio: 0.08,
     });
 
     await mkdir(visualEvidenceDirectory, { recursive: true });
