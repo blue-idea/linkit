@@ -78,7 +78,7 @@
 | TASK-050 | Collection Emoji 候选菜单 | REQ-012-AC-005；REQ-012-AC-001 | done | `ui/src/config/collection-icons.ts`、`ui/src/features/collections/CollectionFormDialog.tsx` | `ui/src/features/collections/CollectionFormDialog.test.tsx`、`ui/tests/e2e/collection-crud.spec.ts` | `docs/spec/ac/TASK-050-AC.md` | `docs/spec/evidence/TASK-050-evidence.md`、`TASK-050-collection-emoji-menu.png` |
 | TASK-051 | 新建书签 URL 唯一性 warning | REQ-006-AC-005；REQ-006-AC-004 | done | `ui/src/domain/commands/bookmarks.ts`、`ui/src/config/domain.ts`、`ui/src/components/Dialogs.tsx`、`ui/src/App.tsx` | `ui/src/domain/commands/bookmarks.test.ts`、`ui/tests/e2e/bookmark-crud.spec.ts` | `docs/spec/ac/TASK-051-AC.md` | `docs/spec/evidence/TASK-051-evidence.md`、`TASK-051-duplicate-url-warning.png` |
 | TASK-052 | 主题批量成员命令与候选过滤 | REQ-012-AC-008、009、011；REQ-026-AC-003 | done | `ui/src/domain/commands/index.ts`、`ui/src/config/domain.ts`、`ui/src/features/collections/membership-candidates.ts`、`ui/src/features/collections/apply-collection-command.ts`、`ui/src/features/collections/index.ts` | `ui/src/domain/commands/membership.test.ts`、`ui/src/features/collections/membership-candidates.test.ts`、`ui/src/features/collections/apply-collection-command.test.ts` | `docs/spec/ac/TASK-052-AC.md` | 2026-07-19 |
-| TASK-053 | 主题视图添加书签入口与挑选器 | REQ-012-AC-006~010 | 待开始 | — | — | — | — |
+| TASK-053 | 主题视图添加书签入口与挑选器 | REQ-012-AC-006~010 | done | `ui/src/features/collections/AddBookmarksToCollectionDialog.tsx`、`ui/src/components/ContentArea.tsx`、`ui/src/App.tsx`、`ui/src/features/shell/overlay-stack.ts` | `ui/src/features/collections/AddBookmarksToCollectionDialog.test.tsx`、`ui/tests/e2e/collection-membership.spec.ts` | `docs/spec/ac/TASK-053-AC.md` | 2026-07-19 |
 | TASK-054 | 主题视图移出成员 | REQ-012-AC-011；REQ-026-AC-003 | 待开始 | — | — | — | — |
 
 ---
@@ -133,3 +133,4 @@
 | 2026-07-19 | TASK-047 更新为 done，补充 data-root 实现、测试与 AC | Go/Vitest/Playwright 真实验收通过 |
 | 2026-07-19 | 新增 TASK-052~054 主题视图手动成员管理追溯 | 覆盖 REQ-012-AC-006~011：添加挑选器、空态 CTA、单条/批量移出 |
 | 2026-07-19 | TASK-052 更新为 done | 批量成员命令与候选过滤 Unit 验收通过 |
+| 2026-07-19 | TASK-053 更新为 done | 主题视图 Add bookmarks 挑选器与空态 CTA 验收通过 |
