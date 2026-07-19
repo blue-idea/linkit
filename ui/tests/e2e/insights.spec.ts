@@ -25,7 +25,8 @@ test.describe('Insights', () => {
     await action.click();
     await expect(dialog).toHaveCount(0);
     if (target === 'health-filter') {
-      await expect(page.getByRole('heading', { name: /内容已更新|Broken/ })).toBeVisible();
+      // ContentArea 健康视图标题为英文 Updated / Broken。
+      await expect(page.getByRole('heading', { name: /Updated|Broken|内容已更新/ })).toBeVisible();
     } else {
       await expect(page.getByRole('main', { name: 'Content Area' })).toBeVisible();
     }

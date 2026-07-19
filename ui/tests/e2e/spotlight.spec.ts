@@ -2,31 +2,16 @@ import { expect, test } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { enterLocalMode, openSpotlight } from './helpers';
 
 const evidenceDirectory = resolve(
   dirname(fileURLToPath(import.meta.url)),
   '../../../docs/spec/evidence'
 );
 
-async function enterLocalMode(page: import('@playwright/test').Page) {
-  await page.getByRole('button', { name: 'Continue in local mode' }).click();
-  await expect(page.getByText('Lattice', { exact: true })).toBeVisible();
-}
-
 /** Chromium 会吞掉 Ctrl+K；派发等价 keydown 以验证应用快捷键处理。 */
 async function openSpotlightWithShortcut(page: import('@playwright/test').Page) {
-  await page.locator('body').click();
-  await page.evaluate(() => {
-    window.dispatchEvent(
-      new KeyboardEvent('keydown', {
-        key: 'k',
-        code: 'KeyK',
-        ctrlKey: true,
-        bubbles: true,
-        cancelable: true,
-      })
-    );
-  });
+  await openSpotlight(page);
 }
 
 test.describe('Spotlight 关键词与 URL', () => {
