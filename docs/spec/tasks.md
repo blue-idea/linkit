@@ -1191,15 +1191,15 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-053 · 主题视图添加书签入口与挑选器**
+- [x] **TASK-053 · 主题视图添加书签入口与挑选器**
 
-  > 依赖：TASK-052 · 预计：2–3 小时 · 状态：待开始
+  > 依赖：TASK-052 · 预计：2–3 小时 · 状态：done · 2026-07-19
 
-  - [ ] 主题视图工具栏增加英文入口 `Add bookmarks`（仅 `selection.kind === 'collection'`）。
-  - [ ] 实现 `AddBookmarksToCollectionDialog`：排除已成员、搜索、多选；未选中时 Confirm 禁用；打开与 Cancel/关闭期间零副作用。
-  - [ ] 空主题态显示 `Add bookmarks` CTA，打开与工具栏相同挑选器。
-  - [ ] 确认后调用 `runBatchSetMembership(member: true)`，刷新成员列表与计数。
-  - [ ] 覆盖组件测试与 E2E（含截图证据）。
+  - [x] 主题视图工具栏增加英文入口 `Add bookmarks`（仅 `selection.kind === 'collection'`）。
+  - [x] 实现 `AddBookmarksToCollectionDialog`：排除已成员、搜索、多选；未选中时 Confirm 禁用；打开与 Cancel/关闭期间零副作用。
+  - [x] 空主题态显示 `Add bookmarks` CTA，打开与工具栏相同挑选器。
+  - [x] 确认后调用 `runBatchSetMembership(member: true)`，刷新成员列表与计数。
+  - [x] 覆盖组件测试与 E2E（含截图证据）。
 
   **验证方式：**
   ```powershell
@@ -1209,7 +1209,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
   pnpm --dir ui lint
   ```
 
-  **验收证据：** 挑选器组件测试、E2E、`TASK-053-add-bookmarks-picker.png`、`TASK-053-empty-add-cta.png`。
+  **验收证据：** 挑选器组件测试、E2E、`TASK-053-add-bookmarks-picker.png`、`TASK-053-empty-add-cta.png`；`docs/spec/ac/TASK-053-AC.md`。
 
   _需求: REQ-012
   验收标准：REQ-012-AC-006、REQ-012-AC-007、REQ-012-AC-008、REQ-012-AC-009、REQ-012-AC-010
@@ -1299,7 +1299,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-050 | Collection Emoji 候选图标菜单 | Unit/E2E | done | REQ-012 |
 | TASK-051 | 新建书签 URL 唯一性 warning | Unit/E2E | done | REQ-006 |
 | TASK-052 | 主题批量成员命令与候选过滤 | Unit | done | REQ-012、026 |
-| TASK-053 | 主题视图添加书签入口与挑选器 | Unit/E2E | 待开始 | REQ-012 |
+| TASK-053 | 主题视图添加书签入口与挑选器 | Unit/E2E | done | REQ-012 |
 | TASK-054 | 主题视图移出成员 | Unit/E2E | 待开始 | REQ-012、026 |
 
 ---

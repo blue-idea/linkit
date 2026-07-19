@@ -258,17 +258,45 @@ function FilterBar({ filters, tags, onClearTag, onDateRange, onToggleStarred, on
 }
 
 /* ---------- Empty state ---------- */
-function EmptyState({ onNew, onSpotlight }: { onNew: () => void; onSpotlight: () => void }) {
+function EmptyState({
+  onNew,
+  onSpotlight,
+  onAddBookmarks,
+}: {
+  onNew: () => void;
+  onSpotlight: () => void;
+  onAddBookmarks?: () => void;
+}) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
       <div className="w-16 h-16 rounded-2xl bg-ink-800/60 hairline flex items-center justify-center mb-4">
         <Icon name="Bookmark" size={28} className="text-ink-400" />
       </div>
-      <div className="text-[15px] font-semibold text-ink-100">这里还没有收藏</div>
-      <div className="text-[12px] text-ink-400 mt-1 max-w-xs">把网址拖入窗口，或用快捷键呼出搜索添加新收藏。</div>
+      <div className="text-[15px] font-semibold text-ink-100">
+        {onAddBookmarks ? 'This collection is empty' : '这里还没有收藏'}
+      </div>
+      <div className="text-[12px] text-ink-400 mt-1 max-w-xs">
+        {onAddBookmarks
+          ? 'Add existing bookmarks from your library, or create a new bookmark.'
+          : '把网址拖入窗口，或用快捷键呼出搜索添加新收藏。'}
+      </div>
       <div className="flex items-center gap-2 mt-5">
-        <Button variant="primary" icon="Plus" onClick={onNew}>新增收藏</Button>
-        <Button variant="subtle" icon="Search" onClick={onSpotlight}>全局搜索</Button>
+        {onAddBookmarks ? (
+          <>
+            <Button variant="primary" icon="Library" aria-label="Add bookmarks" onClick={onAddBookmarks}>
+              Add bookmarks
+            </Button>
+            <Button variant="subtle" icon="Plus" onClick={onNew}>
+              {/** 次要入口：不自动归属当前主题 */}
+              New bookmark
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button variant="primary" icon="Plus" onClick={onNew}>新增收藏</Button>
+            <Button variant="subtle" icon="Search" onClick={onSpotlight}>全局搜索</Button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -314,6 +342,7 @@ export function ContentArea({
   onDeleteBookmarks,
   onToggleBookmarkSelection,
   onClearBookmarkSelection,
+  onOpenAddBookmarks,
 }: {
   locale?: UiLocale;
   bookmarks: Bookmark[];
@@ -353,6 +382,7 @@ export function ContentArea({
   onDeleteBookmarks: (ids: string[]) => void;
   onToggleBookmarkSelection: (id: string, selected: boolean) => void;
   onClearBookmarkSelection: () => void;
+  onOpenAddBookmarks?: () => void;
 }) {
   const i18n = useI18n(locale);
   const [aiDismissed, setAiDismissed] = useState(false);
@@ -369,6 +399,7 @@ export function ContentArea({
   // Theme Space 以全库主题成员为容器数据源。
   const presentedAll = useMemo(() => presentBookmarks(allBookmarks, tags), [allBookmarks, tags]);
   const showAI = selection.kind === 'collection' && !aiDismissed;
+  const isCollectionView = selection.kind === 'collection';
   const composeSet = useMemo(() => new Set(composeSelectedIds), [composeSelectedIds]);
   const selectionAnchorRef = useRef<string | null>(null);
   const bookmarkItemActions = {
@@ -448,6 +479,17 @@ export function ContentArea({
         >
           {i18n.t('content.newBookmark')}
         </Button>
+        {isCollectionView && onOpenAddBookmarks && (
+          <Button
+            size="sm"
+            variant="ghost"
+            icon="Library"
+            aria-label="Add bookmarks"
+            onClick={onOpenAddBookmarks}
+          >
+            Add bookmarks
+          </Button>
+        )}
         <Button
           size="sm"
           variant={selectionMode ? 'primary' : 'ghost'}
@@ -489,7 +531,11 @@ export function ContentArea({
       )}
 
       {bookmarks.length === 0 && density !== 'theme-space' ? (
-        <EmptyState onNew={onNewBookmark} onSpotlight={onOpenSpotlight} />
+        <EmptyState
+          onNew={onNewBookmark}
+          onSpotlight={onOpenSpotlight}
+          onAddBookmarks={isCollectionView ? onOpenAddBookmarks : undefined}
+        />
       ) : density === 'card' ? (
         <CardView
           items={presented}

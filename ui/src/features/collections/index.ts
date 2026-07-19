@@ -11,6 +11,7 @@ export {
   toggleCandidateSelection,
 } from './membership-candidates';
 export type { MembershipCandidate } from './membership-candidates';
+export { AddBookmarksToCollectionDialog } from './AddBookmarksToCollectionDialog';
 export { CollectionFormDialog } from './CollectionFormDialog';
 export type { CollectionFormValues } from './CollectionFormDialog';
 export { DeleteCollectionDialog } from './DeleteCollectionDialog';

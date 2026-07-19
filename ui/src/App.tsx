@@ -63,6 +63,7 @@ import {
   toCategoryLibrary,
 } from './features/categories';
 import {
+  AddBookmarksToCollectionDialog,
   applyCollectionLibraryResult,
   buildComposePreview,
   cancelCompose,
@@ -71,6 +72,7 @@ import {
   confirmComposeCollection,
   DeleteCollectionDialog,
   parseComposeDragPayload,
+  runBatchSetMembership,
   runCreateCollection,
   runDeleteCollection,
   runSetMembership,
@@ -180,6 +182,7 @@ export default function App() {
     null | { mode: 'create' } | { mode: 'edit'; id: string }
   >(null);
   const [collectionDeleteId, setCollectionDeleteId] = useState<string | null>(null);
+  const [addBookmarksCollectionId, setAddBookmarksCollectionId] = useState<string | null>(null);
   const [composeSelectedIds, setComposeSelectedIds] = useState<string[]>([]);
   const [composePreview, setComposePreview] = useState<ComposePreview | null>(null);
   // 防止“未水合的种子数据”在加载本机库前被自动保存覆盖。
@@ -483,6 +486,29 @@ export default function App() {
     const col = applied.collections.find((c) => c.id === collectionId);
     flashToast(`已加入主题「${col?.name ?? ''}」`);
   }, [bookmarks, cats, cols, flashToast, tagList]);
+
+  // REQ-012-AC-008：确认添加后批量写入双向成员关系。
+  const confirmAddBookmarksToCollection = useCallback((bookmarkIds: string[]) => {
+    if (!addBookmarksCollectionId) return;
+    const result = runBatchSetMembership({
+      bookmarks,
+      categories: cats,
+      collections: cols,
+      tags: tagList,
+      bookmarkIds,
+      collectionId: addBookmarksCollectionId,
+      member: true,
+    });
+    if (!result.ok) {
+      flashToast(result.error.message);
+      return;
+    }
+    const applied = applyCollectionLibraryResult(result.value, bookmarks);
+    setBookmarks(applied.bookmarks);
+    setCols(applied.collections);
+    setAddBookmarksCollectionId(null);
+    flashToast(`Added ${bookmarkIds.length} bookmarks to collection`);
+  }, [addBookmarksCollectionId, bookmarks, cats, cols, flashToast, tagList]);
 
   const acceptAICollection = useCallback((ids: string[]) => {
     if (state.selection.kind !== 'collection') return;
@@ -969,6 +995,7 @@ export default function App() {
       'category-form': categoryFormOpen,
       'category-icon': Boolean(categoryIconId),
       'collection-form': Boolean(collectionForm),
+      'add-bookmarks': Boolean(addBookmarksCollectionId),
       compose: Boolean(composePreview),
       spotlight: spotlightOpen,
       'new-bookmark': newOpen,
@@ -984,6 +1011,7 @@ export default function App() {
       categoryFormOpen,
       categoryIconId,
       collectionForm,
+      addBookmarksCollectionId,
       composePreview,
       spotlightOpen,
       newOpen,
@@ -1016,6 +1044,9 @@ export default function App() {
         break;
       case 'collection-form':
         setCollectionForm(null);
+        break;
+      case 'add-bookmarks':
+        setAddBookmarksCollectionId(null);
         break;
       case 'compose':
         cancelCompose();
@@ -1283,6 +1314,11 @@ export default function App() {
             onOpenExplore={() => setExploreOpen(true)}
             onVisitBookmark={(id) => {
               void handleVisitBookmark(id);
+            }}
+            onOpenAddBookmarks={() => {
+              if (state.selection.kind === 'collection') {
+                setAddBookmarksCollectionId(state.selection.id);
+              }
             }}
           />
         }
@@ -1562,6 +1598,15 @@ export default function App() {
           memberCount={cols.find((c) => c.id === collectionDeleteId)?.bookmarkIds.length ?? 0}
           onCancel={() => setCollectionDeleteId(null)}
           onConfirm={confirmDeleteCollection}
+        />
+      )}
+      {addBookmarksCollectionId && (
+        <AddBookmarksToCollectionDialog
+          collectionId={addBookmarksCollectionId}
+          collectionName={cols.find((c) => c.id === addBookmarksCollectionId)?.name ?? 'Collection'}
+          bookmarks={bookmarks}
+          onCancel={() => setAddBookmarksCollectionId(null)}
+          onConfirm={confirmAddBookmarksToCollection}
         />
       )}
       {composePreview && (
