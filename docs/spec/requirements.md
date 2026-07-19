@@ -1,7 +1,7 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：1.5.0
+> 版本：1.6.0
 > 日期：2026-07-19
 > 状态：已定稿
 
@@ -34,6 +34,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 10. 10,000 个书签下，热启动不超过 2 秒；本地搜索与筛选 P95 不超过 100ms，视图切换 P95 不超过 150ms；本地保存 P95 不超过 500ms；AI/网络操作在 300ms 内显示进度。
 11. 首次向某个 API Base 发送收藏内容前必须获得用户明确授权；授权按 API Base 记忆，API Base 改变后重新确认。
 12. Windows 与 macOS 均为目标平台；每个发布候选至少在一个选定平台执行完整桌面关键旅程，另一平台保留 Wails 构建门禁，不重复要求完整真实旅程。
+13. 外观提供 Midnight、Ocean、Graphite、Sunset、Daylight、Paper 六套主题；新增浅色主题不得改变现有设置交互、持久化流程或业务功能。
 
 ---
 
@@ -1305,7 +1306,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 
 - id: REQ-023-AC-003
   ears: >
-    When 用户选择 Midnight、Ocean、Graphite 或 Sunset,
+    When 用户选择 Midnight、Ocean、Graphite、Sunset、Daylight 或 Paper,
     the Linkit shall 将对应主题应用到全部主要界面并持久化选择.
   test_type: E2E
   expected:
@@ -1341,6 +1342,19 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
   test_type: Unit
   expected:
     return_value: "Localized Chinese error text with a stable English translation key"
+    side_effects: []
+
+- id: REQ-023-AC-007
+  ears: >
+    When Linkit 应用任一主题皮肤,
+    the Linkit shall 使用主题专属颜色令牌统一渲染主要背景、表面、文字、边框、阴影和焦点状态，
+    并使 Daylight 与 Paper 使用 light color scheme 且不出现不可读文字或控件.
+  test_type: E2E
+  expected:
+    checklist:
+      - "All six themes have distinct workspace and component styling"
+      - "Theme-aware surfaces, text, borders, shadows and focus states use the selected palette"
+      - "Daylight and Paper use a light color scheme without unreadable text or controls"
     side_effects: []
 ```
 
@@ -1734,3 +1748,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 1.3.0 | 2026-07-16 | 已定稿 | 用户确认单平台完整桌面旅程加另一平台构建门禁，并新增 Wails/pnpm 工程骨架 AC |
 | 1.4.0 | 2026-07-19 | 已定稿 | 用户确认将 10,000 条数据下的视图切换 P95 预算调整为 150ms，搜索与筛选保持 100ms |
 | 1.5.0 | 2026-07-19 | 已定稿 | 用户确认统一书签编辑/移动/删除入口，并新增原子批量移动与批量删除能力 |
+| 1.6.0 | 2026-07-19 | 已定稿 | 用户确认参考 `ck/project` 优化主题皮肤，并新增 Daylight 与 Paper 浅色主题；业务功能和设置流程保持不变 |

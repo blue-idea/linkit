@@ -40,6 +40,8 @@ var allowedThemes = map[string]struct{}{
 	"ocean":    {},
 	"graphite": {},
 	"sunset":   {},
+	"daylight": {},
+	"paper":    {},
 }
 
 var allowedLocales = map[string]struct{}{
@@ -53,12 +55,12 @@ var allowedStorageModes = map[string]struct{}{
 }
 
 var allowedViewModes = map[string]struct{}{
-	"card":             {},
-	"list":             {},
-	"masonry":          {},
-	"timeline":         {},
-	"tag-aggregation":  {},
-	"theme-space":      {},
+	"card":            {},
+	"list":            {},
+	"masonry":         {},
+	"timeline":        {},
+	"tag-aggregation": {},
+	"theme-space":     {},
 }
 
 // DefaultAppSettings 返回首次启动使用的正式默认值（locale=en，AI 未配置）。

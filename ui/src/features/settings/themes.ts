@@ -7,6 +7,8 @@ const themeKeys = {
   ocean: 'theme.ocean',
   graphite: 'theme.graphite',
   sunset: 'theme.sunset',
+  daylight: 'theme.daylight',
+  paper: 'theme.paper',
 } as const;
 
 /** 按 locale 解析主题展示名。覆盖 REQ-023-AC-003。 */

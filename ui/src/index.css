@@ -2,8 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 主题令牌系统：使用 RGB 通道值兼容 Tailwind 透明度修饰符。 */
 :root {
   color-scheme: dark;
+  --ink-950: 8 12 23;
+  --ink-900: 11 16 28;
+  --ink-850: 14 20 34;
+  --ink-800: 20 26 40;
+  --ink-700: 28 36 52;
+  --ink-600: 40 50 68;
+  --ink-500: 90 102 122;
+  --ink-400: 140 152 172;
+  --ink-300: 180 190 206;
+  --ink-200: 220 226 236;
+  --ink-100: 240 244 250;
+  --accent-50: 224 234 254;
+  --accent-100: 184 208 252;
+  --accent-200: 138 178 250;
+  --accent-300: 92 148 248;
+  --accent-400: 45 127 249;
+  --accent-500: 37 110 228;
+  --accent-600: 30 92 200;
+  --accent-700: 24 74 168;
+  --accent-800: 20 60 138;
+  --accent-900: 18 50 116;
+  --hairline-rgb: 255 255 255;
+  --hairline-alpha: 0.08;
+  --glass-bg: 16 21 33;
+  --glass-alpha: 0.78;
+  --glass-strong-bg: 14 18 29;
+  --glass-strong-alpha: 0.86;
+  --glass-light-bg: 28 35 52;
+  --glass-light-alpha: 0.5;
+  --shadow-win-rgb: 0 0 0;
+  --shadow-win-alpha: 0.55;
+  --shadow-soft-rgb: 0 0 0;
+  --shadow-soft-alpha: 0.28;
+  --scrollbar-rgb: 255 255 255;
+  --scrollbar-alpha: 0.08;
+  --scrollbar-hover-alpha: 0.18;
 }
 
 html, body, #root {
@@ -18,75 +55,270 @@ body {
   overscroll-behavior: none;
 }
 
-/* Desktop wallpaper backdrop behind the app window */
+/* 每套主题使用独立桌面壁纸，保持应用窗口结构不变。 */
 .workspace {
   background:
-    radial-gradient(900px 600px at 12% -5%, rgba(45,127,249,0.28), transparent 60%),
-    radial-gradient(800px 500px at 92% 8%, rgba(124,107,255,0.20), transparent 60%),
-    radial-gradient(700px 700px at 78% 96%, rgba(25,192,131,0.16), transparent 60%),
-    radial-gradient(600px 600px at 25% 90%, rgba(255,171,26,0.10), transparent 60%),
-    linear-gradient(180deg, #0b1120 0%, #0a0f1c 50%, #080c17 100%);
+    radial-gradient(1000px 700px at 10% -8%, rgba(45,127,249,0.38), transparent 55%),
+    radial-gradient(900px 600px at 92% 6%, rgba(124,107,255,0.28), transparent 55%),
+    radial-gradient(800px 800px at 78% 102%, rgba(25,192,131,0.20), transparent 55%),
+    radial-gradient(700px 700px at 22% 92%, rgba(255,171,26,0.12), transparent 55%),
+    linear-gradient(160deg, #0a1226 0%, #0a0f1c 45%, #070b16 100%);
 }
 
-/* Theme: Ocean */
 [data-theme="ocean"] .workspace {
   background:
-    radial-gradient(900px 600px at 12% -5%, rgba(14,165,183,0.30), transparent 60%),
-    radial-gradient(800px 500px at 92% 8%, rgba(34,211,238,0.20), transparent 60%),
-    radial-gradient(700px 700px at 78% 96%, rgba(61,217,160,0.18), transparent 60%),
-    linear-gradient(180deg, #04101a 0%, #06141f 50%, #04101a 100%);
+    radial-gradient(1000px 700px at 8% -10%, rgba(14,165,183,0.42), transparent 50%),
+    radial-gradient(900px 600px at 94% 4%, rgba(34,211,238,0.30), transparent 50%),
+    radial-gradient(800px 800px at 76% 104%, rgba(61,217,160,0.26), transparent 50%),
+    radial-gradient(600px 600px at 30% 88%, rgba(8,145,178,0.18), transparent 50%),
+    linear-gradient(160deg, #02141f 0%, #031824 45%, #020e18 100%);
 }
 
-/* Theme: Graphite */
 [data-theme="graphite"] .workspace {
   background:
-    radial-gradient(900px 600px at 12% -5%, rgba(113,113,122,0.18), transparent 60%),
-    radial-gradient(800px 500px at 92% 8%, rgba(82,82,91,0.14), transparent 60%),
-    radial-gradient(700px 700px at 78% 96%, rgba(63,63,70,0.12), transparent 60%),
-    linear-gradient(180deg, #0c0c0e 0%, #0a0a0c 50%, #08080a 100%);
+    radial-gradient(1000px 700px at 10% -8%, rgba(113,113,122,0.22), transparent 55%),
+    radial-gradient(900px 600px at 92% 6%, rgba(82,82,91,0.18), transparent 55%),
+    radial-gradient(800px 800px at 78% 102%, rgba(63,63,70,0.16), transparent 55%),
+    linear-gradient(160deg, #0e0e10 0%, #0a0a0c 45%, #060608 100%);
 }
 
-/* Theme: Sunset */
 [data-theme="sunset"] .workspace {
   background:
-    radial-gradient(900px 600px at 12% -5%, rgba(249,115,22,0.26), transparent 60%),
-    radial-gradient(800px 500px at 92% 8%, rgba(251,113,133,0.20), transparent 60%),
-    radial-gradient(700px 700px at 78% 96%, rgba(251,191,36,0.16), transparent 60%),
-    linear-gradient(180deg, #1a0e12 0%, #1a1014 50%, #160c10 100%);
+    radial-gradient(1000px 700px at 8% -10%, rgba(249,115,22,0.40), transparent 50%),
+    radial-gradient(900px 600px at 94% 4%, rgba(251,113,133,0.30), transparent 50%),
+    radial-gradient(800px 800px at 76% 104%, rgba(251,191,36,0.22), transparent 50%),
+    radial-gradient(600px 600px at 30% 88%, rgba(234,100,14,0.18), transparent 50%),
+    linear-gradient(160deg, #1c0e10 0%, #1a0d12 45%, #140810 100%);
 }
 
-/* Frosted-glass panel */
+[data-theme="daylight"] .workspace {
+  background:
+    radial-gradient(900px 600px at 12% -5%, rgba(45,127,249,0.16), transparent 60%),
+    radial-gradient(800px 500px at 92% 8%, rgba(124,107,255,0.12), transparent 60%),
+    radial-gradient(700px 700px at 78% 96%, rgba(25,192,131,0.12), transparent 60%),
+    linear-gradient(180deg, #eef2f8 0%, #e6ecf4 50%, #dde5f0 100%);
+}
+
+[data-theme="paper"] .workspace {
+  background:
+    radial-gradient(900px 600px at 12% -5%, rgba(217,119,87,0.14), transparent 60%),
+    radial-gradient(800px 500px at 92% 8%, rgba(180,140,100,0.10), transparent 60%),
+    radial-gradient(700px 700px at 78% 96%, rgba(120,160,120,0.10), transparent 60%),
+    linear-gradient(180deg, #f7f3ee 0%, #f3eee7 50%, #efe9e0 100%);
+}
+
+/* Ocean：深青黑表面与青色强调色。 */
+[data-theme="ocean"] {
+  --ink-950: 2 12 20;
+  --ink-900: 3 16 26;
+  --ink-850: 5 22 34;
+  --ink-800: 8 30 44;
+  --ink-700: 12 42 58;
+  --ink-600: 18 58 76;
+  --ink-500: 70 110 128;
+  --ink-400: 130 170 188;
+  --ink-300: 175 205 220;
+  --ink-200: 215 235 246;
+  --ink-100: 238 248 254;
+  --accent-50: 204 244 250;
+  --accent-100: 165 236 245;
+  --accent-200: 120 224 240;
+  --accent-300: 70 209 230;
+  --accent-400: 14 165 183;
+  --accent-500: 11 148 168;
+  --accent-600: 9 130 150;
+  --accent-700: 8 110 128;
+  --accent-800: 7 92 108;
+  --accent-900: 6 78 92;
+  --glass-bg: 6 22 34;
+  --glass-alpha: 0.8;
+  --glass-strong-bg: 4 18 28;
+  --glass-strong-alpha: 0.88;
+  --glass-light-bg: 14 42 58;
+  --glass-light-alpha: 0.5;
+}
+
+/* Graphite：低饱和中性表面。 */
+[data-theme="graphite"] {
+  --ink-950: 6 6 8;
+  --ink-900: 9 9 11;
+  --ink-850: 12 12 14;
+  --ink-800: 18 18 20;
+  --ink-700: 26 26 30;
+  --ink-600: 38 38 42;
+  --ink-500: 82 82 90;
+  --ink-400: 140 140 148;
+  --ink-300: 180 180 188;
+  --ink-200: 220 220 226;
+  --ink-100: 240 240 244;
+  --accent-50: 240 242 244;
+  --accent-100: 224 228 232;
+  --accent-200: 200 206 212;
+  --accent-300: 161 161 170;
+  --accent-400: 113 113 122;
+  --accent-500: 82 82 91;
+  --accent-600: 63 63 70;
+  --accent-700: 47 47 52;
+  --accent-800: 35 35 40;
+  --accent-900: 28 28 32;
+  --glass-bg: 14 14 16;
+  --glass-alpha: 0.82;
+  --glass-strong-bg: 10 10 12;
+  --glass-strong-alpha: 0.9;
+  --glass-light-bg: 28 28 32;
+  --glass-light-alpha: 0.5;
+}
+
+/* Sunset：暖色表面与橙色强调色。 */
+[data-theme="sunset"] {
+  --ink-950: 16 6 10;
+  --ink-900: 20 9 12;
+  --ink-850: 26 12 16;
+  --ink-800: 34 18 22;
+  --ink-700: 46 26 30;
+  --ink-600: 64 36 40;
+  --ink-500: 110 80 84;
+  --ink-400: 160 124 128;
+  --ink-300: 198 168 170;
+  --ink-200: 230 210 212;
+  --ink-100: 248 238 238;
+  --accent-50: 255 240 224;
+  --accent-100: 254 221 190;
+  --accent-200: 253 196 150;
+  --accent-300: 252 165 100;
+  --accent-400: 249 115 22;
+  --accent-500: 234 100 14;
+  --accent-600: 200 84 10;
+  --accent-700: 168 70 8;
+  --accent-800: 138 58 8;
+  --accent-900: 116 50 10;
+  --glass-bg: 26 14 18;
+  --glass-alpha: 0.8;
+  --glass-strong-bg: 20 10 14;
+  --glass-strong-alpha: 0.88;
+  --glass-light-bg: 44 24 28;
+  --glass-light-alpha: 0.5;
+}
+
+/* Daylight：冷调浅色表面。 */
+[data-theme="daylight"] {
+  color-scheme: light;
+  --ink-950: 18 24 38;
+  --ink-900: 24 32 48;
+  --ink-850: 32 42 60;
+  --ink-800: 255 255 255;
+  --ink-700: 241 244 250;
+  --ink-600: 224 230 240;
+  --ink-500: 150 162 180;
+  --ink-400: 110 122 142;
+  --ink-300: 70 82 102;
+  --ink-200: 44 56 76;
+  --ink-100: 22 32 50;
+  --accent-50: 224 234 254;
+  --accent-100: 184 208 252;
+  --accent-200: 138 178 250;
+  --accent-300: 92 148 248;
+  --accent-400: 45 127 249;
+  --accent-500: 37 110 228;
+  --accent-600: 30 92 200;
+  --accent-700: 24 74 168;
+  --accent-800: 20 60 138;
+  --accent-900: 18 50 116;
+  --hairline-rgb: 10 20 40;
+  --hairline-alpha: 0.08;
+  --glass-bg: 255 255 255;
+  --glass-alpha: 0.72;
+  --glass-strong-bg: 255 255 255;
+  --glass-strong-alpha: 0.82;
+  --glass-light-bg: 244 248 254;
+  --glass-light-alpha: 0.6;
+  --shadow-win-rgb: 30 50 90;
+  --shadow-win-alpha: 0.18;
+  --shadow-soft-rgb: 30 50 90;
+  --shadow-soft-alpha: 0.12;
+  --scrollbar-rgb: 10 20 40;
+  --scrollbar-alpha: 0.12;
+  --scrollbar-hover-alpha: 0.22;
+}
+
+/* Paper：暖调浅色纸张表面。 */
+[data-theme="paper"] {
+  color-scheme: light;
+  --ink-950: 40 30 22;
+  --ink-900: 48 36 28;
+  --ink-850: 58 44 34;
+  --ink-800: 255 252 247;
+  --ink-700: 244 238 228;
+  --ink-600: 230 222 208;
+  --ink-500: 150 138 120;
+  --ink-400: 110 100 84;
+  --ink-300: 70 62 50;
+  --ink-200: 44 38 30;
+  --ink-100: 30 24 18;
+  --accent-50: 252 240 228;
+  --accent-100: 248 224 204;
+  --accent-200: 240 200 172;
+  --accent-300: 228 168 128;
+  --accent-400: 217 119 87;
+  --accent-500: 200 100 70;
+  --accent-600: 172 84 56;
+  --accent-700: 144 68 44;
+  --accent-800: 118 56 36;
+  --accent-900: 100 48 30;
+  --hairline-rgb: 60 40 20;
+  --hairline-alpha: 0.1;
+  --glass-bg: 255 252 247;
+  --glass-alpha: 0.74;
+  --glass-strong-bg: 255 252 247;
+  --glass-strong-alpha: 0.84;
+  --glass-light-bg: 248 242 232;
+  --glass-light-alpha: 0.6;
+  --shadow-win-rgb: 80 50 30;
+  --shadow-win-alpha: 0.14;
+  --shadow-soft-rgb: 80 50 30;
+  --shadow-soft-alpha: 0.1;
+  --scrollbar-rgb: 60 40 20;
+  --scrollbar-alpha: 0.14;
+  --scrollbar-hover-alpha: 0.24;
+}
+
+/* 主题感知的磨砂玻璃层。 */
 .glass {
-  background: rgba(20, 26, 40, 0.62);
+  background: rgb(var(--glass-bg) / var(--glass-alpha));
   backdrop-filter: blur(28px) saturate(160%);
   -webkit-backdrop-filter: blur(28px) saturate(160%);
 }
+
 .glass-strong {
-  background: rgba(16, 21, 33, 0.78);
+  background: rgb(var(--glass-strong-bg) / var(--glass-strong-alpha));
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
 }
+
 .glass-light {
-  background: rgba(28, 35, 52, 0.5);
+  background: rgb(var(--glass-light-bg) / var(--glass-light-alpha));
   backdrop-filter: blur(20px) saturate(150%);
   -webkit-backdrop-filter: blur(20px) saturate(150%);
 }
 
-/* Thin macOS-style scrollbars */
+/* 主题感知的细滚动条。 */
 .scroll-thin::-webkit-scrollbar { width: 8px; height: 8px; }
 .scroll-thin::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.08);
+  background: rgb(var(--scrollbar-rgb) / var(--scrollbar-alpha));
   border-radius: 8px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
-.scroll-thin::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); background-clip: content-box; }
+.scroll-thin::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--scrollbar-rgb) / var(--scrollbar-hover-alpha));
+  background-clip: content-box;
+}
 .scroll-thin::-webkit-scrollbar-track { background: transparent; }
 .scroll-none::-webkit-scrollbar { display: none; }
 
-/* Animated AI shimmer text */
+/* AI 状态使用当前主题的文字与强调色。 */
 .ai-shimmer {
-  background: linear-gradient(90deg, #6b7596 0%, #c8cfdf 25%, #2d7ff9 50%, #19c083 75%, #6b7596 100%);
+  background: linear-gradient(90deg, rgb(var(--ink-400)) 0%, rgb(var(--ink-200)) 25%, rgb(var(--accent-400)) 50%, #19c083 75%, rgb(var(--ink-400)) 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
@@ -95,39 +327,30 @@ body {
 }
 
 .ai-dot {
-  background: linear-gradient(90deg, #2d7ff9, #19c083);
-  box-shadow: 0 0 12px rgba(45,127,249,0.6);
+  background: linear-gradient(90deg, rgb(var(--accent-400)), #19c083);
+  box-shadow: 0 0 12px rgb(var(--accent-400) / 0.6);
 }
 
-/* Drag state */
 .dragging-source { opacity: 0.4; }
-.drop-target { box-shadow: 0 0 0 2px rgba(45,127,249,0.7), 0 8px 24px -8px rgba(45,127,249,0.4) !important; }
+.drop-target {
+  box-shadow: 0 0 0 2px rgb(var(--accent-400) / 0.7), 0 8px 24px -8px rgb(var(--accent-400) / 0.4) !important;
+}
 
-/* Inner-stroke hairline helper */
-.hairline { box-shadow: 0 0 0 0.5px rgba(255,255,255,0.08) inset; }
-.hairline-t { box-shadow: 0 0.5px 0 0 rgba(255,255,255,0.07); }
-.hairline-b { box-shadow: 0 -0.5px 0 0 rgba(255,255,255,0.07); }
+/* 主题感知的内描边与浮层边缘。 */
+.hairline { box-shadow: 0 0 0 0.5px rgb(var(--hairline-rgb) / var(--hairline-alpha)) inset; }
+.hairline-t { box-shadow: 0 0.5px 0 0 rgb(var(--hairline-rgb) / var(--hairline-alpha)); }
+.hairline-b { box-shadow: 0 -0.5px 0 0 rgb(var(--hairline-rgb) / var(--hairline-alpha)); }
+.ring-glow {
+  box-shadow: 0 0 0 1px rgb(var(--hairline-rgb) / 0.12), 0 30px 90px -20px rgb(var(--shadow-win-rgb) / var(--shadow-win-alpha));
+}
 
-/* Subtle gradient border for spotlight */
-.ring-glow { box-shadow: 0 0 0 1px rgba(255,255,255,0.12), 0 30px 90px -20px rgba(0,0,0,0.75); }
-
-/* No text selection on chrome */
 .no-select { user-select: none; -webkit-user-select: none; }
 
-/* Focus ring */
-.focus-ring:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(45,127,249,0.45); }
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(var(--accent-400) / 0.45);
+}
 
-/* Theme accent overrides — re-tint the accent hue used across the UI */
-[data-theme="ocean"] { --accent-rgb: 34,211,238; }
-[data-theme="ocean"] .focus-ring:focus-visible { box-shadow: 0 0 0 3px rgba(34,211,238,0.45); }
-
-[data-theme="graphite"] { --accent-rgb: 161,161,170; }
-[data-theme="graphite"] .focus-ring:focus-visible { box-shadow: 0 0 0 3px rgba(161,161,170,0.4); }
-
-[data-theme="sunset"] { --accent-rgb: 249,115,22; }
-[data-theme="sunset"] .focus-ring:focus-visible { box-shadow: 0 0 0 3px rgba(249,115,22,0.45); }
-
-/* Drop zone dashed look */
 .dropzone-dash {
-  background-image: repeating-linear-gradient(45deg, rgba(45,127,249,0.06) 0 8px, transparent 8px 16px);
+  background-image: repeating-linear-gradient(45deg, rgb(var(--accent-400) / 0.06) 0 8px, transparent 8px 16px);
 }

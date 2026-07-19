@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.22.0
+> 版本：1.23.0
 > 日期：2026-07-19
-> 状态：已定稿（新增 TASK-045）
+> 状态：已定稿（新增 TASK-046）
 
 ---
 
@@ -69,8 +69,9 @@
 | TASK-041 | 性能预算 | REQ-028-AC-005~008 | done | `ui/playwright.performance.config.ts`、`ui/package.json`、`ui/src/components/ContentArea.tsx` | `ui/tests/performance/performance-budget.spec.ts`、`internal/localstore/performance_test.go` | `docs/spec/ac/TASK-041-AC.md` | 2026-07-19 |
 | TASK-042 | Windows 桌面验收 | REQ-005、008、024；REQ-027-AC-001、004；REQ-028-AC-004 | 待开始 | — | — | — | — |
 | TASK-043 | macOS 桌面验收 | REQ-024；REQ-027-AC-001、004；REQ-028-AC-004 | 待开始 | — | — | — | — |
-| TASK-044 | 全量回归与发布门禁 | REQ-001~028 / 全部 130 条 AC | 待开始 | — | — | — | — |
+| TASK-044 | 全量回归与发布门禁 | REQ-001~028 / 全部 131 条 AC | 待开始 | — | — | — | — |
 | TASK-045 | 书签操作与批量移动删除 | REQ-007-AC-005~010；REQ-011-AC-004~005；REQ-026-AC-002~003；REQ-027-AC-002~003 | done | `ui/src/features/bookmarks/batch-actions.ts`、`ui/src/features/bookmarks/BookmarkActionDialogs.tsx`、`ui/src/components/ContentArea.tsx`、`ui/src/components/DetailPanel.tsx`、`ui/src/features/views/CardView.tsx` | `ui/src/features/bookmarks/batch-actions.test.ts`、`ui/tests/e2e/bookmark-actions.spec.ts` | `docs/spec/ac/TASK-045-AC.md` | `docs/spec/evidence/TASK-045-evidence.md`、`TASK-045-bookmark-actions.png` |
+| TASK-046 | 六主题皮肤与浅色主题 | REQ-023-AC-003、007；REQ-028-AC-004 | done | `ui/src/config/themes.ts`、`ui/src/types.ts`、`ui/src/domain/schemas.ts`、`ui/src/themes.ts`、`ui/src/i18n/catalogs.ts`、`ui/src/index.css`、`ui/tailwind.config.js`、`internal/settingsstore/settings.go` | `ui/src/themes.test.js`、`ui/src/services/settings/settings.test.ts`、`ui/src/features/settings/settings-ui.test.ts`、`internal/settingsstore/validation_test.go`、`ui/tests/visual/theme-skins.spec.ts` | `docs/spec/ac/TASK-046-AC.md` | 2026-07-19 |
 
 ---
 
@@ -83,8 +84,8 @@
 | REQ-010~014 | TASK-014~018、025、035、044 |
 | REQ-015~018 | TASK-019~021、025、034、037、041、044 |
 | REQ-019~022 | TASK-007、031~040、044 |
-| REQ-023~024 | TASK-001~002、015、022~025、042~044 |
-| REQ-025~028 | TASK-001~009、022、026~032、040~044 |
+| REQ-023~024 | TASK-001~002、015、022~025、042~044、046 |
+| REQ-025~028 | TASK-001~009、022、026~032、040~044、046 |
 
 ---
 
@@ -114,3 +115,5 @@
 | 2026-07-18 | TASK-025 更新为 done，补充本地 MVP 旅程与视觉回归 | 三次操作预算、串联旅程与 Baseline 比对已验收；本地 MVP 波次完成 |
 | 2026-07-18 | TASK-030 更新为 done，解除 BLOCKED，补充远程 Supabase 验收脚本与 AC 报告 | 远程 `linkit` 项目 Schema/RLS/trigger/revision 核验通过；17 PASS 0 FAIL |
 | 2026-07-19 | 新增 TASK-045 与批量书签操作追溯 | 用户确认统一编辑入口、URL 字段、批量移动与批量删除 |
+| 2026-07-19 | 新增 TASK-046 与六主题皮肤追溯 | 用户确认参考 `ck/project` 优化主题样式，并新增 Daylight 与 Paper |
+| 2026-07-19 | TASK-046 更新为 done，补充六主题实现、测试、AC 与视觉证据 | 六主题持久化、12 组 Baseline/Actual/Diff 和回归测试完成 |
