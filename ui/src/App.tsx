@@ -53,10 +53,11 @@ import {
   CategoryFormDialog,
   DeleteCategoryDialog,
   InvalidCategoryMoveError,
-  MoveCategoryDialog,
   moveCategoryUnder,
   runCreateCategory,
   runDeleteCategory,
+  runSetCategoryIcon,
+  SetCategoryIconDialog,
   shouldConfirmCategoryDelete,
   toCategoryLibrary,
 } from './features/categories';
@@ -171,7 +172,7 @@ export default function App() {
   const [categoryFormOpen, setCategoryFormOpen] = useState(false);
   const [categoryDeleteId, setCategoryDeleteId] = useState<string | null>(null);
   const [categoryRecursiveConfirm, setCategoryRecursiveConfirm] = useState(false);
-  const [categoryMoveId, setCategoryMoveId] = useState<string | null>(null);
+  const [categoryIconId, setCategoryIconId] = useState<string | null>(null);
   const [collectionForm, setCollectionForm] = useState<
     null | { mode: 'create' } | { mode: 'edit'; id: string }
   >(null);
@@ -427,6 +428,29 @@ export default function App() {
       flashToast('Failed to move category');
     }
   }, [bookmarks, cats, cols, flashToast, tagList]);
+
+  // fix_task 1.2：从候选列表设置分类图标与颜色。
+  const handleSetCategoryIcon = useCallback(
+    (categoryId: string, value: { icon: string; color: string }) => {
+      const result = runSetCategoryIcon({
+        bookmarks,
+        categories: cats,
+        collections: cols,
+        tags: tagList,
+        id: categoryId,
+        icon: value.icon,
+        color: value.color,
+      });
+      if (!result.ok) {
+        flashToast(result.error.message);
+        return;
+      }
+      const applied = applyCategoryLibraryResult(result.value, bookmarks, cats);
+      setCats(applied.categories);
+      flashToast('Category icon updated');
+    },
+    [bookmarks, cats, cols, flashToast, tagList]
+  );
 
   const addToCollection = useCallback((bookmarkId: string, collectionId: string) => {
     // REQ-012-AC-003：拖入主题时同步 Collection.bookmarkIds 与 Bookmark.collectionIds。
@@ -918,7 +942,7 @@ export default function App() {
       'delete-category': Boolean(categoryDeleteId),
       'delete-collection': Boolean(collectionDeleteId),
       'category-form': categoryFormOpen,
-      'category-move': Boolean(categoryMoveId),
+      'category-icon': Boolean(categoryIconId),
       'collection-form': Boolean(collectionForm),
       compose: Boolean(composePreview),
       spotlight: spotlightOpen,
@@ -933,7 +957,7 @@ export default function App() {
       categoryDeleteId,
       collectionDeleteId,
       categoryFormOpen,
-      categoryMoveId,
+      categoryIconId,
       collectionForm,
       composePreview,
       spotlightOpen,
@@ -962,8 +986,8 @@ export default function App() {
       case 'category-form':
         setCategoryFormOpen(false);
         break;
-      case 'category-move':
-        setCategoryMoveId(null);
+      case 'category-icon':
+        setCategoryIconId(null);
         break;
       case 'collection-form':
         setCollectionForm(null);
@@ -1169,7 +1193,7 @@ export default function App() {
             onMoveCategory={(categoryId, newParentId) =>
               handleMoveCategory(categoryId, newParentId)
             }
-            onRequestMoveCategory={(categoryId) => setCategoryMoveId(categoryId)}
+            onRequestSetCategoryIcon={(categoryId) => setCategoryIconId(categoryId)}
             onNewCollection={() => setCollectionForm({ mode: 'create' })}
             onEditCollection={(id) => setCollectionForm({ mode: 'edit', id })}
             onDeleteCollection={(id) => setCollectionDeleteId(id)}
@@ -1464,14 +1488,15 @@ export default function App() {
           onRecursiveDelete={() => applyCategoryDelete('recursive-delete')}
         />
       )}
-      {categoryMoveId && (
-        <MoveCategoryDialog
-          categoryId={categoryMoveId}
-          categories={cats}
-          onCancel={() => setCategoryMoveId(null)}
-          onConfirm={(newParentId) => {
-            handleMoveCategory(categoryMoveId, newParentId);
-            setCategoryMoveId(null);
+      {categoryIconId && (
+        <SetCategoryIconDialog
+          categoryName={cats.find((c) => c.id === categoryIconId)?.name ?? 'Category'}
+          currentIcon={cats.find((c) => c.id === categoryIconId)?.icon ?? 'Folder'}
+          currentColor={cats.find((c) => c.id === categoryIconId)?.color ?? 'gray'}
+          onCancel={() => setCategoryIconId(null)}
+          onConfirm={(value) => {
+            handleSetCategoryIcon(categoryIconId, value);
+            setCategoryIconId(null);
           }}
         />
       )}

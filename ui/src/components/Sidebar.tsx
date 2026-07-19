@@ -114,7 +114,7 @@ export function Sidebar({
   onNewCategory,
   onDeleteCategory,
   onMoveCategory,
-  onRequestMoveCategory,
+  onRequestSetCategoryIcon,
   onNewCollection,
   onEditCollection,
   onDeleteCollection,
@@ -136,7 +136,7 @@ export function Sidebar({
   onNewCategory: () => void;
   onDeleteCategory: (categoryId: string) => void;
   onMoveCategory: (categoryId: string, newParentId: string) => void;
-  onRequestMoveCategory: (categoryId: string) => void;
+  onRequestSetCategoryIcon: (categoryId: string) => void;
   onNewCollection: () => void;
   onEditCollection: (collectionId: string) => void;
   onDeleteCollection: (collectionId: string) => void;
@@ -192,16 +192,16 @@ export function Sidebar({
                     <span className="flex items-center gap-0.5">
                       <button
                         type="button"
-                        aria-label="Move category"
-                        title="Move category"
+                        aria-label="Set category icon"
+                        title="Set category icon"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onRequestMoveCategory(cat.id);
+                          onRequestSetCategoryIcon(cat.id);
                         }}
                         onPointerDown={(e) => e.stopPropagation()}
-                        className="opacity-0 group-hover:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-accent-300 flex items-center justify-center transition"
+                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-accent-300 flex items-center justify-center transition"
                       >
-                        <Icon name="Folder" size={11} />
+                        <Icon name="Shapes" size={11} />
                       </button>
                       <button
                         type="button"
@@ -212,7 +212,7 @@ export function Sidebar({
                           onDeleteCategory(cat.id);
                         }}
                         onPointerDown={(e) => e.stopPropagation()}
-                        className="opacity-0 group-hover:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-coral-400 flex items-center justify-center transition"
+                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-coral-400 flex items-center justify-center transition"
                       >
                         <Icon name="Trash2" size={11} />
                       </button>

@@ -6,7 +6,7 @@ export type OverlayKind =
   | 'delete-category'
   | 'delete-collection'
   | 'category-form'
-  | 'category-move'
+  | 'category-icon'
   | 'collection-form'
   | 'compose'
   | 'spotlight'
@@ -21,7 +21,7 @@ export const OVERLAY_PRIORITY: OverlayKind[] = [
   'delete-category',
   'delete-collection',
   'category-form',
-  'category-move',
+  'category-icon',
   'collection-form',
   'compose',
   'spotlight',
