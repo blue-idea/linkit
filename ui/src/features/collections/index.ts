@@ -15,6 +15,7 @@ export { AddBookmarksToCollectionDialog } from './AddBookmarksToCollectionDialog
 export { CollectionFormDialog } from './CollectionFormDialog';
 export type { CollectionFormValues } from './CollectionFormDialog';
 export { DeleteCollectionDialog } from './DeleteCollectionDialog';
+export { RemoveFromCollectionDialog } from './RemoveFromCollectionDialog';
 export {
   buildComposePreview,
   cancelCompose,

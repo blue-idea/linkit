@@ -343,6 +343,8 @@ export function ContentArea({
   onToggleBookmarkSelection,
   onClearBookmarkSelection,
   onOpenAddBookmarks,
+  onRemoveFromCollection,
+  onRequestBulkRemoveFromCollection,
 }: {
   locale?: UiLocale;
   bookmarks: Bookmark[];
@@ -383,6 +385,8 @@ export function ContentArea({
   onToggleBookmarkSelection: (id: string, selected: boolean) => void;
   onClearBookmarkSelection: () => void;
   onOpenAddBookmarks?: () => void;
+  onRemoveFromCollection?: (id: string) => void;
+  onRequestBulkRemoveFromCollection?: () => void;
 }) {
   const i18n = useI18n(locale);
   const [aiDismissed, setAiDismissed] = useState(false);
@@ -410,6 +414,7 @@ export function ContentArea({
     onEdit: onEditBookmark,
     onMove: (id: string) => onMoveBookmarks([id]),
     onDelete: (id: string) => onDeleteBookmarks([id]),
+    onRemoveFromCollection: isCollectionView ? onRemoveFromCollection : undefined,
   };
 
   const startDrag = (e: React.DragEvent, bookmarkId: string) => {
@@ -524,6 +529,16 @@ export function ContentArea({
           <div className="flex gap-2">
             <Button size="sm" onClick={() => onMoveBookmarks(composeSelectedIds)}>Move</Button>
             <Button size="sm" variant="danger" onClick={() => onDeleteBookmarks(composeSelectedIds)}>Delete</Button>
+            {isCollectionView && onRequestBulkRemoveFromCollection && (
+              <Button
+                size="sm"
+                variant="ghost"
+                aria-label="Remove from collection"
+                onClick={onRequestBulkRemoveFromCollection}
+              >
+                Remove from collection
+              </Button>
+            )}
             {composeSelectedIds.length >= 2 && <Button size="sm" variant="primary" aria-label="Create collection from selection" onClick={onRequestCompose}>Create collection</Button>}
             <Button size="sm" variant="ghost" onClick={onClearBookmarkSelection}>Clear selection</Button>
           </div>
@@ -550,6 +565,7 @@ export function ContentArea({
           onMove={(id) => onMoveBookmarks([id])}
           onDelete={(id) => onDeleteBookmarks([id])}
           onToggleSelect={onToggleBookmarkSelection}
+          onRemoveFromCollection={isCollectionView ? onRemoveFromCollection : undefined}
         />
       ) : density === 'list' ? (
         <ListView

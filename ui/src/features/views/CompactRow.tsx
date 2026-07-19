@@ -16,6 +16,7 @@ export function CompactRow({
   onEdit,
   onMove,
   onDelete,
+  onRemoveFromCollection,
 }: {
   view: string;
   item: BookmarkPresentation;
@@ -50,6 +51,11 @@ export function CompactRow({
         onEdit={() => onEdit(item.id)}
         onMove={() => onMove(item.id)}
         onDelete={() => onDelete(item.id)}
+        onRemoveFromCollection={
+          onRemoveFromCollection
+            ? () => onRemoveFromCollection(item.id)
+            : undefined
+        }
       />
     </div>
   );

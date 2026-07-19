@@ -22,6 +22,7 @@ type CardViewProps = {
   onMove: (id: string) => void;
   onDelete: (id: string) => void;
   onToggleSelect: (id: string, selected: boolean) => void;
+  onRemoveFromCollection?: (id: string) => void;
 };
 
 /**
@@ -41,6 +42,7 @@ export function CardView({
   onMove,
   onDelete,
   onToggleSelect,
+  onRemoveFromCollection,
 }: CardViewProps) {
   const parentRef = useRef<HTMLDivElement>(null);
   const rowCount = Math.ceil(items.length / COLUMNS);
@@ -88,6 +90,11 @@ export function CardView({
                   onMove={() => onMove(item.id)}
                   onDelete={() => onDelete(item.id)}
                   onToggleSelect={(selected) => onToggleSelect(item.id, selected)}
+                  onRemoveFromCollection={
+                    onRemoveFromCollection
+                      ? () => onRemoveFromCollection(item.id)
+                      : undefined
+                  }
                 />
               ))}
             </div>
@@ -111,6 +118,7 @@ function CardItem({
   onMove,
   onDelete,
   onToggleSelect,
+  onRemoveFromCollection,
 }: {
   item: BookmarkPresentation;
   selected: boolean;
@@ -124,6 +132,7 @@ function CardItem({
   onMove: () => void;
   onDelete: () => void;
   onToggleSelect: (selected: boolean) => void;
+  onRemoveFromCollection?: () => void;
 }) {
   return (
     <div
@@ -188,7 +197,7 @@ function CardItem({
           {formatDate(item.createdAt)}
         </span>
       </div>
-      <BookmarkItemActions title={item.title} selected={bulkSelected} selectionMode={selectionMode} onToggleSelect={onToggleSelect} onVisit={onVisit} onEdit={onEdit} onMove={onMove} onDelete={onDelete} />
+      <BookmarkItemActions title={item.title} selected={bulkSelected} selectionMode={selectionMode} onToggleSelect={onToggleSelect} onVisit={onVisit} onEdit={onEdit} onMove={onMove} onDelete={onDelete} onRemoveFromCollection={onRemoveFromCollection} />
     </div>
   );
 }

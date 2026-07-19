@@ -9,6 +9,7 @@ export type OverlayKind =
   | 'category-icon'
   | 'collection-form'
   | 'add-bookmarks'
+  | 'remove-from-collection'
   | 'compose'
   | 'spotlight'
   | 'new-bookmark'
@@ -25,6 +26,7 @@ export const OVERLAY_PRIORITY: OverlayKind[] = [
   'category-icon',
   'collection-form',
   'add-bookmarks',
+  'remove-from-collection',
   'compose',
   'spotlight',
   'new-bookmark',
