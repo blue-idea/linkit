@@ -14,18 +14,18 @@ test.describe('AI 创建主题与去重整理', () => {
           name: 'AI Frontend Research', description: 'Curated from the current library',
           suggestedTags: ['frontend', 'research'], bookmarkIds: ['b-coolors', 'b-fontpair'],
         }),
-        AnalyzeBookmark: async (req: { title?: string; description?: string }) => ({
-          title: req.title || 'Mock Title',
-          description: req.description || 'Mock Description',
-          summary: 'Mock Summary',
-          suggestedTags: ['mock-tag'],
+        AnalyzeBookmark: async () => ({
+          title: 'Coolors Duplicate',
+          description: 'Colors space helper',
+          summary: 'Coolors duplicated summary',
+          suggestedTags: ['design', 'colors'],
           suggestedCategoryId: null
         }),
-        ReanalyzeBookmark: async (req: { title?: string; description?: string }) => ({
-          title: req.title || 'Mock Title',
-          description: req.description || 'Mock Description',
-          summary: 'Mock Summary',
-          suggestedTags: ['mock-tag'],
+        ReanalyzeBookmark: async () => ({
+          title: 'Coolors Duplicate',
+          description: 'Colors space helper',
+          summary: 'Coolors duplicated summary',
+          suggestedTags: ['design', 'colors'],
           suggestedCategoryId: null
         })
       } };
@@ -47,18 +47,18 @@ test.describe('AI 创建主题与去重整理', () => {
           name: 'AI Frontend Research', description: 'Curated from the current library',
           suggestedTags: ['frontend', 'research'], bookmarkIds: ['b-coolors', 'b-fontpair'],
         }),
-        AnalyzeBookmark: async (req: { title?: string; description?: string }) => ({
-          title: req.title || 'Mock Title',
-          description: req.description || 'Mock Description',
-          summary: 'Mock Summary',
-          suggestedTags: ['mock-tag'],
+        AnalyzeBookmark: async () => ({
+          title: 'Coolors Duplicate',
+          description: 'Colors space helper',
+          summary: 'Coolors duplicated summary',
+          suggestedTags: ['design', 'colors'],
           suggestedCategoryId: null
         }),
-        ReanalyzeBookmark: async (req: { title?: string; description?: string }) => ({
-          title: req.title || 'Mock Title',
-          description: req.description || 'Mock Description',
-          summary: 'Mock Summary',
-          suggestedTags: ['mock-tag'],
+        ReanalyzeBookmark: async () => ({
+          title: 'Coolors Duplicate',
+          description: 'Colors space helper',
+          summary: 'Coolors duplicated summary',
+          suggestedTags: ['design', 'colors'],
           suggestedCategoryId: null
         })
       } };
