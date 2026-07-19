@@ -11,9 +11,14 @@ const ROW_ESTIMATE = 168;
 type CardViewProps = {
   items: BookmarkPresentation[];
   isSelected: (id: string) => boolean;
+  isBulkSelected: (id: string) => boolean;
   onSelect: (id: string, e: React.MouseEvent) => void;
   onToggleStar: (id: string) => void;
   onDragStart: (e: React.DragEvent, id: string) => void;
+  onEdit: (id: string) => void;
+  onMove: (id: string) => void;
+  onDelete: (id: string) => void;
+  onToggleSelect: (id: string, selected: boolean) => void;
 };
 
 /**
@@ -23,9 +28,14 @@ type CardViewProps = {
 export function CardView({
   items,
   isSelected,
+  isBulkSelected,
   onSelect,
   onToggleStar,
   onDragStart,
+  onEdit,
+  onMove,
+  onDelete,
+  onToggleSelect,
 }: CardViewProps) {
   const parentRef = useRef<HTMLDivElement>(null);
   const rowCount = Math.ceil(items.length / COLUMNS);
@@ -63,9 +73,14 @@ export function CardView({
                   key={item.id}
                   item={item}
                   selected={isSelected(item.id)}
+                  bulkSelected={isBulkSelected(item.id)}
                   onClick={(e) => onSelect(item.id, e)}
                   onDragStart={(e) => onDragStart(e, item.id)}
                   onToggleStar={() => onToggleStar(item.id)}
+                  onEdit={() => onEdit(item.id)}
+                  onMove={() => onMove(item.id)}
+                  onDelete={() => onDelete(item.id)}
+                  onToggleSelect={(selected) => onToggleSelect(item.id, selected)}
                 />
               ))}
             </div>
@@ -79,15 +94,25 @@ export function CardView({
 function CardItem({
   item,
   selected,
+  bulkSelected,
   onClick,
   onDragStart,
   onToggleStar,
+  onEdit,
+  onMove,
+  onDelete,
+  onToggleSelect,
 }: {
   item: BookmarkPresentation;
   selected: boolean;
+  bulkSelected: boolean;
   onClick: (e: React.MouseEvent) => void;
   onDragStart: (e: React.DragEvent) => void;
   onToggleStar: () => void;
+  onEdit: () => void;
+  onMove: () => void;
+  onDelete: () => void;
+  onToggleSelect: (selected: boolean) => void;
 }) {
   return (
     <div
@@ -102,6 +127,16 @@ function CardItem({
           : 'bg-ink-800/50 hover:bg-ink-700/60 hover:shadow-card hover:-translate-y-0.5'
       }`}
     >
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <label className="text-[10px] text-ink-400" onClick={(event) => event.stopPropagation()}>
+          <input aria-label={`Select bookmark ${item.title}`} type="checkbox" checked={bulkSelected} onChange={(event) => onToggleSelect(event.target.checked)} /> Select
+        </label>
+        <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100">
+          <button aria-label="Edit bookmark" onClick={(event) => { event.stopPropagation(); onEdit(); }} className="text-[10px] text-ink-300 hover:text-accent-300">Edit</button>
+          <button aria-label="Move bookmark" onClick={(event) => { event.stopPropagation(); onMove(); }} className="text-[10px] text-ink-300 hover:text-accent-300">Move</button>
+          <button aria-label="Delete bookmark" onClick={(event) => { event.stopPropagation(); onDelete(); }} className="text-[10px] text-coral-400 hover:text-coral-300">Delete</button>
+        </div>
+      </div>
       <div className="flex items-start gap-2.5">
         <Favicon glyph={item.favicon} color={item.faviconColor} size={28} />
         <div className="min-w-0 flex-1">

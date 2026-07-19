@@ -36,8 +36,15 @@ import {
 } from './features/auth';
 import {
   applyDeleteDecision,
+  applyBookmarkActionResult,
+  batchDeleteBookmarks,
+  batchMoveBookmarks,
+  BookmarkEditorDialog,
+  BookmarkMoveDialog,
+  BulkDeleteDialog,
   DeleteBookmarkDialog,
   shouldConfirmBookmarkDelete,
+  updateBookmarkFromEditor,
 } from './features/bookmarks';
 import {
   applyCategoryDeleteDecision,
@@ -155,6 +162,9 @@ export default function App() {
   const [syncing, setSyncing] = useState(false);
   const [seedConfirmOpen, setSeedConfirmOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [bookmarkEditId, setBookmarkEditId] = useState<string | null>(null);
+  const [bookmarkMoveIds, setBookmarkMoveIds] = useState<string[]>([]);
+  const [bulkDeleteIds, setBulkDeleteIds] = useState<string[]>([]);
   const [categoryFormOpen, setCategoryFormOpen] = useState(false);
   const [categoryDeleteId, setCategoryDeleteId] = useState<string | null>(null);
   const [categoryRecursiveConfirm, setCategoryRecursiveConfirm] = useState(false);
@@ -1140,6 +1150,15 @@ export default function App() {
             onToggleComposeSelect={(id, additive) => {
               setComposeSelectedIds((prev) => toggleComposeSelection(prev, id, additive));
             }}
+            onEditBookmark={setBookmarkEditId}
+            onMoveBookmarks={setBookmarkMoveIds}
+            onDeleteBookmarks={setBulkDeleteIds}
+            onToggleBookmarkSelection={(id, selected) => {
+              setComposeSelectedIds((current) => selected
+                ? [...new Set([...current, id])]
+                : current.filter((currentId) => currentId !== id));
+            }}
+            onClearBookmarkSelection={() => setComposeSelectedIds([])}
             onRequestCompose={() => openComposePreview(composeSelectedIds)}
             onToggleStar={toggleStar}
             onClearTagFilter={(id) =>
@@ -1188,6 +1207,8 @@ export default function App() {
             onOpenHealth={() => setHealthOpen(true)}
             onReanalyze={() => setReanalyzeOpen(true)}
             onOpenKnowledgeGraph={() => setKnowledgeGraphOpen(true)}
+            onEdit={() => selectedBookmark && setBookmarkEditId(selectedBookmark.id)}
+            onMove={() => selectedBookmark && setBookmarkMoveIds([selectedBookmark.id])}
             onDelete={() => selectedBookmark && requestDeleteBookmark(selectedBookmark.id)}
             onClose={() => setState((s) => ({ ...s, selectedBookmarkId: null }))}
           />
@@ -1304,6 +1325,72 @@ export default function App() {
           return newTag?.id ?? null;
         }}
       />
+      <BookmarkEditorDialog
+        bookmark={bookmarks.find((bookmark) => bookmark.id === bookmarkEditId) ?? null}
+        categories={cats}
+        tags={tagList}
+        collections={cols}
+        onClose={() => setBookmarkEditId(null)}
+        onSave={(values) => {
+          if (!bookmarkEditId) return;
+          const result = updateBookmarkFromEditor(toCategoryLibrary(entities()), {
+            bookmarkId: bookmarkEditId,
+            ...values,
+          });
+          if (!result.ok) {
+            flashToast(result.error.message);
+            return;
+          }
+          const applied = applyBookmarkActionResult(result.value, bookmarks, cols);
+          setBookmarks(applied.bookmarks);
+          setCols(applied.collections);
+          setBookmarkEditId(null);
+          flashToast('Bookmark updated');
+        }}
+      />
+      <BookmarkMoveDialog
+        open={bookmarkMoveIds.length > 0}
+        count={bookmarkMoveIds.length}
+        categories={cats}
+        onClose={() => setBookmarkMoveIds([])}
+        onMove={(categoryId) => {
+          const result = batchMoveBookmarks(toCategoryLibrary(entities()), {
+            bookmarkIds: bookmarkMoveIds,
+            categoryId,
+          });
+          if (!result.ok) {
+            flashToast(result.error.message);
+            return;
+          }
+          const applied = applyBookmarkActionResult(result.value, bookmarks, cols);
+          setBookmarks(applied.bookmarks);
+          setCols(applied.collections);
+          setBookmarkMoveIds([]);
+          setComposeSelectedIds([]);
+          flashToast('Bookmarks moved');
+        }}
+      />
+      {bulkDeleteIds.length > 0 && (
+        <BulkDeleteDialog
+          count={bulkDeleteIds.length}
+          onClose={() => setBulkDeleteIds([])}
+          onConfirm={() => {
+            const result = batchDeleteBookmarks(toCategoryLibrary(entities()), {
+              bookmarkIds: bulkDeleteIds,
+            });
+            if (!result.ok) {
+              flashToast(result.error.message);
+              return;
+            }
+            const applied = applyBookmarkActionResult(result.value, bookmarks, cols);
+            setBookmarks(applied.bookmarks);
+            setCols(applied.collections);
+            setBulkDeleteIds([]);
+            setComposeSelectedIds([]);
+            flashToast('Bookmarks deleted');
+          }}
+        />
+      )}
       {deleteTargetId && (
         <DeleteBookmarkDialog
           title={bookmarks.find((b) => b.id === deleteTargetId)?.title ?? 'Bookmark'}

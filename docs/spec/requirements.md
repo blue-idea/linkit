@@ -1,8 +1,8 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：1.3.0
-> 日期：2026-07-16  
+> 版本：1.5.0
+> 日期：2026-07-19
 > 状态：已定稿
 
 ---
@@ -436,6 +436,58 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
     return_value: "LibraryData without the deleted bookmark or dangling collection references"
     side_effects:
       - "Cloud mode schedules a synchronized save"
+
+- id: REQ-007-AC-005
+  ears: >
+    When 用户查看书签卡片或已打开的详情面板,
+    the Linkit shall 提供可见且带文字标签的 Edit、Move 和 Delete 操作入口.
+  test_type: E2E
+  expected:
+    ui_state: "Edit, Move and Delete actions are visible without hidden gestures or scrolling"
+    side_effects: []
+
+- id: REQ-007-AC-006
+  ears: >
+    When 用户选择 Edit,
+    the Linkit shall 打开统一编辑对话框并允许修改 URL、标题、描述、备注、分类、标签、主题和阅读状态.
+  test_type: E2E
+  expected:
+    ui_state: "A single edit dialog shows all supported bookmark fields including URL and Notes"
+    side_effects:
+      - "No bookmark field changes before Save"
+
+- id: REQ-007-AC-007
+  ears: >
+    While 统一编辑对话框可见,
+    when 用户保存有效修改,
+    the Linkit shall 原子更新该书签并同步列表、详情和持久化数据.
+  test_type: Unit
+  expected:
+    return_value: "LibraryData containing exactly one updated bookmark"
+    side_effects:
+      - "The normalized URL and derived domain are persisted"
+
+- id: REQ-007-AC-008
+  ears: >
+    While 用户已选择多个书签,
+    when 用户请求批量删除,
+    the Linkit shall 显示包含选中数量的破坏性确认且在确认前保持资料库不变.
+  test_type: E2E
+  expected:
+    ui_state: "A bulk delete confirmation shows the selected bookmark count"
+    side_effects:
+      - "No bookmark or collection membership changes before confirmation"
+
+- id: REQ-007-AC-009
+  ears: >
+    While 批量删除确认可见,
+    when 用户确认删除,
+    the Linkit shall 原子删除全部选中书签、清理所有主题引用并清空选择状态.
+  test_type: Unit
+  expected:
+    return_value: "LibraryData without selected bookmarks or dangling collection references"
+    side_effects:
+      - "If any selected bookmark is missing, the whole operation fails without mutation"
 ```
 
 ---
@@ -636,6 +688,26 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
     ui_state: "The bookmark is visible in the target category and a success message is shown"
     side_effects:
       - "The bookmark categoryId equals the target category id"
+
+- id: REQ-011-AC-004
+  ears: >
+    When 用户通过选择框、Ctrl/Cmd 点击或 Shift 点击选择多个书签,
+    the Linkit shall 显示选中数量及 Move、Delete、Clear selection 批量操作.
+  test_type: E2E
+  expected:
+    ui_state: "A persistent bulk action bar reflects the exact selection count"
+    side_effects: []
+
+- id: REQ-011-AC-005
+  ears: >
+    While 用户已选择一个或多个书签,
+    when 用户选择 Move 并确认目标分类或 Uncategorized,
+    the Linkit shall 原子更新全部选中书签的 categoryId 并清空选择状态.
+  test_type: Unit
+  expected:
+    return_value: "LibraryData where every selected bookmark references the requested category or null"
+    side_effects:
+      - "If the target category or any selected bookmark is invalid, the whole operation fails without mutation"
 ```
 
 ---
@@ -1651,3 +1723,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 1.2.0 | 2026-07-16 | 已定稿 | STEP 4 澄清注册分支、RLS 响应、性能预算与 AI 数据授权，并修正接口字段和测试类型 |
 | 1.3.0 | 2026-07-16 | 已定稿 | 用户确认单平台完整桌面旅程加另一平台构建门禁，并新增 Wails/pnpm 工程骨架 AC |
 | 1.4.0 | 2026-07-19 | 已定稿 | 用户确认将 10,000 条数据下的视图切换 P95 预算调整为 150ms，搜索与筛选保持 100ms |
+| 1.5.0 | 2026-07-19 | 已定稿 | 用户确认统一书签编辑/移动/删除入口，并新增原子批量移动与批量删除能力 |

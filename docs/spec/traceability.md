@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.21.0  
-> 日期：2026-07-18  
-> 状态：已定稿（TASK-025 已完成 · 本地 MVP 波次完成）
+> 版本：1.22.0
+> 日期：2026-07-19
+> 状态：已定稿（新增 TASK-045）
 
 ---
 
@@ -69,7 +69,8 @@
 | TASK-041 | 性能预算 | REQ-028-AC-005~008 | done | `ui/playwright.performance.config.ts`、`ui/package.json`、`ui/src/components/ContentArea.tsx` | `ui/tests/performance/performance-budget.spec.ts`、`internal/localstore/performance_test.go` | `docs/spec/ac/TASK-041-AC.md` | 2026-07-19 |
 | TASK-042 | Windows 桌面验收 | REQ-005、008、024；REQ-027-AC-001、004；REQ-028-AC-004 | 待开始 | — | — | — | — |
 | TASK-043 | macOS 桌面验收 | REQ-024；REQ-027-AC-001、004；REQ-028-AC-004 | 待开始 | — | — | — | — |
-| TASK-044 | 全量回归与发布门禁 | REQ-001~028 / 全部 122 条 AC | 待开始 | — | — | — | — |
+| TASK-044 | 全量回归与发布门禁 | REQ-001~028 / 全部 129 条 AC | 待开始 | — | — | — | — |
+| TASK-045 | 书签操作与批量移动删除 | REQ-007-AC-005~009；REQ-011-AC-004~005；REQ-026-AC-002~003；REQ-027-AC-002~003 | done | `ui/src/features/bookmarks/batch-actions.ts`、`ui/src/features/bookmarks/BookmarkActionDialogs.tsx`、`ui/src/components/ContentArea.tsx`、`ui/src/components/DetailPanel.tsx`、`ui/src/features/views/CardView.tsx` | `ui/src/features/bookmarks/batch-actions.test.ts`、`ui/tests/e2e/bookmark-actions.spec.ts` | `docs/spec/ac/TASK-045-AC.md` | `docs/spec/evidence/TASK-045-evidence.md`、`TASK-045-bookmark-actions.png` |
 
 ---
 
@@ -112,3 +113,4 @@
 | 2026-07-18 | TASK-024 更新为 done，补充导入导出 UX 与覆盖确认 | 版本化导出、覆盖确认、无效拒绝与双语言截图已验收 |
 | 2026-07-18 | TASK-025 更新为 done，补充本地 MVP 旅程与视觉回归 | 三次操作预算、串联旅程与 Baseline 比对已验收；本地 MVP 波次完成 |
 | 2026-07-18 | TASK-030 更新为 done，解除 BLOCKED，补充远程 Supabase 验收脚本与 AC 报告 | 远程 `linkit` 项目 Schema/RLS/trigger/revision 核验通过；17 PASS 0 FAIL |
+| 2026-07-19 | 新增 TASK-045 与批量书签操作追溯 | 用户确认统一编辑入口、URL 字段、批量移动与批量删除 |

@@ -5,7 +5,7 @@
 > 日期：2026-07-17  
 > 状态：已定稿
 
-执行时须严格遵循 `docs/spec/requirements.md` 1.3.0、`docs/spec/design.md` 1.2.0 和 `docs/spec/test_strategy.md` 1.1.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
+执行时须严格遵循 `docs/spec/requirements.md` 1.5.0、`docs/spec/design.md` 1.3.0 和 `docs/spec/test_strategy.md` 1.3.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
 
 AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首尾均包含。
 
@@ -919,9 +919,32 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-045 · 优化书签操作入口并实现批量移动删除**
+
+  > 依赖：TASK-011、TASK-013、TASK-015、TASK-016、TASK-018 · 预计：4 小时 · 状态：done · 2026-07-19
+
+  - [x] 在卡片和详情顶部提供可见的 Edit、Move、Delete 入口，统一编辑对话框包含 URL 与全部可编辑字段。
+  - [x] 将现有多选提升为通用选择模型，支持选择框、Ctrl/Cmd 与 Shift 范围选择及清空选择。
+  - [x] 实现原子批量移动、批量删除、数量确认和主题引用清理。
+  - [x] 生成单项与批量操作的 E2E、Baseline、实际截图和 Diff。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/features/bookmarks src/domain/commands
+  pnpm --dir ui exec playwright test tests/e2e/bookmark-actions.spec.ts --workers=1
+  ```
+
+  **验收证据：** 领域命令测试、统一编辑/移动/删除旅程、批量原子性、截图与视觉 Diff。
+
+  _需求: REQ-007、REQ-011、REQ-026、REQ-027
+  验收标准：REQ-007-AC-005~009、REQ-011-AC-004~005、REQ-026-AC-002~003、REQ-027-AC-002~003
+  _测试类型: Unit + E2E
+
+---
+
 - [ ] **TASK-042 · Windows Wails 构建与桌面 E2E**
 
-  > 依赖：TASK-025、TASK-029、TASK-031~041 · 预计：3–4 小时
+  > 依赖：TASK-025、TASK-029、TASK-031~041、TASK-045 · 预计：3–4 小时
 
   - [ ] 在 Windows 构建正式 Wails 应用。
   - [ ] 当 Windows 被选为本发布候选的验收平台时，运行关键桌面旅程并验证 Credential Manager、原生文件对话框、外部浏览器和快捷键。
@@ -943,7 +966,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 - [ ] **TASK-043 · macOS Wails 构建与桌面 E2E**
 
-  > 依赖：TASK-025、TASK-029、TASK-031~041 · 门禁：可用 macOS runner 或测试设备 · 预计：3–4 小时
+  > 依赖：TASK-025、TASK-029、TASK-031~041、TASK-045 · 门禁：可用 macOS runner 或测试设备 · 预计：3–4 小时
 
   - [ ] 在 macOS 构建正式 Wails 应用。
   - [ ] 当 macOS 被选为本发布候选的验收平台时，执行关键桌面旅程并验证 Keychain、原生对话框、Cmd 快捷键和窗口惯例。
@@ -965,7 +988,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 - [ ] **TASK-044 · 全量回归、质量评分与发布门禁**
 
-  > 依赖：TASK-040~043 · 预计：3–4 小时
+  > 依赖：TASK-040~043、TASK-045 · 预计：3–4 小时
 
   - [ ] 运行全量 Go、TypeScript、Supabase、E2E、视觉、安全和性能套件。
   - [ ] 确认 Windows 与 macOS 构建均通过，且至少一个选定平台完成完整桌面旅程。
@@ -983,7 +1006,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
   **验收证据：** 全量真实命令输出、Coverage Report、Playwright Report、质量评分和发布结论。
 
   _需求: REQ-001~028  
-  验收标准：全部 122 条 AC
+  验收标准：全部 129 条 AC
   _测试类型: Unit + API + E2E + Performance + Security + Manual
 
 ---
@@ -1036,6 +1059,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-042 | Windows 桌面验收 | E2E/Manual | 待开始 | REQ-005、008、024、027、028 |
 | TASK-043 | macOS 桌面验收 | E2E/Manual | 待开始 | REQ-024、027、028 |
 | TASK-044 | 全量回归与发布门禁 | 全类型 | 待开始 | REQ-001~028 |
+| TASK-045 | 书签操作与批量移动删除 | Unit/E2E | done | REQ-007、011、026、027 |
 
 ---
 
@@ -1048,3 +1072,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 1.1.0 | 2026-07-16 | 已定稿 | 单平台完整桌面旅程加另一平台构建门禁，并将 TASK-001 改绑工程骨架 AC |
 | 1.2.0 | 2026-07-17 | 已定稿 | 根据用户指令将 Git Hooks、CI/CD 与配置验收纳入 TASK-002 的工程质量范围 |
 | 1.3.0 | 2026-07-19 | 已定稿 | 对齐 REQ-028-AC-006：视图切换 P95 预算调整为 150ms |
+| 1.4.0 | 2026-07-19 | 已定稿 | 新增 TASK-045，统一书签操作入口并实现原子批量移动与删除 |
