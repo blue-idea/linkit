@@ -56,6 +56,14 @@ export const DOMAIN_CONFIG = {
       code: 'CATEGORY_RECURSIVE_CONFIRM_REQUIRED',
       message: 'Recursive category delete requires a second confirmation',
     },
+    categoryIconInvalid: {
+      code: 'CATEGORY_ICON_INVALID',
+      message: 'Category icon must be a supported candidate',
+    },
+    categoryColorInvalid: {
+      code: 'CATEGORY_COLOR_INVALID',
+      message: 'Category color must be a supported candidate',
+    },
   },
   events: {
     collectionMembershipChanged: 'bookmark.collection-membership.changed',
@@ -72,6 +80,7 @@ export const DOMAIN_CONFIG = {
     bookmarkVisited: 'bookmark.visited',
     categoryCreated: 'category.created',
     categoryRenamed: 'category.renamed',
+    categoryIconChanged: 'category.icon.changed',
     categoryDeleted: 'category.deleted',
     tagCreated: 'tag.created',
     tagDeleted: 'tag.deleted',

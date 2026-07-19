@@ -1,6 +1,19 @@
+import {
+  isCategoryColorCandidate,
+  isCategoryIconCandidate,
+  listCategoryColorCandidates,
+  listCategoryIconCandidates,
+} from '../../config/category-icons';
 import { DOMAIN_CONFIG } from '../../config/domain';
 import type { LibraryData } from '../library';
 import type { CommandResult } from '../commands/types';
+
+export {
+  isCategoryColorCandidate,
+  isCategoryIconCandidate,
+  listCategoryColorCandidates,
+  listCategoryIconCandidates,
+};
 
 export type CategoryColor = LibraryData['categories'][number]['color'];
 export type DeleteCategoryStrategy = 'move-then-delete' | 'recursive-delete' | 'cancel';
@@ -24,6 +37,13 @@ export interface CreateCategoryInput {
 export interface RenameCategoryInput {
   id: string;
   name: string;
+}
+
+export interface SetCategoryIconInput {
+  id: string;
+  icon: string;
+  /** 未传时保留原颜色；传入时必须为受控颜色 token */
+  color?: string;
 }
 
 export interface DeleteCategoryInput {
@@ -143,10 +163,15 @@ export function createCategory(
     return { ok: false, error: { ...DOMAIN_CONFIG.errors.categoryParentInvalid } };
   }
 
+  const icon = (input.icon?.trim() || 'Folder');
+  if (!isCategoryIconCandidate(icon)) {
+    return { ok: false, error: { ...DOMAIN_CONFIG.errors.categoryIconInvalid } };
+  }
+
   const category = {
     id,
     name,
-    icon: input.icon?.trim() || 'Folder',
+    icon,
     parentId,
     color: input.color ?? 'gray',
   };
@@ -185,6 +210,47 @@ export function renameCategory(
     ok: true,
     value: { ...library, categories },
     events: [{ type: DOMAIN_CONFIG.events.categoryRenamed, payload: { categoryId: input.id } }],
+  };
+}
+
+/**
+ * 设置分类图标与颜色；图标/颜色均须落在候选白名单。
+ * fix_task 1.2
+ */
+export function setCategoryIcon(
+  library: LibraryData,
+  input: SetCategoryIconInput
+): CommandResult<LibraryData> {
+  const icon = input.icon.trim();
+  if (!isCategoryIconCandidate(icon)) {
+    return { ok: false, error: { ...DOMAIN_CONFIG.errors.categoryIconInvalid } };
+  }
+
+  const index = library.categories.findIndex((category) => category.id === input.id);
+  if (index < 0) {
+    return { ok: false, error: { ...DOMAIN_CONFIG.errors.categoryNotFound } };
+  }
+
+  let color = library.categories[index].color;
+  if (input.color !== undefined) {
+    const nextColor = input.color.trim();
+    if (!isCategoryColorCandidate(nextColor)) {
+      return { ok: false, error: { ...DOMAIN_CONFIG.errors.categoryColorInvalid } };
+    }
+    color = nextColor;
+  }
+
+  const categories = [...library.categories];
+  categories[index] = { ...categories[index], icon, color };
+  return {
+    ok: true,
+    value: { ...library, categories },
+    events: [
+      {
+        type: DOMAIN_CONFIG.events.categoryIconChanged,
+        payload: { categoryId: input.id, icon, color },
+      },
+    ],
   };
 }
 
