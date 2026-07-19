@@ -3,7 +3,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import type { BookmarkPresentation } from './presenter';
 import { Icon, TagPill, Favicon } from '../../components/ui';
 import { INITIAL_VIRTUAL_VIEW_RECT } from '../../config/virtualization';
-import type { BookmarkItemActionHandlers } from './BookmarkItemActions';
+import { BookmarkItemActions, type BookmarkItemActionHandlers } from './BookmarkItemActions';
 
 const ROW_ESTIMATE = 84;
 
@@ -28,6 +28,7 @@ export function ListView({
   selectionMode,
   isBulkSelected,
   onToggleSelect,
+  onVisit,
   onEdit,
   onMove,
   onDelete,
@@ -71,6 +72,7 @@ export function ListView({
                 selectionMode={selectionMode}
                 bulkSelected={isBulkSelected(item.id)}
                 onToggleSelect={(selected) => onToggleSelect(item.id, selected)}
+                onVisit={() => onVisit(item.id)}
                 onEdit={() => onEdit(item.id)}
                 onMove={() => onMove(item.id)}
                 onDelete={() => onDelete(item.id)}
@@ -92,6 +94,7 @@ function ListItem({
   selectionMode,
   bulkSelected,
   onToggleSelect,
+  onVisit,
   onEdit,
   onMove,
   onDelete,
@@ -104,6 +107,7 @@ function ListItem({
   selectionMode: boolean;
   bulkSelected: boolean;
   onToggleSelect: (selected: boolean) => void;
+  onVisit: () => void;
   onEdit: () => void;
   onMove: () => void;
   onDelete: () => void;
@@ -158,22 +162,17 @@ function ListItem({
         >
           <Icon name="Star" size={13} fill={item.starred ? 'currentColor' : 'none'} />
         </button>
-        <div className={`col-span-3 flex items-center justify-between gap-2 transition-opacity ${selectionMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-          {selectionMode ? (
-            <label className="text-[10px] text-ink-400 flex items-center gap-1" onClick={(event) => event.stopPropagation()}>
-              <input
-                aria-label={`Select bookmark ${item.title}`}
-                type="checkbox"
-                checked={bulkSelected}
-                onChange={(event) => onToggleSelect(event.target.checked)}
-              /> Select
-            </label>
-          ) : <span />}
-          <div className="flex items-center gap-2">
-            <button aria-label="Edit bookmark" onClick={(event) => { event.stopPropagation(); onEdit(); }} className="text-[10px] text-ink-300 hover:text-accent-300">Edit</button>
-            <button aria-label="Move bookmark" onClick={(event) => { event.stopPropagation(); onMove(); }} className="text-[10px] text-ink-300 hover:text-accent-300">Move</button>
-            <button aria-label="Delete bookmark" onClick={(event) => { event.stopPropagation(); onDelete(); }} className="text-[10px] text-coral-400 hover:text-coral-300">Delete</button>
-          </div>
+        <div className={`col-span-3 transition-opacity ${selectionMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+          <BookmarkItemActions
+            title={item.title}
+            selected={bulkSelected}
+            selectionMode={selectionMode}
+            onToggleSelect={onToggleSelect}
+            onVisit={onVisit}
+            onEdit={onEdit}
+            onMove={onMove}
+            onDelete={onDelete}
+          />
         </div>
       </div>
     </div>

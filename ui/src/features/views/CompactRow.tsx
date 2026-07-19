@@ -12,6 +12,7 @@ export function CompactRow({
   selectionMode,
   isBulkSelected,
   onToggleSelect,
+  onVisit,
   onEdit,
   onMove,
   onDelete,
@@ -40,7 +41,16 @@ export function CompactRow({
           <div className="text-[11px] text-ink-400 truncate">{item.domain}</div>
         </div>
       </div>
-      <BookmarkItemActions title={item.title} selected={isBulkSelected(item.id)} selectionMode={selectionMode} onToggleSelect={(checked) => onToggleSelect(item.id, checked)} onEdit={() => onEdit(item.id)} onMove={() => onMove(item.id)} onDelete={() => onDelete(item.id)} />
+      <BookmarkItemActions
+        title={item.title}
+        selected={isBulkSelected(item.id)}
+        selectionMode={selectionMode}
+        onToggleSelect={(checked) => onToggleSelect(item.id, checked)}
+        onVisit={() => onVisit(item.id)}
+        onEdit={() => onEdit(item.id)}
+        onMove={() => onMove(item.id)}
+        onDelete={() => onDelete(item.id)}
+      />
     </div>
   );
 }

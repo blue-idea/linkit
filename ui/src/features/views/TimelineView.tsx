@@ -34,6 +34,7 @@ export function TimelineView({
   selectionMode,
   isBulkSelected,
   onToggleSelect,
+  onVisit,
   onEdit,
   onMove,
   onDelete,
@@ -125,6 +126,7 @@ export function TimelineView({
                     selectionMode={selectionMode}
                     isBulkSelected={isBulkSelected}
                     onToggleSelect={onToggleSelect}
+                    onVisit={onVisit}
                     onEdit={onEdit}
                     onMove={onMove}
                     onDelete={onDelete}

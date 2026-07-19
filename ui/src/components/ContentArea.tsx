@@ -306,6 +306,7 @@ export function ContentArea({
   onOpenAICollection,
   onOpenDuplicates,
   onOpenExplore,
+  onVisitBookmark,
   onEditBookmark,
   onMoveBookmarks,
   onDeleteBookmarks,
@@ -343,6 +344,7 @@ export function ContentArea({
   onOpenAICollection: () => void;
   onOpenDuplicates: () => void;
   onOpenExplore: () => void;
+  onVisitBookmark: (id: string) => void;
   onEditBookmark: (id: string) => void;
   onMoveBookmarks: (ids: string[]) => void;
   onDeleteBookmarks: (ids: string[]) => void;
@@ -369,6 +371,7 @@ export function ContentArea({
     selectionMode,
     isBulkSelected: (id: string) => composeSet.has(id),
     onToggleSelect: onToggleBookmarkSelection,
+    onVisit: onVisitBookmark,
     onEdit: onEditBookmark,
     onMove: (id: string) => onMoveBookmarks([id]),
     onDelete: (id: string) => onDeleteBookmarks([id]),
@@ -483,6 +486,7 @@ export function ContentArea({
           onSelect={(id, e) => handleCardClick(e, id)}
           onToggleStar={onToggleStar}
           onDragStart={startDrag}
+          onVisit={onVisitBookmark}
           onEdit={onEditBookmark}
           onMove={(id) => onMoveBookmarks([id])}
           onDelete={(id) => onDeleteBookmarks([id])}

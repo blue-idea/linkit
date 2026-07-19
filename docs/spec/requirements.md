@@ -533,6 +533,17 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
       - "visitCount increases by exactly one"
       - "lastVisitedAt is set to the current time"
 
+- id: REQ-008-AC-005
+  ears: >
+    When 用户在 Card、List、Masonry、Timeline、Tag Aggregation 或 Theme Space 视图中直接访问书签,
+    the Linkit shall 在书签项操作区提供区别于右侧详情 Visit 的直达入口，并复用成功后记录访问的编排.
+  test_type: Unit + E2E
+  expected:
+    ui_state: "Each bookmark item exposes an Open bookmark directly action while the detail panel keeps Open bookmark URL / Visit"
+    side_effects:
+      - "The direct action opens the bookmark URL"
+      - "The direct action does not select the item or open Edit, Move or Delete"
+
 - id: REQ-008-AC-003
   ears: >
     When 用户选择 unread、reading、read 或 archived,
@@ -1823,3 +1834,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 1.5.0 | 2026-07-19 | 已定稿 | 用户确认统一书签编辑/移动/删除入口，并新增原子批量移动与批量删除能力 |
 | 1.6.0 | 2026-07-19 | 已定稿 | 用户确认参考 `ck/project` 优化主题皮肤，并新增 Daylight 与 Paper 浅色主题；业务功能和设置流程保持不变 |
 | 1.7.0 | 2026-07-19 | 已定稿 | 新增 REQ-029：可配置本地存储目录，位置变更时自动迁移应用数据（不含密钥） |
+| 1.8.0 | 2026-07-19 | 已定稿 | 新增 REQ-008-AC-005：六种书签视图提供区别于右侧详情 Visit 的直接访问入口 |

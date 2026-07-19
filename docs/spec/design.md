@@ -292,7 +292,7 @@ CommandResult<T> =
 
 ### 6.3 书签操作与批量选择
 
-- 六种书签视图复用 `BookmarkItemActions`，在每个书签项底部统一暴露 `Edit`、`Move`、`Delete`；详情面板顶部保留相同入口，不使用隐藏手势作为唯一入口。
+- 六种书签视图复用 `BookmarkItemActions`，在每个书签项底部统一暴露区别于右侧详情 `Visit` 的 `Open bookmark directly`，以及 `Edit`、`Move`、`Delete`；详情面板顶部保留 `Open bookmark URL` / `Visit` 和相同编辑入口，不使用隐藏手势作为唯一入口。
 - `BookmarkEditorDialog` 统一编辑 URL、标题、描述、备注、分类、标签、主题和阅读状态；Save 前零副作用，URL 复用既有规范化与安全校验。
 - 内容区通过 `Select` / `Done` 显式切换批量选择模式；普通浏览模式不渲染复选框，也不响应 Ctrl/Cmd 或 Shift 批量选择。
 - `selectedBookmarkIds` 是选择模式内的通用 UI 选择集合，支持选择框、Ctrl/Cmd 切换与 Shift 范围选择；退出选择模式时清空集合，原有“从选择创建主题”复用该集合。

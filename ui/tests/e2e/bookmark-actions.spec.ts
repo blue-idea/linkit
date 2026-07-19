@@ -92,4 +92,39 @@ test.describe('书签操作与批量操作', () => {
       await main.getByRole('button', { name: 'Done selecting' }).click();
     }
   });
+
+  test('所有视图提供区别于详情 Visit 的书签项直接访问入口', async ({ page }) => {
+    const main = page.getByRole('main', { name: 'Content Area' });
+    await page.evaluate(() => {
+      window.open = ((url: string | URL | undefined) => {
+        window.localStorage.setItem('last-opened-url', String(url ?? ''));
+        return window;
+      }) as typeof window.open;
+    });
+    await expect(page.getByRole('button', { name: 'Open bookmark URL' })).toBeVisible();
+    const views = [
+      ['Card view', 'Card view'],
+      ['List view', 'List view'],
+      ['Masonry view', 'Masonry view'],
+      ['Timeline view', 'Timeline view'],
+      ['Tag Aggregation view', 'Tag Aggregation view'],
+      ['Theme Space view', 'Theme Space view'],
+    ] as const;
+
+    for (const [buttonName, regionName] of views) {
+      await main.getByRole('button', { name: buttonName }).click();
+      const view = main.getByLabel(regionName);
+      const directAccess = view.getByRole('button', { name: 'Open bookmark directly' }).first();
+      await expect(directAccess).toBeVisible();
+      if (buttonName === 'Card view') {
+        await expect(main).toHaveScreenshot('TASK-048-direct-access-baseline.png', { maxDiffPixelRatio: 0.05 });
+        await page.screenshot({ path: resolve(evidenceDirectory, 'TASK-048-direct-access.png'), fullPage: true });
+      }
+      await directAccess.click();
+      await expect
+        .poll(() => page.evaluate(() => window.localStorage.getItem('last-opened-url')))
+        .toMatch(/^https?:\/\//);
+      await expect(page.getByRole('dialog', { name: 'Edit bookmark' })).toHaveCount(0);
+    }
+  });
 });

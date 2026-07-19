@@ -45,6 +45,7 @@ import {
   DeleteBookmarkDialog,
   shouldConfirmBookmarkDelete,
   updateBookmarkFromEditor,
+  visitBookmark,
 } from './features/bookmarks';
 import {
   applyCategoryDeleteDecision,
@@ -96,7 +97,6 @@ import {
   type SortKey,
 } from './domain/query';
 import { collectCategorySubtreeIds } from './domain/categories';
-import { openExternalUrl } from './features/bookmarks/external-url';
 import {
   AICollectionPreviewDialog,
   DuplicatePreviewDialog,
@@ -358,19 +358,26 @@ export default function App() {
     setBookmarks((prev) => prev.map((b) => (b.id === id ? { ...b, pinned: !b.pinned } : b)));
   }, []);
 
-  const handleVisit = useCallback(async () => {
-    if (!selectedBookmark) return;
-    // REQ-008-AC-002：仅在外部打开成功后增加 visitCount。
-    try {
-      await openExternalUrl(selectedBookmark.url);
-      updateBookmark(selectedBookmark.id, {
-        lastVisitedAt: new Date().toISOString(),
-        visitCount: selectedBookmark.visitCount + 1,
-      });
-    } catch {
-      flashToast('Failed to open external URL');
+  const handleVisitBookmark = useCallback(async (bookmarkId: string) => {
+    // REQ-008-AC-002/005：右侧 Visit 与视图直达入口共用成功后计数的访问编排。
+    const result = await visitBookmark({
+      library: toCategoryLibrary({ bookmarks, categories: cats, collections: cols, tags: tagList }),
+      bookmarkId,
+    });
+    if (!result.ok) {
+      flashToast(result.message);
+      return;
     }
-  }, [flashToast, selectedBookmark, updateBookmark]);
+    const visitedById = new Map(result.library.bookmarks.map((bookmark) => [bookmark.id, bookmark]));
+    setBookmarks((current) =>
+      current.map((bookmark) => {
+        const visited = visitedById.get(bookmark.id);
+        return visited
+          ? { ...bookmark, lastVisitedAt: visited.lastVisitedAt, visitCount: visited.visitCount }
+          : bookmark;
+      })
+    );
+  }, [bookmarks, cats, cols, flashToast, tagList]);
 
   const toggleCollection = useCallback((bookmarkId: string, collectionId: string) => {
     // REQ-012-AC-003 / REQ-026-AC-003：详情操作同步两侧成员引用。
@@ -1255,6 +1262,9 @@ export default function App() {
             onOpenAICollection={() => { void openAICollection(); }}
             onOpenDuplicates={openDuplicates}
             onOpenExplore={() => setExploreOpen(true)}
+            onVisitBookmark={(id) => {
+              void handleVisitBookmark(id);
+            }}
           />
         }
         detail={
@@ -1274,7 +1284,7 @@ export default function App() {
             onAcceptSuggestedTag={handleAcceptSuggestedTag}
             onCreateTag={handleCreateTag}
             onVisit={() => {
-              void handleVisit();
+              if (selectedBookmark) void handleVisitBookmark(selectedBookmark.id);
             }}
             onOpenHealth={() => setHealthOpen(true)}
             onReanalyze={() => setReanalyzeOpen(true)}
