@@ -92,8 +92,9 @@ test.describe('Spotlight 关键词与 URL', () => {
 
     await openSpotlightWithShortcut(page);
     await page.getByLabel('Spotlight search').fill('https://example.test/spotlight-url');
-    await expect(page.getByRole('button', { name: 'New Bookmark' })).toBeVisible();
-    await page.getByRole('button', { name: 'New Bookmark' }).click();
+    const spotlightDialog = page.getByRole('dialog', { name: 'Spotlight' });
+    await expect(spotlightDialog.getByRole('button', { name: 'New Bookmark', exact: true })).toBeVisible();
+    await spotlightDialog.getByRole('button', { name: 'New Bookmark', exact: true }).click();
 
     await expect(page.getByRole('heading', { name: 'New Bookmark' })).toBeVisible();
     await expect(page.getByRole('textbox', { name: 'Bookmark URL' })).toHaveValue(
