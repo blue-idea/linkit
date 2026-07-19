@@ -17,6 +17,8 @@ const (
 	MetadataMaxContentRunes = 8_000
 	// HTTPUserAgent 标识 Linkit 版本，避免伪装浏览器。
 	HTTPUserAgent = "Linkit/" + AppVersion + " (+desktop)"
+	// HealthMaxConcurrency 限制手动链接健康扫描的并发请求数。
+	HealthMaxConcurrency = 4
 
 	// AITotalTimeout 限制单次 Chat Completions 请求总耗时。
 	AITotalTimeout = 30 * time.Second

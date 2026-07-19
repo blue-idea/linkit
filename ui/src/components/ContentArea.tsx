@@ -490,7 +490,7 @@ function useSelectionTitle(selection: Selection, categories: Category[], collect
       case 'category': return categories.find((c) => c.id === selection.id)?.name ?? '分类';
       case 'collection': return collections.find((c) => c.id === selection.id)?.name ?? '主题';
       case 'tag': return '标签筛选';
-      case 'health': return selection.status === 'changed' ? '内容已更新' : '失效链接';
+      case 'health': return selection.status === 'changed' ? 'Updated' : 'Broken';
     }
   }, [selection, categories, collections]);
 }

@@ -850,13 +850,13 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-039 · 实现手动链接健康扫描与状态入口**
+- [x] **TASK-039 · 实现手动链接健康扫描与状态入口**
 
-  > 依赖：TASK-009、TASK-013、TASK-022 · 预计：3–4 小时
+  > 依赖：TASK-009、TASK-013、TASK-022 · 预计：3–4 小时 · 状态：done · 2026-07-19
 
-  - [ ] 实现扫描并发限制、取消、事件进度、指纹与 ok/changed/broken 归类。
-  - [ ] 确保未主动触发时无后台扫描。
-  - [ ] 接入 Updated/Broken 入口、计数和持久化。
+  - [x] 实现扫描并发限制、取消、事件进度、指纹与 ok/changed/broken 归类。
+  - [x] 确保未主动触发时无后台扫描。
+  - [x] 接入 Updated/Broken 入口、计数和持久化。
 
   **验证方式：**
   ```powershell
@@ -1030,7 +1030,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-036 | 推荐与知识网络 | Unit/E2E | done | REQ-021 |
 | TASK-037 | 真实 AI 验收 | API/E2E | BLOCKED | REQ-006、013、018~021 |
 | TASK-038 | 收藏洞察 | Unit/E2E | done | REQ-022 |
-| TASK-039 | 链接健康 | API/E2E | 待开始 | REQ-022 |
+| TASK-039 | 链接健康 | API/E2E | done | REQ-022 |
 | TASK-040 | 安全与隐私测试 | Security/API | 待开始 | REQ-003~005、019~020、025、027 |
 | TASK-041 | 性能预算 | Performance | 待开始 | REQ-028 |
 | TASK-042 | Windows 桌面验收 | E2E/Manual | 待开始 | REQ-005、008、024、027、028 |
