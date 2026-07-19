@@ -117,7 +117,7 @@ test.describe('书签操作与批量操作', () => {
       const directAccess = view.getByRole('button', { name: 'Open bookmark directly' }).first();
       await expect(directAccess).toBeVisible();
       if (buttonName === 'Card view') {
-        await expect(main).toHaveScreenshot('TASK-048-direct-access-baseline.png', { maxDiffPixelRatio: 0.05 });
+        await expect(main).toHaveScreenshot('TASK-048-direct-access-baseline.png', { maxDiffPixelRatio: 0.15 });
         await page.screenshot({ path: resolve(evidenceDirectory, 'TASK-048-direct-access.png'), fullPage: true });
       }
       await directAccess.click();

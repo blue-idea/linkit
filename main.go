@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"log"
+	"path/filepath"
 
 	"github.com/blue-idea/collection/config"
 	"github.com/blue-idea/collection/internal/ai"
@@ -16,6 +17,7 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
 // REQ-024-AC-001：Wails 构建会将 ui/dist 同步到此嵌入目录。
@@ -24,6 +26,11 @@ import (
 var assets embed.FS
 
 func main() {
+	defaultRootDir, err := localstore.DefaultRootDir()
+	if err != nil {
+		log.Fatalf("Unable to get default root dir: %v", err)
+	}
+
 	settingsService, err := settingsstore.NewDefaultService()
 	if err != nil {
 		log.Fatalf("Unable to initialise settings service: %v", err)
@@ -65,6 +72,9 @@ func main() {
 			nativeFileService.SetContext(ctx)
 			localDocumentService.SetContext(ctx)
 			healthEmitter.SetContext(ctx)
+		},
+		Windows: &windows.Options{
+			WebviewUserDataPath: filepath.Join(defaultRootDir, "webview"),
 		},
 		Bind: []interface{}{
 			localDocumentService,
