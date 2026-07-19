@@ -387,6 +387,18 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
     return_value: "Bookmark, with unique id, normalized URL and valid createdAt"
     side_effects:
       - "The bookmark is added exactly once to the active library"
+
+- id: REQ-006-AC-005
+  ears: >
+    When 用户在 New Bookmark 中提交的 URL 规范化后已存在于当前资料库,
+    the Linkit shall 显示英文 warning 并阻止进入分析、确认或保存的下一步操作.
+  test_type: Unit + E2E
+  expected:
+    ui_state: "A warning says Bookmark URL already exists and the input step remains visible"
+    return_value: "BOOKMARK_URL_DUPLICATE when the domain command receives a duplicate normalized URL"
+    side_effects:
+      - "No duplicate bookmark is created"
+      - "No analysis or review step is opened for the duplicate URL"
 ```
 
 ---
@@ -1860,3 +1872,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 1.8.0 | 2026-07-19 | 已定稿 | 新增 REQ-008-AC-005：六种书签视图提供区别于右侧详情 Visit 的直接访问入口 |
 | 1.9.0 | 2026-07-19 | 已定稿 | 新增 REQ-017-AC-005：Spotlight 搜索结果 Enter 确认直接访问高亮书签网站 |
 | 2.0.0 | 2026-07-19 | 已定稿 | 新增 REQ-012-AC-005：侧栏新建/编辑主题时通过候选 Emoji 菜单选择主题图标 |
+| 2.1.0 | 2026-07-19 | 已定稿 | 新增 REQ-006-AC-005：创建书签时 URL 规范化后必须唯一，重复时显示 warning 并阻止下一步 |

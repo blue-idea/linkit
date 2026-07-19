@@ -31,6 +31,20 @@ test.describe('书签 CRUD', () => {
     await expect(page.getByText('Manual Entry Bookmark').first()).toBeVisible();
   });
 
+  // REQ-006-AC-005
+  test('书签新增 shall 在 URL 已存在时显示 warning 并阻止进入下一步', async ({ page }) => {
+    await page.getByRole('button', { name: 'New', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'New Bookmark' })).toBeVisible();
+
+    await page.getByRole('textbox', { name: 'Bookmark URL' }).fill('coolors.co/');
+    await page.getByRole('button', { name: 'Analyze', exact: true }).click();
+
+    await expect(page.getByRole('alert')).toContainText('Bookmark URL already exists');
+    await page.screenshot({ path: '../docs/spec/evidence/TASK-051-duplicate-url-warning.png', fullPage: true });
+    await expect(page.getByRole('button', { name: 'Save bookmark' })).toHaveCount(0);
+    await expect(page.getByRole('textbox', { name: 'Bookmark URL' })).toBeVisible();
+  });
+
   // REQ-007-AC-001 / REQ-007-AC-002
   test('书签编辑 shall 在详情与列表同步标题', async ({ page }) => {
     const firstTitle = await page.locator('[aria-label="Edit bookmark title"]').first().textContent();

@@ -6,6 +6,7 @@ export type { CommandResult, DomainError, DomainEvent, LibraryCommand } from './
 export {
   createBookmark,
   deleteBookmark,
+  isBookmarkUrlDuplicate,
   normalizeBookmarkUrl,
   updateBookmark,
 } from './bookmarks';

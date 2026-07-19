@@ -8,6 +8,10 @@ export const DOMAIN_CONFIG = {
       code: 'BOOKMARK_URL_INVALID',
       message: 'Bookmark URL must be http or https',
     },
+    bookmarkUrlDuplicate: {
+      code: 'BOOKMARK_URL_DUPLICATE',
+      message: 'Bookmark URL already exists',
+    },
     collectionNotFound: {
       code: 'COLLECTION_NOT_FOUND',
       message: 'Collection was not found',
