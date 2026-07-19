@@ -62,7 +62,7 @@ export function CategoryDndItem({
   }) => ReactNode;
 }) {
   const id = categoryDndId(categoryId);
-  const { attributes, listeners, setNodeRef: setDragRef, transform, isDragging } = useDraggable({
+  const { listeners, setNodeRef: setDragRef, transform, isDragging } = useDraggable({
     id,
   });
   const { setNodeRef: setDropRef, isOver } = useDroppable({ id });
@@ -74,7 +74,7 @@ export function CategoryDndItem({
           setDropRef(node);
           setDragRef(node);
         },
-        setDragHandleProps: { ...listeners, ...attributes },
+        setDragHandleProps: listeners ?? {},
         isOver,
         isDragging,
         transformStyle: CSS.Translate.toString(transform) ?? undefined,
