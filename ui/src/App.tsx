@@ -98,6 +98,7 @@ import {
 } from './domain/query';
 import { collectCategorySubtreeIds } from './domain/categories';
 import {
+  AICollectionGoalDialog,
   AICollectionPreviewDialog,
   DuplicatePreviewDialog,
   applyCollectionSuggestion,
@@ -152,6 +153,8 @@ export default function App() {
   const [insightsOpen, setInsightsOpen] = useState(false);
   const [healthOpen, setHealthOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [aiCollectionGoalOpen, setAICollectionGoalOpen] = useState(false);
+  const [aiCollectionGenerating, setAICollectionGenerating] = useState(false);
   const [aiCollectionPreview, setAICollectionPreview] = useState<CollectionSuggestion | null>(null);
   const [duplicatePreview, setDuplicatePreview] = useState<DuplicatePreview | null>(null);
   const [exploreOpen, setExploreOpen] = useState(false);
@@ -506,9 +509,12 @@ export default function App() {
     flashToast(`已将 ${ids.length} 项加入主题`);
   }, [bookmarks, cats, cols, flashToast, state.selection, tagList]);
 
-  const openAICollection = useCallback(async () => {
-    const goal = window.prompt('Describe the collection you want');
-    if (!goal?.trim()) return;
+  const openAICollection = useCallback(() => {
+    setAICollectionGoalOpen(true);
+  }, []);
+
+  const submitAICollectionGoal = useCallback(async (goal: string) => {
+    setAICollectionGenerating(true);
     try {
       const preview = await generateCollectionPreview({
         context: {
@@ -518,13 +524,20 @@ export default function App() {
         },
         goal,
         bookmarks: bookmarks.map((bookmark) => ({
-          id: bookmark.id, title: bookmark.title, description: bookmark.description,
-          tagLabels: bookmark.tags.map((id) => tagList.find((tag) => tag.id === id)?.label).filter((label): label is string => Boolean(label)),
+          id: bookmark.id,
+          title: bookmark.title,
+          description: bookmark.description,
+          tagLabels: bookmark.tags
+            .map((id) => tagList.find((tag) => tag.id === id)?.label)
+            .filter((label): label is string => Boolean(label)),
         })),
       });
+      setAICollectionGoalOpen(false);
       setAICollectionPreview(preview);
     } catch (error) {
       flashToast((error as { message?: string }).message ?? 'AI collection generation failed');
+    } finally {
+      setAICollectionGenerating(false);
     }
   }, [bookmarks, flashToast, settings.ai?.apiBase, settings.ai?.model, settings.locale, tagList]);
 
@@ -1265,7 +1278,7 @@ export default function App() {
               setNewOpen(true);
             }}
             onDragStartBookmark={() => {}}
-            onOpenAICollection={() => { void openAICollection(); }}
+            onOpenAICollection={openAICollection}
             onOpenDuplicates={openDuplicates}
             onOpenExplore={() => setExploreOpen(true)}
             onVisitBookmark={(id) => {
@@ -1556,6 +1569,18 @@ export default function App() {
           members={composePreview.members}
           onCancel={handleCancelCompose}
           onConfirm={handleConfirmCompose}
+        />
+      )}
+      {aiCollectionGoalOpen && (
+        <AICollectionGoalDialog
+          submitting={aiCollectionGenerating}
+          onCancel={() => {
+            if (aiCollectionGenerating) return;
+            setAICollectionGoalOpen(false);
+          }}
+          onSubmit={(goal) => {
+            void submitAICollectionGoal(goal);
+          }}
         />
       )}
       {aiCollectionPreview && (

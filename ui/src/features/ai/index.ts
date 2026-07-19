@@ -10,7 +10,11 @@ export { applyCollectionSuggestion, collectionSuggestionSchema, generateCollecti
 export type { CollectionSuggestion } from './collections';
 export { applyDuplicateDecision, buildDuplicatePreview } from './duplicates';
 export type { DuplicatePreview, DuplicateDifference } from './duplicates';
-export { AICollectionPreviewDialog, DuplicatePreviewDialog } from './OrganizerDialogs';
+export {
+  AICollectionGoalDialog,
+  AICollectionPreviewDialog,
+  DuplicatePreviewDialog,
+} from './OrganizerDialogs';
 export type {
   AnalyzeBookmarkResult,
   AIContext,

@@ -51,8 +51,14 @@ test.describe('AI 创建主题与去重整理', () => {
         suggestedTags: ['frontend', 'research'], bookmarkIds: ['b-coolors', 'b-fontpair'],
       }) } };
     });
-    page.once('dialog', async (dialog) => dialog.accept('Build a frontend research collection'));
     await page.getByRole('button', { name: 'AI create collection' }).click();
+    const goalDialog = page.getByRole('dialog', { name: 'AI create collection' });
+    await expect(goalDialog).toBeVisible();
+    await expect(goalDialog).toContainText('Describe the collection you want');
+    await expect(goalDialog).toHaveScreenshot('TASK-035-ai-collection-goal.png', { maxDiffPixelRatio: 0.05 });
+    await page.screenshot({ path: resolve(evidenceDirectory, 'TASK-035-ai-collection-goal.png'), fullPage: true });
+    await goalDialog.getByLabel('Collection goal').fill('Build a frontend research collection');
+    await goalDialog.getByRole('button', { name: 'Generate preview' }).click();
     const dialog = page.getByRole('dialog', { name: 'AI collection preview' });
     await expect(dialog).toBeVisible();
     await expect(dialog).toContainText('Nothing has been changed yet');
