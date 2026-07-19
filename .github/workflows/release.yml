@@ -96,11 +96,30 @@ jobs:
 
       - name: Install NSIS (Windows)
         if: matrix.os == 'windows'
-        run: choco install nsis -y
+        shell: pwsh
+        run: |
+          choco install nsis -y --no-progress
+          $nsisDir = "${env:ProgramFiles(x86)}\NSIS"
+          if (-not (Test-Path (Join-Path $nsisDir 'makensis.exe'))) {
+            throw "makensis.exe not found under $nsisDir"
+          }
+          # 确保后续步骤与 wails -nsis 能找到 makensis
+          Add-Content -Path $env:GITHUB_PATH -Value $nsisDir
+          & (Join-Path $nsisDir 'makensis.exe') /VERSION
 
       - name: Build Wails desktop app (Windows)
         if: matrix.os == 'windows'
-        run: go run github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }} build -clean -platform ${{ matrix.platform }} -nsis
+        shell: pwsh
+        run: |
+          $nsisDir = "${env:ProgramFiles(x86)}\NSIS"
+          if (Test-Path $nsisDir) {
+            $env:Path = "$nsisDir;$env:Path"
+          }
+          go run github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }} build -clean -platform ${{ matrix.platform }} -nsis
+          if (-not (Test-Path 'build/bin/linkit-amd64-installer.exe')) {
+            Get-ChildItem build/bin -ErrorAction SilentlyContinue | Format-Table Name,Length
+            throw 'NSIS installer was not produced'
+          }
 
       - name: Install create-dmg (macOS)
         if: matrix.os == 'macos'
