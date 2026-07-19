@@ -3,6 +3,7 @@ package localstore
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,6 +14,10 @@ import (
 )
 
 // REQ-029-AC-001~005：本地数据根查询、迁移冲突、失败回滚与成功切换。
+
+func migrateRoot(service *Service, request MigrateDataRootRequest) (MigrateDataRootResult, error) {
+	return service.MigrateDataRoot(request.TargetPath, request.Confirmed, request.LibraryDocumentJSON, request.SettingsJSON)
+}
 
 func TestGetDataRoot_默认未重定向(t *testing.T) {
 	bootstrap := t.TempDir()
@@ -39,7 +44,7 @@ func TestMigrateDataRoot_未确认拒绝写入(t *testing.T) {
 	service := NewService(bootstrap, WithBootstrapRoot(bootstrap), WithClock(func() time.Time { return fixedTime }))
 	mustWrite(t, filepath.Join(bootstrap, config.LibraryFileName), `{"format":"linkit-library","schemaVersion":1,"revision":1}`)
 
-	_, err := service.MigrateDataRoot(MigrateDataRootRequest{TargetPath: target, Confirmed: false})
+	_, err := migrateRoot(service, MigrateDataRootRequest{TargetPath: target, Confirmed: false})
 	assertErrorCode(t, err, config.ErrorCodeInvalidArgument)
 
 	if _, err := os.Stat(filepath.Join(bootstrap, config.LibraryFileName)); err != nil {
@@ -58,7 +63,7 @@ func TestMigrateDataRoot_目标已有数据时阻止(t *testing.T) {
 	mustWrite(t, filepath.Join(bootstrap, config.LibraryFileName), `{"format":"linkit-library","schemaVersion":1,"revision":1}`)
 	mustWrite(t, filepath.Join(target, config.LibraryFileName), `{"format":"linkit-library","schemaVersion":1,"revision":9}`)
 
-	_, err := service.MigrateDataRoot(MigrateDataRootRequest{TargetPath: target, Confirmed: true})
+	_, err := migrateRoot(service, MigrateDataRootRequest{TargetPath: target, Confirmed: true})
 	assertErrorCode(t, err, config.ErrorCodeDataRootTargetOccupied)
 
 	info, err := service.GetDataRoot()
@@ -86,7 +91,7 @@ func TestMigrateDataRoot_成功迁移后读写新根(t *testing.T) {
 	mustWrite(t, filepath.Join(bootstrap, config.SettingsFileName), settings)
 	mustWrite(t, filepath.Join(bootstrap, config.CloudDraftFileName), `{"format":"linkit-cloud-draft","schemaVersion":1,"dirty":true}`)
 
-	result, err := service.MigrateDataRoot(MigrateDataRootRequest{TargetPath: target, Confirmed: true})
+	result, err := migrateRoot(service, MigrateDataRootRequest{TargetPath: target, Confirmed: true})
 	if err != nil {
 		t.Fatalf("MigrateDataRoot returned error: %v", err)
 	}
@@ -172,7 +177,7 @@ func TestMigrateDataRoot_复制失败时回滚并清理目标(t *testing.T) {
 	service := NewService(bootstrap, WithBootstrapRoot(bootstrap), WithClock(func() time.Time { return fixedTime }))
 	mustWrite(t, filepath.Join(bootstrap, config.LibraryFileName), `{"format":"linkit-library","schemaVersion":1,"revision":1}`)
 
-	_, err := service.MigrateDataRoot(MigrateDataRootRequest{TargetPath: blocker, Confirmed: true})
+	_, err := migrateRoot(service, MigrateDataRootRequest{TargetPath: blocker, Confirmed: true})
 	assertErrorCode(t, err, config.ErrorCodeDataRootInvalid)
 
 	info, err := service.GetDataRoot()
@@ -187,14 +192,80 @@ func TestMigrateDataRoot_复制失败时回滚并清理目标(t *testing.T) {
 	}
 }
 
-func TestMigrateDataRoot_拒绝源目录子路径(t *testing.T) {
+func TestMigrateDataRoot_允许迁移到源目录子路径(t *testing.T) {
+	// 用户明确要求允许把数据根迁到当前目录下的子文件夹。
 	bootstrap := t.TempDir()
 	service := NewService(bootstrap, WithBootstrapRoot(bootstrap), WithClock(func() time.Time { return fixedTime }))
-	mustWrite(t, filepath.Join(bootstrap, config.LibraryFileName), `{"format":"linkit-library","schemaVersion":1,"revision":1}`)
-	child := filepath.Join(bootstrap, "nested")
+	library := `{"format":"linkit-library","schemaVersion":1,"revision":4,"updatedAt":"2026-07-18T08:30:00Z","data":{"bookmarks":[],"categories":[],"collections":[],"tags":[]}}`
+	settings := `{"settingsVersion":1,"storageMode":"local","theme":"midnight","locale":"en","ai":{"apiBase":"","model":""},"aiConsent":null,"view":{"defaultMode":"card"},"lastCloudRevision":null}`
+	mustWrite(t, filepath.Join(bootstrap, config.LibraryFileName), library)
+	mustWrite(t, filepath.Join(bootstrap, config.SettingsFileName), settings)
+	child := filepath.Join(bootstrap, "nested-data")
 
-	_, err := service.MigrateDataRoot(MigrateDataRootRequest{TargetPath: child, Confirmed: true})
-	assertErrorCode(t, err, config.ErrorCodeDataRootInvalid)
+	result, err := migrateRoot(service, MigrateDataRootRequest{
+		TargetPath:          child,
+		Confirmed:           true,
+		LibraryDocumentJSON: library,
+		SettingsJSON:        settings,
+	})
+	if err != nil {
+		t.Fatalf("MigrateDataRoot to nested child should succeed: %v", err)
+	}
+	if result.DataRoot != child {
+		t.Fatalf("Unexpected dataRoot: got %q, want %q", result.DataRoot, child)
+	}
+	if _, err := os.Stat(filepath.Join(child, config.LibraryFileName)); err != nil {
+		t.Fatalf("Child library missing: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(child, config.SettingsFileName)); err != nil {
+		t.Fatalf("Child settings missing: %v", err)
+	}
+	// 仅删除源中的白名单文件，不得误删子目录本身。
+	if _, err := os.Stat(filepath.Join(bootstrap, config.LibraryFileName)); !errors.Is(err, os.ErrNotExist) {
+		t.Fatal("Source library should be removed after nested migrate")
+	}
+	if info, err := os.Stat(child); err != nil || !info.IsDir() {
+		t.Fatalf("Nested target directory must remain: %v", err)
+	}
+	info, err := service.GetDataRoot()
+	if err != nil {
+		t.Fatalf("GetDataRoot: %v", err)
+	}
+	if info.DataRoot != child || !info.IsCustom {
+		t.Fatalf("Service should use nested data root: %+v", info)
+	}
+}
+
+func TestMigrateDataRoot_允许迁移到源目录的父路径(t *testing.T) {
+	bootstrap := t.TempDir()
+	child := filepath.Join(bootstrap, "nested-data")
+	if err := os.MkdirAll(child, 0o755); err != nil {
+		t.Fatalf("MkdirAll: %v", err)
+	}
+	library := `{"format":"linkit-library","schemaVersion":1,"revision":5,"updatedAt":"2026-07-18T08:30:00Z","data":{"bookmarks":[],"categories":[],"collections":[],"tags":[]}}`
+	settings := `{"settingsVersion":1,"storageMode":"local","theme":"graphite","locale":"en","ai":{"apiBase":"","model":""},"aiConsent":null,"view":{"defaultMode":"card"},"lastCloudRevision":null}`
+	mustWrite(t, filepath.Join(child, config.LibraryFileName), library)
+	mustWrite(t, filepath.Join(child, config.SettingsFileName), settings)
+	service := NewService(child, WithBootstrapRoot(bootstrap), WithClock(func() time.Time { return fixedTime }))
+
+	result, err := migrateRoot(service, MigrateDataRootRequest{
+		TargetPath:          bootstrap,
+		Confirmed:           true,
+		LibraryDocumentJSON: library,
+		SettingsJSON:        settings,
+	})
+	if err != nil {
+		t.Fatalf("MigrateDataRoot to parent should succeed: %v", err)
+	}
+	if result.DataRoot != bootstrap {
+		t.Fatalf("Unexpected dataRoot: got %q, want %q", result.DataRoot, bootstrap)
+	}
+	if _, err := os.Stat(filepath.Join(bootstrap, config.LibraryFileName)); err != nil {
+		t.Fatalf("Parent library missing: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(child, config.LibraryFileName)); !errors.Is(err, os.ErrNotExist) {
+		t.Fatal("Child library should be removed after migrate to parent")
+	}
 }
 
 func TestMigrateDataRoot_不写入密钥文件(t *testing.T) {
@@ -205,7 +276,7 @@ func TestMigrateDataRoot_不写入密钥文件(t *testing.T) {
 	mustWrite(t, filepath.Join(bootstrap, config.LibraryFileName), `{"format":"linkit-library","schemaVersion":1,"revision":1}`)
 	mustWrite(t, filepath.Join(bootstrap, "secrets.json"), `{"apiKey":"sk-test"}`)
 
-	result, err := service.MigrateDataRoot(MigrateDataRootRequest{TargetPath: target, Confirmed: true})
+	result, err := migrateRoot(service, MigrateDataRootRequest{TargetPath: target, Confirmed: true})
 	if err != nil {
 		t.Fatalf("MigrateDataRoot returned error: %v", err)
 	}
@@ -221,6 +292,111 @@ func TestMigrateDataRoot_不写入密钥文件(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(bootstrap, "secrets.json")); err != nil {
 		t.Fatalf("Unknown source file should remain: %v", err)
 	}
+}
+
+func TestMigrateDataRoot_快照落盘后迁移资料库与设置(t *testing.T) {
+	// REQ-029-AC-002：源目录无文件时，仍须把当前资料库与配置写入目标。
+	bootstrap := t.TempDir()
+	target := t.TempDir()
+	service := NewService(bootstrap, WithBootstrapRoot(bootstrap), WithClock(func() time.Time { return fixedTime }))
+
+	library := `{"format":"linkit-library","schemaVersion":1,"revision":2,"updatedAt":"2026-07-18T08:30:00Z","data":{"bookmarks":[{"id":"b1","url":"https://example.com","title":"Example","createdAt":"2026-07-18T08:30:00Z","updatedAt":"2026-07-18T08:30:00Z","tagIds":[],"collectionIds":[],"categoryIds":[]}],"categories":[],"collections":[],"tags":[]}}`
+	settings := `{"settingsVersion":1,"storageMode":"local","theme":"ocean","locale":"en","ai":{"apiBase":"","model":""},"aiConsent":null,"view":{"defaultMode":"Card"},"lastCloudRevision":null}`
+
+	result, err := migrateRoot(service, MigrateDataRootRequest{
+		TargetPath:          target,
+		Confirmed:           true,
+		LibraryDocumentJSON: library,
+		SettingsJSON:        settings,
+	})
+	if err != nil {
+		t.Fatalf("MigrateDataRoot returned error: %v", err)
+	}
+	if result.DataRoot != target {
+		t.Fatalf("Unexpected dataRoot: got %q, want %q", result.DataRoot, target)
+	}
+	assertContainsFile(t, result.MigratedFiles, config.LibraryFileName)
+	assertContainsFile(t, result.MigratedFiles, config.SettingsFileName)
+
+	gotLibrary, err := os.ReadFile(filepath.Join(target, config.LibraryFileName))
+	if err != nil {
+		t.Fatalf("Target library missing: %v", err)
+	}
+	if !strings.Contains(string(gotLibrary), `"revision":2`) || !strings.Contains(string(gotLibrary), "https://example.com") {
+		t.Fatalf("Target library content unexpected: %s", gotLibrary)
+	}
+	gotSettings, err := os.ReadFile(filepath.Join(target, config.SettingsFileName))
+	if err != nil {
+		t.Fatalf("Target settings missing: %v", err)
+	}
+	if !strings.Contains(string(gotSettings), `"theme":"ocean"`) {
+		t.Fatalf("Target settings content unexpected: %s", gotSettings)
+	}
+
+	read, err := service.ReadLibrary()
+	if err != nil || read.State != "found" {
+		t.Fatalf("Service should read migrated library: %+v err=%v", read, err)
+	}
+}
+
+func TestMigrateDataRoot_同源快照可回填空目录(t *testing.T) {
+	bootstrap := t.TempDir()
+	dataRoot := t.TempDir()
+	mustWrite(t, filepath.Join(bootstrap, config.DataRootFileName), fmt.Sprintf(
+		`{"format":%q,"schemaVersion":1,"dataRoot":%q,"updatedAt":%q}`,
+		config.DataRootFormat, dataRoot, fixedTimeText,
+	))
+	service := NewService(dataRoot, WithBootstrapRoot(bootstrap), WithClock(func() time.Time { return fixedTime }))
+	library := `{"format":"linkit-library","schemaVersion":1,"revision":1,"updatedAt":"2026-07-18T08:30:00Z","data":{"bookmarks":[],"categories":[],"collections":[],"tags":[]}}`
+	settings := `{"settingsVersion":1,"storageMode":"local","theme":"paper","locale":"en","ai":{"apiBase":"","model":""},"aiConsent":null,"view":{"defaultMode":"card"},"lastCloudRevision":null}`
+
+	result, err := migrateRoot(service, MigrateDataRootRequest{
+		TargetPath:          dataRoot,
+		Confirmed:           true,
+		LibraryDocumentJSON: library,
+		SettingsJSON:        settings,
+	})
+	if err != nil {
+		t.Fatalf("MigrateDataRoot same-path fill: %v", err)
+	}
+	assertContainsFile(t, result.MigratedFiles, config.LibraryFileName)
+	assertContainsFile(t, result.MigratedFiles, config.SettingsFileName)
+	if _, err := os.Stat(filepath.Join(dataRoot, config.LibraryFileName)); err != nil {
+		t.Fatalf("library should be written to current root: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(dataRoot, config.SettingsFileName)); err != nil {
+		t.Fatalf("settings should be written to current root: %v", err)
+	}
+}
+
+func TestMigrateDataRoot_无文件且无快照时失败(t *testing.T) {
+	bootstrap := t.TempDir()
+	target := t.TempDir()
+	service := NewService(bootstrap, WithBootstrapRoot(bootstrap), WithClock(func() time.Time { return fixedTime }))
+
+	_, err := migrateRoot(service, MigrateDataRootRequest{TargetPath: target, Confirmed: true})
+	assertErrorCode(t, err, config.ErrorCodeDataRootEmpty)
+
+	info, err := service.GetDataRoot()
+	if err != nil {
+		t.Fatalf("GetDataRoot: %v", err)
+	}
+	if info.DataRoot != bootstrap {
+		t.Fatalf("Root must remain bootstrap on empty migrate: %+v", info)
+	}
+	if entries, _ := os.ReadDir(target); len(entries) != 0 {
+		t.Fatalf("Failed empty migrate should leave target clean, got %d entries", len(entries))
+	}
+}
+
+func assertContainsFile(t *testing.T, files []string, name string) {
+	t.Helper()
+	for _, file := range files {
+		if file == name {
+			return
+		}
+	}
+	t.Fatalf("Expected %q in migrated files %v", name, files)
 }
 
 func TestResolveEffectiveDataRoot_读取引导指针(t *testing.T) {

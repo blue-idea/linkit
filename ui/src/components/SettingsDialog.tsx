@@ -27,10 +27,33 @@ import {
   createDataRootBindings,
   type DataRootInfo,
 } from '../services/storage/data-root';
+import { getDefaultAppSettings } from '../services/settings';
 
 const dataRootBindings = createDataRootBindings();
 
 type Tab = SettingsSectionKey;
+
+/** 从 Wails/JS 错误对象中提取稳定错误码。 */
+function extractErrorCode(error: unknown): string | undefined {
+  if (!error || typeof error !== 'object') {
+    if (typeof error === 'string') {
+      if (error.includes('DATA_ROOT_TARGET_OCCUPIED')) return 'DATA_ROOT_TARGET_OCCUPIED';
+      if (error.includes('DATA_ROOT_MIGRATE_FAILED')) return 'DATA_ROOT_MIGRATE_FAILED';
+      if (error.includes('DATA_ROOT_INVALID')) return 'DATA_ROOT_INVALID';
+      if (error.includes('DATA_ROOT_EMPTY') || error.includes('No library or settings')) return 'DATA_ROOT_EMPTY';
+    }
+    return undefined;
+  }
+  const record = error as { code?: string; message?: string };
+  if (record.code) {
+    return record.code;
+  }
+  if (typeof record.message === 'string') {
+    if (record.message.includes('already contains Linkit data')) return 'DATA_ROOT_TARGET_OCCUPIED';
+    if (record.message.includes('Failed to migrate')) return 'DATA_ROOT_MIGRATE_FAILED';
+  }
+  return undefined;
+}
 
 function Modal({
   open,
@@ -243,9 +266,31 @@ export function SettingsDialog({
     }
     setDataRootError(null);
     try {
+      // 将当前 UI 中的资料库与设置一并提交，确保源 AppData 为空时也能真实落盘迁移。
+      const exportDoc = buildExportEnvelopeFromUi(library, { now: new Date().toISOString() });
+      const libraryDocument = {
+        format: exportDoc.format,
+        schemaVersion: exportDoc.schemaVersion,
+        revision: exportDoc.revision,
+        updatedAt: exportDoc.updatedAt,
+        data: exportDoc.data,
+      };
+      const defaults = getDefaultAppSettings();
+      const settingsDocument = {
+        ...defaults,
+        storageMode: draft.storageMode,
+        theme: draft.theme,
+        locale: draft.locale ?? defaults.locale,
+        ai: {
+          apiBase: draft.ai?.apiBase ?? '',
+          model: draft.ai?.model ?? '',
+        },
+      };
       const result = await dataRootBindings.migrateDataRoot({
         targetPath: pendingDataRootTarget,
         confirmed: true,
+        libraryDocumentJson: JSON.stringify(libraryDocument),
+        settingsJson: JSON.stringify(settingsDocument),
       });
       setDataRootInfo({
         ...dataRootInfo,
@@ -255,9 +300,14 @@ export function SettingsDialog({
       setPendingDataRootTarget(null);
       setDataRootMessage(i18n.t('settings.storage.migrationSuccess'));
     } catch (error) {
-      const code = (error as { code?: string })?.code;
-      if (code === 'DATA_ROOT_TARGET_OCCUPIED') {
+      const code = extractErrorCode(error);
+      const message = error instanceof Error ? error.message : '';
+      if (code === 'DATA_ROOT_TARGET_OCCUPIED' || message.includes('already contains Linkit data')) {
         setDataRootError(i18n.t('settings.storage.migrationOccupied'));
+      } else if (code === 'DATA_ROOT_EMPTY' || message.includes('No library or settings')) {
+        setDataRootError('No library or settings data available to migrate');
+      } else if (message) {
+        setDataRootError(message);
       } else {
         setDataRootError(i18n.t('settings.storage.migrationFailed'));
       }

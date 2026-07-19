@@ -84,8 +84,11 @@ import {
   runCreateTag,
   runRemoveTagFromBookmark,
 } from './features/tags';
-import { createBrowserStorageAdapters } from './services/storage';
+import { createPreferredStorageAdapters } from './services/storage';
 import { normalizeBookmarkUrl } from './domain/commands';
+import {
+  toUiLibraryFromEnvelope,
+} from './features/import-export';
 import {
   clearBookmarkFilters,
   filterBookmarks,
@@ -178,7 +181,7 @@ export default function App() {
   // 防止“未水合的种子数据”在加载本机库前被自动保存覆盖。
   const [libraryHydrated, setLibraryHydrated] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const browserStorage = useMemo(() => createBrowserStorageAdapters(), []);
+  const browserStorage = useMemo(() => createPreferredStorageAdapters(), []);
 
   /* ---------- when authed, load library from chosen storage ---------- */
   useEffect(() => {
@@ -209,9 +212,12 @@ export default function App() {
     } catch {
       // 忽略损坏的草稿探测，不阻断启动。
     }
-    if (settings.storageMode === 'cloud' && auth.user) {
-      setSyncing(true);
-      loadCloudLibrary(auth.user.id).then((lib) => {
+    let cancelled = false;
+    void (async () => {
+      if (settings.storageMode === 'cloud' && auth.user) {
+        setSyncing(true);
+        const lib = await loadCloudLibrary(auth.user.id);
+        if (cancelled) return;
         if (lib) {
           setBookmarks(lib.bookmarks);
           setCats(lib.categories ?? seedCategories);
@@ -220,19 +226,40 @@ export default function App() {
         }
         setLibraryHydrated(true);
         setSyncing(false);
-      });
-    } else {
-      // REQ-002-AC-002：本地模式从本机恢复最后一次成功保存的资料库。
-      const lib = loadLocalLibrary();
-      if (lib) {
-        setBookmarks(lib.bookmarks);
-        setCats(lib.categories ?? seedCategories);
-        setCols(lib.collections ?? seedCollections);
-        setTagList(lib.tags ?? seedTags);
-        setState((s) => ({ ...s, selectedBookmarkId: lib.bookmarks[0]?.id ?? null }));
+        return;
+      }
+
+      // REQ-002-AC-002 / REQ-029-AC-005：本地模式优先从有效数据根恢复。
+      const loaded = await browserStorage.loadLibrary();
+      if (cancelled) return;
+      if (loaded.state === 'found') {
+        const uiLib = toUiLibraryFromEnvelope(loaded.snapshot.envelope);
+        setBookmarks(uiLib.bookmarks);
+        setCats(uiLib.categories ?? seedCategories);
+        setCols(uiLib.collections ?? seedCollections);
+        setTagList(uiLib.tags ?? seedTags);
+        setState((s) => ({ ...s, selectedBookmarkId: uiLib.bookmarks[0]?.id ?? null }));
+      } else if (loaded.state === 'recovery_available') {
+        const uiLib = toUiLibraryFromEnvelope(loaded.recovery.envelope);
+        setBookmarks(uiLib.bookmarks);
+        setCats(uiLib.categories ?? seedCategories);
+        setCols(uiLib.collections ?? seedCollections);
+        setTagList(uiLib.tags ?? seedTags);
+      } else {
+        const lib = loadLocalLibrary();
+        if (lib) {
+          setBookmarks(lib.bookmarks);
+          setCats(lib.categories ?? seedCategories);
+          setCols(lib.collections ?? seedCollections);
+          setTagList(lib.tags ?? seedTags);
+          setState((s) => ({ ...s, selectedBookmarkId: lib.bookmarks[0]?.id ?? null }));
+        }
       }
       setLibraryHydrated(true);
-    }
+    })();
+    return () => {
+      cancelled = true;
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authed]);
 
@@ -249,11 +276,13 @@ export default function App() {
       if (settings.storageMode === 'cloud' && auth.user) {
         saveCloudLibrary(auth.user.id, library);
       } else {
+        // 同步写浏览器键，并异步写入有效数据根（桌面 Go）。
         saveLocalLibrary(library);
+        void browserStorage.saveLibraryData(library);
       }
     }, 900);
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
-  }, [library, settings.storageMode, auth.user, authed, libraryHydrated]);
+  }, [library, settings.storageMode, auth.user, authed, libraryHydrated, browserStorage]);
 
   const insights = useMemo(() => buildLibraryInsights(toCategoryLibrary({
     bookmarks, categories: cats, collections: cols, tags: tagList,
@@ -830,19 +859,21 @@ export default function App() {
   }, [flashToast]);
 
   const applySampleLibrary = useCallback(() => {
+    const sample = {
+      bookmarks: seedBookmarks,
+      categories: seedCategories,
+      collections: seedCollections,
+      tags: seedTags,
+    };
     setBookmarks(seedBookmarks);
     setCats(seedCategories);
     setCols(seedCollections);
     setTagList(seedTags);
     setState((s) => ({ ...s, selectedBookmarkId: seedBookmarks[0]?.id ?? null }));
-    saveLocalLibrary({
-      bookmarks: seedBookmarks,
-      categories: seedCategories,
-      collections: seedCollections,
-      tags: seedTags,
-    });
+    saveLocalLibrary(sample);
+    void browserStorage.saveLibraryData(sample);
     flashToast('Sample data restored');
-  }, [flashToast]);
+  }, [browserStorage, flashToast]);
 
   const handleRestoreSampleData = useCallback(() => {
     const hasLocalData = browserStorage.hasLocalLibraryData() || bookmarks.length > 0;
@@ -1010,15 +1041,32 @@ export default function App() {
           startup.markSignedOut();
         }}
         onConfirm={() => {
-          const lib = loadLocalLibrary();
-          if (lib) {
-            setBookmarks(lib.bookmarks);
-            setCats(lib.categories ?? seedCategories);
-            setCols(lib.collections ?? seedCollections);
-            setTagList(lib.tags ?? seedTags);
-          }
-          startup.setRecoveryPending(false);
-          void startup.enterLocalMode(settings);
+          void (async () => {
+            const loaded = await browserStorage.loadLibrary();
+            if (loaded.state === 'found') {
+              const uiLib = toUiLibraryFromEnvelope(loaded.snapshot.envelope);
+              setBookmarks(uiLib.bookmarks);
+              setCats(uiLib.categories ?? seedCategories);
+              setCols(uiLib.collections ?? seedCollections);
+              setTagList(uiLib.tags ?? seedTags);
+            } else if (loaded.state === 'recovery_available') {
+              const uiLib = toUiLibraryFromEnvelope(loaded.recovery.envelope);
+              setBookmarks(uiLib.bookmarks);
+              setCats(uiLib.categories ?? seedCategories);
+              setCols(uiLib.collections ?? seedCollections);
+              setTagList(uiLib.tags ?? seedTags);
+            } else {
+              const lib = loadLocalLibrary();
+              if (lib) {
+                setBookmarks(lib.bookmarks);
+                setCats(lib.categories ?? seedCategories);
+                setCols(lib.collections ?? seedCollections);
+                setTagList(lib.tags ?? seedTags);
+              }
+            }
+            startup.setRecoveryPending(false);
+            void startup.enterLocalMode(settings);
+          })();
         }}
       />
     );

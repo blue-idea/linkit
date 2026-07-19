@@ -35,8 +35,15 @@ func TestDefaultRootDir(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewDefaultService returned error: %v", err)
 	}
-	if service.rootDir != root {
-		t.Fatalf("Unexpected default service root: got %q, want %q", service.rootDir, root)
+	resolved, err := ResolveEffectiveDataRoot(root)
+	if err != nil {
+		t.Fatalf("ResolveEffectiveDataRoot returned error: %v", err)
+	}
+	if service.rootDir != resolved {
+		t.Fatalf("Unexpected default service root: got %q, want resolved %q", service.rootDir, resolved)
+	}
+	if service.bootstrapRoot != root {
+		t.Fatalf("Unexpected bootstrap root: got %q, want %q", service.bootstrapRoot, root)
 	}
 }
 

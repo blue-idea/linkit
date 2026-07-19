@@ -21,9 +21,13 @@ type DataRootInfo struct {
 }
 
 // MigrateDataRootRequest 触发目录迁移；confirmed 必须为 true。
+// LibraryDocumentJSON / SettingsJSON 用于在迁移前把当前内存快照落到磁盘，
+// 避免仅 localStorage/内存态存在时复制空目录导致“成功但目标无数据”。
 type MigrateDataRootRequest struct {
-	TargetPath string `json:"targetPath"`
-	Confirmed  bool   `json:"confirmed"`
+	TargetPath          string `json:"targetPath"`
+	Confirmed           bool   `json:"confirmed"`
+	LibraryDocumentJSON string `json:"libraryDocumentJson,omitempty"`
+	SettingsJSON        string `json:"settingsJson,omitempty"`
 }
 
 // MigrateDataRootResult 返回迁移后的有效数据根与已迁移文件名。
@@ -135,7 +139,17 @@ func (service *Service) SetRootDir(dataRoot string) {
 }
 
 // MigrateDataRoot 将白名单应用数据文件迁移到目标目录并更新引导指针。
-func (service *Service) MigrateDataRoot(request MigrateDataRootRequest) (MigrateDataRootResult, error) {
+// 使用扁平参数，避免 Wails 结构体绑定丢失 library/settings 快照字段。
+func (service *Service) MigrateDataRoot(targetPath string, confirmed bool, libraryDocumentJson string, settingsJson string) (MigrateDataRootResult, error) {
+	return service.migrateDataRoot(MigrateDataRootRequest{
+		TargetPath:          targetPath,
+		Confirmed:           confirmed,
+		LibraryDocumentJSON: libraryDocumentJson,
+		SettingsJSON:        settingsJson,
+	})
+}
+
+func (service *Service) migrateDataRoot(request MigrateDataRootRequest) (MigrateDataRootResult, error) {
 	if !request.Confirmed {
 		return MigrateDataRootResult{}, newServiceError(config.ErrorCodeInvalidArgument, config.ErrorMessageInvalidArgument, false, nil)
 	}
@@ -146,12 +160,20 @@ func (service *Service) MigrateDataRoot(request MigrateDataRootRequest) (Migrate
 	if err != nil {
 		return MigrateDataRootResult{}, err
 	}
+
 	if samePath(source, target) {
-		return MigrateDataRootResult{DataRoot: source, MigratedFiles: nil}, nil
+		// 同源：直接把快照写入当前有效根，修复“指针已切换但目录为空”。
+		if err := stageMigrationSnapshots(target, request.LibraryDocumentJSON, request.SettingsJSON); err != nil {
+			return MigrateDataRootResult{}, err
+		}
+		staged := listExistingMigratableFiles(target)
+		if len(staged) == 0 {
+			return MigrateDataRootResult{}, newServiceError(config.ErrorCodeDataRootEmpty, config.ErrorMessageDataRootEmpty, false, nil)
+		}
+		return MigrateDataRootResult{DataRoot: target, MigratedFiles: staged}, nil
 	}
-	if isSubPath(source, target) || isSubPath(target, source) {
-		return MigrateDataRootResult{}, newServiceError(config.ErrorCodeDataRootInvalid, config.ErrorMessageDataRootInvalid, false, nil)
-	}
+
+	// 允许目标为源目录的子路径或父路径：清理仅删除白名单文件名，不会递归删除子目录。
 
 	targetInfo, err := os.Stat(target)
 	if err == nil && !targetInfo.IsDir() {
@@ -163,7 +185,7 @@ func (service *Service) MigrateDataRoot(request MigrateDataRootRequest) (Migrate
 
 	occupied, err := containsLinkitData(target)
 	if err != nil {
-		return MigrateDataRootResult{}, newServiceError(config.ErrorCodeDataRootMigrateFailed, config.ErrorMessageDataRootMigrateFailed, true, err)
+		return MigrateDataRootResult{}, migrateFailed(err)
 	}
 	if occupied {
 		return MigrateDataRootResult{}, newServiceError(config.ErrorCodeDataRootTargetOccupied, config.ErrorMessageDataRootTargetOccupied, false, nil)
@@ -173,17 +195,31 @@ func (service *Service) MigrateDataRoot(request MigrateDataRootRequest) (Migrate
 		return MigrateDataRootResult{}, newServiceError(config.ErrorCodeDataRootInvalid, config.ErrorMessageDataRootInvalid, false, err)
 	}
 
-	migrated, copyErr := copyMigratableFiles(source, target)
+	// 快照优先直接写入目标目录，避免依赖源目录可写（如同步盘锁文件）。
+	if err := stageMigrationSnapshots(target, request.LibraryDocumentJSON, request.SettingsJSON); err != nil {
+		_ = cleanupDirectoryArtifacts(target)
+		return MigrateDataRootResult{}, err
+	}
+
+	copied, copyErr := copyMissingMigratableFiles(source, target)
 	if copyErr != nil {
-		_ = cleanupMigratedFiles(target, migrated)
-		return MigrateDataRootResult{}, newServiceError(config.ErrorCodeDataRootMigrateFailed, config.ErrorMessageDataRootMigrateFailed, true, copyErr)
+		_ = cleanupDirectoryArtifacts(target)
+		return MigrateDataRootResult{}, migrateFailed(copyErr)
+	}
+	_ = copied
+
+	migrated := listExistingMigratableFiles(target)
+	if len(migrated) == 0 {
+		_ = cleanupDirectoryArtifacts(target)
+		return MigrateDataRootResult{}, newServiceError(config.ErrorCodeDataRootEmpty, config.ErrorMessageDataRootEmpty, false, nil)
 	}
 
 	if err := writeDataRootPointer(bootstrap, target, service.now().UTC()); err != nil {
-		_ = cleanupMigratedFiles(target, migrated)
-		return MigrateDataRootResult{}, newServiceError(config.ErrorCodeDataRootMigrateFailed, config.ErrorMessageDataRootMigrateFailed, true, err)
+		_ = cleanupDirectoryArtifacts(target)
+		return MigrateDataRootResult{}, migrateFailed(err)
 	}
 
+	// 清理源中已成功出现在目标里的白名单文件。
 	_ = removeMigratableFiles(source, migrated)
 	service.rootDir = target
 	if service.onRootChanged != nil {
@@ -191,6 +227,14 @@ func (service *Service) MigrateDataRoot(request MigrateDataRootRequest) (Migrate
 	}
 
 	return MigrateDataRootResult{DataRoot: target, MigratedFiles: migrated}, nil
+}
+
+func migrateFailed(cause error) error {
+	message := config.ErrorMessageDataRootMigrateFailed
+	if cause != nil && strings.TrimSpace(cause.Error()) != "" {
+		message = config.ErrorMessageDataRootMigrateFailed + ": " + cause.Error()
+	}
+	return newServiceError(config.ErrorCodeDataRootMigrateFailed, message, true, cause)
 }
 
 func (service *Service) resolvedBootstrapRoot() string {
@@ -234,6 +278,77 @@ func containsLinkitData(dir string) (bool, error) {
 	return false, nil
 }
 
+// stageMigrationSnapshots 将前端传来的当前资料库/设置写入指定目录。
+func stageMigrationSnapshots(dir string, libraryJSON string, settingsJSON string) error {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return migrateFailed(err)
+	}
+	if trimmed := strings.TrimSpace(libraryJSON); trimmed != "" {
+		if !json.Valid([]byte(trimmed)) {
+			return newServiceError(config.ErrorCodeInvalidArgument, config.ErrorMessageInvalidArgument, false, errors.New("libraryDocumentJson is not valid JSON"))
+		}
+		if int64(len(trimmed)) > config.MaxDocumentBytes {
+			return newServiceError(config.ErrorCodeInvalidArgument, config.ErrorMessageInvalidArgument, false, errors.New("libraryDocumentJson exceeds size limit"))
+		}
+		path := filepath.Join(dir, config.LibraryFileName)
+		if err := os.WriteFile(path, []byte(trimmed), 0o600); err != nil {
+			return migrateFailed(err)
+		}
+	}
+	if trimmed := strings.TrimSpace(settingsJSON); trimmed != "" {
+		if !json.Valid([]byte(trimmed)) {
+			return newServiceError(config.ErrorCodeInvalidArgument, config.ErrorMessageInvalidArgument, false, errors.New("settingsJson is not valid JSON"))
+		}
+		if int64(len(trimmed)) > config.MaxSettingsBytes {
+			return newServiceError(config.ErrorCodeInvalidArgument, config.ErrorMessageInvalidArgument, false, errors.New("settingsJson exceeds size limit"))
+		}
+		path := filepath.Join(dir, config.SettingsFileName)
+		if err := os.WriteFile(path, []byte(trimmed), 0o600); err != nil {
+			return migrateFailed(err)
+		}
+	}
+	return nil
+}
+
+func listExistingMigratableFiles(dir string) []string {
+	found := make([]string, 0, len(config.MigratableDataFileNames))
+	for _, name := range config.MigratableDataFileNames {
+		info, err := os.Stat(filepath.Join(dir, name))
+		if err != nil || info.IsDir() {
+			continue
+		}
+		found = append(found, name)
+	}
+	return found
+}
+
+// copyMissingMigratableFiles 仅复制目标尚不存在的白名单文件。
+func copyMissingMigratableFiles(source string, target string) ([]string, error) {
+	copied := make([]string, 0, len(config.MigratableDataFileNames))
+	for _, name := range config.MigratableDataFileNames {
+		to := filepath.Join(target, name)
+		if _, err := os.Stat(to); err == nil {
+			continue
+		}
+		from := filepath.Join(source, name)
+		info, err := os.Stat(from)
+		if errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+		if err != nil {
+			return copied, err
+		}
+		if info.IsDir() {
+			continue
+		}
+		if err := copyFile(from, to); err != nil {
+			return copied, err
+		}
+		copied = append(copied, name)
+	}
+	return copied, nil
+}
+
 func copyMigratableFiles(source string, target string) ([]string, error) {
 	migrated := make([]string, 0, len(config.MigratableDataFileNames))
 	for _, name := range config.MigratableDataFileNames {
@@ -255,6 +370,10 @@ func copyMigratableFiles(source string, target string) ([]string, error) {
 		migrated = append(migrated, name)
 	}
 	return migrated, nil
+}
+
+func cleanupDirectoryArtifacts(target string) error {
+	return removeMigratableFiles(target, config.MigratableDataFileNames)
 }
 
 func copyFile(from string, to string) error {
@@ -313,12 +432,4 @@ func writeDataRootPointer(bootstrap string, dataRoot string, now time.Time) erro
 
 func samePath(left string, right string) bool {
 	return filepath.Clean(left) == filepath.Clean(right)
-}
-
-func isSubPath(parent string, child string) bool {
-	rel, err := filepath.Rel(filepath.Clean(parent), filepath.Clean(child))
-	if err != nil {
-		return false
-	}
-	return rel != "." && !strings.HasPrefix(rel, "..")
 }
