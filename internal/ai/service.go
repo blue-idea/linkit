@@ -27,14 +27,16 @@ type AnalyzeBookmarkRequest struct {
 	Context            AIContext `json:"context"`
 	URL                string    `json:"url"`
 	Title              string    `json:"title"`
+	Description        string    `json:"description"`
 	ContentText        string    `json:"contentText"`
 	CategoryCandidates []IDName  `json:"categoryCandidates"`
 	TagCandidates      []IDLabel `json:"tagCandidates"`
 }
 
-// AnalyzeBookmarkResult 对齐 REQ-006-AC-002 / TASK-033 DTO（含可编辑 title）。
+// AnalyzeBookmarkResult 对齐 REQ-006-AC-002 / TASK-033 DTO（含可编辑 title/description）。
 type AnalyzeBookmarkResult struct {
 	Title               string   `json:"title"`
+	Description         string   `json:"description"`
 	Summary             string   `json:"summary"`
 	SuggestedCategoryID *string  `json:"suggestedCategoryId"`
 	SuggestedTags       []string `json:"suggestedTags"`
@@ -166,10 +168,11 @@ func (service *Service) analyze(request AnalyzeBookmarkRequest) (AnalyzeBookmark
 		return AnalyzeBookmarkResult{}, newServiceError(config.ErrorCodeInvalidArgument, config.ErrorMessageAIInvalidArgument, false, nil)
 	}
 
-	system := `You are Linkit's bookmark analyzer. Reply with a single JSON object only. Schema: {"title":"string","summary":"string","suggestedCategoryId":"string|null","suggestedTags":["string"]}. suggestedCategoryId must be one of the provided category candidate ids or null. suggestedTags are short label strings. Do not wrap in markdown.`
+	system := buildAnalyzeBookmarkSystemPrompt(request.Context.Locale)
 	userPayload, err := json.Marshal(map[string]any{
 		"url":                request.URL,
 		"title":              request.Title,
+		"description":        request.Description,
 		"contentText":        truncateRunes(request.ContentText, 6000),
 		"categoryCandidates": request.CategoryCandidates,
 		"tagCandidates":      request.TagCandidates,
@@ -194,6 +197,7 @@ func (service *Service) analyze(request AnalyzeBookmarkRequest) (AnalyzeBookmark
 
 type analyzeDTO struct {
 	Title               string          `json:"title"`
+	Description         string          `json:"description"`
 	Summary             string          `json:"summary"`
 	SuggestedCategoryID json.RawMessage `json:"suggestedCategoryId"`
 	SuggestedTags       []string        `json:"suggestedTags"`
@@ -228,6 +232,7 @@ func parseAnalyzeResult(raw json.RawMessage, categories []IDName) (AnalyzeBookma
 	title := strings.TrimSpace(dto.Title)
 	return AnalyzeBookmarkResult{
 		Title:               title,
+		Description:         strings.TrimSpace(dto.Description),
 		Summary:             strings.TrimSpace(dto.Summary),
 		SuggestedCategoryID: categoryID,
 		SuggestedTags:       tags,

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Bookmark, Category, Collection, Tag, AIInsight } from '../types';
-import { fetchBookmarkMetadata } from '../features/bookmarks';
+import { fetchBookmarkMetadata, resolveNewBookmarkCategoryId, shouldApplyAiCategorySuggestion } from '../features/bookmarks';
 import {
   applyReanalyzeConfirmation,
   buildInboundAnalysis,
@@ -68,6 +68,7 @@ function mapSuggestedLabelsToTagIds(labels: string[], tags: Tag[]): string[] {
 export function NewBookmarkDialog({
   open,
   initialUrl,
+  activeCategoryId = null,
   categories,
   tags,
   collections,
@@ -77,6 +78,8 @@ export function NewBookmarkDialog({
 }: {
   open: boolean;
   initialUrl: string;
+  /** 主界面当前分类视图 ID；有值时锁定归属并禁止 AI/手动改类。 */
+  activeCategoryId?: string | null;
   categories: Category[];
   tags: Tag[];
   collections: Collection[];
@@ -96,6 +99,7 @@ export function NewBookmarkDialog({
   const [description, setDescription] = useState('');
   const [aiSummary, setAiSummary] = useState('');
   const [pendingTagLabels, setPendingTagLabels] = useState<string[]>([]);
+  const categoryLocked = Boolean(activeCategoryId?.trim());
 
   useEffect(() => {
     if (open) {
@@ -105,14 +109,15 @@ export function NewBookmarkDialog({
       setFallbackMessage(null);
       setAnalysisSource(null);
       setChosenTags([]);
-      setChosenCategory('');
+      // 分类视图下预填并锁定当前分类。
+      setChosenCategory(activeCategoryId?.trim() ?? '');
       setChosenCollections([]);
       setNotes('');
       setDescription('');
       setAiSummary('');
       setPendingTagLabels([]);
     }
-  }, [open, initialUrl]);
+  }, [open, initialUrl, activeCategoryId]);
 
   const runAnalysis = async () => {
     setStage('analyzing');
@@ -139,7 +144,10 @@ export function NewBookmarkDialog({
     const alerts = [result.metadataErrorMessage, result.aiErrorMessage].filter(Boolean);
     setFallbackMessage(alerts.length > 0 ? alerts.join(' ') : null);
     setAnalysisSource(result.source);
-    if (result.preview.suggestedCategoryId) {
+    if (
+      shouldApplyAiCategorySuggestion(activeCategoryId) &&
+      result.preview.suggestedCategoryId
+    ) {
       setChosenCategory(result.preview.suggestedCategoryId);
     }
     const matched = mapSuggestedLabelsToTagIds(result.preview.suggestedTags, tags);
@@ -165,7 +173,10 @@ export function NewBookmarkDialog({
       description: description.trim(),
       notes,
       tags: chosenTags,
-      categoryId: chosenCategory,
+      categoryId: resolveNewBookmarkCategoryId({
+        activeCategoryId,
+        selectedCategoryId: chosenCategory,
+      }),
       collectionIds: chosenCollections,
       starred: false,
       pinned: false,
@@ -298,25 +309,33 @@ export function NewBookmarkDialog({
 
             <div>
               <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Category</label>
-              <div className="flex flex-wrap gap-1.5">
-                {categories.filter((c) => !c.parentId).map((c) => {
-                  const on = chosenCategory === c.id;
-                  return (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => setChosenCategory(c.id)}
-                      className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] transition ${
-                        on ? 'border-accent-400/40 bg-accent-500/15 text-ink-100' : 'border-ink-600/50 text-ink-400'
-                      }`}
-                    >
-                      <Icon name={c.icon} size={12} />
-                      {c.name}
-                    </button>
-                  );
-                })}
-              </div>
-              {cat && (
+              {categoryLocked ? (
+                <div className="rounded-lg bg-ink-800/60 hairline px-3 py-2.5 text-[12px] text-ink-100 inline-flex items-center gap-1.5">
+                  {cat ? <Icon name={cat.icon} size={12} /> : null}
+                  {cat?.name ?? 'Current category'}
+                  <span className="text-[10px] text-ink-500 ml-1">(locked to current view)</span>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-1.5">
+                  {categories.filter((c) => !c.parentId).map((c) => {
+                    const on = chosenCategory === c.id;
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => setChosenCategory(c.id)}
+                        className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] transition ${
+                          on ? 'border-accent-400/40 bg-accent-500/15 text-ink-100' : 'border-ink-600/50 text-ink-400'
+                        }`}
+                      >
+                        <Icon name={c.icon} size={12} />
+                        {c.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {cat && !categoryLocked && (
                 <div className="mt-2 text-[11px] text-ink-400">Selected: {cat.name}</div>
               )}
             </div>
@@ -408,6 +427,7 @@ export function ReanalyzeBookmarkDialog({
 }) {
   const [stage, setStage] = useState<'idle' | 'loading' | 'preview' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [description, setDescription] = useState('');
   const [summary, setSummary] = useState('');
   const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
   const [acceptedLabels, setAcceptedLabels] = useState<string[]>([]);
@@ -416,6 +436,7 @@ export function ReanalyzeBookmarkDialog({
     if (!open) {
       setStage('idle');
       setErrorMessage(null);
+      setDescription('');
       setSummary('');
       setSuggestedTags([]);
       setAcceptedLabels([]);
@@ -438,11 +459,13 @@ export function ReanalyzeBookmarkDialog({
         context,
         url: bookmark.url,
         title: bookmark.title,
+        description: bookmark.description || '',
         contentText: bookmark.description || bookmark.notes || '',
         categoryCandidates: categories.map((category) => ({ id: category.id, name: category.name })),
         tagCandidates: tags.map((tag) => ({ id: tag.id, label: tag.label })),
       });
       // REQ-020-AC-001：仅展示预览，确认前不调用 onApply。
+      setDescription(result.description.trim() || bookmark.description || '');
       setSummary(result.summary);
       setSuggestedTags(result.suggestedTags);
       setAcceptedLabels(result.suggestedTags);
@@ -480,17 +503,18 @@ export function ReanalyzeBookmarkDialog({
       bookmark: {
         id: bookmark.id,
         title: bookmark.title,
+        description: bookmark.description,
         aiSummary: bookmark.aiSummary,
         tags: bookmark.tags,
         aiSuggestedTags: bookmark.aiSuggestedTags ?? [],
       },
-      preview: { summary, suggestedTags },
+      preview: { description, summary, suggestedTags },
       confirmed: true,
       acceptedTagLabels: acceptedLabels,
       resolveTagId,
     });
     if (patch) {
-      // REQ-020-AC-002：确认后写入摘要与采纳标签。
+      // REQ-020-AC-002：确认后写入摘要、描述与采纳标签。
       onApply(patch);
     }
     onClose();
@@ -501,11 +525,12 @@ export function ReanalyzeBookmarkDialog({
       bookmark: {
         id: bookmark?.id ?? '',
         title: bookmark?.title ?? '',
+        description: bookmark?.description,
         aiSummary: bookmark?.aiSummary,
         tags: bookmark?.tags ?? [],
         aiSuggestedTags: bookmark?.aiSuggestedTags ?? [],
       },
-      preview: { summary, suggestedTags },
+      preview: { description, summary, suggestedTags },
       confirmed: false,
       acceptedTagLabels: [],
       resolveTagId: () => null,
@@ -538,6 +563,16 @@ export function ReanalyzeBookmarkDialog({
       )}
       {stage === 'preview' && (
         <div className="p-5 space-y-4">
+          <div>
+            <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Suggested description</label>
+            <textarea
+              aria-label="Reanalyze description preview"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="w-full rounded-lg bg-ink-800/60 hairline text-[12px] text-ink-100 px-3 py-2.5 outline-none focus-ring resize-none"
+            />
+          </div>
           <div>
             <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Suggested summary</label>
             <textarea

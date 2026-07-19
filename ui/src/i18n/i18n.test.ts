@@ -27,6 +27,11 @@ describe('i18n', () => {
     expect(i18n.getLocale()).toBe('zh');
     expect(i18n.t('settings.title')).toBe('设置');
     expect(i18n.t('auth.localMode')).toBe('使用本地模式（无需登录）');
+    expect(i18n.t('content.newBookmark')).toBe('新建书签');
+  });
+
+  test('content.newBookmark 英文文案', () => {
+    expect(i18n.t('content.newBookmark')).toBe('New bookmark');
   });
 
   // REQ-023-AC-005：缺失翻译键回退到 English。

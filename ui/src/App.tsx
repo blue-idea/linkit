@@ -1210,6 +1210,7 @@ export default function App() {
         }
         content={
           <ContentArea
+            locale={settings.locale ?? 'en'}
             bookmarks={visibleBookmarks}
             allBookmarks={bookmarks}
             tags={tagList}
@@ -1352,6 +1353,7 @@ export default function App() {
       <NewBookmarkDialog
         open={newOpen}
         initialUrl={newUrl}
+        activeCategoryId={state.selection.kind === 'category' ? state.selection.id : null}
         categories={cats}
         tags={tagList}
         collections={cols}

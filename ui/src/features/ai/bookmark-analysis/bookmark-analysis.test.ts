@@ -10,6 +10,7 @@ import {
 
 const validResult: AnalyzeBookmarkResult = {
   title: 'AI Title',
+  description: 'AI description in locale',
   summary: 'A concise summary',
   suggestedCategoryId: 'cat-1',
   suggestedTags: ['react', 'docs'],
@@ -81,11 +82,37 @@ describe('AI 入库分析与降级', () => {
       }),
     });
     expect(result.preview.title).toBe('AI Title');
+    expect(result.preview.description).toBe('AI description in locale');
     expect(result.preview.aiSummary).toBe('A concise summary');
     expect(result.preview.suggestedCategoryId).toBe('cat-1');
     expect(result.preview.suggestedTags).toEqual(['react', 'docs']);
     expect(result.aiErrorMessage).toBeNull();
     expect(result.source).toBe('ai');
+  });
+
+  test('buildInboundAnalysis 在 AI description 为空时回退元数据描述', async () => {
+    const client: AnalyzeBookmarkClient = {
+      analyzeBookmark: async () => ({
+        ...validResult,
+        description: '   ',
+      }),
+    };
+    const result = await buildInboundAnalysis({
+      url: 'https://example.test/page',
+      titleHint: '',
+      contentText: '',
+      categoryCandidates: [{ id: 'cat-1', name: 'Frontend' }],
+      tagCandidates: [],
+      context: { apiBase: 'https://api.example.test/v1', model: 'm', locale: 'zh' },
+      client,
+      fetchMetadata: async () => ({
+        ok: true,
+        title: 'Meta Title',
+        description: 'Meta desc',
+        contentText: 'Page body',
+      }),
+    });
+    expect(result.preview.description).toBe('Meta desc');
   });
 
   // REQ-006-AC-003：无 Key / AI 失败时英文降级，禁止伪 AI 结果。
@@ -125,15 +152,17 @@ describe('AI 入库分析与降级', () => {
 
 describe('重新分析确认', () => {
   // REQ-020-AC-001 / REQ-020-AC-002：确认前不改库；确认后仅写入采纳字段。
-  test('applyReanalyzeConfirmation 仅在确认时写入摘要与采纳标签', () => {
+  test('applyReanalyzeConfirmation 仅在确认时写入摘要、描述与采纳标签', () => {
     const bookmark = {
       id: 'b-1',
       title: 'Old',
+      description: 'Old description',
       aiSummary: 'Old summary',
       tags: ['tag-old'],
       aiSuggestedTags: [] as string[],
     };
     const preview = {
+      description: 'New description',
       summary: 'New summary',
       suggestedTags: ['fresh', 'docs'],
     };
@@ -155,6 +184,7 @@ describe('重新分析确认', () => {
       resolveTagId: (label) => (label === 'fresh' ? 'tag-fresh' : null),
     });
     expect(accepted).toEqual({
+      description: 'New description',
       aiSummary: 'New summary',
       tags: ['tag-old', 'tag-fresh'],
       aiSuggestedTags: [],
@@ -164,13 +194,14 @@ describe('重新分析确认', () => {
   test('applyReanalyzeConfirmation 拒绝的标签不会被持久化', () => {
     const patch = applyReanalyzeConfirmation({
       bookmark: { id: 'b-1', title: 'T', aiSummary: '', tags: [], aiSuggestedTags: [] },
-      preview: { summary: 'S', suggestedTags: ['a', 'b'] },
+      preview: { description: 'D', summary: 'S', suggestedTags: ['a', 'b'] },
       confirmed: true,
       acceptedTagLabels: ['a'],
       resolveTagId: (label) => `id-${label}`,
     });
     expect(patch?.tags).toEqual(['id-a']);
     expect(patch?.tags).not.toContain('id-b');
+    expect(patch?.description).toBe('D');
   });
 });
 

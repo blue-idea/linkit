@@ -6,18 +6,20 @@ export function applyReanalyzeConfirmation(input: {
   bookmark: {
     id: string;
     title: string;
+    description?: string;
     aiSummary?: string;
     tags: string[];
     aiSuggestedTags: string[];
   };
   preview: {
+    description: string;
     summary: string;
     suggestedTags: string[];
   };
   confirmed: boolean;
   acceptedTagLabels: string[];
   resolveTagId: (label: string) => string | null;
-}): { aiSummary: string; tags: string[]; aiSuggestedTags: string[] } | null {
+}): { description: string; aiSummary: string; tags: string[]; aiSuggestedTags: string[] } | null {
   if (!input.confirmed) {
     return null;
   }
@@ -36,6 +38,7 @@ export function applyReanalyzeConfirmation(input: {
   }
 
   return {
+    description: input.preview.description.trim() || input.bookmark.description || '',
     aiSummary: input.preview.summary,
     tags: nextTags,
     aiSuggestedTags: [],
