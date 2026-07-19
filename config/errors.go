@@ -19,7 +19,10 @@ const (
 	ErrorCodeAITimeout           = "AI_TIMEOUT"
 	ErrorCodeAIResponseInvalid   = "AI_RESPONSE_INVALID"
 	ErrorCodeAIConsentRequired   = "AI_CONSENT_REQUIRED"
-	ErrorCodeAIRequestFailed     = "AI_REQUEST_FAILED"
+	ErrorCodeAIRequestFailed         = "AI_REQUEST_FAILED"
+	ErrorCodeDataRootTargetOccupied  = "DATA_ROOT_TARGET_OCCUPIED"
+	ErrorCodeDataRootMigrateFailed   = "DATA_ROOT_MIGRATE_FAILED"
+	ErrorCodeDataRootInvalid         = "DATA_ROOT_INVALID"
 
 	ErrorMessageInvalidArgument     = "Invalid local document request"
 	ErrorMessageDocumentInvalid     = "Library document is invalid"
@@ -43,6 +46,9 @@ const (
 	ErrorMessageAIConsentRequired   = "AI data consent is required for this API Base"
 	ErrorMessageAIRequestFailed     = "AI request failed"
 	ErrorMessageAIInvalidArgument   = "AI request arguments are invalid"
+	ErrorMessageDataRootTargetOccupied = "Target directory already contains Linkit data"
+	ErrorMessageDataRootMigrateFailed  = "Failed to migrate local data directory"
+	ErrorMessageDataRootInvalid        = "Target data directory is invalid"
 
 	// SecretServiceName 与 OS Keychain / Credential Manager 服务名对齐。
 	SecretServiceName = "Linkit"

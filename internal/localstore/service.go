@@ -1,6 +1,7 @@
 package localstore
 
 import (
+	"context"
 	"errors"
 	"os"
 	"path/filepath"
@@ -52,9 +53,13 @@ type CloudDraftWriteRequest struct {
 type Option func(*Service)
 
 type Service struct {
-	rootDir  string
-	maxBytes int64
-	now      func() time.Time
+	bootstrapRoot string
+	rootDir       string
+	maxBytes      int64
+	now           func() time.Time
+	onRootChanged func(dataRoot string)
+	ctx           context.Context
+	dirDialog     directoryDialog
 }
 
 func DefaultRootDir() (string, error) {
@@ -65,19 +70,25 @@ func DefaultRootDir() (string, error) {
 	return filepath.Join(root, config.AppDataDirectoryName), nil
 }
 
-func NewDefaultService() (*Service, error) {
-	rootDir, err := DefaultRootDir()
+func NewDefaultService(options ...Option) (*Service, error) {
+	bootstrapRoot, err := DefaultRootDir()
 	if err != nil {
 		return nil, err
 	}
-	return NewService(rootDir), nil
+	dataRoot, err := ResolveEffectiveDataRoot(bootstrapRoot)
+	if err != nil {
+		return nil, err
+	}
+	combined := append([]Option{WithBootstrapRoot(bootstrapRoot)}, options...)
+	return NewService(dataRoot, combined...), nil
 }
 
 func NewService(rootDir string, options ...Option) *Service {
 	service := &Service{
-		rootDir:  rootDir,
-		maxBytes: config.MaxDocumentBytes,
-		now:      time.Now,
+		bootstrapRoot: rootDir,
+		rootDir:       rootDir,
+		maxBytes:      config.MaxDocumentBytes,
+		now:           time.Now,
 	}
 	for _, option := range options {
 		option(service)

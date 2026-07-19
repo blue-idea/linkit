@@ -2,7 +2,7 @@
 
 > 文件路径：`docs/spec/test_strategy.md`  
 > 参考方法论：`phases/qa_engine.md` §第1阶段  
-> 版本：1.4.0
+> 版本：1.5.0
 > 日期：2026-07-19
 > 状态：已定稿
 
@@ -46,7 +46,7 @@ test_scope:
   in_scope:
     - "Wails 启动、Go 绑定和 Windows/macOS 构建"
     - "Supabase Auth、RLS、revision 与云冲突"
-    - "AppData 原子 JSON、备份、云草稿和导入导出"
+    - "AppData 原子 JSON、备份、云草稿、导入导出与可配置数据根迁移"
     - "Bookmark 单项/批量编辑移动删除、Category、Collection、Tag 领域命令与引用完整性"
     - "六种浏览视图、Spotlight、快捷键、拖拽和 i18n"
     - "OpenAI-compatible AI、授权、降级、语义重排和建议确认"
@@ -235,3 +235,4 @@ environments:
 | 1.2.0 | 2026-07-19 | 已定稿 | 用户确认将视图切换 P95 预算调整为 150ms，搜索与筛选继续保持 100ms |
 | 1.3.0 | 2026-07-19 | 已定稿 | 增加书签统一编辑入口与批量移动/删除的 Unit、E2E 和视觉回归范围 |
 | 1.4.0 | 2026-07-19 | 已定稿 | 将六套主题、两套浅色 color scheme 与主题专属视觉令牌纳入 Unit、E2E 和视觉回归范围 |
+| 1.5.0 | 2026-07-19 | 已定稿 | 将可配置本地数据根与迁移失败/冲突场景纳入 Unit 与 E2E 范围 |

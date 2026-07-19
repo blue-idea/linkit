@@ -1,7 +1,7 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：1.6.0
+> 版本：1.7.0
 > 日期：2026-07-19
 > 状态：已定稿
 
@@ -35,6 +35,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 11. 首次向某个 API Base 发送收藏内容前必须获得用户明确授权；授权按 API Base 记忆，API Base 改变后重新确认。
 12. Windows 与 macOS 均为目标平台；每个发布候选至少在一个选定平台执行完整桌面关键旅程，另一平台保留 Wails 构建门禁，不重复要求完整真实旅程。
 13. 外观提供 Midnight、Ocean、Graphite、Sunset、Daylight、Paper 六套主题；新增浅色主题不得改变现有设置交互、持久化流程或业务功能。
+14. 本地存储目录可在 Settings → Storage 中通过原生文件夹选择器变更；变更时迁移除 OS Keychain 密钥外的全部应用数据目录内容。目标目录已含 Linkit 数据时阻止迁移；迁移失败保持原路径与原数据并清理目标残留；默认 AppData 保留轻量 bootstrap 指针文件，真实数据根可重定向。
 
 ---
 
@@ -1298,10 +1299,10 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 - id: REQ-023-AC-002
   ears: >
     When 用户查看 Storage 设置,
-    the Linkit shall 显示当前 Local 或 Cloud 模式及可计算的资料库容量信息.
+    the Linkit shall 显示当前 Local 或 Cloud 模式、当前本地数据目录及可计算的资料库容量信息.
   test_type: E2E
   expected:
-    ui_state: "Current storage mode and library size information are visible"
+    ui_state: "Current storage mode, local data directory and library size information are visible"
     side_effects: []
 
 - id: REQ-023-AC-003
@@ -1690,6 +1691,77 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 
 ---
 
+### 需求 REQ-029 · 本地存储位置与数据迁移
+
+**来源：** float_task 1.3、F-STORE-01、F-SET-01  
+**用户故事：** 作为本地用户，我希望在 Settings → Storage 中选择本机数据目录，并在位置变更时自动迁移应用数据，以便将资料库放在自定义磁盘路径同时保持可恢复性。
+
+#### 验收标准
+
+```yaml
+- id: REQ-029-AC-001
+  ears: >
+    When 用户在 Settings → Storage 中请求更改本地数据目录,
+    the Linkit shall 打开原生文件夹选择对话框并在确认前展示源路径、目标路径与将迁移内容摘要.
+  test_type: E2E
+  expected:
+    ui_state: "A folder picker opens and a confirmation shows source path, target path and migration summary"
+    side_effects:
+      - "No data files are changed before the user confirms migration"
+
+- id: REQ-029-AC-002
+  ears: >
+    While 目标目录不包含既有 Linkit 应用数据,
+    when 用户确认更改本地数据目录,
+    the Linkit shall 将默认或当前数据根下除密钥外的全部应用数据文件迁移到目标目录，并持久化新数据根.
+  test_type: Unit + E2E
+  expected:
+    ui_state: "Storage settings show the new data directory and a success state without false success on failure"
+    side_effects:
+      - "library.json, library.json.bak, settings.json, cloud-draft.json and related temporary/backup files are migrated when present"
+      - "Default AppData retains only the bootstrap pointer to the new data root"
+      - "OS Keychain secrets are not copied as files"
+      - "Subsequent reads and writes use the new data root"
+
+- id: REQ-029-AC-003
+  ears: >
+    While 目标目录已包含 Linkit 应用数据或非空冲突标记文件,
+    when 用户选择该目标目录,
+    the Linkit shall 阻止迁移并保持原数据根不变.
+  test_type: Unit + E2E
+  expected:
+    ui_state: "An English error explains that the target already contains Linkit data"
+    side_effects:
+      - "Original data root and files remain unchanged"
+      - "Bootstrap pointer is not updated"
+
+- id: REQ-029-AC-004
+  ears: >
+    When 本地数据目录迁移在复制、校验或切换指针任一阶段失败,
+    the Linkit shall 保持原数据根与原数据不变，清理目标目录中本次迁移产生的残留，并返回可追踪的英文错误.
+  test_type: Unit
+  expected:
+    return_value: "AppError with a stable code and English message; retryable when the failure may be transient"
+    side_effects:
+      - "Original data root remains active"
+      - "Partial target artifacts from the failed attempt are removed"
+      - "No false success is reported"
+
+- id: REQ-029-AC-005
+  ears: >
+    While 本地数据目录迁移已成功,
+    when 用户重启应用,
+    the Linkit shall 从新数据根加载资料库与设置，并保持 OS Keychain 中的 AI Key 仍然可用.
+  test_type: E2E
+  expected:
+    ui_state: "Main window restores the library and settings from the new directory; AI key status remains configured when previously set"
+    side_effects:
+      - "Bootstrap pointer in default AppData resolves to the migrated data root"
+      - "No Keychain secret is required to be re-entered solely due to the directory change"
+```
+
+---
+
 ## 非目标
 
 以下能力不属于 Linkit MVP，不得在未更新需求规格的情况下加入当前任务范围：
@@ -1734,6 +1806,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 数据模型第 6 节 | REQ-026 |
 | NF-03、NF-05 | REQ-027 |
 | NF-04 | REQ-028 |
+| float_task 1.3、F-STORE-01、F-SET-01 | REQ-029 |
 
 ---
 
@@ -1749,3 +1822,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 1.4.0 | 2026-07-19 | 已定稿 | 用户确认将 10,000 条数据下的视图切换 P95 预算调整为 150ms，搜索与筛选保持 100ms |
 | 1.5.0 | 2026-07-19 | 已定稿 | 用户确认统一书签编辑/移动/删除入口，并新增原子批量移动与批量删除能力 |
 | 1.6.0 | 2026-07-19 | 已定稿 | 用户确认参考 `ck/project` 优化主题皮肤，并新增 Daylight 与 Paper 浅色主题；业务功能和设置流程保持不变 |
+| 1.7.0 | 2026-07-19 | 已定稿 | 新增 REQ-029：可配置本地存储目录，位置变更时自动迁移应用数据（不含密钥） |

@@ -24,13 +24,15 @@ import (
 var assets embed.FS
 
 func main() {
-	localDocumentService, err := localstore.NewDefaultService()
-	if err != nil {
-		log.Fatalf("Unable to initialise local document service: %v", err)
-	}
 	settingsService, err := settingsstore.NewDefaultService()
 	if err != nil {
 		log.Fatalf("Unable to initialise settings service: %v", err)
+	}
+	localDocumentService, err := localstore.NewDefaultService(localstore.WithRootChanged(func(dataRoot string) {
+		settingsService.SetRootDir(dataRoot)
+	}))
+	if err != nil {
+		log.Fatalf("Unable to initialise local document service: %v", err)
 	}
 	secretService, err := secretstore.NewDefaultService()
 	if err != nil {
@@ -61,6 +63,7 @@ func main() {
 		OnStartup: func(ctx context.Context) {
 			// 原生对话框依赖 Wails 运行时上下文。
 			nativeFileService.SetContext(ctx)
+			localDocumentService.SetContext(ctx)
 			healthEmitter.SetContext(ctx)
 		},
 		Bind: []interface{}{

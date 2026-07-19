@@ -1,8 +1,8 @@
 # Linkit 接口设计（API）
 
 > 文件路径：`docs/spec/api.md`  
-> 版本：1.1.0  
-> 日期：2026-07-16  
+> 版本：1.2.0  
+> 日期：2026-07-19  
 > 状态：已定稿
 
 ---
@@ -61,6 +61,9 @@ interface AppError {
 | `AI_CONSENT_REQUIRED` | 当前 API Base 尚未获得数据发送授权 | 否 |
 | `WEB_FETCH_FAILED` | 页面抓取失败 | 是 |
 | `HEALTH_SCAN_CANCELLED` | 用户取消健康扫描 | 否 |
+| `DATA_ROOT_TARGET_OCCUPIED` | 目标目录已包含 Linkit 数据 | 否 |
+| `DATA_ROOT_MIGRATE_FAILED` | 数据根迁移复制、校验或指针切换失败 | 是 |
+| `DATA_ROOT_INVALID` | 目标路径无效、不可写或为源目录子路径 | 否 |
 
 ### 2.3 时间与 ID
 
@@ -159,6 +162,49 @@ interface CloudDraftWriteRequest {
 - `WriteCloudDraft` 使用原子替换保存 dirty 云草稿。
 - `ReadCloudDraft` 返回值进入同步状态前必须经过 Zod 校验。
 - `ClearCloudDraft` 仅在云保存成功、用户明确放弃草稿或已完成冲突处理后调用。
+
+#### `GetDataRoot()`
+
+```typescript
+interface DataRootInfo {
+  bootstrapRoot: string;
+  dataRoot: string;
+  isCustom: boolean;
+}
+```
+
+返回引导根与当前有效数据根。路径字符串仅用于 UI 展示与确认；日志不得拼接完整用户主目录以外的敏感上下文。
+
+#### `SelectDataRootDirectory()`
+
+```typescript
+interface SelectDirectoryResult {
+  state: 'selected' | 'cancelled';
+  path?: string;
+}
+```
+
+打开原生文件夹选择对话框。取消时不改变数据根。
+
+#### `MigrateDataRoot(request)`
+
+```typescript
+interface MigrateDataRootRequest {
+  targetPath: string;
+  confirmed: boolean;
+}
+
+interface MigrateDataRootResult {
+  dataRoot: string;
+  migratedFiles: string[];
+}
+```
+
+- `confirmed` 为 false 时返回 `INVALID_ARGUMENT`，不写盘。
+- 目标已含 Linkit 数据时返回 `DATA_ROOT_TARGET_OCCUPIED`。
+- 成功后更新引导根 `data-root.json`，删除源中已迁文件，后续读写使用新数据根。
+- 失败时返回 `DATA_ROOT_MIGRATE_FAILED` 或 `DATA_ROOT_INVALID`，保持原根，清理目标残留。
+- 不迁移 OS Keychain 密钥。
 
 ### 3.2 NativeFileService
 
@@ -700,3 +746,4 @@ interface LibrarySnapshot {
 | 0.1.0 | 2026-07-16 | 草稿 | 定义 Wails、Supabase、OpenAI-compatible、网页请求与 Repository 接口 |
 | 1.0.0 | 2026-07-16 | 已定稿 | 经用户确认后正式生效 |
 | 1.1.0 | 2026-07-16 | 已定稿 | STEP 4 修正 Snapshot revision 重复、补充设置/云草稿接口、注册分支、AI 授权和原生 RLS 响应 |
+| 1.2.0 | 2026-07-19 | 已定稿 | 新增数据根查询、目录选择与迁移接口及错误码，覆盖 REQ-029 |
