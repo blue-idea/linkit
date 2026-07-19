@@ -14,6 +14,20 @@ test.describe('AI 创建主题与去重整理', () => {
           name: 'AI Frontend Research', description: 'Curated from the current library',
           suggestedTags: ['frontend', 'research'], bookmarkIds: ['b-coolors', 'b-fontpair'],
         }),
+        AnalyzeBookmark: async (req: { title?: string; description?: string }) => ({
+          title: req.title || 'Mock Title',
+          description: req.description || 'Mock Description',
+          summary: 'Mock Summary',
+          suggestedTags: ['mock-tag'],
+          suggestedCategoryId: null
+        }),
+        ReanalyzeBookmark: async (req: { title?: string; description?: string }) => ({
+          title: req.title || 'Mock Title',
+          description: req.description || 'Mock Description',
+          summary: 'Mock Summary',
+          suggestedTags: ['mock-tag'],
+          suggestedCategoryId: null
+        })
       } };
     });
     await page.goto('/');
@@ -33,6 +47,20 @@ test.describe('AI 创建主题与去重整理', () => {
           name: 'AI Frontend Research', description: 'Curated from the current library',
           suggestedTags: ['frontend', 'research'], bookmarkIds: ['b-coolors', 'b-fontpair'],
         }),
+        AnalyzeBookmark: async (req: { title?: string; description?: string }) => ({
+          title: req.title || 'Mock Title',
+          description: req.description || 'Mock Description',
+          summary: 'Mock Summary',
+          suggestedTags: ['mock-tag'],
+          suggestedCategoryId: null
+        }),
+        ReanalyzeBookmark: async (req: { title?: string; description?: string }) => ({
+          title: req.title || 'Mock Title',
+          description: req.description || 'Mock Description',
+          summary: 'Mock Summary',
+          suggestedTags: ['mock-tag'],
+          suggestedCategoryId: null
+        })
       } };
     });
     if (await page.getByRole('button', { name: 'Continue in local mode' }).count()) {
