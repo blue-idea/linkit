@@ -26,6 +26,7 @@
     "test:supabase:revision": "node ./scripts/supabase-revision-api-test.mjs",
     "test:cloud:remote": "node ./scripts/cloud-remote-test.mjs",
     "test:security": "node --test ./scripts/test-env.test.mjs && node ./scripts/security-scan.mjs && vitest run src/features/import-export src/services/settings src/features/bookmarks src/features/categories src/services/storage src/repositories/cloud",
+    "test:performance": "pnpm build && playwright test --config playwright.performance.config.ts",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "verify:quality-config": "node verify-quality-config.mjs"
   },

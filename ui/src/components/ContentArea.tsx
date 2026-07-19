@@ -117,6 +117,7 @@ function Toolbar({
   density,
   onDensity,
   onSearch,
+  query,
   onOpenSpotlight,
   sort,
   onSort,
@@ -128,6 +129,7 @@ function Toolbar({
   density: ViewDensity;
   onDensity: (d: ViewDensity) => void;
   onSearch: (q: string) => void;
+  query: string;
   onOpenSpotlight: () => void;
   sort: string;
   onSort: (s: string) => void;
@@ -144,7 +146,7 @@ function Toolbar({
         <div className="relative">
           <Icon name="Search" size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-400" />
           <input
-            value={''}
+            value={query}
             onChange={(e) => onSearch(e.target.value)}
             onFocus={onOpenSpotlight}
             placeholder="搜索或语义查找…"
@@ -380,6 +382,7 @@ export function ContentArea({
         density={density}
         onDensity={onDensity}
         onSearch={onSearch}
+        query={filters.query}
         onOpenSpotlight={onOpenSpotlight}
         sort={sort}
         onSort={onSort}

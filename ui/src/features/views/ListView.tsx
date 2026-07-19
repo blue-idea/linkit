@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { BookmarkPresentation } from './presenter';
 import { Icon, TagPill, Favicon } from '../../components/ui';
+import { INITIAL_VIRTUAL_VIEW_RECT } from '../../config/virtualization';
 
 const ROW_ESTIMATE = 56;
 
@@ -30,6 +31,7 @@ export function ListView({
     getScrollElement: () => parentRef.current,
     estimateSize: () => ROW_ESTIMATE,
     overscan: 8,
+    initialRect: INITIAL_VIRTUAL_VIEW_RECT,
   });
 
   return (
