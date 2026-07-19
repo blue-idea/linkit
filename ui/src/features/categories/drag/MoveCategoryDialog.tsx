@@ -1,6 +1,31 @@
 import { useState } from 'react';
 import { Icon, Button } from '../../../components/ui';
 import type { Category } from '../../../types';
+import { buildCategoryTree } from '../utils';
+
+function getDescendantIds(categories: Category[], parentId: string): Set<string> {
+  const descendants = new Set<string>([parentId]);
+  const childrenMap: { [parentId: string]: string[] } = {};
+  categories.forEach((c) => {
+    if (c.parentId) {
+      if (!childrenMap[c.parentId]) {
+        childrenMap[c.parentId] = [];
+      }
+      childrenMap[c.parentId].push(c.id);
+    }
+  });
+
+  function visit(id: string) {
+    const children = childrenMap[id] || [];
+    children.forEach((childId) => {
+      descendants.add(childId);
+      visit(childId);
+    });
+  }
+
+  visit(parentId);
+  return descendants;
+}
 
 /**
  * 键盘可达的分类移动目标选择（等价拖拽落点）。
@@ -20,12 +45,9 @@ export function MoveCategoryDialog({
   const current = categories.find((category) => category.id === categoryId);
   const [targetParentId, setTargetParentId] = useState<string>('__root__');
 
-  const options = [
-    { id: '__root__', label: 'Root (no parent)' },
-    ...categories
-      .filter((category) => category.id !== categoryId)
-      .map((category) => ({ id: category.id, label: category.name })),
-  ];
+  const excludedIds = getDescendantIds(categories, categoryId);
+  const allowedCategories = categories.filter((c) => !excludedIds.has(c.id));
+  const treeOptions = buildCategoryTree(allowedCategories);
 
   return (
     <div
@@ -61,9 +83,10 @@ export function MoveCategoryDialog({
               onChange={(e) => setTargetParentId(e.target.value)}
               className="w-full rounded-lg bg-ink-800/60 hairline px-3 py-2 text-[13px] text-ink-100 outline-none focus-ring"
             >
-              {options.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.label}
+              <option value="__root__" className="bg-ink-900 text-ink-100">Root (no parent)</option>
+              {treeOptions.map((option) => (
+                <option key={option.id} value={option.id} className="bg-ink-900 text-ink-100">
+                  {'\u00A0\u00A0'.repeat(option.level) + (option.level > 0 ? '└─ ' : '') + option.name}
                 </option>
               ))}
             </select>

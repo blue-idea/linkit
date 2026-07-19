@@ -304,7 +304,7 @@ export function DetailPanel({
                 onRemove={() => onToggleCollection(c.id)}
               />
             ))}
-            <details className="inline-block">
+            <details className="inline-block relative">
               <summary className="list-none inline-flex items-center gap-1 rounded-full border border-dashed border-ink-500/50 text-[11px] text-ink-400 px-2 py-0.5 cursor-pointer hover:text-ink-200 hover:border-ink-400 transition">
                 <Icon name="Plus" size={10} /> 加入主题
               </summary>
