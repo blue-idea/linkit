@@ -41,15 +41,15 @@ test.describe('分类拖拽与书签归类', () => {
     await enterLocalMode(page);
   });
 
-  // REQ-011-AC-001 / REQ-024-AC-006：键盘可达移动对话框更新 parentId。
-  test('分类拖拽 shall 通过键盘移动对话框更新父级', async ({ page }) => {
+  // REQ-024-AC-006：分类操作（图标设置）具备可识别名称且键盘可达；移动改由拖拽完成。
+  test('分类操作 shall 提供可识别的图标设置控件', async ({ page }) => {
     const leafRow = page.locator('[data-category-drop="配色"]').first();
     await expect(leafRow).toBeVisible();
-    await leafRow.getByRole('button', { name: 'Move category' }).click();
-    await expect(page.getByRole('heading', { name: 'Move category' })).toBeVisible();
-    await page.getByLabel('New parent category').selectOption({ label: '产品' });
-    await page.getByRole('button', { name: 'Confirm move category' }).click();
-    await expect(page.getByText('Category moved')).toBeVisible();
+    await leafRow.hover();
+    const setIcon = leafRow.getByRole('button', { name: 'Set category icon' });
+    await expect(setIcon).toBeVisible();
+    await setIcon.focus();
+    await expect(setIcon).toBeFocused();
 
     await mkdir(evidenceDirectory, { recursive: true });
     await page.screenshot({
