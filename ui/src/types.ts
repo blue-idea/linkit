@@ -92,12 +92,19 @@ export interface AISettings {
   model: string;
 }
 
+export interface AIConsentRecord {
+  apiBase: string;
+  grantedAt: string;
+}
+
 export interface AppSettings {
   storageMode: StorageMode;
   theme: ThemeId;
   /** 界面语言；缺省按 en 处理。覆盖 REQ-023-AC-004。 */
   locale: UiLocale;
   ai: AISettings;
+  /** 本机 AI 数据发送授权；与当前 apiBase 匹配才有效。 */
+  aiConsent?: AIConsentRecord | null;
 }
 
 export interface LibraryData {

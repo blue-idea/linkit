@@ -1,34 +1,30 @@
+import type { AppSettings as DomainSettings } from '../../domain/library';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { AppSettings as UiSettings, ThemeId } from '../../types';
-import { getDefaultAppSettings } from '../../services/settings';
+import { getDefaultAppSettings, prepareSettingsForPersist } from '../../services/settings';
 import { bootstrapApp, createPreferredStorageAdapters, type BootstrapPhase } from '../../services/storage';
 import { loadSettings as loadLegacySettings } from '../../storage';
 import { applyTheme } from '../../themes';
 import { resolveStartupView, type StartupView } from './startup-gate';
 
-function toUiSettings(
-  domainStorageMode: 'local' | 'cloud',
-  domainTheme: string,
-  domainLocale: string,
-  legacy: UiSettings
-): UiSettings {
+function toUiSettings(domain: DomainSettings, legacy: UiSettings): UiSettings {
   return {
-    storageMode: domainStorageMode,
-    theme: (domainTheme as ThemeId) || legacy.theme,
-    locale: domainLocale === 'zh' || domainLocale === 'en' ? domainLocale : legacy.locale ?? 'en',
+    storageMode: domain.storageMode,
+    theme: (domain.theme as ThemeId) || legacy.theme,
+    locale: domain.locale === 'zh' || domain.locale === 'en' ? domain.locale : legacy.locale ?? 'en',
+    // 优先本机设置文档中的 AI 配置，legacy 仅作迁移回退。
     ai: {
-      apiBase: legacy.ai.apiBase,
-      model: legacy.ai.model,
+      apiBase: domain.ai.apiBase || legacy.ai.apiBase,
+      model: domain.ai.model || legacy.ai.model,
     },
+    aiConsent: domain.aiConsent,
   };
 }
 
-export async function persistUiSettings(settings: UiSettings): Promise<void> {
-  const { saveSettings } = await import('../../storage');
-  saveSettings(settings);
-  const adapters = createPreferredStorageAdapters();
-  await adapters.saveSettings({
-    ...getDefaultAppSettings(),
+function toDomainSettings(settings: UiSettings): DomainSettings {
+  const defaults = getDefaultAppSettings();
+  return prepareSettingsForPersist({
+    ...defaults,
     storageMode: settings.storageMode,
     theme: settings.theme,
     locale: settings.locale ?? 'en',
@@ -36,7 +32,15 @@ export async function persistUiSettings(settings: UiSettings): Promise<void> {
       apiBase: settings.ai.apiBase || '',
       model: settings.ai.model || '',
     },
+    aiConsent: settings.aiConsent ?? null,
   });
+}
+
+export async function persistUiSettings(settings: UiSettings): Promise<void> {
+  const { saveSettings } = await import('../../storage');
+  saveSettings(settings);
+  const adapters = createPreferredStorageAdapters();
+  await adapters.saveSettings(toDomainSettings(settings));
 }
 
 /**
@@ -60,12 +64,7 @@ export function useLocalStartup(authLoading: boolean) {
         });
         if (cancelled) return;
 
-        const nextSettings = toUiSettings(
-          result.settings.storageMode,
-          result.settings.theme,
-          result.settings.locale,
-          legacy
-        );
+        const nextSettings = toUiSettings(result.settings, legacy);
         setSettings(nextSettings);
         applyTheme(nextSettings.theme);
         document.documentElement.lang = nextSettings.locale ?? 'en';

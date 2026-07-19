@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync/atomic"
 	"testing"
 
@@ -17,6 +18,63 @@ func (stub stubCompleter) ChatCompletions(ChatRequest) (ChatResult, error) {
 	return ChatResult{ContentJSON: stub.content}, nil
 }
 
+type capturingCompleter struct {
+	last    ChatRequest
+	content json.RawMessage
+}
+
+func (c *capturingCompleter) ChatCompletions(request ChatRequest) (ChatResult, error) {
+	c.last = request
+	return ChatResult{ContentJSON: c.content}, nil
+}
+
+func TestAnalyzeBookmarkSystemPromptFollowsSettingsLocale(t *testing.T) {
+	validJSON := json.RawMessage(`{"title":"T","description":"D","summary":"S","suggestedCategoryId":null,"suggestedTags":["tag"]}`)
+
+	t.Run("en 生成指令要求英文", func(t *testing.T) {
+		capture := &capturingCompleter{content: validJSON}
+		service := NewService(WithCompleter(capture))
+		_, err := service.AnalyzeBookmark(AnalyzeBookmarkRequest{
+			Context:     AIContext{APIBase: "https://api.example.test/v1", Model: "m", Locale: "en"},
+			URL:         "https://example.test",
+			Title:       "Title",
+			Description: "Source desc",
+			ContentText: "Body",
+		})
+		if err != nil {
+			t.Fatalf("AnalyzeBookmark returned error: %v", err)
+		}
+		if !strings.Contains(capture.last.System, "description") || !strings.Contains(capture.last.System, "entirely in English") {
+			t.Fatalf("Expected English language rule covering description, got: %s", capture.last.System)
+		}
+		if !strings.Contains(capture.last.User, `"locale":"en"`) || !strings.Contains(capture.last.User, `"description":"Source desc"`) {
+			t.Fatalf("Expected locale/description in user payload, got: %s", capture.last.User)
+		}
+	})
+
+	t.Run("zh 生成指令要求简体中文", func(t *testing.T) {
+		capture := &capturingCompleter{content: validJSON}
+		service := NewService(WithCompleter(capture))
+		// Reanalyze 与 Analyze 共用 prompt，一并覆盖。
+		_, err := service.ReanalyzeBookmark(AnalyzeBookmarkRequest{
+			Context:     AIContext{APIBase: "https://api.example.test/v1", Model: "m", Locale: "zh"},
+			URL:         "https://example.test",
+			Title:       "标题",
+			Description: "源描述",
+			ContentText: "正文",
+		})
+		if err != nil {
+			t.Fatalf("ReanalyzeBookmark returned error: %v", err)
+		}
+		if !strings.Contains(capture.last.System, "description") || !strings.Contains(capture.last.System, "Simplified Chinese") {
+			t.Fatalf("Expected Simplified Chinese language rule covering description, got: %s", capture.last.System)
+		}
+		if !strings.Contains(capture.last.User, `"locale":"zh"`) {
+			t.Fatalf("Expected locale=zh in user payload, got: %s", capture.last.User)
+		}
+	})
+}
+
 func TestAnalyzeBookmarkReturnsValidatedSuggestions(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		raw, _ := io.ReadAll(request.Body)
@@ -27,7 +85,7 @@ func TestAnalyzeBookmarkReturnsValidatedSuggestions(t *testing.T) {
 		}
 		writer.Header().Set("Content-Type", "application/json")
 		_, _ = io.WriteString(writer, `{
-			"choices":[{"message":{"content":"{\"title\":\"AI Title\",\"summary\":\"AI summary\",\"suggestedCategoryId\":\"cat-1\",\"suggestedTags\":[\"react\",\"docs\"]}"}}]
+			"choices":[{"message":{"content":"{\"title\":\"AI Title\",\"description\":\"AI description\",\"summary\":\"AI summary\",\"suggestedCategoryId\":\"cat-1\",\"suggestedTags\":[\"react\",\"docs\"]}"}}]
 		}`)
 	}))
 	t.Cleanup(server.Close)
@@ -68,6 +126,9 @@ func TestAnalyzeBookmarkReturnsValidatedSuggestions(t *testing.T) {
 	}
 	if result.Title != "AI Title" {
 		t.Fatalf("Unexpected title: %+v", result)
+	}
+	if result.Description != "AI description" {
+		t.Fatalf("Unexpected description: %+v", result)
 	}
 }
 

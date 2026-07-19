@@ -66,6 +66,7 @@ export const defaultSettings = {
   theme: 'midnight' as ThemeId,
   locale: 'en' as UiLocale,
   ai: { apiBase: '', model: '' },
+  aiConsent: null as null,
 };
 
 export function applyTheme(theme: ThemeId) {

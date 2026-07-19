@@ -1,4 +1,4 @@
-import { analyzeBookmarkResultSchema, type AIContext, type AnalyzeBookmarkResult } from './schema';
+import { analyzeBookmarkResultSchema, type AnalyzeBookmarkInput, type AnalyzeBookmarkResult } from './schema';
 
 type GoAIService = {
   AnalyzeBookmark?: (request: unknown) => Promise<unknown>;
@@ -12,14 +12,7 @@ function getGoAIService(): GoAIService | null {
 
 async function callAnalyze(
   method: 'AnalyzeBookmark' | 'ReanalyzeBookmark',
-  input: {
-    context: AIContext;
-    url: string;
-    title: string;
-    contentText: string;
-    categoryCandidates: Array<{ id: string; name: string }>;
-    tagCandidates: Array<{ id: string; label: string }>;
-  }
+  input: AnalyzeBookmarkInput
 ): Promise<AnalyzeBookmarkResult> {
   const service = getGoAIService();
   const invoke = service?.[method];
@@ -31,6 +24,7 @@ async function callAnalyze(
     context: input.context,
     url: input.url,
     title: input.title,
+    description: input.description,
     contentText: input.contentText,
     categoryCandidates: input.categoryCandidates,
     tagCandidates: input.tagCandidates,
@@ -40,24 +34,10 @@ async function callAnalyze(
 
 /** 浏览器/Wails AI 客户端；无绑定时抛出可映射错误以降级。 */
 export const wailsAnalyzeClient = {
-  analyzeBookmark(input: {
-    context: AIContext;
-    url: string;
-    title: string;
-    contentText: string;
-    categoryCandidates: Array<{ id: string; name: string }>;
-    tagCandidates: Array<{ id: string; label: string }>;
-  }) {
+  analyzeBookmark(input: AnalyzeBookmarkInput) {
     return callAnalyze('AnalyzeBookmark', input);
   },
-  reanalyzeBookmark(input: {
-    context: AIContext;
-    url: string;
-    title: string;
-    contentText: string;
-    categoryCandidates: Array<{ id: string; name: string }>;
-    tagCandidates: Array<{ id: string; label: string }>;
-  }) {
+  reanalyzeBookmark(input: AnalyzeBookmarkInput) {
     return callAnalyze('ReanalyzeBookmark', input);
   },
 };

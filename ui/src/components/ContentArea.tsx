@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import type { Bookmark, Category, Collection, Tag, ViewDensity } from '../types';
+import type { Bookmark, Category, Collection, Tag, UiLocale, ViewDensity } from '../types';
 import type { Filters, Selection } from '../state';
 import { sortBookmarks, type SortKey } from '../domain/query';
 import { Icon, TagPill, Segmented, Favicon, AIBadge, Button, AnimateIn } from './ui';
@@ -13,6 +13,7 @@ import {
   presentBookmarks,
 } from '../features/views';
 import { selectBookmarkRange } from '../features/bookmarks';
+import { useI18n } from '../i18n/use-i18n';
 
 /* ---------- AI smart aggregation banner (Feature 2) ---------- */
 function SmartAggregation({
@@ -275,6 +276,7 @@ function EmptyState({ onNew, onSpotlight }: { onNew: () => void; onSpotlight: ()
 
 /* ---------- Main ContentArea ---------- */
 export function ContentArea({
+  locale = 'en',
   bookmarks,
   allBookmarks,
   tags,
@@ -313,6 +315,7 @@ export function ContentArea({
   onToggleBookmarkSelection,
   onClearBookmarkSelection,
 }: {
+  locale?: UiLocale;
   bookmarks: Bookmark[];
   allBookmarks: Bookmark[];
   tags: Tag[];
@@ -351,6 +354,7 @@ export function ContentArea({
   onToggleBookmarkSelection: (id: string, selected: boolean) => void;
   onClearBookmarkSelection: () => void;
 }) {
+  const i18n = useI18n(locale);
   const [aiDismissed, setAiDismissed] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
   const title = useSelectionTitle(selection, categories, collections);
@@ -435,6 +439,15 @@ export function ContentArea({
         onClearFilters={onClearFilters}
       />
       <div className="mx-4 mb-2 flex justify-end gap-2">
+        <Button
+          size="sm"
+          variant="primary"
+          icon="Plus"
+          aria-label={i18n.t('content.newBookmark')}
+          onClick={onNewBookmark}
+        >
+          {i18n.t('content.newBookmark')}
+        </Button>
         <Button
           size="sm"
           variant={selectionMode ? 'primary' : 'ghost'}

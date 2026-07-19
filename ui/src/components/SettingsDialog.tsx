@@ -19,15 +19,19 @@ import {
 import {
   StorageSwitchDialog,
 } from '../features/storage';
-import { AIConsentDialog, buildConsentRecord } from '../features/settings';
+import { AIConsentDialog, buildConsentRecord, requiresAIConsent } from '../features/settings';
 import type { LibraryEnvelope } from '../domain/library';
 import type { StorageSummary } from '../repositories';
-import { deleteAIKey, getAIKeyStatus, setAIKey } from '../services/secrets/browser-secret-store';
+import {
+  deletePreferredAIKey,
+  getPreferredAIKeyStatus,
+  setPreferredAIKey,
+} from '../services/secrets';
 import {
   createDataRootBindings,
   type DataRootInfo,
 } from '../services/storage/data-root';
-import { getDefaultAppSettings } from '../services/settings';
+import { getDefaultAppSettings, normalizeApiBase } from '../services/settings';
 
 const dataRootBindings = createDataRootBindings();
 
@@ -231,14 +235,22 @@ export function SettingsDialog({
       setPendingDataRootTarget(null);
       setDataRootMessage(null);
       setDataRootError(null);
-      void getAIKeyStatus().then((status) => setKeyConfigured(status.configured));
+      void getPreferredAIKeyStatus().then((status) => setKeyConfigured(status.configured));
       void dataRootBindings.getDataRoot().then(setDataRootInfo).catch(() => setDataRootInfo(null));
     }
   }, [open, settings]);
 
   const update = (patch: Partial<AppSettings>) => setDraft((d) => ({ ...d, ...patch }));
   const updateAI = (patch: Partial<AppSettings['ai']>) =>
-    setDraft((d) => ({ ...d, ai: { ...d.ai, ...patch } }));
+    setDraft((d) => {
+      const ai = { ...d.ai, ...patch };
+      // API Base 变化后清除不匹配的 consent，避免误以为已授权。
+      const consent =
+        d.aiConsent && normalizeApiBase(d.aiConsent.apiBase) === normalizeApiBase(ai.apiBase)
+          ? d.aiConsent
+          : null;
+      return { ...d, ai, aiConsent: consent };
+    });
 
   const requestStorageMode = (mode: StorageMode) => {
     // 与已持久化模式相同：直接改草稿；不同则先确认（REQ-004-AC-001）。
@@ -631,7 +643,7 @@ export function SettingsDialog({
                     type="button"
                     className="mt-2 text-[11px] text-coral-400 hover:underline"
                     onClick={() => {
-                      void deleteAIKey().then(() => {
+                      void deletePreferredAIKey().then(() => {
                         setKeyConfigured(false);
                         setKeyDraft('');
                       });
@@ -736,16 +748,23 @@ export function SettingsDialog({
           onClick={() => {
             void (async () => {
               const apiBase = draft.ai.apiBase.trim();
-              // 有 API Base 且本会话尚未确认授权时，先展示说明（REQ-019-AC-005）。
-              if (apiBase) {
-                const granted = sessionStorage.getItem(`linkit.ai.consent.${apiBase}`);
-                if (!granted) {
-                  setConsentOpen(true);
-                  return;
-                }
+              // 以本机 aiConsent 为准，而非 sessionStorage（REQ-019-AC-005）。
+              if (
+                apiBase &&
+                requiresAIConsent(
+                  {
+                    ...getDefaultAppSettings(),
+                    ai: draft.ai,
+                    aiConsent: draft.aiConsent ?? null,
+                  },
+                  apiBase
+                )
+              ) {
+                setConsentOpen(true);
+                return;
               }
               if (keyDraft.trim()) {
-                await setAIKey(keyDraft.trim());
+                await setPreferredAIKey(keyDraft.trim());
                 setKeyConfigured(true);
                 setKeyDraft('');
               }
@@ -797,26 +816,21 @@ export function SettingsDialog({
         onConfirm={() => {
           void (async () => {
             const apiBase = draft.ai.apiBase.trim();
-            if (apiBase) {
-              sessionStorage.setItem(`linkit.ai.consent.${apiBase}`, '1');
-              // 同步写入领域 consent 记录到本机设置适配层。
-              const adapters = await import('../services/storage/browser-adapters').then((m) =>
-                m.createBrowserStorageAdapters()
-              );
-              const current = await adapters.loadSettings();
-              await adapters.saveSettings({
-                ...current.settings,
-                ai: { apiBase: draft.ai.apiBase, model: draft.ai.model },
-                aiConsent: buildConsentRecord(apiBase, new Date().toISOString()),
-              });
-            }
+            // Consent 必须随 onSave 写入桌面 settingsstore，供 Go AI 二次校验。
+            const next: AppSettings = {
+              ...draft,
+              aiConsent: apiBase
+                ? buildConsentRecord(apiBase, new Date().toISOString())
+                : null,
+            };
+            setDraft(next);
             setConsentOpen(false);
             if (keyDraft.trim()) {
-              await setAIKey(keyDraft.trim());
+              await setPreferredAIKey(keyDraft.trim());
               setKeyConfigured(true);
               setKeyDraft('');
             }
-            await onSave(draft);
+            await onSave(next);
             onClose();
           })();
         }}

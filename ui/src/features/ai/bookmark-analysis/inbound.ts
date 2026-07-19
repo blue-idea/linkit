@@ -90,6 +90,7 @@ export async function buildInboundAnalysis(input: {
       context: input.context,
       url: input.url.trim(),
       title: baseTitle,
+      description,
       contentText,
       categoryCandidates: input.categoryCandidates,
       tagCandidates: input.tagCandidates,
@@ -115,7 +116,8 @@ export async function buildInboundAnalysis(input: {
       aiErrorMessage: null,
       preview: {
         title: validated.title.trim() || baseTitle,
-        description,
+        // AI 按 locale 重写 description；为空时回退元数据原文。
+        description: validated.description.trim() || description,
         aiSummary: validated.summary,
         suggestedTags: validated.suggestedTags,
         suggestedCategoryId: validated.suggestedCategoryId,
