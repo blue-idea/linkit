@@ -9,6 +9,7 @@ type BookmarkItemActionsProps = {
   onEdit: () => void;
   onMove: () => void;
   onDelete: () => void;
+  onRemoveFromCollection?: () => void;
 };
 
 /** 各书签视图共用的底部操作区，避免操作入口和选择逻辑分叉。 */
@@ -21,6 +22,7 @@ export function BookmarkItemActions({
   onEdit,
   onMove,
   onDelete,
+  onRemoveFromCollection,
 }: BookmarkItemActionsProps) {
   const stopAndRun = (event: React.MouseEvent, action: () => void) => {
     event.stopPropagation();
@@ -46,6 +48,15 @@ export function BookmarkItemActions({
         </button>
         <button aria-label="Edit bookmark" onClick={(event) => stopAndRun(event, onEdit)} className="text-[10px] text-ink-300 hover:text-accent-300">Edit</button>
         <button aria-label="Move bookmark" onClick={(event) => stopAndRun(event, onMove)} className="text-[10px] text-ink-300 hover:text-accent-300">Move</button>
+        {onRemoveFromCollection && (
+          <button
+            aria-label="Remove from collection"
+            onClick={(event) => stopAndRun(event, onRemoveFromCollection)}
+            className="text-[10px] text-ink-300 hover:text-amber-300"
+          >
+            Remove
+          </button>
+        )}
         <button aria-label="Delete bookmark" onClick={(event) => stopAndRun(event, onDelete)} className="text-[10px] text-coral-400 hover:text-coral-300">Delete</button>
       </div>
     </div>
@@ -60,4 +71,5 @@ export type BookmarkItemActionHandlers = {
   onEdit: (id: string) => void;
   onMove: (id: string) => void;
   onDelete: (id: string) => void;
+  onRemoveFromCollection?: (id: string) => void;
 };

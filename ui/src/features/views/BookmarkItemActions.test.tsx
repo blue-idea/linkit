@@ -52,4 +52,21 @@ describe('BookmarkItemActions', () => {
     expect(props.onToggleSelect).toHaveBeenCalledWith(true);
     expect(props.onVisit).toHaveBeenCalledTimes(1);
   });
+
+  // REQ-012-AC-011：主题视图显示移出入口，点击立即回调。
+  test('[组件] 提供 onRemoveFromCollection 时 shall 渲染移出按钮并触发回调', async () => {
+    const user = userEvent.setup();
+    const onRemoveFromCollection = vi.fn();
+    renderActions({ onRemoveFromCollection });
+
+    await user.click(screen.getByRole('button', { name: 'Remove from collection' }));
+    expect(onRemoveFromCollection).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('button', { name: 'Remove from collection' })).toBeTruthy();
+  });
+
+  // REQ-012-AC-011：非主题视图不显示移出入口。
+  test('[组件] 未提供 onRemoveFromCollection 时 shall 不渲染移出按钮', () => {
+    renderActions();
+    expect(screen.queryByRole('button', { name: 'Remove from collection' })).toBeNull();
+  });
 });

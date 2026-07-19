@@ -32,6 +32,7 @@ export function ListView({
   onEdit,
   onMove,
   onDelete,
+  onRemoveFromCollection,
 }: ListViewProps) {
   const parentRef = useRef<HTMLDivElement>(null);
   const virtualizer = useVirtualizer({
@@ -76,6 +77,11 @@ export function ListView({
                 onEdit={() => onEdit(item.id)}
                 onMove={() => onMove(item.id)}
                 onDelete={() => onDelete(item.id)}
+                onRemoveFromCollection={
+                  onRemoveFromCollection
+                    ? () => onRemoveFromCollection(item.id)
+                    : undefined
+                }
               />
             </div>
           );
@@ -98,6 +104,7 @@ function ListItem({
   onEdit,
   onMove,
   onDelete,
+  onRemoveFromCollection,
 }: {
   item: BookmarkPresentation;
   selected: boolean;
@@ -111,6 +118,7 @@ function ListItem({
   onEdit: () => void;
   onMove: () => void;
   onDelete: () => void;
+  onRemoveFromCollection?: () => void;
 }) {
   return (
     <div
@@ -172,6 +180,7 @@ function ListItem({
             onEdit={onEdit}
             onMove={onMove}
             onDelete={onDelete}
+            onRemoveFromCollection={onRemoveFromCollection}
           />
         </div>
       </div>

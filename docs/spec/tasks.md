@@ -1217,25 +1217,25 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [ ] **TASK-054 · 主题视图移出成员**
+- [x] **TASK-054 · 主题视图移出成员**
 
-  > 依赖：TASK-052、TASK-045 · 预计：1–2 小时 · 状态：待开始
+  > 依赖：TASK-052、TASK-045 · 预计：1–2 小时 · 状态：done · 2026-07-19
 
-  - [ ] 主题视图书签项增加 `Remove from collection`，立即 `member: false`，不删除书签。
-  - [ ] 选择模式下主题视图批量栏增加 `Remove from collection`；确认对话框展示数量，确认前零副作用，确认后批量移出。
-  - [ ] 移出后主题视图与侧栏计数同步；书签仍在资料库。
-  - [ ] 覆盖组件/Unit 与 E2E（含截图证据）。
+  - [x] 主题视图书签项增加 `Remove from collection`，立即 `member: false`，不删除书签。
+  - [x] 选择模式下主题视图批量栏增加 `Remove from collection`；确认对话框展示数量，确认前零副作用，确认后批量移出。
+  - [x] 移出后主题视图与侧栏计数同步；书签仍在资料库。
+  - [x] 覆盖组件/Unit 与 E2E（含截图证据）。
 
   **验证方式：**
   ```powershell
-  pnpm --dir ui exec vitest run src/features/views/BookmarkItemActions.test.tsx src/features/collections/apply-collection-command.test.ts
+  pnpm --dir ui exec vitest run src/features/views/BookmarkItemActions.test.tsx src/features/collections/apply-collection-command.test.ts src/features/collections/RemoveFromCollectionDialog.test.tsx
   pnpm --dir ui exec playwright test tests/e2e/collection-membership.spec.ts --workers=1
   pnpm --dir ui typecheck
   pnpm --dir ui lint
   pnpm --dir ui build
   ```
 
-  **验收证据：** 移出相关 Unit、E2E、`TASK-054-remove-from-collection.png`。
+  **验收证据：** 移出相关 Unit、E2E、`TASK-054-remove-from-collection.png`；`docs/spec/ac/TASK-054-AC.md`。
 
   _需求: REQ-012、REQ-026
   验收标准：REQ-012-AC-011、REQ-026-AC-003
@@ -1300,7 +1300,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-051 | 新建书签 URL 唯一性 warning | Unit/E2E | done | REQ-006 |
 | TASK-052 | 主题批量成员命令与候选过滤 | Unit | done | REQ-012、026 |
 | TASK-053 | 主题视图添加书签入口与挑选器 | Unit/E2E | done | REQ-012 |
-| TASK-054 | 主题视图移出成员 | Unit/E2E | 待开始 | REQ-012、026 |
+| TASK-054 | 主题视图移出成员 | Unit/E2E | done | REQ-012、026 |
 
 ---
 

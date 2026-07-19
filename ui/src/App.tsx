@@ -72,6 +72,7 @@ import {
   confirmComposeCollection,
   DeleteCollectionDialog,
   parseComposeDragPayload,
+  RemoveFromCollectionDialog,
   runBatchSetMembership,
   runCreateCollection,
   runDeleteCollection,
@@ -183,6 +184,7 @@ export default function App() {
   >(null);
   const [collectionDeleteId, setCollectionDeleteId] = useState<string | null>(null);
   const [addBookmarksCollectionId, setAddBookmarksCollectionId] = useState<string | null>(null);
+  const [bulkRemoveFromCollectionIds, setBulkRemoveFromCollectionIds] = useState<string[] | null>(null);
   const [composeSelectedIds, setComposeSelectedIds] = useState<string[]>([]);
   const [composePreview, setComposePreview] = useState<ComposePreview | null>(null);
   // 防止“未水合的种子数据”在加载本机库前被自动保存覆盖。
@@ -509,6 +511,52 @@ export default function App() {
     setAddBookmarksCollectionId(null);
     flashToast(`Added ${bookmarkIds.length} bookmarks to collection`);
   }, [addBookmarksCollectionId, bookmarks, cats, cols, flashToast, tagList]);
+
+  // REQ-012-AC-011：单条移出立即生效，不删书签。
+  const removeFromCollection = useCallback((bookmarkId: string) => {
+    if (state.selection.kind !== 'collection') return;
+    const result = runSetMembership({
+      bookmarks,
+      categories: cats,
+      collections: cols,
+      tags: tagList,
+      bookmarkId,
+      collectionId: state.selection.id,
+      member: false,
+    });
+    if (!result.ok) {
+      flashToast(result.error.message);
+      return;
+    }
+    const applied = applyCollectionLibraryResult(result.value, bookmarks);
+    setBookmarks(applied.bookmarks);
+    setCols(applied.collections);
+    flashToast('Removed from collection');
+  }, [bookmarks, cats, cols, flashToast, state.selection, tagList]);
+
+  // REQ-012-AC-011：多选移出确认后批量解除成员关系。
+  const confirmBulkRemoveFromCollection = useCallback(() => {
+    if (!bulkRemoveFromCollectionIds || state.selection.kind !== 'collection') return;
+    const result = runBatchSetMembership({
+      bookmarks,
+      categories: cats,
+      collections: cols,
+      tags: tagList,
+      bookmarkIds: bulkRemoveFromCollectionIds,
+      collectionId: state.selection.id,
+      member: false,
+    });
+    if (!result.ok) {
+      flashToast(result.error.message);
+      return;
+    }
+    const applied = applyCollectionLibraryResult(result.value, bookmarks);
+    setBookmarks(applied.bookmarks);
+    setCols(applied.collections);
+    setBulkRemoveFromCollectionIds(null);
+    setComposeSelectedIds([]);
+    flashToast(`Removed ${bulkRemoveFromCollectionIds.length} bookmarks from collection`);
+  }, [bookmarks, bulkRemoveFromCollectionIds, cats, cols, flashToast, state.selection, tagList]);
 
   const acceptAICollection = useCallback((ids: string[]) => {
     if (state.selection.kind !== 'collection') return;
@@ -996,6 +1044,7 @@ export default function App() {
       'category-icon': Boolean(categoryIconId),
       'collection-form': Boolean(collectionForm),
       'add-bookmarks': Boolean(addBookmarksCollectionId),
+      'remove-from-collection': Boolean(bulkRemoveFromCollectionIds),
       compose: Boolean(composePreview),
       spotlight: spotlightOpen,
       'new-bookmark': newOpen,
@@ -1012,6 +1061,7 @@ export default function App() {
       categoryIconId,
       collectionForm,
       addBookmarksCollectionId,
+      bulkRemoveFromCollectionIds,
       composePreview,
       spotlightOpen,
       newOpen,
@@ -1047,6 +1097,9 @@ export default function App() {
         break;
       case 'add-bookmarks':
         setAddBookmarksCollectionId(null);
+        break;
+      case 'remove-from-collection':
+        setBulkRemoveFromCollectionIds(null);
         break;
       case 'compose':
         cancelCompose();
@@ -1319,6 +1372,11 @@ export default function App() {
               if (state.selection.kind === 'collection') {
                 setAddBookmarksCollectionId(state.selection.id);
               }
+            }}
+            onRemoveFromCollection={removeFromCollection}
+            onRequestBulkRemoveFromCollection={() => {
+              if (composeSelectedIds.length === 0) return;
+              setBulkRemoveFromCollectionIds([...composeSelectedIds]);
             }}
           />
         }
@@ -1609,6 +1667,18 @@ export default function App() {
           onConfirm={confirmAddBookmarksToCollection}
         />
       )}
+      {(() => {
+        if (!bulkRemoveFromCollectionIds || state.selection.kind !== 'collection') return null;
+        const collectionId = state.selection.id;
+        return (
+          <RemoveFromCollectionDialog
+            count={bulkRemoveFromCollectionIds.length}
+            collectionName={cols.find((c) => c.id === collectionId)?.name ?? 'Collection'}
+            onCancel={() => setBulkRemoveFromCollectionIds(null)}
+            onConfirm={confirmBulkRemoveFromCollection}
+          />
+        );
+      })()}
       {composePreview && (
         <ComposePreviewDialog
           members={composePreview.members}

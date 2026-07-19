@@ -30,6 +30,7 @@ export function MasonryView({
   onEdit,
   onMove,
   onDelete,
+  onRemoveFromCollection,
 }: MasonryViewProps) {
   const columns = useMemo(
     () => assignMasonryColumns(items, columnCount),
@@ -66,6 +67,11 @@ export function MasonryView({
                 onEdit={() => onEdit(item.id)}
                 onMove={() => onMove(item.id)}
                 onDelete={() => onDelete(item.id)}
+                onRemoveFromCollection={
+                  onRemoveFromCollection
+                    ? () => onRemoveFromCollection(item.id)
+                    : undefined
+                }
               />
             ))}
           </div>
@@ -87,6 +93,7 @@ function MasonryTile({
   onEdit,
   onMove,
   onDelete,
+  onRemoveFromCollection,
 }: {
   item: BookmarkPresentation;
   selected: boolean;
@@ -99,6 +106,7 @@ function MasonryTile({
   onEdit: () => void;
   onMove: () => void;
   onDelete: () => void;
+  onRemoveFromCollection?: () => void;
 }) {
   const grad = item.thumbnail
     ? thumbnailGradients[item.thumbnail as keyof typeof thumbnailGradients]
@@ -130,7 +138,7 @@ function MasonryTile({
         {item.summary && (
           <p className="text-[10px] text-ink-300 mt-1.5 line-clamp-3 leading-relaxed">{item.summary}</p>
         )}
-        <BookmarkItemActions title={item.title} selected={bulkSelected} selectionMode={selectionMode} onToggleSelect={onToggleSelect} onVisit={onVisit} onEdit={onEdit} onMove={onMove} onDelete={onDelete} />
+        <BookmarkItemActions title={item.title} selected={bulkSelected} selectionMode={selectionMode} onToggleSelect={onToggleSelect} onVisit={onVisit} onEdit={onEdit} onMove={onMove} onDelete={onDelete} onRemoveFromCollection={onRemoveFromCollection} />
       </div>
     </div>
   );
