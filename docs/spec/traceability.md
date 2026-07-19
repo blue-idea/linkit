@@ -69,8 +69,8 @@
 | TASK-041 | 性能预算 | REQ-028-AC-005~008 | done | `ui/playwright.performance.config.ts`、`ui/package.json`、`ui/src/components/ContentArea.tsx` | `ui/tests/performance/performance-budget.spec.ts`、`internal/localstore/performance_test.go` | `docs/spec/ac/TASK-041-AC.md` | 2026-07-19 |
 | TASK-042 | Windows 桌面验收 | REQ-005、008、024；REQ-027-AC-001、004；REQ-028-AC-004 | 待开始 | — | — | — | — |
 | TASK-043 | macOS 桌面验收 | REQ-024；REQ-027-AC-001、004；REQ-028-AC-004 | 待开始 | — | — | — | — |
-| TASK-044 | 全量回归与发布门禁 | REQ-001~028 / 全部 129 条 AC | 待开始 | — | — | — | — |
-| TASK-045 | 书签操作与批量移动删除 | REQ-007-AC-005~009；REQ-011-AC-004~005；REQ-026-AC-002~003；REQ-027-AC-002~003 | done | `ui/src/features/bookmarks/batch-actions.ts`、`ui/src/features/bookmarks/BookmarkActionDialogs.tsx`、`ui/src/components/ContentArea.tsx`、`ui/src/components/DetailPanel.tsx`、`ui/src/features/views/CardView.tsx` | `ui/src/features/bookmarks/batch-actions.test.ts`、`ui/tests/e2e/bookmark-actions.spec.ts` | `docs/spec/ac/TASK-045-AC.md` | `docs/spec/evidence/TASK-045-evidence.md`、`TASK-045-bookmark-actions.png` |
+| TASK-044 | 全量回归与发布门禁 | REQ-001~028 / 全部 130 条 AC | 待开始 | — | — | — | — |
+| TASK-045 | 书签操作与批量移动删除 | REQ-007-AC-005~010；REQ-011-AC-004~005；REQ-026-AC-002~003；REQ-027-AC-002~003 | done | `ui/src/features/bookmarks/batch-actions.ts`、`ui/src/features/bookmarks/BookmarkActionDialogs.tsx`、`ui/src/components/ContentArea.tsx`、`ui/src/components/DetailPanel.tsx`、`ui/src/features/views/CardView.tsx` | `ui/src/features/bookmarks/batch-actions.test.ts`、`ui/tests/e2e/bookmark-actions.spec.ts` | `docs/spec/ac/TASK-045-AC.md` | `docs/spec/evidence/TASK-045-evidence.md`、`TASK-045-bookmark-actions.png` |
 
 ---
 

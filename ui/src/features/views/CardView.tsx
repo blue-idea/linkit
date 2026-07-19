@@ -12,6 +12,7 @@ type CardViewProps = {
   items: BookmarkPresentation[];
   isSelected: (id: string) => boolean;
   isBulkSelected: (id: string) => boolean;
+  selectionMode: boolean;
   onSelect: (id: string, e: React.MouseEvent) => void;
   onToggleStar: (id: string) => void;
   onDragStart: (e: React.DragEvent, id: string) => void;
@@ -29,6 +30,7 @@ export function CardView({
   items,
   isSelected,
   isBulkSelected,
+  selectionMode,
   onSelect,
   onToggleStar,
   onDragStart,
@@ -74,6 +76,7 @@ export function CardView({
                   item={item}
                   selected={isSelected(item.id)}
                   bulkSelected={isBulkSelected(item.id)}
+                  selectionMode={selectionMode}
                   onClick={(e) => onSelect(item.id, e)}
                   onDragStart={(e) => onDragStart(e, item.id)}
                   onToggleStar={() => onToggleStar(item.id)}
@@ -95,6 +98,7 @@ function CardItem({
   item,
   selected,
   bulkSelected,
+  selectionMode,
   onClick,
   onDragStart,
   onToggleStar,
@@ -106,6 +110,7 @@ function CardItem({
   item: BookmarkPresentation;
   selected: boolean;
   bulkSelected: boolean;
+  selectionMode: boolean;
   onClick: (e: React.MouseEvent) => void;
   onDragStart: (e: React.DragEvent) => void;
   onToggleStar: () => void;
@@ -128,9 +133,11 @@ function CardItem({
       }`}
     >
       <div className="mb-2 flex items-center justify-between gap-2">
-        <label className="text-[10px] text-ink-400" onClick={(event) => event.stopPropagation()}>
-          <input aria-label={`Select bookmark ${item.title}`} type="checkbox" checked={bulkSelected} onChange={(event) => onToggleSelect(event.target.checked)} /> Select
-        </label>
+        {selectionMode ? (
+          <label className="text-[10px] text-ink-400" onClick={(event) => event.stopPropagation()}>
+            <input aria-label={`Select bookmark ${item.title}`} type="checkbox" checked={bulkSelected} onChange={(event) => onToggleSelect(event.target.checked)} /> Select
+          </label>
+        ) : <span />}
         <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100">
           <button aria-label="Edit bookmark" onClick={(event) => { event.stopPropagation(); onEdit(); }} className="text-[10px] text-ink-300 hover:text-accent-300">Edit</button>
           <button aria-label="Move bookmark" onClick={(event) => { event.stopPropagation(); onMove(); }} className="text-[10px] text-ink-300 hover:text-accent-300">Move</button>

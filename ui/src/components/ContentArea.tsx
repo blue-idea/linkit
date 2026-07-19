@@ -350,6 +350,7 @@ export function ContentArea({
   onClearBookmarkSelection: () => void;
 }) {
   const [aiDismissed, setAiDismissed] = useState(false);
+  const [selectionMode, setSelectionMode] = useState(false);
   const title = useSelectionTitle(selection, categories, collections);
   const subtitle = `${bookmarks.length} 个收藏 · ${bookmarks.filter((b) => b.starred).length} 星标`;
   // REQ-009-AC-001/002：排序与 pinned 分组由领域引擎负责。
@@ -377,6 +378,10 @@ export function ContentArea({
   };
 
   const handleCardClick = (e: React.MouseEvent, bookmarkId: string) => {
+    if (!selectionMode) {
+      onSelectBookmark(bookmarkId);
+      return;
+    }
     if (e.shiftKey && selectionAnchorRef.current) {
       const range = selectBookmarkRange(sorted.map(({ id }) => id), selectionAnchorRef.current, bookmarkId);
       onClearBookmarkSelection();
@@ -419,6 +424,18 @@ export function ContentArea({
         onClearFilters={onClearFilters}
       />
       <div className="mx-4 mb-2 flex justify-end gap-2">
+        <Button
+          size="sm"
+          variant={selectionMode ? 'primary' : 'ghost'}
+          icon={selectionMode ? 'Check' : 'ListChecks'}
+          aria-label={selectionMode ? 'Done selecting' : 'Select bookmarks'}
+          onClick={() => {
+            if (selectionMode) onClearBookmarkSelection();
+            setSelectionMode((current) => !current);
+          }}
+        >
+          {selectionMode ? 'Done' : 'Select'}
+        </Button>
         <Button size="sm" variant="ghost" icon="Sparkles" onClick={onOpenAICollection}>AI create collection</Button>
         <Button size="sm" variant="ghost" icon="Copy" onClick={onOpenDuplicates}>Find duplicates</Button>
         <Button size="sm" variant="ghost" icon="Compass" onClick={onOpenExplore}>Explore library</Button>
@@ -454,6 +471,7 @@ export function ContentArea({
           items={presented}
           isSelected={(id) => selectedId === id || composeSet.has(id)}
           isBulkSelected={(id) => composeSet.has(id)}
+          selectionMode={selectionMode}
           onSelect={(id, e) => handleCardClick(e, id)}
           onToggleStar={onToggleStar}
           onDragStart={startDrag}

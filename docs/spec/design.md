@@ -294,7 +294,8 @@ CommandResult<T> =
 
 - 卡片悬停操作区与详情面板顶部统一暴露 `Edit`、`Move`、`Delete`，不以点击标题、滚动到底部或隐藏手势作为唯一入口。
 - `BookmarkEditorDialog` 统一编辑 URL、标题、描述、备注、分类、标签、主题和阅读状态；Save 前零副作用，URL 复用既有规范化与安全校验。
-- `selectedBookmarkIds` 是通用 UI 选择集合，支持选择框、Ctrl/Cmd 切换与 Shift 范围选择；原有“从选择创建主题”复用该集合。
+- 内容区通过 `Select` / `Done` 显式切换批量选择模式；普通浏览模式不渲染复选框，也不响应 Ctrl/Cmd 或 Shift 批量选择。
+- `selectedBookmarkIds` 是选择模式内的通用 UI 选择集合，支持选择框、Ctrl/Cmd 切换与 Shift 范围选择；退出选择模式时清空集合，原有“从选择创建主题”复用该集合。
 - 批量操作栏固定显示选中数量及 `Move`、`Delete`、`Clear selection`。
 - 批量移动和删除由纯领域命令一次校验全部 ID 后再生成新 LibraryData，禁止部分成功；删除同时清理 Collection.bookmarkIds。
 - 单项 Move 与批量 Move 复用同一目标分类对话框，并支持 `Uncategorized`（领域值 `null`）。

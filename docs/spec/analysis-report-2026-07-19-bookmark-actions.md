@@ -23,7 +23,7 @@
 
 ## 文档变更
 
-- `requirements.md`：新增 REQ-007-AC-005~009、REQ-011-AC-004~005。
+- `requirements.md`：新增 REQ-007-AC-005~010、REQ-011-AC-004~005。
 - `design.md`：新增统一编辑、多选模型和原子批量命令设计。
 - `test_strategy.md`：扩展 J-04 和测试范围。
 - `tasks.md` / `traceability.md`：新增 TASK-045，并纳入发布门禁依赖。

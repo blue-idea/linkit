@@ -16,6 +16,7 @@ test.describe('书签操作与批量操作', () => {
 
   test('可见入口打开包含 URL 和 Notes 的统一编辑对话框', async ({ page }) => {
     const main = page.getByRole('main', { name: 'Content Area' });
+    await expect(main.getByRole('checkbox', { name: /Select bookmark/ })).toHaveCount(0);
     await expect(main.getByRole('button', { name: 'Edit bookmark' }).first()).toBeVisible();
     await main.getByRole('button', { name: 'Edit bookmark' }).first().click();
     const dialog = page.getByRole('dialog', { name: 'Edit bookmark' });
@@ -29,6 +30,9 @@ test.describe('书签操作与批量操作', () => {
 
   test('批量移动和批量删除显示固定操作栏并保持确认门禁', async ({ page }) => {
     const main = page.getByRole('main', { name: 'Content Area' });
+    await expect(main.getByRole('checkbox', { name: /Select bookmark/ })).toHaveCount(0);
+    await main.getByRole('button', { name: 'Select bookmarks' }).click();
+    await expect(main.getByRole('button', { name: 'Done selecting' })).toBeVisible();
     await main.getByText('Figma — 协作式界面设计工具', { exact: true }).click();
     await main.getByText('React 官方文档', { exact: true }).click({ modifiers: ['Control'] });
     let toolbar = main.getByRole('toolbar', { name: 'Bulk bookmark actions' });
@@ -61,5 +65,7 @@ test.describe('书签操作与批量操作', () => {
     await page.screenshot({ path: resolve(evidenceDirectory, 'TASK-045-bookmark-actions.png'), fullPage: true });
     await deleteDialog.getByRole('button', { name: 'Cancel' }).click();
     await expect(main.getByRole('toolbar', { name: 'Bulk bookmark actions' })).toBeVisible();
+    await main.getByRole('button', { name: 'Done selecting' }).click();
+    await expect(main.getByRole('checkbox', { name: /Select bookmark/ })).toHaveCount(0);
   });
 });

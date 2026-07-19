@@ -488,6 +488,16 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
     return_value: "LibraryData without selected bookmarks or dangling collection references"
     side_effects:
       - "If any selected bookmark is missing, the whole operation fails without mutation"
+
+- id: REQ-007-AC-010
+  ears: >
+    While 用户未进入批量选择模式,
+    the Linkit shall 隐藏书签复选框；when 用户选择 Select，the Linkit shall 显示复选框并允许通过 Done 退出且清空选择.
+  test_type: E2E
+  expected:
+    ui_state: "Bookmark checkboxes are visible only between Select and Done"
+    side_effects:
+      - "Leaving selection mode clears selected bookmark IDs"
 ```
 
 ---
