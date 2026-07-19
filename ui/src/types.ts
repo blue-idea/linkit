@@ -1,3 +1,5 @@
+import { THEME_IDS } from './config/themes';
+
 export type ViewDensity =
   | 'card'
   | 'list'
@@ -80,7 +82,7 @@ export interface SemanticResult {
 
 export type StorageMode = 'local' | 'cloud';
 
-export type ThemeId = 'midnight' | 'ocean' | 'graphite' | 'sunset';
+export type ThemeId = (typeof THEME_IDS)[number];
 
 /** UI 语言偏好；与 domain AppSettings.locale 对齐。 */
 export type UiLocale = 'en' | 'zh';

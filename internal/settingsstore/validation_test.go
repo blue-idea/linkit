@@ -99,6 +99,26 @@ func TestGetAIConsentStatusRejectsInvalidBase(t *testing.T) {
 	assertCodedError(t, err, config.ErrorCodeSettingsInvalid, false)
 }
 
+// REQ-023-AC-003：Go 设置存储必须接受全部六套主题。
+func TestDecodeAcceptsAllThemeValues(t *testing.T) {
+	for _, theme := range []string{"midnight", "ocean", "graphite", "sunset", "daylight", "paper"} {
+		t.Run(theme, func(t *testing.T) {
+			payload := makeSettingsJSON(t, appSettings{
+				SettingsVersion: 1,
+				StorageMode:     "local",
+				Theme:           theme,
+				Locale:          "en",
+				AI:              aiSettings{},
+				View:            viewSettings{DefaultMode: "card"},
+			})
+
+			if _, err := decodeAndValidateSettings([]byte(payload)); err != nil {
+				t.Fatalf("Theme %q must be accepted: %v", theme, err)
+			}
+		})
+	}
+}
+
 func TestWriteSettingsRotatesBackupAcrossMultipleSaves(t *testing.T) {
 	root := t.TempDir()
 	service := NewService(root, WithClock(func() time.Time { return fixedTime }))

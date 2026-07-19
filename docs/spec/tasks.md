@@ -1,11 +1,11 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：1.2.0
+> 版本：1.5.0
 > 日期：2026-07-17  
 > 状态：已定稿
 
-执行时须严格遵循 `docs/spec/requirements.md` 1.5.0、`docs/spec/design.md` 1.3.0 和 `docs/spec/test_strategy.md` 1.3.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
+执行时须严格遵循 `docs/spec/requirements.md` 1.6.0、`docs/spec/design.md` 1.4.0 和 `docs/spec/test_strategy.md` 1.4.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
 
 AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首尾均包含。
 
@@ -942,9 +942,35 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-046 · 优化六套主题皮肤并新增浅色主题**
+
+  > 依赖：TASK-002、TASK-007、TASK-023、TASK-025 · 预计：3–4 小时 · 状态：done · 2026-07-19
+
+  - [x] 先编写失败的主题枚举、Schema、本地化和视觉 token 契约测试，验证 Daylight/Paper 尚未被支持。
+  - [x] 扩展 ThemeId、AppSettingsSchema、主题元数据和中英文词典，新增 Daylight 与 Paper，保持默认主题和设置接口不变。
+  - [x] 参考 `ck/project` 将 Tailwind `ink`/`accent` 色板及玻璃、描边、阴影、滚动条、焦点状态统一改为六主题 CSS 令牌。
+  - [x] 为六套主题生成主窗口和 Appearance 设置界面的 Playwright Baseline、实际截图和 Diff，并验证主题选择可持久化。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/services/settings src/features/settings src/themes.test.js
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui build
+  pnpm --dir ui exec playwright test tests/visual/theme-skins.spec.ts --workers=1
+  ```
+
+  **验收证据：** 六主题 Schema 与本地化测试、主题 token 契约、六套主窗口截图、Appearance 设置截图、Baseline 与 Diff。
+
+  _需求: REQ-023、REQ-028
+  验收标准：REQ-023-AC-003、REQ-023-AC-007、REQ-028-AC-004
+  _测试类型: Unit + E2E + Manual
+
+---
+
 - [ ] **TASK-042 · Windows Wails 构建与桌面 E2E**
 
-  > 依赖：TASK-025、TASK-029、TASK-031~041、TASK-045 · 预计：3–4 小时
+  > 依赖：TASK-025、TASK-029、TASK-031~041、TASK-045~046 · 预计：3–4 小时
 
   - [ ] 在 Windows 构建正式 Wails 应用。
   - [ ] 当 Windows 被选为本发布候选的验收平台时，运行关键桌面旅程并验证 Credential Manager、原生文件对话框、外部浏览器和快捷键。
@@ -966,7 +992,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 - [ ] **TASK-043 · macOS Wails 构建与桌面 E2E**
 
-  > 依赖：TASK-025、TASK-029、TASK-031~041、TASK-045 · 门禁：可用 macOS runner 或测试设备 · 预计：3–4 小时
+  > 依赖：TASK-025、TASK-029、TASK-031~041、TASK-045~046 · 门禁：可用 macOS runner 或测试设备 · 预计：3–4 小时
 
   - [ ] 在 macOS 构建正式 Wails 应用。
   - [ ] 当 macOS 被选为本发布候选的验收平台时，执行关键桌面旅程并验证 Keychain、原生对话框、Cmd 快捷键和窗口惯例。
@@ -988,7 +1014,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 - [ ] **TASK-044 · 全量回归、质量评分与发布门禁**
 
-  > 依赖：TASK-040~043、TASK-045 · 预计：3–4 小时
+  > 依赖：TASK-040~043、TASK-045~046 · 预计：3–4 小时
 
   - [ ] 运行全量 Go、TypeScript、Supabase、E2E、视觉、安全和性能套件。
   - [ ] 确认 Windows 与 macOS 构建均通过，且至少一个选定平台完成完整桌面旅程。
@@ -1006,7 +1032,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
   **验收证据：** 全量真实命令输出、Coverage Report、Playwright Report、质量评分和发布结论。
 
   _需求: REQ-001~028  
-  验收标准：全部 130 条 AC
+  验收标准：全部 131 条 AC
   _测试类型: Unit + API + E2E + Performance + Security + Manual
 
 ---
@@ -1060,6 +1086,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-043 | macOS 桌面验收 | E2E/Manual | 待开始 | REQ-024、027、028 |
 | TASK-044 | 全量回归与发布门禁 | 全类型 | 待开始 | REQ-001~028 |
 | TASK-045 | 书签操作与批量移动删除 | Unit/E2E | done | REQ-007、011、026、027 |
+| TASK-046 | 六主题皮肤与浅色主题 | Unit/E2E/Manual | done | REQ-023、028 |
 
 ---
 
@@ -1073,3 +1100,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 1.2.0 | 2026-07-17 | 已定稿 | 根据用户指令将 Git Hooks、CI/CD 与配置验收纳入 TASK-002 的工程质量范围 |
 | 1.3.0 | 2026-07-19 | 已定稿 | 对齐 REQ-028-AC-006：视图切换 P95 预算调整为 150ms |
 | 1.4.0 | 2026-07-19 | 已定稿 | 新增 TASK-045，统一书签操作入口并实现原子批量移动与删除 |
+| 1.5.0 | 2026-07-19 | 已定稿 | 新增 TASK-046，参考 `ck/project` 优化六主题皮肤并加入 Daylight 与 Paper |
