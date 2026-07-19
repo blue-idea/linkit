@@ -17,6 +17,7 @@ type CardViewProps = {
   onSelect: (id: string, e: React.MouseEvent) => void;
   onToggleStar: (id: string) => void;
   onDragStart: (e: React.DragEvent, id: string) => void;
+  onVisit: (id: string) => void;
   onEdit: (id: string) => void;
   onMove: (id: string) => void;
   onDelete: (id: string) => void;
@@ -35,6 +36,7 @@ export function CardView({
   onSelect,
   onToggleStar,
   onDragStart,
+  onVisit,
   onEdit,
   onMove,
   onDelete,
@@ -81,6 +83,7 @@ export function CardView({
                   onClick={(e) => onSelect(item.id, e)}
                   onDragStart={(e) => onDragStart(e, item.id)}
                   onToggleStar={() => onToggleStar(item.id)}
+                  onVisit={() => onVisit(item.id)}
                   onEdit={() => onEdit(item.id)}
                   onMove={() => onMove(item.id)}
                   onDelete={() => onDelete(item.id)}
@@ -103,6 +106,7 @@ function CardItem({
   onClick,
   onDragStart,
   onToggleStar,
+  onVisit,
   onEdit,
   onMove,
   onDelete,
@@ -115,6 +119,7 @@ function CardItem({
   onClick: (e: React.MouseEvent) => void;
   onDragStart: (e: React.DragEvent) => void;
   onToggleStar: () => void;
+  onVisit: () => void;
   onEdit: () => void;
   onMove: () => void;
   onDelete: () => void;
@@ -183,7 +188,7 @@ function CardItem({
           {formatDate(item.createdAt)}
         </span>
       </div>
-      <BookmarkItemActions title={item.title} selected={bulkSelected} selectionMode={selectionMode} onToggleSelect={onToggleSelect} onEdit={onEdit} onMove={onMove} onDelete={onDelete} />
+      <BookmarkItemActions title={item.title} selected={bulkSelected} selectionMode={selectionMode} onToggleSelect={onToggleSelect} onVisit={onVisit} onEdit={onEdit} onMove={onMove} onDelete={onDelete} />
     </div>
   );
 }

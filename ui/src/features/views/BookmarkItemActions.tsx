@@ -1,8 +1,11 @@
+import { Icon } from '../../components/ui';
+
 type BookmarkItemActionsProps = {
   title: string;
   selected: boolean;
   selectionMode: boolean;
   onToggleSelect: (selected: boolean) => void;
+  onVisit: () => void;
   onEdit: () => void;
   onMove: () => void;
   onDelete: () => void;
@@ -14,10 +17,16 @@ export function BookmarkItemActions({
   selected,
   selectionMode,
   onToggleSelect,
+  onVisit,
   onEdit,
   onMove,
   onDelete,
 }: BookmarkItemActionsProps) {
+  const stopAndRun = (event: React.MouseEvent, action: () => void) => {
+    event.stopPropagation();
+    action();
+  };
+
   return (
     <div className="mt-2 flex min-h-5 items-center justify-between gap-2 border-t border-white/5 pt-2">
       {selectionMode ? (
@@ -26,9 +35,18 @@ export function BookmarkItemActions({
         </label>
       ) : <span />}
       <div className="flex items-center gap-2">
-        <button aria-label="Edit bookmark" onClick={(event) => { event.stopPropagation(); onEdit(); }} className="text-[10px] text-ink-300 hover:text-accent-300">Edit</button>
-        <button aria-label="Move bookmark" onClick={(event) => { event.stopPropagation(); onMove(); }} className="text-[10px] text-ink-300 hover:text-accent-300">Move</button>
-        <button aria-label="Delete bookmark" onClick={(event) => { event.stopPropagation(); onDelete(); }} className="text-[10px] text-coral-400 hover:text-coral-300">Delete</button>
+        <button
+          type="button"
+          aria-label="Open bookmark directly"
+          title="Open directly"
+          onClick={(event) => stopAndRun(event, onVisit)}
+          className="inline-flex h-5 w-5 items-center justify-center rounded-md text-ink-300 hover:bg-ink-700/60 hover:text-accent-300 focus-ring"
+        >
+          <Icon name="ExternalLink" size={11} />
+        </button>
+        <button aria-label="Edit bookmark" onClick={(event) => stopAndRun(event, onEdit)} className="text-[10px] text-ink-300 hover:text-accent-300">Edit</button>
+        <button aria-label="Move bookmark" onClick={(event) => stopAndRun(event, onMove)} className="text-[10px] text-ink-300 hover:text-accent-300">Move</button>
+        <button aria-label="Delete bookmark" onClick={(event) => stopAndRun(event, onDelete)} className="text-[10px] text-coral-400 hover:text-coral-300">Delete</button>
       </div>
     </div>
   );
@@ -38,6 +56,7 @@ export type BookmarkItemActionHandlers = {
   selectionMode: boolean;
   isBulkSelected: (id: string) => boolean;
   onToggleSelect: (id: string, selected: boolean) => void;
+  onVisit: (id: string) => void;
   onEdit: (id: string) => void;
   onMove: (id: string) => void;
   onDelete: (id: string) => void;

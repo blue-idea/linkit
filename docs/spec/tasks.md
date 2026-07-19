@@ -1014,7 +1014,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 - [ ] **TASK-044 · 全量回归、质量评分与发布门禁**
 
-  > 依赖：TASK-040~043、TASK-045~046 · 预计：3–4 小时
+  > 依赖：TASK-040~043、TASK-045~048 · 预计：3–4 小时
 
   - [ ] 运行全量 Go、TypeScript、Supabase、E2E、视觉、安全和性能套件。
   - [ ] 确认 Windows 与 macOS 构建均通过，且至少一个选定平台完成完整桌面旅程。
@@ -1058,6 +1058,34 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
   _需求: REQ-023、REQ-025、REQ-027、REQ-029  
   验收标准：REQ-023-AC-002；REQ-029-AC-001~005  
+  _测试类型: Unit + E2E
+
+---
+
+- [x] **TASK-048 · 书签项直接访问入口**
+
+  > 依赖：TASK-012、TASK-019、TASK-020、TASK-045 · 预计：1–2 小时 · 状态：done · 2026-07-19
+
+  - [x] 扩展 `BookmarkItemActions`，提供区别于右侧详情 `Visit` 的 `Open bookmark directly` 图标入口。
+  - [x] 将 Card、List、Masonry、Timeline、Tag Aggregation、Theme Space 六种视图统一接入直达入口。
+  - [x] 让 List 视图复用共享操作组件，避免 Edit、Move、Delete 与直达入口重复实现。
+  - [x] 复用 `visitBookmark` 编排，保证外部打开成功后才更新 visitCount 和 lastVisitedAt。
+  - [x] 生成 Unit、E2E、Baseline、实际截图和 Diff 证据。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/features/views src/features/bookmarks/visit.test.ts
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui build
+  pnpm --dir ui exec vitest run
+  pnpm --dir ui exec playwright test tests/e2e/bookmark-actions.spec.ts --workers=1
+  ```
+
+  **验收证据：** 共享操作组件测试、访问编排测试、六视图 E2E、`TASK-048-direct-access-baseline.png`、`TASK-048-direct-access.png`、`TASK-048-direct-access-diff.png`。
+
+  _需求: REQ-008  
+  验收标准：REQ-008-AC-005  
   _测试类型: Unit + E2E
 
 ---
@@ -1113,6 +1141,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-045 | 书签操作与批量移动删除 | Unit/E2E | done | REQ-007、011、026、027 |
 | TASK-046 | 六主题皮肤与浅色主题 | Unit/E2E/Manual | done | REQ-023、028 |
 | TASK-047 | 本地存储目录与数据迁移 | Unit/E2E | done | REQ-023、025、027、029 |
+| TASK-048 | 书签项直接访问入口 | Unit/E2E | done | REQ-008 |
 
 ---
 
@@ -1128,3 +1157,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 1.4.0 | 2026-07-19 | 已定稿 | 新增 TASK-045，统一书签操作入口并实现原子批量移动与删除 |
 | 1.5.0 | 2026-07-19 | 已定稿 | 新增 TASK-046，参考 `ck/project` 优化六主题皮肤并加入 Daylight 与 Paper |
 | 1.6.0 | 2026-07-19 | 已定稿 | 新增 TASK-047，覆盖 REQ-029 本地存储目录选择与数据迁移 |
+| 1.7.0 | 2026-07-19 | 已定稿 | 新增 TASK-048，六种书签视图提供区别于右侧详情 Visit 的直接访问入口 |

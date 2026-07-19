@@ -41,6 +41,7 @@ export function TagAggregationView({
   selectionMode,
   isBulkSelected,
   onToggleSelect,
+  onVisit,
   onEdit,
   onMove,
   onDelete,
@@ -118,6 +119,7 @@ export function TagAggregationView({
                   selectionMode={selectionMode}
                   isBulkSelected={isBulkSelected}
                   onToggleSelect={onToggleSelect}
+                  onVisit={onVisit}
                   onEdit={onEdit}
                   onMove={onMove}
                   onDelete={onDelete}

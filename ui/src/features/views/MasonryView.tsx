@@ -26,6 +26,7 @@ export function MasonryView({
   selectionMode,
   isBulkSelected,
   onToggleSelect,
+  onVisit,
   onEdit,
   onMove,
   onDelete,
@@ -61,6 +62,7 @@ export function MasonryView({
                 selectionMode={selectionMode}
                 bulkSelected={isBulkSelected(item.id)}
                 onToggleSelect={(selected) => onToggleSelect(item.id, selected)}
+                onVisit={() => onVisit(item.id)}
                 onEdit={() => onEdit(item.id)}
                 onMove={() => onMove(item.id)}
                 onDelete={() => onDelete(item.id)}
@@ -81,6 +83,7 @@ function MasonryTile({
   selectionMode,
   bulkSelected,
   onToggleSelect,
+  onVisit,
   onEdit,
   onMove,
   onDelete,
@@ -92,6 +95,7 @@ function MasonryTile({
   selectionMode: boolean;
   bulkSelected: boolean;
   onToggleSelect: (selected: boolean) => void;
+  onVisit: () => void;
   onEdit: () => void;
   onMove: () => void;
   onDelete: () => void;
@@ -126,7 +130,7 @@ function MasonryTile({
         {item.summary && (
           <p className="text-[10px] text-ink-300 mt-1.5 line-clamp-3 leading-relaxed">{item.summary}</p>
         )}
-        <BookmarkItemActions title={item.title} selected={bulkSelected} selectionMode={selectionMode} onToggleSelect={onToggleSelect} onEdit={onEdit} onMove={onMove} onDelete={onDelete} />
+        <BookmarkItemActions title={item.title} selected={bulkSelected} selectionMode={selectionMode} onToggleSelect={onToggleSelect} onVisit={onVisit} onEdit={onEdit} onMove={onMove} onDelete={onDelete} />
       </div>
     </div>
   );
