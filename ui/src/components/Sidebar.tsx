@@ -76,6 +76,7 @@ function NavRow({
             e.stopPropagation();
             onToggleExpand?.();
           }}
+          onPointerDown={(e) => e.stopPropagation()}
           className="w-4 h-4 flex items-center justify-center text-ink-400 hover:text-ink-100 shrink-0 focus-ring rounded-sm"
         >
           <Icon name="ChevronRight" size={12} className={`transition-transform ${expanded ? 'rotate-90' : ''}`} />
@@ -170,6 +171,7 @@ export function Sidebar({
                 ref={setDropRef}
                 style={{ transform: transformStyle, opacity: isDragging ? 0.6 : 1 }}
                 className={isOver ? 'ring-1 ring-accent-400/50 rounded-lg' : undefined}
+                {...setDragHandleProps}
               >
                 <NavRow
                   active={active}
@@ -190,23 +192,14 @@ export function Sidebar({
                     <span className="flex items-center gap-0.5">
                       <button
                         type="button"
-                        aria-label="Drag category"
-                        title="Drag category"
-                        className="opacity-70 group-hover:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-accent-300 flex items-center justify-center transition cursor-grab"
-                        {...setDragHandleProps}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Icon name="Pin" size={11} />
-                      </button>
-                      <button
-                        type="button"
                         aria-label="Move category"
                         title="Move category"
                         onClick={(e) => {
                           e.stopPropagation();
                           onRequestMoveCategory(cat.id);
                         }}
-                        className="opacity-70 group-hover:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-accent-300 flex items-center justify-center transition"
+                        onPointerDown={(e) => e.stopPropagation()}
+                        className="opacity-0 group-hover:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-accent-300 flex items-center justify-center transition"
                       >
                         <Icon name="Folder" size={11} />
                       </button>
@@ -218,7 +211,8 @@ export function Sidebar({
                           e.stopPropagation();
                           onDeleteCategory(cat.id);
                         }}
-                        className="opacity-70 group-hover:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-coral-400 flex items-center justify-center transition"
+                        onPointerDown={(e) => e.stopPropagation()}
+                        className="opacity-0 group-hover:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-coral-400 flex items-center justify-center transition"
                       >
                         <Icon name="Trash2" size={11} />
                       </button>
