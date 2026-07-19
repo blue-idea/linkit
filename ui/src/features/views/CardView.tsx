@@ -3,6 +3,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import type { BookmarkPresentation } from './presenter';
 import { Icon, TagPill, Favicon, AIBadge } from '../../components/ui';
 import { formatDate } from '../../utils/format-date';
+import { INITIAL_VIRTUAL_VIEW_RECT } from '../../config/virtualization';
 
 const COLUMNS = 3;
 const ROW_ESTIMATE = 168;
@@ -33,6 +34,7 @@ export function CardView({
     getScrollElement: () => parentRef.current,
     estimateSize: () => ROW_ESTIMATE,
     overscan: 4,
+    initialRect: INITIAL_VIRTUAL_VIEW_RECT,
   });
 
   return (

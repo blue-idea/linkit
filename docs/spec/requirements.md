@@ -31,7 +31,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 7. 云端保存使用 revision 乐观锁；检测到版本冲突时停止自动保存，并提供 `Use Cloud Copy`、`Overwrite Cloud`、`Cancel`，不执行自动合并。
 8. 注册成功时仅在 Supabase 返回有效 session 后进入主界面；未返回 session 时显示 `Check your email` 并停留在认证界面。
 9. 未认证读取云用户表采用 Supabase 原生 RLS 行为，允许 HTTP 200 空结果；核心安全条件是不返回用户数据。
-10. 10,000 个书签下，热启动不超过 2 秒；本地搜索、筛选和视图切换 P95 不超过 100ms；本地保存 P95 不超过 500ms；AI/网络操作在 300ms 内显示进度。
+10. 10,000 个书签下，热启动不超过 2 秒；本地搜索与筛选 P95 不超过 100ms，视图切换 P95 不超过 150ms；本地保存 P95 不超过 500ms；AI/网络操作在 300ms 内显示进度。
 11. 首次向某个 API Base 发送收藏内容前必须获得用户明确授权；授权按 API Base 记忆，API Base 改变后重新确认。
 12. Windows 与 macOS 均为目标平台；每个发布候选至少在一个选定平台执行完整桌面关键旅程，另一平台保留 Wails 构建门禁，不重复要求完整真实旅程。
 
@@ -1565,10 +1565,10 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
   ears: >
     While 资料库包含 10,000 个书签,
     when 用户执行关键词搜索、筛选或视图切换,
-    the Linkit shall 使各操作的 P95 响应时间不超过 100ms.
+    the Linkit shall 使关键词搜索与筛选的 P95 不超过 100ms，并使视图切换 P95 不超过 150ms.
   test_type: E2E
   expected:
-    ui_state: "Search, filter and view-switch measurements each meet a P95 threshold of 100ms"
+    ui_state: "Search and filter meet a 100ms P95 threshold; view switching meets a 150ms P95 threshold"
     side_effects: []
 
 - id: REQ-028-AC-007
@@ -1650,3 +1650,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 1.1.0 | 2026-07-16 | 已定稿 | 经用户确认新增云端 revision 冲突处理需求 |
 | 1.2.0 | 2026-07-16 | 已定稿 | STEP 4 澄清注册分支、RLS 响应、性能预算与 AI 数据授权，并修正接口字段和测试类型 |
 | 1.3.0 | 2026-07-16 | 已定稿 | 用户确认单平台完整桌面旅程加另一平台构建门禁，并新增 Wails/pnpm 工程骨架 AC |
+| 1.4.0 | 2026-07-19 | 已定稿 | 用户确认将 10,000 条数据下的视图切换 P95 预算调整为 150ms，搜索与筛选保持 100ms |
