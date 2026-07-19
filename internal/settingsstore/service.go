@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/blue-idea/collection/config"
+	"github.com/blue-idea/collection/internal/localstore"
 )
 
 type SettingsReadResult struct {
@@ -41,11 +42,15 @@ func DefaultRootDir() (string, error) {
 }
 
 func NewDefaultService() (*Service, error) {
-	rootDir, err := DefaultRootDir()
+	bootstrapRoot, err := localstore.DefaultRootDir()
 	if err != nil {
 		return nil, err
 	}
-	return NewService(rootDir), nil
+	dataRoot, err := localstore.ResolveEffectiveDataRoot(bootstrapRoot)
+	if err != nil {
+		return nil, err
+	}
+	return NewService(dataRoot), nil
 }
 
 func NewService(rootDir string, options ...Option) *Service {
@@ -59,6 +64,11 @@ func NewService(rootDir string, options ...Option) *Service {
 		option(service)
 	}
 	return service
+}
+
+// SetRootDir 在数据根迁移成功后同步有效设置目录。
+func (service *Service) SetRootDir(dataRoot string) {
+	service.rootDir = filepath.Clean(dataRoot)
 }
 
 func WithClock(now func() time.Time) Option {

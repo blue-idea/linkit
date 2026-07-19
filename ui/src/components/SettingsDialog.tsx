@@ -23,6 +23,12 @@ import { AIConsentDialog, buildConsentRecord } from '../features/settings';
 import type { LibraryEnvelope } from '../domain/library';
 import type { StorageSummary } from '../repositories';
 import { deleteAIKey, getAIKeyStatus, setAIKey } from '../services/secrets/browser-secret-store';
+import {
+  createDataRootBindings,
+  type DataRootInfo,
+} from '../services/storage/data-root';
+
+const dataRootBindings = createDataRootBindings();
 
 type Tab = SettingsSectionKey;
 
@@ -182,6 +188,10 @@ export function SettingsDialog({
   const [keyDraft, setKeyDraft] = useState('');
   const [keyConfigured, setKeyConfigured] = useState(false);
   const [consentOpen, setConsentOpen] = useState(false);
+  const [dataRootInfo, setDataRootInfo] = useState<DataRootInfo | null>(null);
+  const [pendingDataRootTarget, setPendingDataRootTarget] = useState<string | null>(null);
+  const [dataRootMessage, setDataRootMessage] = useState<string | null>(null);
+  const [dataRootError, setDataRootError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const i18n = useI18n(draft.locale ?? 'en');
 
@@ -195,7 +205,11 @@ export function SettingsDialog({
       setPendingSwitchMode(null);
       setKeyDraft('');
       setConsentOpen(false);
+      setPendingDataRootTarget(null);
+      setDataRootMessage(null);
+      setDataRootError(null);
       void getAIKeyStatus().then((status) => setKeyConfigured(status.configured));
+      void dataRootBindings.getDataRoot().then(setDataRootInfo).catch(() => setDataRootInfo(null));
     }
   }, [open, settings]);
 
@@ -210,6 +224,45 @@ export function SettingsDialog({
       return;
     }
     setPendingSwitchMode(mode);
+  };
+
+  const requestChangeDataRoot = async () => {
+    // REQ-029-AC-001：先选目录并展示确认摘要，确认前不写盘。
+    setDataRootError(null);
+    setDataRootMessage(null);
+    const selected = await dataRootBindings.selectDataRootDirectory();
+    if (selected.state !== 'selected' || !selected.path) {
+      return;
+    }
+    setPendingDataRootTarget(selected.path);
+  };
+
+  const confirmChangeDataRoot = async () => {
+    if (!pendingDataRootTarget || !dataRootInfo) {
+      return;
+    }
+    setDataRootError(null);
+    try {
+      const result = await dataRootBindings.migrateDataRoot({
+        targetPath: pendingDataRootTarget,
+        confirmed: true,
+      });
+      setDataRootInfo({
+        ...dataRootInfo,
+        dataRoot: result.dataRoot,
+        isCustom: result.dataRoot !== dataRootInfo.bootstrapRoot,
+      });
+      setPendingDataRootTarget(null);
+      setDataRootMessage(i18n.t('settings.storage.migrationSuccess'));
+    } catch (error) {
+      const code = (error as { code?: string })?.code;
+      if (code === 'DATA_ROOT_TARGET_OCCUPIED') {
+        setDataRootError(i18n.t('settings.storage.migrationOccupied'));
+      } else {
+        setDataRootError(i18n.t('settings.storage.migrationFailed'));
+      }
+      setPendingDataRootTarget(null);
+    }
   };
 
   const localSummary: StorageSummary = {
@@ -430,6 +483,54 @@ export function SettingsDialog({
                     style={{ width: `${Math.min(library.bookmarks.length / 2, 100)}%` }}
                   />
                 </div>
+              </div>
+              <div className="rounded-mac-lg bg-ink-800/50 hairline p-4 space-y-3" data-testid="storage-data-location">
+                <div className="text-[11px] uppercase tracking-wider text-ink-500 font-semibold">
+                  {i18n.t('settings.storage.dataLocation')}
+                </div>
+                <p className="text-[12px] text-ink-200 break-all" data-testid="storage-data-root-path">
+                  {dataRootInfo?.dataRoot ?? '…'}
+                </p>
+                <Button variant="subtle" size="sm" onClick={() => void requestChangeDataRoot()}>
+                  {i18n.t('settings.storage.changeLocation')}
+                </Button>
+                {pendingDataRootTarget && dataRootInfo && (
+                  <div
+                    className="rounded-lg bg-ink-900/70 hairline p-3 space-y-2"
+                    role="alertdialog"
+                    aria-label={i18n.t('settings.storage.migrationConfirm')}
+                    data-testid="storage-data-root-confirm"
+                  >
+                    <p className="text-[12px] text-ink-100">{i18n.t('settings.storage.migrationConfirm')}</p>
+                    <p className="text-[11px] text-ink-400">
+                      {i18n.t('settings.storage.migrationSource')}: {dataRootInfo.dataRoot}
+                    </p>
+                    <p className="text-[11px] text-ink-400">
+                      {i18n.t('settings.storage.migrationTarget')}: {pendingDataRootTarget}
+                    </p>
+                    <div className="flex gap-2 pt-1">
+                      <Button size="sm" onClick={() => void confirmChangeDataRoot()}>
+                        Confirm
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setPendingDataRootTarget(null)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                {dataRootMessage && (
+                  <div className="rounded-lg bg-mint-500/10 border border-mint-400/30 px-3 py-2 text-[12px] text-mint-400">
+                    {dataRootMessage}
+                  </div>
+                )}
+                {dataRootError && (
+                  <div
+                    className="rounded-lg bg-rose-500/10 border border-rose-400/30 px-3 py-2 text-[12px] text-rose-300"
+                    data-testid="storage-data-root-error"
+                  >
+                    {dataRootError}
+                  </div>
+                )}
               </div>
             </div>
           )}

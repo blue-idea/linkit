@@ -1,11 +1,11 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：1.5.0
-> 日期：2026-07-17  
+> 版本：1.6.0
+> 日期：2026-07-19  
 > 状态：已定稿
 
-执行时须严格遵循 `docs/spec/requirements.md` 1.6.0、`docs/spec/design.md` 1.4.0 和 `docs/spec/test_strategy.md` 1.4.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
+执行时须严格遵循 `docs/spec/requirements.md` 1.7.0、`docs/spec/design.md` 1.5.0 和 `docs/spec/test_strategy.md` 1.5.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
 
 AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首尾均包含。
 
@@ -1031,9 +1031,34 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
   **验收证据：** 全量真实命令输出、Coverage Report、Playwright Report、质量评分和发布结论。
 
-  _需求: REQ-001~028  
-  验收标准：全部 131 条 AC
+  _需求: REQ-001~029  
+  验收标准：全部 AC（含 REQ-029）
   _测试类型: Unit + API + E2E + Performance + Security + Manual
+
+---
+
+- [x] **TASK-047 · 本地存储目录选择与数据迁移**
+
+  > 依赖：TASK-006、TASK-007、TASK-023 · 预计：4–6 小时
+
+  - [x] 在 `config/storage.go` 增加 `data-root.json` 文件名与引导格式常量。
+  - [x] 实现引导根解析、有效数据根解析，以及 `GetDataRoot` / `SelectDataRootDirectory` / `MigrateDataRoot`。
+  - [x] 先编写失败测试：目标占用阻止、迁移失败回滚、成功切换后读写新根、密钥不落盘。
+  - [x] Settings → Storage 显示当前数据目录，提供文件夹选择与确认摘要；成功/失败使用英文错误码。
+  - [x] 迁移成功后清理源已迁文件，引导根仅保留指针；重启后从新根恢复资料库与设置。
+
+  **验证方式：**
+  ```powershell
+  go test ./internal/localstore/... ./internal/platform/... -count=1 -cover
+  pnpm --dir ui test -- storage
+  pnpm --dir ui exec playwright test tests/e2e/storage-data-root.spec.ts
+  ```
+
+  **验收证据：** Go/Vitest/Playwright 真实输出，AC 矩阵与截图（设置页路径展示、冲突阻止、成功迁移后重启）。
+
+  _需求: REQ-023、REQ-025、REQ-027、REQ-029  
+  验收标准：REQ-023-AC-002；REQ-029-AC-001~005  
+  _测试类型: Unit + E2E
 
 ---
 
@@ -1087,6 +1112,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-044 | 全量回归与发布门禁 | 全类型 | 待开始 | REQ-001~028 |
 | TASK-045 | 书签操作与批量移动删除 | Unit/E2E | done | REQ-007、011、026、027 |
 | TASK-046 | 六主题皮肤与浅色主题 | Unit/E2E/Manual | done | REQ-023、028 |
+| TASK-047 | 本地存储目录与数据迁移 | Unit/E2E | done | REQ-023、025、027、029 |
 
 ---
 
@@ -1101,3 +1127,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 1.3.0 | 2026-07-19 | 已定稿 | 对齐 REQ-028-AC-006：视图切换 P95 预算调整为 150ms |
 | 1.4.0 | 2026-07-19 | 已定稿 | 新增 TASK-045，统一书签操作入口并实现原子批量移动与删除 |
 | 1.5.0 | 2026-07-19 | 已定稿 | 新增 TASK-046，参考 `ck/project` 优化六主题皮肤并加入 Daylight 与 Paper |
+| 1.6.0 | 2026-07-19 | 已定稿 | 新增 TASK-047，覆盖 REQ-029 本地存储目录选择与数据迁移 |

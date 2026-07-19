@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.23.0
+> 版本：1.24.0
 > 日期：2026-07-19
-> 状态：已定稿（新增 TASK-046）
+> 状态：已定稿（新增 TASK-047 / REQ-029）
 
 ---
 
@@ -72,6 +72,7 @@
 | TASK-044 | 全量回归与发布门禁 | REQ-001~028 / 全部 131 条 AC | 待开始 | — | — | — | — |
 | TASK-045 | 书签操作与批量移动删除 | REQ-007-AC-005~010；REQ-011-AC-004~005；REQ-026-AC-002~003；REQ-027-AC-002~003 | done | `ui/src/features/bookmarks/batch-actions.ts`、`ui/src/features/bookmarks/BookmarkActionDialogs.tsx`、`ui/src/components/ContentArea.tsx`、`ui/src/components/DetailPanel.tsx`、`ui/src/features/views/CardView.tsx` | `ui/src/features/bookmarks/batch-actions.test.ts`、`ui/tests/e2e/bookmark-actions.spec.ts` | `docs/spec/ac/TASK-045-AC.md` | `docs/spec/evidence/TASK-045-evidence.md`、`TASK-045-bookmark-actions.png` |
 | TASK-046 | 六主题皮肤与浅色主题 | REQ-023-AC-003、007；REQ-028-AC-004 | done | `ui/src/config/themes.ts`、`ui/src/types.ts`、`ui/src/domain/schemas.ts`、`ui/src/themes.ts`、`ui/src/i18n/catalogs.ts`、`ui/src/index.css`、`ui/tailwind.config.js`、`internal/settingsstore/settings.go` | `ui/src/themes.test.js`、`ui/src/services/settings/settings.test.ts`、`ui/src/features/settings/settings-ui.test.ts`、`internal/settingsstore/validation_test.go`、`ui/tests/visual/theme-skins.spec.ts` | `docs/spec/ac/TASK-046-AC.md` | 2026-07-19 |
+| TASK-047 | 本地存储目录与数据迁移 | REQ-023-AC-002；REQ-029-AC-001~005 | done | `config/storage.go`、`config/errors.go`、`internal/localstore/dataroot.go`、`internal/localstore/directory_dialog.go`、`internal/settingsstore/service.go`、`main.go`、`ui/src/services/storage/data-root.ts`、`ui/src/components/SettingsDialog.tsx` | `internal/localstore/dataroot_test.go`、`ui/src/services/storage/data-root.test.ts`、`ui/tests/e2e/storage-data-root.spec.ts` | `docs/spec/ac/TASK-047-AC.md` | 2026-07-19 |
 
 ---
 
@@ -84,8 +85,8 @@
 | REQ-010~014 | TASK-014~018、025、035、044 |
 | REQ-015~018 | TASK-019~021、025、034、037、041、044 |
 | REQ-019~022 | TASK-007、031~040、044 |
-| REQ-023~024 | TASK-001~002、015、022~025、042~044、046 |
-| REQ-025~028 | TASK-001~009、022、026~032、040~044、046 |
+| REQ-023~024 | TASK-001~002、015、022~025、042~044、046~047 |
+| REQ-025~029 | TASK-001~009、022、026~032、040~044、046~047 |
 
 ---
 
@@ -117,3 +118,5 @@
 | 2026-07-19 | 新增 TASK-045 与批量书签操作追溯 | 用户确认统一编辑入口、URL 字段、批量移动与批量删除 |
 | 2026-07-19 | 新增 TASK-046 与六主题皮肤追溯 | 用户确认参考 `ck/project` 优化主题样式，并新增 Daylight 与 Paper |
 | 2026-07-19 | TASK-046 更新为 done，补充六主题实现、测试、AC 与视觉证据 | 六主题持久化、12 组 Baseline/Actual/Diff 和回归测试完成 |
+| 2026-07-19 | 新增 TASK-047 与 REQ-029 追溯行 | 用户确认可配置本地存储目录并在变更时自动迁移应用数据 |
+| 2026-07-19 | TASK-047 更新为 done，补充 data-root 实现、测试与 AC | Go/Vitest/Playwright 真实验收通过 |
