@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Bookmark } from '../../types';
 import { Button, Icon } from '../../components/ui';
 import { scanBookmark, type HealthResult } from './index';
-import { EventsOn } from '../../../wailsjs/runtime/runtime';
+import { subscribeWailsEvent } from './wails-runtime';
 
 interface DesktopHealthService {
   StartScan(request: { scanId: string; targets: Array<{ bookmarkId: string; url: string; previousFingerprint: string | null }> }): Promise<void>;
@@ -43,12 +43,12 @@ export function HealthScanDialog({ open, bookmarks, onClose, onResult }: {
       scanID.current = id;
       await new Promise<void>((resolve, reject) => {
         unsubscribe.current = [
-          EventsOn('linkit:health-scan-progress', (event: { scanId: string; completed: number; result?: HealthResult }) => {
+          subscribeWailsEvent('linkit:health-scan-progress', (event: { scanId: string; completed: number; result?: HealthResult }) => {
             if (event.scanId !== id) return;
             setCompleted(event.completed);
             if (event.result) onResult(event.result);
           }),
-          EventsOn('linkit:health-scan-finished', (event: { scanId: string; status: 'completed' | 'cancelled' | 'failed' }) => {
+          subscribeWailsEvent('linkit:health-scan-finished', (event: { scanId: string; status: 'completed' | 'cancelled' | 'failed' }) => {
             if (event.scanId !== id) return;
             setStatus(event.status === 'failed' ? 'cancelled' : event.status);
             unsubscribe.current.forEach((off) => off());
