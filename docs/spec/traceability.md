@@ -63,7 +63,7 @@
 | TASK-035 | AI 主题与去重 | REQ-013-AC-003~004；REQ-020-AC-003~004 | 待开始 | — | — | — | — |
 | TASK-036 | 推荐与知识网络 | REQ-021-AC-001~004 | 待开始 | — | — | — | — |
 | TASK-037 | 真实 AI 验收 | REQ-006-AC-002~003；REQ-013-AC-003~004；REQ-018-AC-001~003；REQ-019-AC-002~005；REQ-020-AC-001~004；REQ-021-AC-001~004 | BLOCKED | — | — | — | — |
-| TASK-038 | 收藏洞察 | REQ-022-AC-001 | 待开始 | — | — | — | — |
+| TASK-038 | 收藏洞察 | REQ-022-AC-001 | done | `ui/src/features/insights/*`、`ui/src/App.tsx` | `ui/src/features/insights/insights.test.ts`、`ui/tests/e2e/insights.spec.ts`、`ui/tests/e2e/insights.spec.ts-snapshots/*` | `docs/spec/ac/TASK-038-AC.md` | 2026-07-19 |
 | TASK-039 | 链接健康 | REQ-022-AC-002~004 | 待开始 | — | — | — | — |
 | TASK-040 | 安全与隐私测试 | REQ-003~005、019~020、025、027 的安全与破坏性操作 AC | 待开始 | — | — | — | — |
 | TASK-041 | 性能预算 | REQ-028-AC-005~008 | 待开始 | — | — | — | — |

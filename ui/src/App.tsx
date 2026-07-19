@@ -3,13 +3,12 @@ import type { AppSettings, Bookmark, Category, Collection, LibraryData, Tag, Vie
 import type { AppState, Filters, Selection } from './state';
 import { emptyFilters } from './state';
 import { bookmarks as seedBookmarks, categories as seedCategories, collections as seedCollections, tags as seedTags } from './data';
-import { aiBuildInsights } from './ai';
 import { Icon } from './components/ui';
 import { Sidebar } from './components/Sidebar';
 import { ContentArea } from './components/ContentArea';
 import { DetailPanel } from './components/DetailPanel';
 import { Spotlight } from './components/Spotlight';
-import { NewBookmarkDialog, InsightsDialog, HealthDialog, ReanalyzeBookmarkDialog } from './components/Dialogs';
+import { NewBookmarkDialog, HealthDialog, ReanalyzeBookmarkDialog } from './components/Dialogs';
 import { LoginScreen } from './components/LoginScreen';
 import { SettingsDialog } from './components/SettingsDialog';
 import {
@@ -99,6 +98,7 @@ import {
 } from './features/ai';
 import { ExploreDialog, recommendLibraryBookmarks, suggestThemeGaps } from './features/explore';
 import { KnowledgeGraphDialog, buildKnowledgeGraph } from './features/knowledge-graph';
+import { InsightsReportDialog, buildLibraryInsights, type InsightAction } from './features/insights';
 
 export default function App() {
   const auth = useAuth();
@@ -244,7 +244,9 @@ export default function App() {
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
   }, [library, settings.storageMode, auth.user, authed, libraryHydrated]);
 
-  const insights = useMemo(() => aiBuildInsights(bookmarks), [bookmarks]);
+  const insights = useMemo(() => buildLibraryInsights(toCategoryLibrary({
+    bookmarks, categories: cats, collections: cols, tags: tagList,
+  })), [bookmarks, cats, cols, tagList]);
 
   /* ---------- derived list ---------- */
   const visibleBookmarks = useMemo(() => {
@@ -1453,16 +1455,24 @@ export default function App() {
           }}
         />
       )}
-      <InsightsDialog
+      <InsightsReportDialog
         open={insightsOpen}
         insights={insights}
-        bookmarks={bookmarks}
         onClose={() => setInsightsOpen(false)}
-        onAction={(ins) => {
+        onAction={(action: InsightAction) => {
           setInsightsOpen(false);
-          if (ins.type === 'collection') setState((s) => ({ ...s, selection: { kind: 'collection', id: 'col-inspiration' } }));
-          else if (ins.type === 'stale' && ins.id === 'i-changed') setState((s) => ({ ...s, selection: { kind: 'health', status: 'changed' } }));
-          else if (ins.type === 'trend') setState((s) => ({ ...s, selection: { kind: 'all' } }));
+          if (action.type === 'collection') {
+            setState((current) => ({ ...current, selection: { kind: 'collection', id: action.collectionId } }));
+          } else if (action.type === 'health-filter') {
+            setState((current) => ({ ...current, selection: { kind: 'health', status: action.status } }));
+          } else if (action.type === 'tag-filter') {
+            setState((current) => ({ ...current, selection: { kind: 'all' }, filters: { ...current.filters, tagIds: [action.tagId] } }));
+          } else if (action.type === 'read-filter') {
+            setState((current) => ({ ...current, filters: { ...current.filters, readStatus: action.status } }));
+          } else {
+            setNewUrl('');
+            setNewOpen(true);
+          }
         }}
       />
       <HealthDialog open={healthOpen} bookmarks={bookmarks} onClose={() => setHealthOpen(false)} />
