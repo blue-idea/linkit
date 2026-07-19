@@ -25,7 +25,7 @@ export function AppShell({
   syncing = false,
 }: AppShellProps) {
   return (
-    <div className="w-full h-full md:max-w-[1400px] md:max-h-[880px] rounded-none md:rounded-mac-xl glass-strong shadow-win overflow-hidden flex flex-col">
+    <div className="w-full h-full rounded-none md:rounded-mac-xl glass-strong shadow-win overflow-hidden flex flex-col">
       <WindowChrome {...chrome} />
 
       {syncing && (
