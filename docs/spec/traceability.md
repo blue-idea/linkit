@@ -74,6 +74,7 @@
 | TASK-046 | 六主题皮肤与浅色主题 | REQ-023-AC-003、007；REQ-028-AC-004 | done | `ui/src/config/themes.ts`、`ui/src/types.ts`、`ui/src/domain/schemas.ts`、`ui/src/themes.ts`、`ui/src/i18n/catalogs.ts`、`ui/src/index.css`、`ui/tailwind.config.js`、`internal/settingsstore/settings.go` | `ui/src/themes.test.js`、`ui/src/services/settings/settings.test.ts`、`ui/src/features/settings/settings-ui.test.ts`、`internal/settingsstore/validation_test.go`、`ui/tests/visual/theme-skins.spec.ts` | `docs/spec/ac/TASK-046-AC.md` | 2026-07-19 |
 | TASK-047 | 本地存储目录与数据迁移 | REQ-023-AC-002；REQ-029-AC-001~005 | done | `config/storage.go`、`config/errors.go`、`internal/localstore/dataroot.go`、`internal/localstore/directory_dialog.go`、`internal/settingsstore/service.go`、`main.go`、`ui/src/services/storage/data-root.ts`、`ui/src/components/SettingsDialog.tsx` | `internal/localstore/dataroot_test.go`、`ui/src/services/storage/data-root.test.ts`、`ui/tests/e2e/storage-data-root.spec.ts` | `docs/spec/ac/TASK-047-AC.md` | 2026-07-19 |
 | TASK-048 | 书签项直接访问入口 | REQ-008-AC-005 | done | `ui/src/features/views/BookmarkItemActions.tsx`、`ui/src/features/views/CardView.tsx`、`ui/src/features/views/ListView.tsx`、`ui/src/features/views/MasonryView.tsx`、`ui/src/features/views/CompactRow.tsx`、`ui/src/features/views/TimelineView.tsx`、`ui/src/features/views/TagAggregationView.tsx`、`ui/src/features/views/ThemeSpaceView.tsx`、`ui/src/components/ContentArea.tsx`、`ui/src/App.tsx` | `ui/src/features/views/BookmarkItemActions.test.tsx`、`ui/src/features/bookmarks/visit.test.ts`、`ui/tests/e2e/bookmark-actions.spec.ts` | `docs/spec/ac/TASK-048-AC.md` | `docs/spec/evidence/TASK-048-evidence.md`、`TASK-048-direct-access*.png` |
+| TASK-049 | Spotlight 回车直接访问 | REQ-017-AC-005；REQ-008-AC-002 | done | `ui/src/components/Spotlight.tsx`、`ui/src/App.tsx` | `ui/src/components/Spotlight.test.tsx`、`ui/tests/e2e/spotlight.spec.ts` | `docs/spec/ac/TASK-049-AC.md` | `docs/spec/evidence/TASK-049-evidence.md`、`TASK-049-spotlight-direct-open.png` |
 
 ---
 
@@ -118,6 +119,7 @@
 | 2026-07-18 | TASK-030 更新为 done，解除 BLOCKED，补充远程 Supabase 验收脚本与 AC 报告 | 远程 `linkit` 项目 Schema/RLS/trigger/revision 核验通过；17 PASS 0 FAIL |
 | 2026-07-19 | 新增 TASK-045 与批量书签操作追溯 | 用户确认统一编辑入口、URL 字段、批量移动与批量删除 |
 | 2026-07-19 | 新增 TASK-048 书签项直接访问追溯 | 六种视图共享 `Open bookmark directly`，并与右侧详情 `Visit` 区分 |
+| 2026-07-19 | 新增 TASK-049 Spotlight 回车直接访问追溯 | 搜索结果 Enter 确认复用访问编排直接打开网站，点击结果仍定位详情 |
 | 2026-07-19 | 新增 TASK-046 与六主题皮肤追溯 | 用户确认参考 `ck/project` 优化主题样式，并新增 Daylight 与 Paper |
 | 2026-07-19 | TASK-046 更新为 done，补充六主题实现、测试、AC 与视觉证据 | 六主题持久化、12 组 Baseline/Actual/Diff 和回归测试完成 |
 | 2026-07-19 | 新增 TASK-047 与 REQ-029 追溯行 | 用户确认可配置本地存储目录并在变更时自动迁移应用数据 |

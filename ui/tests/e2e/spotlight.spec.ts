@@ -56,6 +56,36 @@ test.describe('Spotlight 关键词与 URL', () => {
     });
   });
 
+  // REQ-017-AC-005 / REQ-008-AC-002
+  test('Spotlight 搜索结果 Enter 确认 shall 直接访问高亮书签', async ({ page }) => {
+    await page.evaluate(() => {
+      window.open = ((url: string | URL | undefined) => {
+        window.localStorage.setItem('spotlight-opened-url', String(url ?? ''));
+        return window;
+      }) as typeof window.open;
+    });
+    await expect(page.getByLabel('Edit bookmark title')).toContainText(/Coolors/i);
+
+    await openSpotlightWithShortcut(page);
+    const spotlight = page.getByRole('dialog', { name: 'Spotlight' });
+    const search = page.getByLabel('Spotlight search');
+    await search.fill('React');
+    await expect(spotlight.getByRole('option', { name: /React 官方文档/i })).toBeVisible();
+
+    await mkdir(evidenceDirectory, { recursive: true });
+    await spotlight.screenshot({
+      path: resolve(evidenceDirectory, 'TASK-049-spotlight-direct-open.png'),
+    });
+
+    await search.press('Enter');
+
+    await expect(page.getByRole('dialog', { name: 'Spotlight' })).toHaveCount(0);
+    await expect
+      .poll(() => page.evaluate(() => window.localStorage.getItem('spotlight-opened-url')))
+      .toBe('https://react.dev');
+    await expect(page.getByLabel('Edit bookmark title')).toContainText(/Coolors/i);
+  });
+
   // REQ-017-AC-004
   test('URL 快捷入库 shall 打开 New Bookmark 预览且确认前不保存', async ({ page }) => {
     await expect(page.locator('[data-view-item]').first()).toBeVisible();
