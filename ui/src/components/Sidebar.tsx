@@ -50,7 +50,10 @@ function NavRow({
 }) {
   return (
     <div
-      onClick={onClick}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={(e) => {
@@ -233,15 +236,11 @@ export function Sidebar({
 
   return (
     <div
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          onSelect({ kind: 'all' });
-        }
-      }}
+      onClick={() => onSelect({ kind: 'all' })}
       className="h-full flex flex-col glass border-r border-white/5"
     >
       {/* Brand + new */}
-      <div className="px-3 pt-3 pb-2 flex items-center gap-2">
+      <div className="px-3 pt-3 pb-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
         <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent-500 to-mint-500 flex items-center justify-center hairline shrink-0">
           <Icon name="Boxes" size={16} className="text-white" />
         </div>
@@ -258,14 +257,7 @@ export function Sidebar({
         </button>
       </div>
 
-      <div
-        onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            onSelect({ kind: 'all' });
-          }
-        }}
-        className="flex-1 overflow-y-auto scroll-thin pb-4"
-      >
+      <div className="flex-1 overflow-y-auto scroll-thin pb-4">
         {/* Library */}
         <SectionLabel>资料库</SectionLabel>
         <NavRow
@@ -321,7 +313,10 @@ export function Sidebar({
               aria-label="New category"
               className="text-ink-400 hover:text-ink-100 transition"
               title="New category"
-              onClick={onNewCategory}
+              onClick={(e) => {
+                e.stopPropagation();
+                onNewCategory();
+              }}
             >
               <Icon name="Plus" size={12} />
             </button>
@@ -341,7 +336,10 @@ export function Sidebar({
               aria-label="New collection"
               className="text-ink-400 hover:text-ink-100 transition"
               title="New collection"
-              onClick={onNewCollection}
+              onClick={(e) => {
+                e.stopPropagation();
+                onNewCollection();
+              }}
             >
               <Icon name="Plus" size={12} />
             </button>
@@ -353,6 +351,7 @@ export function Sidebar({
           role="button"
           tabIndex={0}
           aria-label="Create collection drop zone"
+          onClick={(e) => e.stopPropagation()}
           className={`mx-2 mb-1 rounded-lg border border-dashed px-2 py-2 text-[11px] transition ${
             composeDropActive
               ? 'border-accent-400/60 bg-accent-500/10 text-accent-200'
@@ -422,7 +421,7 @@ export function Sidebar({
 
         {/* Tags */}
         <SectionLabel>标签</SectionLabel>
-        <div className="px-3 pt-1 pb-2 flex flex-wrap gap-1.5" aria-label="Sidebar tags">
+        <div className="px-3 pt-1 pb-2 flex flex-wrap gap-1.5" aria-label="Sidebar tags" onClick={(e) => e.stopPropagation()}>
           {tags.map((t) => {
             const active = selection.kind === 'tag' && selection.id === t.id;
             const count = bookmarks.filter((b) => b.tags.includes(t.id)).length;
@@ -459,7 +458,7 @@ export function Sidebar({
       </div>
 
       {/* Footer storage meter */}
-      <div className="px-3 py-2.5 border-t border-white/5">
+      <div className="px-3 py-2.5 border-t border-white/5" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between text-[10px] text-ink-400 mb-1.5">
           <span className="flex items-center gap-1.5">
             <Icon name="HardDrive" size={11} />
