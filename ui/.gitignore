@@ -24,3 +24,7 @@ test-results
 *.sln
 *.sw?
 .env
+
+# Wails / 前端生成物（勿手工编辑）
+wailsjs/
+package.json.md5
