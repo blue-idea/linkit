@@ -30,6 +30,7 @@ function NavRow({
   onDragOver,
   onDragLeave,
   trailing,
+  className = '',
 }: {
   active: boolean;
   icon?: string;
@@ -47,6 +48,7 @@ function NavRow({
   onDragOver?: (e: React.DragEvent) => void;
   onDragLeave?: (e: React.DragEvent) => void;
   trailing?: React.ReactNode;
+  className?: string;
 }) {
   return (
     <div
@@ -63,7 +65,7 @@ function NavRow({
       }}
       className={`group flex items-center gap-2 pr-2 rounded-lg mx-1.5 transition-all cursor-pointer no-select ${
         active ? 'bg-accent-500/20 text-ink-100 shadow-[inset_0_0_0_1px_rgba(45,127,249,0.3)]' : 'text-ink-200 hover:bg-ink-700/50'
-      } ${dragOver ? 'drop-target' : ''}`}
+      } ${dragOver ? 'drop-target' : ''} ${className}`}
       data-category-drop={label}
       style={{ paddingLeft: 12 + depth * 16 }}
     >
@@ -379,6 +381,7 @@ export function Sidebar({
                 dragOver={dragOverId === col.id}
                 onDragOver={(e) => { e.preventDefault(); setDragOverId(col.id); }}
                 onDragLeave={() => setDragOverId(null)}
+                className="py-1"
                 trailing={
                   <span className="flex items-center gap-0.5">
                     <span className={`w-1.5 h-1.5 rounded-full ${c.dot} opacity-70`} />
