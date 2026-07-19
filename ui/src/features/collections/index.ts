@@ -1,10 +1,16 @@
 export {
   applyCollectionLibraryResult,
+  runBatchSetMembership,
   runCreateCollection,
   runDeleteCollection,
   runSetMembership,
   runUpdateCollection,
 } from './apply-collection-command';
+export {
+  listMembershipCandidates,
+  toggleCandidateSelection,
+} from './membership-candidates';
+export type { MembershipCandidate } from './membership-candidates';
 export { CollectionFormDialog } from './CollectionFormDialog';
 export type { CollectionFormValues } from './CollectionFormDialog';
 export { DeleteCollectionDialog } from './DeleteCollectionDialog';

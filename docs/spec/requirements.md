@@ -1,7 +1,7 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：1.7.0
+> 版本：2.2.0
 > 日期：2026-07-19
 > 状态：已定稿
 
@@ -750,7 +750,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 ### 需求 REQ-012 · 主题 CRUD 与成员关系
 
 **来源：** F-COL-01、F-COL-02  
-**用户故事：** 作为用户，我希望创建跨分类主题并管理成员，以便围绕目标组合收藏。
+**用户故事：** 作为用户，我希望创建跨分类主题，并在主题视图内手动加入/移出书签，以便围绕目标组合与调整收藏。
 
 #### 验收标准
 
@@ -803,6 +803,71 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
     side_effects:
       - "The selected emoji is submitted with the collection form"
       - "Existing collection fields are not changed before Save"
+
+- id: REQ-012-AC-006
+  ears: >
+    While 用户正在查看某一收藏主题,
+    when 主题工具栏可见,
+    the Linkit shall 提供英文入口 “Add bookmarks”.
+  test_type: E2E
+  expected:
+    ui_state: "Collection toolbar shows an Add bookmarks action"
+    side_effects: []
+
+- id: REQ-012-AC-007
+  ears: >
+    While 当前主题的添加书签对话框可见,
+    when 用户浏览或搜索候选书签,
+    the Linkit shall 仅列出尚未属于该主题的书签，并支持按标题或 URL 搜索与多选.
+  test_type: E2E
+  expected:
+    ui_state: "Picker lists only non-member bookmarks and supports search plus multi-select"
+    side_effects:
+      - "Library membership is unchanged while the dialog is open"
+
+- id: REQ-012-AC-008
+  ears: >
+    While 添加书签对话框可见且已选中至少一本非成员书签,
+    when 用户确认添加,
+    the Linkit shall 将所选书签加入当前主题并同步 Collection.bookmarkIds 与 Bookmark.collectionIds.
+  test_type: Unit + E2E
+  expected:
+    ui_state: "Confirmed bookmarks appear in the collection view with updated count"
+    side_effects:
+      - "Only confirmed bookmark ids gain membership"
+      - "Bidirectional collection membership remains consistent"
+
+- id: REQ-012-AC-009
+  ears: >
+    While 添加书签对话框可见,
+    when 用户取消或关闭对话框,
+    the Linkit shall 不修改任何主题成员关系.
+  test_type: Unit + E2E
+  expected:
+    ui_state: "Dialog closes and collection membership is unchanged"
+    side_effects: []
+
+- id: REQ-012-AC-010
+  ears: >
+    When 用户打开成员数为 0 的主题,
+    the Linkit shall 在空态区显示英文 CTA “Add bookmarks”，点击后打开与工具栏相同的添加对话框.
+  test_type: E2E
+  expected:
+    ui_state: "Empty collection view shows Add bookmarks CTA that opens the add picker"
+    side_effects: []
+
+- id: REQ-012-AC-011
+  ears: >
+    While 用户正在查看某一收藏主题,
+    when 用户对单个成员执行移出，或对多选成员确认移出,
+    the Linkit shall 仅解除主题成员关系、保留书签本身，并同步 Collection.bookmarkIds 与 Bookmark.collectionIds.
+  test_type: Unit + E2E
+  expected:
+    ui_state: "Removed bookmarks leave the collection view; bookmark records remain in the library"
+    side_effects:
+      - "Single-item remove applies immediately"
+      - "Multi-select remove applies only after confirmation"
+      - "Bidirectional collection membership remains consistent"
 ```
 
 ---
@@ -1873,3 +1938,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 1.9.0 | 2026-07-19 | 已定稿 | 新增 REQ-017-AC-005：Spotlight 搜索结果 Enter 确认直接访问高亮书签网站 |
 | 2.0.0 | 2026-07-19 | 已定稿 | 新增 REQ-012-AC-005：侧栏新建/编辑主题时通过候选 Emoji 菜单选择主题图标 |
 | 2.1.0 | 2026-07-19 | 已定稿 | 新增 REQ-006-AC-005：创建书签时 URL 规范化后必须唯一，重复时显示 warning 并阻止下一步 |
+| 2.2.0 | 2026-07-19 | 已定稿 | 新增 REQ-012-AC-006~011：主题视图手动添加/移出书签（排除已成员、搜索多选、确认前零副作用、空态 CTA） |

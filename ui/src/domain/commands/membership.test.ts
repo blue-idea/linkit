@@ -8,13 +8,25 @@ interface MembershipCommandInput {
   member: boolean;
 }
 
+interface BatchMembershipCommandInput {
+  bookmarkIds: string[];
+  collectionId: string;
+  member: boolean;
+}
+
+type CommandResult =
+  | { ok: true; value: LibraryData; events: Array<{ type: string; payload: Record<string, unknown> }> }
+  | { ok: false; error: { code: string; message: string } };
+
 interface CommandModule {
   setBookmarkCollectionMembership: (
     library: LibraryData,
     input: MembershipCommandInput,
-  ) =>
-    | { ok: true; value: LibraryData; events: Array<{ type: string; payload: Record<string, unknown> }> }
-    | { ok: false; error: { code: string; message: string } };
+  ) => CommandResult;
+  batchSetBookmarkCollectionMembership: (
+    library: LibraryData,
+    input: BatchMembershipCommandInput,
+  ) => CommandResult;
 }
 
 async function loadCommandModule(): Promise<Partial<CommandModule>> {
@@ -116,5 +128,109 @@ describe('主题成员关系命令', () => {
       ok: false,
       error: { code: 'COLLECTION_NOT_FOUND', message: 'Collection was not found' },
     });
+  });
+
+  // REQ-012-AC-008 / REQ-026-AC-003：批量加入一次返回双向一致的 LibraryData。
+  test('批量成员命令一次加入多本书签并保持双向一致', async () => {
+    const commandModule = await loadCommandModule();
+    const command = commandModule.batchSetBookmarkCollectionMembership;
+    expect(command).toBeTypeOf('function');
+    if (!command) throw new Error('batchSetBookmarkCollectionMembership is required');
+
+    const original = createCoreJourneySeed().library.data;
+    const library = structuredClone(original);
+    library.bookmarks = library.bookmarks.map((bookmark) => ({
+      ...bookmark,
+      collectionIds: [],
+    }));
+    library.collections[0].bookmarkIds = [];
+    const snapshot = structuredClone(library);
+    const bookmarkIds = library.bookmarks.map(({ id }) => id);
+
+    const result = command(library, {
+      bookmarkIds,
+      collectionId: 'collection-reference',
+      member: true,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.collections[0].bookmarkIds).toEqual(bookmarkIds);
+    for (const bookmark of result.value.bookmarks) {
+      expect(bookmark.collectionIds).toEqual(['collection-reference']);
+    }
+    expect(result.events).toEqual([{
+      type: 'bookmark.collection-membership.batch-changed',
+      payload: {
+        bookmarkIds,
+        collectionId: 'collection-reference',
+        member: true,
+      },
+    }]);
+    expect(library).toStrictEqual(snapshot);
+  });
+
+  // REQ-012-AC-011 / REQ-026-AC-003：批量移出保留书签并清理两侧引用。
+  test('批量成员命令移出后保留书签并清理两侧引用', async () => {
+    const commandModule = await loadCommandModule();
+    const command = commandModule.batchSetBookmarkCollectionMembership;
+    expect(command).toBeTypeOf('function');
+    if (!command) throw new Error('batchSetBookmarkCollectionMembership is required');
+
+    const library = createCoreJourneySeed().library.data;
+    const bookmarkIds = library.bookmarks.map(({ id }) => id);
+    const result = command(library, {
+      bookmarkIds,
+      collectionId: 'collection-reference',
+      member: false,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.bookmarks).toHaveLength(library.bookmarks.length);
+    expect(result.value.collections[0].bookmarkIds).toEqual([]);
+    expect(result.value.bookmarks.every((bookmark) => bookmark.collectionIds.length === 0)).toBe(true);
+  });
+
+  // REQ-012-AC-008：任一无效 ID 时整批失败且零副作用。
+  test('批量成员命令在含无效书签 ID 时整批失败且不修改资料库', async () => {
+    const commandModule = await loadCommandModule();
+    const command = commandModule.batchSetBookmarkCollectionMembership;
+    expect(command).toBeTypeOf('function');
+    if (!command) throw new Error('batchSetBookmarkCollectionMembership is required');
+
+    const library = createCoreJourneySeed().library.data;
+    const snapshot = structuredClone(library);
+    const result = command(library, {
+      bookmarkIds: ['bookmark-reference', 'bookmark-missing'],
+      collectionId: 'collection-reference',
+      member: true,
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      error: { code: 'BOOKMARK_NOT_FOUND', message: 'One or more bookmarks were not found' },
+    });
+    expect(library).toStrictEqual(snapshot);
+  });
+
+  // REQ-012-AC-009：空列表确认前视为零副作用（整批失败不改库）。
+  test('批量成员命令在空书签列表时返回错误且不修改资料库', async () => {
+    const commandModule = await loadCommandModule();
+    const command = commandModule.batchSetBookmarkCollectionMembership;
+    expect(command).toBeTypeOf('function');
+    if (!command) throw new Error('batchSetBookmarkCollectionMembership is required');
+
+    const library = createCoreJourneySeed().library.data;
+    const snapshot = structuredClone(library);
+    expect(command(library, {
+      bookmarkIds: [],
+      collectionId: 'collection-reference',
+      member: true,
+    })).toEqual({
+      ok: false,
+      error: { code: 'BOOKMARK_NOT_FOUND', message: 'One or more bookmarks were not found' },
+    });
+    expect(library).toStrictEqual(snapshot);
   });
 });

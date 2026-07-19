@@ -4,6 +4,10 @@ export const DOMAIN_CONFIG = {
       code: 'BOOKMARK_NOT_FOUND',
       message: 'Bookmark was not found',
     },
+    bookmarksNotFound: {
+      code: 'BOOKMARK_NOT_FOUND',
+      message: 'One or more bookmarks were not found',
+    },
     bookmarkUrlInvalid: {
       code: 'BOOKMARK_URL_INVALID',
       message: 'Bookmark URL must be http or https',
@@ -71,6 +75,7 @@ export const DOMAIN_CONFIG = {
   },
   events: {
     collectionMembershipChanged: 'bookmark.collection-membership.changed',
+    collectionMembershipBatchChanged: 'bookmark.collection-membership.batch-changed',
     collectionCreated: 'collection.created',
     collectionUpdated: 'collection.updated',
     collectionDeleted: 'collection.deleted',

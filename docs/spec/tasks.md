@@ -1,11 +1,11 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：1.6.0
+> 版本：2.1.0
 > 日期：2026-07-19  
 > 状态：已定稿
 
-执行时须严格遵循 `docs/spec/requirements.md` 1.7.0、`docs/spec/design.md` 1.5.0 和 `docs/spec/test_strategy.md` 1.5.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
+执行时须严格遵循 `docs/spec/requirements.md` 2.2.0、`docs/spec/design.md` 1.6.0 和 `docs/spec/test_strategy.md` 1.6.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
 
 AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首尾均包含。
 
@@ -1168,6 +1168,81 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-052 · 主题批量成员命令与候选过滤**
+
+  > 依赖：TASK-016 · 预计：1–2 小时 · 状态：done · 2026-07-19
+
+  - [x] 实现 `batchSetBookmarkCollectionMembership`：一次校验全部 bookmarkIds 与 collectionId，任一无效则整批失败且资料库不变；成功返回单一新 LibraryData 并保持双向一致。
+  - [x] 实现 `membership-candidates` 纯函数：排除已成员、按 title/URL 不区分大小写搜索、多选集合。
+  - [x] 在 `apply-collection-command` 封装 `runBatchSetMembership` 并投影回 UI 实体。
+  - [x] 覆盖加入、移出、部分无效 ID、空列表与取消路径零副作用的 Unit 测试。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/domain/commands/membership.test.ts src/features/collections/membership-candidates.test.ts src/features/collections/apply-collection-command.test.ts
+  pnpm --dir ui typecheck
+  ```
+
+  **验收证据：** membership / candidates / apply-collection-command Unit 测试 PASS；`docs/spec/ac/TASK-052-AC.md`、`docs/spec/evidence/TASK-052-evidence.md`。
+
+  _需求: REQ-012、REQ-026
+  验收标准：REQ-012-AC-008、REQ-012-AC-009、REQ-012-AC-011、REQ-026-AC-003
+  _测试类型: Unit
+
+---
+
+- [ ] **TASK-053 · 主题视图添加书签入口与挑选器**
+
+  > 依赖：TASK-052 · 预计：2–3 小时 · 状态：待开始
+
+  - [ ] 主题视图工具栏增加英文入口 `Add bookmarks`（仅 `selection.kind === 'collection'`）。
+  - [ ] 实现 `AddBookmarksToCollectionDialog`：排除已成员、搜索、多选；未选中时 Confirm 禁用；打开与 Cancel/关闭期间零副作用。
+  - [ ] 空主题态显示 `Add bookmarks` CTA，打开与工具栏相同挑选器。
+  - [ ] 确认后调用 `runBatchSetMembership(member: true)`，刷新成员列表与计数。
+  - [ ] 覆盖组件测试与 E2E（含截图证据）。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/features/collections/AddBookmarksToCollectionDialog.test.tsx
+  pnpm --dir ui exec playwright test tests/e2e/collection-membership.spec.ts --workers=1
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  ```
+
+  **验收证据：** 挑选器组件测试、E2E、`TASK-053-add-bookmarks-picker.png`、`TASK-053-empty-add-cta.png`。
+
+  _需求: REQ-012
+  验收标准：REQ-012-AC-006、REQ-012-AC-007、REQ-012-AC-008、REQ-012-AC-009、REQ-012-AC-010
+  _测试类型: Unit + E2E
+
+---
+
+- [ ] **TASK-054 · 主题视图移出成员**
+
+  > 依赖：TASK-052、TASK-045 · 预计：1–2 小时 · 状态：待开始
+
+  - [ ] 主题视图书签项增加 `Remove from collection`，立即 `member: false`，不删除书签。
+  - [ ] 选择模式下主题视图批量栏增加 `Remove from collection`；确认对话框展示数量，确认前零副作用，确认后批量移出。
+  - [ ] 移出后主题视图与侧栏计数同步；书签仍在资料库。
+  - [ ] 覆盖组件/Unit 与 E2E（含截图证据）。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/features/views/BookmarkItemActions.test.tsx src/features/collections/apply-collection-command.test.ts
+  pnpm --dir ui exec playwright test tests/e2e/collection-membership.spec.ts --workers=1
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui build
+  ```
+
+  **验收证据：** 移出相关 Unit、E2E、`TASK-054-remove-from-collection.png`。
+
+  _需求: REQ-012、REQ-026
+  验收标准：REQ-012-AC-011、REQ-026-AC-003
+  _测试类型: Unit + E2E
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1223,6 +1298,9 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-049 | Spotlight 搜索结果回车直接访问 | Unit/E2E | done | REQ-017、008 |
 | TASK-050 | Collection Emoji 候选图标菜单 | Unit/E2E | done | REQ-012 |
 | TASK-051 | 新建书签 URL 唯一性 warning | Unit/E2E | done | REQ-006 |
+| TASK-052 | 主题批量成员命令与候选过滤 | Unit | done | REQ-012、026 |
+| TASK-053 | 主题视图添加书签入口与挑选器 | Unit/E2E | 待开始 | REQ-012 |
+| TASK-054 | 主题视图移出成员 | Unit/E2E | 待开始 | REQ-012、026 |
 
 ---
 
@@ -1242,3 +1320,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 1.8.0 | 2026-07-19 | 已定稿 | 新增 TASK-049，Spotlight 搜索结果 Enter 确认直接访问高亮书签网站 |
 | 1.9.0 | 2026-07-19 | 已定稿 | 新增 TASK-050，侧栏新建/编辑 Collection 时通过候选 Emoji 菜单选择主题图标 |
 | 2.0.0 | 2026-07-19 | 已定稿 | 新增 TASK-051，新建书签 URL 规范化后唯一，重复时 warning 并阻止下一步 |
+| 2.1.0 | 2026-07-19 | 已定稿 | 新增 TASK-052~054，主题视图手动添加/移出书签（REQ-012-AC-006~011） |

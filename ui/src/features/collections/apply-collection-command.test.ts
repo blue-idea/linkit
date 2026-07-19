@@ -83,4 +83,37 @@ describe('主题功能适配层', () => {
     expect(col?.bookmarkIds.includes(outsider.id)).toBe(true);
     expect(bm?.collectionIds.includes(collectionId)).toBe(true);
   });
+
+  // REQ-012-AC-008：批量加入经适配层投影后双向一致。
+  test('runBatchSetMembership 一次加入多本书签', async () => {
+    const mod = await loadApply();
+    expect(mod?.runBatchSetMembership).toBeTypeOf('function');
+    if (!mod?.runBatchSetMembership || !mod.applyCollectionLibraryResult) {
+      throw new Error('runBatchSetMembership is required');
+    }
+
+    const collectionId = collections[0].id;
+    const outsiders = bookmarks.filter((bookmark) => !bookmark.collectionIds.includes(collectionId));
+    expect(outsiders.length).toBeGreaterThan(0);
+
+    const result = mod.runBatchSetMembership({
+      bookmarks,
+      categories,
+      collections,
+      tags,
+      bookmarkIds: outsiders.map((bookmark) => bookmark.id),
+      collectionId,
+      member: true,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const applied = mod.applyCollectionLibraryResult(result.value, bookmarks);
+    const col = applied.collections.find((collection) => collection.id === collectionId);
+    for (const outsider of outsiders) {
+      expect(col?.bookmarkIds.includes(outsider.id)).toBe(true);
+      const bm = applied.bookmarks.find((bookmark) => bookmark.id === outsider.id);
+      expect(bm?.collectionIds.includes(collectionId)).toBe(true);
+    }
+  });
 });

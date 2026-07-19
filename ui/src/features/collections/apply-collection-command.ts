@@ -3,7 +3,10 @@ import {
   deleteCollection as deleteCollectionCommand,
   updateCollection as updateCollectionCommand,
 } from '../../domain/collections';
-import { setBookmarkCollectionMembership } from '../../domain/commands';
+import {
+  batchSetBookmarkCollectionMembership,
+  setBookmarkCollectionMembership,
+} from '../../domain/commands';
 import type { LibraryData } from '../../domain/library';
 import type { Bookmark, Category, Collection, Tag, TagColor } from '../../types';
 import { toCategoryLibrary } from '../categories/apply-category-command';
@@ -96,6 +99,24 @@ export function runSetMembership(
 ) {
   return setBookmarkCollectionMembership(toCategoryLibrary(input), {
     bookmarkId: input.bookmarkId,
+    collectionId: input.collectionId,
+    member: input.member,
+  });
+}
+
+/**
+ * 批量加入或移出主题成员（单一 LibraryData 结果）。
+ * REQ-012-AC-008 / REQ-012-AC-011 / REQ-026-AC-003
+ */
+export function runBatchSetMembership(
+  input: LibraryEntities & {
+    bookmarkIds: string[];
+    collectionId: string;
+    member: boolean;
+  }
+) {
+  return batchSetBookmarkCollectionMembership(toCategoryLibrary(input), {
+    bookmarkIds: input.bookmarkIds,
     collectionId: input.collectionId,
     member: input.member,
   });

@@ -2,7 +2,7 @@
 
 > 文件路径：`docs/spec/test_strategy.md`  
 > 参考方法论：`phases/qa_engine.md` §第1阶段  
-> 版本：1.5.0
+> 版本：1.6.0
 > 日期：2026-07-19
 > 状态：已定稿
 
@@ -47,7 +47,7 @@ test_scope:
     - "Wails 启动、Go 绑定和 Windows/macOS 构建"
     - "Supabase Auth、RLS、revision 与云冲突"
     - "AppData 原子 JSON、备份、云草稿、导入导出与可配置数据根迁移"
-    - "Bookmark 单项/批量编辑移动删除、Category、Collection、Tag 领域命令与引用完整性"
+    - "Bookmark 单项/批量编辑移动删除、Category、Collection（含主题视图手动添加/移出成员）、Tag 领域命令与引用完整性"
     - "六种浏览视图、Spotlight、快捷键、拖拽和 i18n"
     - "OpenAI-compatible AI、授权、降级、语义重排和建议确认"
     - "洞察、手动链接健康和静态知识网络"
@@ -91,7 +91,7 @@ test_scope:
 | J-03 | URL 新增、AI 成功或手动降级、确认入库 |
 | J-04 | 书签查看、统一编辑、单项/批量移动删除、星标、置顶、访问和阅读状态 |
 | J-05 | 分类树 CRUD、删除策略、拖拽层级和书签归类 |
-| J-06 | 主题 CRUD、成员双向关系、拖出组合和 AI 主题确认 |
+| J-06 | 主题 CRUD、成员双向关系、主题视图手动添加/移出、拖出组合和 AI 主题确认 |
 | J-07 | 标签添加、移除、筛选和采纳 AI 建议 |
 | J-08 | Card、List、Masonry、Timeline、Tag Aggregation、Theme Space |
 | J-09 | Spotlight 关键词、语义降级、结果定位和 URL 快捷入库 |
@@ -236,3 +236,4 @@ environments:
 | 1.3.0 | 2026-07-19 | 已定稿 | 增加书签统一编辑入口与批量移动/删除的 Unit、E2E 和视觉回归范围 |
 | 1.4.0 | 2026-07-19 | 已定稿 | 将六套主题、两套浅色 color scheme 与主题专属视觉令牌纳入 Unit、E2E 和视觉回归范围 |
 | 1.5.0 | 2026-07-19 | 已定稿 | 将可配置本地数据根与迁移失败/冲突场景纳入 Unit 与 E2E 范围 |
+| 1.6.0 | 2026-07-19 | 已定稿 | J-06 扩展主题视图手动添加/移出成员；对齐 REQ-012-AC-006~011 与 TASK-052~054 |

@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.24.0
+> 版本：1.25.0
 > 日期：2026-07-19
-> 状态：已定稿（新增 TASK-047 / REQ-029）
+> 状态：已定稿（新增 TASK-052~054 / REQ-012-AC-006~011）
 
 ---
 
@@ -77,6 +77,9 @@
 | TASK-049 | Spotlight 回车直接访问 | REQ-017-AC-005；REQ-008-AC-002 | done | `ui/src/components/Spotlight.tsx`、`ui/src/App.tsx` | `ui/src/components/Spotlight.test.tsx`、`ui/tests/e2e/spotlight.spec.ts` | `docs/spec/ac/TASK-049-AC.md` | `docs/spec/evidence/TASK-049-evidence.md`、`TASK-049-spotlight-direct-open.png` |
 | TASK-050 | Collection Emoji 候选菜单 | REQ-012-AC-005；REQ-012-AC-001 | done | `ui/src/config/collection-icons.ts`、`ui/src/features/collections/CollectionFormDialog.tsx` | `ui/src/features/collections/CollectionFormDialog.test.tsx`、`ui/tests/e2e/collection-crud.spec.ts` | `docs/spec/ac/TASK-050-AC.md` | `docs/spec/evidence/TASK-050-evidence.md`、`TASK-050-collection-emoji-menu.png` |
 | TASK-051 | 新建书签 URL 唯一性 warning | REQ-006-AC-005；REQ-006-AC-004 | done | `ui/src/domain/commands/bookmarks.ts`、`ui/src/config/domain.ts`、`ui/src/components/Dialogs.tsx`、`ui/src/App.tsx` | `ui/src/domain/commands/bookmarks.test.ts`、`ui/tests/e2e/bookmark-crud.spec.ts` | `docs/spec/ac/TASK-051-AC.md` | `docs/spec/evidence/TASK-051-evidence.md`、`TASK-051-duplicate-url-warning.png` |
+| TASK-052 | 主题批量成员命令与候选过滤 | REQ-012-AC-008、009、011；REQ-026-AC-003 | done | `ui/src/domain/commands/index.ts`、`ui/src/config/domain.ts`、`ui/src/features/collections/membership-candidates.ts`、`ui/src/features/collections/apply-collection-command.ts`、`ui/src/features/collections/index.ts` | `ui/src/domain/commands/membership.test.ts`、`ui/src/features/collections/membership-candidates.test.ts`、`ui/src/features/collections/apply-collection-command.test.ts` | `docs/spec/ac/TASK-052-AC.md` | 2026-07-19 |
+| TASK-053 | 主题视图添加书签入口与挑选器 | REQ-012-AC-006~010 | 待开始 | — | — | — | — |
+| TASK-054 | 主题视图移出成员 | REQ-012-AC-011；REQ-026-AC-003 | 待开始 | — | — | — | — |
 
 ---
 
@@ -86,7 +89,7 @@
 |----------|-----------|
 | REQ-001~005 | TASK-006、008、010、024、026~030、040、042、044 |
 | REQ-006~009 | TASK-009、011~013、025、033、037、044、048、051 |
-| REQ-010~014 | TASK-014~018、025、035、044 |
+| REQ-010~014 | TASK-014~018、025、035、044、050、052~054 |
 | REQ-015~018 | TASK-019~021、025、034、037、041、044 |
 | REQ-019~022 | TASK-007、031~040、044 |
 | REQ-023~024 | TASK-001~002、015、022~025、042~044、046~047 |
@@ -128,3 +131,5 @@
 | 2026-07-19 | TASK-046 更新为 done，补充六主题实现、测试、AC 与视觉证据 | 六主题持久化、12 组 Baseline/Actual/Diff 和回归测试完成 |
 | 2026-07-19 | 新增 TASK-047 与 REQ-029 追溯行 | 用户确认可配置本地存储目录并在变更时自动迁移应用数据 |
 | 2026-07-19 | TASK-047 更新为 done，补充 data-root 实现、测试与 AC | Go/Vitest/Playwright 真实验收通过 |
+| 2026-07-19 | 新增 TASK-052~054 主题视图手动成员管理追溯 | 覆盖 REQ-012-AC-006~011：添加挑选器、空态 CTA、单条/批量移出 |
+| 2026-07-19 | TASK-052 更新为 done | 批量成员命令与候选过滤 Unit 验收通过 |
