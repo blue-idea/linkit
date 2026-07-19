@@ -8,7 +8,7 @@ import { Sidebar } from './components/Sidebar';
 import { ContentArea } from './components/ContentArea';
 import { DetailPanel } from './components/DetailPanel';
 import { Spotlight } from './components/Spotlight';
-import { NewBookmarkDialog, HealthDialog, ReanalyzeBookmarkDialog } from './components/Dialogs';
+import { NewBookmarkDialog, ReanalyzeBookmarkDialog } from './components/Dialogs';
 import { LoginScreen } from './components/LoginScreen';
 import { SettingsDialog } from './components/SettingsDialog';
 import {
@@ -99,6 +99,7 @@ import {
 import { ExploreDialog, recommendLibraryBookmarks, suggestThemeGaps } from './features/explore';
 import { KnowledgeGraphDialog, buildKnowledgeGraph } from './features/knowledge-graph';
 import { InsightsReportDialog, buildLibraryInsights, type InsightAction } from './features/insights';
+import { HealthScanDialog, type HealthResult } from './features/health';
 
 export default function App() {
   const auth = useAuth();
@@ -1475,7 +1476,19 @@ export default function App() {
           }
         }}
       />
-      <HealthDialog open={healthOpen} bookmarks={bookmarks} onClose={() => setHealthOpen(false)} />
+      <HealthScanDialog
+        open={healthOpen}
+        bookmarks={bookmarks}
+        onClose={() => setHealthOpen(false)}
+        onResult={(result: HealthResult) => setBookmarks((current) => current.map((bookmark) => bookmark.id === result.bookmarkId ? {
+          ...bookmark,
+          health: result.health,
+          healthCheckedAt: result.checkedAt,
+          healthHttpStatus: result.httpStatus,
+          healthFingerprint: result.fingerprint,
+          healthErrorCode: result.errorCode,
+        } : bookmark))}
+      />
       <SettingsDialog
         open={settingsOpen}
         settings={settings}

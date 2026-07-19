@@ -430,9 +430,17 @@ export function Sidebar({
           active={selection.kind === 'health' && selection.status === 'changed'}
           icon="RefreshCw"
           iconColor="text-amber-400"
-          label="内容已更新"
+          label="Updated"
           count={bookmarks.filter((b) => b.health === 'changed').length}
           onClick={() => onSelect({ kind: 'health', status: 'changed' })}
+        />
+        <NavRow
+          active={selection.kind === 'health' && selection.status === 'broken'}
+          icon="ShieldAlert"
+          iconColor="text-coral-400"
+          label="Broken"
+          count={bookmarks.filter((b) => b.health === 'broken').length}
+          onClick={() => onSelect({ kind: 'health', status: 'broken' })}
         />
       </div>
 

@@ -53,6 +53,10 @@ export interface Bookmark {
   readStatus?: 'unread' | 'reading' | 'read' | 'archived';
   thumbnail?: string; // gradient key for preview
   health?: 'ok' | 'changed' | 'broken';
+  healthCheckedAt?: string | null;
+  healthHttpStatus?: number | null;
+  healthFingerprint?: string | null;
+  healthErrorCode?: string | null;
   aiSummary?: string;
   aiSuggestedTags?: string[];
   spark?: number[]; // visit history

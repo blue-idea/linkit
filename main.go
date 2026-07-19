@@ -7,6 +7,7 @@ import (
 
 	"github.com/blue-idea/collection/config"
 	"github.com/blue-idea/collection/internal/ai"
+	"github.com/blue-idea/collection/internal/health"
 	"github.com/blue-idea/collection/internal/localstore"
 	"github.com/blue-idea/collection/internal/metadata"
 	"github.com/blue-idea/collection/internal/platform"
@@ -41,6 +42,8 @@ func main() {
 		ai.SecretKeyLoader{Secrets: secretService},
 		ai.SettingsConsentChecker{Settings: settingsService},
 	)
+	healthEmitter := health.NewWailsEmitter()
+	healthService := health.NewService(health.WithEmitter(healthEmitter))
 
 	err = wails.Run(&options.App{
 		Title:  config.AppTitle,
@@ -58,6 +61,7 @@ func main() {
 		OnStartup: func(ctx context.Context) {
 			// 原生对话框依赖 Wails 运行时上下文。
 			nativeFileService.SetContext(ctx)
+			healthEmitter.SetContext(ctx)
 		},
 		Bind: []interface{}{
 			localDocumentService,
@@ -66,6 +70,7 @@ func main() {
 			nativeFileService,
 			metadataService,
 			aiService,
+			healthService,
 		},
 	})
 	if err != nil {
