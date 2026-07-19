@@ -1,9 +1,9 @@
-# 测试策略简报（Test Strategy）
+﻿# 测试策略简报（Test Strategy）
 
 > 文件路径：`docs/spec/test_strategy.md`  
 > 参考方法论：`phases/qa_engine.md` §第1阶段  
-> 版本：1.6.0
-> 日期：2026-07-19
+> 版本：1.7.0
+> 日期：2026-07-20
 > 状态：已定稿
 
 ---
@@ -153,8 +153,11 @@ environments:
     url: "http://localhost:5173"
     db: "deterministic fixtures"
   dev_desktop:
-    url: "Wails development application"
-    db: "isolated AppData test directory"
+    url: "Wails development application (wails dev -tags dev / Linkit-Dev)"
+    db: "isolated AppData Linkit-Dev directory"
+  release_desktop:
+    url: "Wails release build (no dev tag / Linkit)"
+    db: "isolated AppData Linkit directory; must not reuse Linkit-Dev"
   local_supabase:
     url: "http://127.0.0.1:54321"
     db: "seeded local Postgres (supabase/seed.sql)"
@@ -221,7 +224,8 @@ environments:
 | 真实 AI | API Base、Model、Key 已配置并取得测试数据发送授权 |
 | 选定平台桌面旅程 | 至少一个目标平台具备可运行 Wails 应用与 Playwright/人工验收环境 |
 | 另一平台构建 | 另一个目标平台具备可运行的 Wails 构建 runner；仅要求构建，不重复完整桌面旅程 |
-| OS Keychain | 在真实 Windows Credential Manager 与 macOS Keychain 中执行 |
+| OS Keychain | 在真实 Windows Credential Manager 与 macOS Keychain 中执行；开发与正式服务名分别验证 `Linkit-Dev` / `Linkit` |
+| Release 身份门禁 | `go test ./config` 正式身份断言 + Release 产物扫描不得包含 `Linkit-Dev` |
 
 ---
 
@@ -237,3 +241,4 @@ environments:
 | 1.4.0 | 2026-07-19 | 已定稿 | 将六套主题、两套浅色 color scheme 与主题专属视觉令牌纳入 Unit、E2E 和视觉回归范围 |
 | 1.5.0 | 2026-07-19 | 已定稿 | 将可配置本地数据根与迁移失败/冲突场景纳入 Unit 与 E2E 范围 |
 | 1.6.0 | 2026-07-19 | 已定稿 | J-06 扩展主题视图手动添加/移出成员；对齐 REQ-012-AC-006~011 与 TASK-052~054 |
+| 1.7.0 | 2026-07-20 | 已定稿 | 开发/正式桌面身份槽与 Release 身份门禁纳入测试环境与 Keychain 验收范围 |

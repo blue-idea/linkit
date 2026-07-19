@@ -1,4 +1,4 @@
-# Linkit 项目宪法（Constitution）
+﻿# Linkit 项目宪法（Constitution）
 
 > 文件路径：`docs/spec/constitution.md`
 > 版本：1.0.2（正式）
@@ -94,8 +94,10 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 
 - 构建期密钥存储在 `.env` 或 `.env.local` 中，并确保相关文件已加入 `.gitignore`。
 - 桌面端用户配置的 AI API Key 只能存储在本机安全设置中，不得上传至 Supabase 或写入日志。
+- 开发构建与正式构建必须使用隔离的本机身份槽（AppData 目录名与 OS Keychain 服务名）：正式为 `Linkit`，开发（`-tags dev`）为 `Linkit-Dev`。
 - 代码必须通过受控配置模块读取环境变量，禁止在业务模块中直接散落访问逻辑。
 - 禁止向版本控制提交 API Key、Supabase 密钥、测试账号密码、令牌或真实用户数据。
+- 发布安装包不得嵌入开发者本机 AppData、设置、资料库或密钥；Release 流水线须门禁正式身份常量。
 - 日志、错误报告、截图和测试证据必须对密钥、令牌与个人信息进行脱敏。
 
 ### 破坏性操作
@@ -122,7 +124,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 
 ### CI/CD
 
-- 项目已配置 GitHub Actions：`ci.yml`（质量、审计、单元/E2E 冒烟）、`desktop-build.yml`（Windows/macOS Wails 构建）、`release.yml`（手动发布）。
+- 项目已配置 GitHub Actions：`ci.yml`（质量、审计、单元/E2E 冒烟、开发身份单测）、`desktop-build.yml`（Windows/macOS Wails 构建）、`release.yml`（手动发布；校验正式身份并扫描产物不含 `Linkit-Dev`）。
 - CI 结果不得替代本地任务验收证据；未实际执行的平台或依赖受限步骤必须标记为 `BLOCKED`。
 - Windows 与 macOS 的完整桌面旅程仍按 `docs/spec/tasks.md` 中 TASK-042 / TASK-043 执行；本阶段 CI 仅提供构建与质量骨架。
 - 引入或调整流水线、发布流程前必须同步更新技术设计、任务规格和验收证据要求。
@@ -206,3 +208,4 @@ docs/spec/
 | 1.0.0 | 2026-07-16 | 正式 | 经用户二次确认后定稿生效 |
 | 1.0.1 | 2026-07-17 | 正式 | 纠正项目工程现状：CI/CD 与 Git Hooks 尚未配置，现阶段改由手动质量检查与真实证据作为门禁，自动化建设继续由 `TASK-002` 跟踪 |
 | 1.0.2 | 2026-07-18 | 正式 | `TASK-002` 落地 Vitest/Playwright/axe-core、Husky/lint-staged 与 GitHub Actions 骨架；更新本地提交检查与 CI/CD 条款 |
+| 1.0.3 | 2026-07-20 | 正式 | 补充开发/正式本机身份槽隔离与 Release 发布产物身份门禁，对齐 REQ-025-AC-006 |

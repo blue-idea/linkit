@@ -1,11 +1,11 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：2.1.0
-> 日期：2026-07-19  
+> 版本：2.2.0
+> 日期：2026-07-20  
 > 状态：已定稿
 
-执行时须严格遵循 `docs/spec/requirements.md` 2.2.0、`docs/spec/design.md` 1.6.0 和 `docs/spec/test_strategy.md` 1.6.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
+执行时须严格遵循 `docs/spec/requirements.md` 2.3.0、`docs/spec/design.md` 1.7.0 和 `docs/spec/test_strategy.md` 1.7.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
 
 AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首尾均包含。
 
@@ -1241,6 +1241,29 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
   验收标准：REQ-012-AC-011、REQ-026-AC-003
   _测试类型: Unit + E2E
 
+- [x] **TASK-055 · 开发/正式本机身份槽隔离**
+  - **绑定：** REQ-025-AC-006；原则 15；DATA-INV-014
+  - **目标：** 开发构建使用 `Linkit-Dev` AppData/Keychain，正式构建使用 `Linkit`；发布产物不含开发身份与开发者用户数据。
+  - [x] 以失败测试驱动 `config/identity*.go` 身份常量（release /dev）。
+  - [x] 迁移 `AppDataDirectoryName`、`SecretServiceName`、`AppTitle` 至身份文件。
+  - [x] 提供 `scripts/dev.ps1` / `scripts/dev.sh` 与 `scripts/check-identity`。
+  - [x] CI 增加 `go test -tags=dev ./config`；Release 增加正式身份断言与产物扫描。
+  - [x] 对齐 `docs/spec` 与 `docs/knowledge/打包.md`。
+
+  **验证方式：**
+  ```powershell
+  go test ./config -count=1
+  go test -tags=dev ./config -count=1
+  go run ./scripts/check-identity
+  go run -tags=dev ./scripts/check-identity -write-probe
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-055-AC.md`、`docs/spec/evidence/TASK-055-evidence.md`。
+
+  _需求: REQ-025
+  验收标准：REQ-025-AC-006
+  _测试类型: Unit
+
 ---
 
 ## 进度汇总
@@ -1301,6 +1324,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-052 | 主题批量成员命令与候选过滤 | Unit | done | REQ-012、026 |
 | TASK-053 | 主题视图添加书签入口与挑选器 | Unit/E2E | done | REQ-012 |
 | TASK-054 | 主题视图移出成员 | Unit/E2E | done | REQ-012、026 |
+| TASK-055 | 开发/正式本机身份槽隔离 | Unit | done | REQ-025 |
 
 ---
 
@@ -1321,3 +1345,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 1.9.0 | 2026-07-19 | 已定稿 | 新增 TASK-050，侧栏新建/编辑 Collection 时通过候选 Emoji 菜单选择主题图标 |
 | 2.0.0 | 2026-07-19 | 已定稿 | 新增 TASK-051，新建书签 URL 规范化后唯一，重复时 warning 并阻止下一步 |
 | 2.1.0 | 2026-07-19 | 已定稿 | 新增 TASK-052~054，主题视图手动添加/移出书签（REQ-012-AC-006~011） |
+| 2.2.0 | 2026-07-20 | 已定稿 | 新增 TASK-055，开发/正式本机身份槽隔离（REQ-025-AC-006） |

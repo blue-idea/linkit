@@ -1,8 +1,8 @@
-# Linkit 接口设计（API）
+﻿# Linkit 接口设计（API）
 
 > 文件路径：`docs/spec/api.md`  
-> 版本：1.2.0  
-> 日期：2026-07-19  
+> 版本：1.2.1  
+> 日期：2026-07-20  
 > 状态：已定稿
 
 ---
@@ -282,6 +282,8 @@ interface AIConsentStatus {
 - Go AIService 在每次发送收藏内容前再次检查授权，不能只依赖 UI 状态。
 
 ### 3.4 SecretService
+
+OS Keychain / Credential Manager 服务名由构建身份决定：正式为 `Linkit`，开发（`-tags dev`）为 `Linkit-Dev`。逻辑键 `linkit.ai.api-key` 跨身份保持不变，仅通过服务名隔离通道。
 
 #### `SetAIKey(request)`
 
@@ -753,3 +755,4 @@ interface LibrarySnapshot {
 | 1.0.0 | 2026-07-16 | 已定稿 | 经用户确认后正式生效 |
 | 1.1.0 | 2026-07-16 | 已定稿 | STEP 4 修正 Snapshot revision 重复、补充设置/云草稿接口、注册分支、AI 授权和原生 RLS 响应 |
 | 1.2.0 | 2026-07-19 | 已定稿 | 新增数据根查询、目录选择与迁移接口及错误码，覆盖 REQ-029 |
+| 1.2.1 | 2026-07-20 | 已定稿 | SecretService 补充开发/正式 Keychain 服务名隔离说明，对齐 REQ-025-AC-006 |

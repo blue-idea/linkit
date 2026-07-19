@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.25.0
-> 日期：2026-07-19
-> 状态：已定稿（新增 TASK-052~054 / REQ-012-AC-006~011）
+> 版本：1.26.0
+> 日期：2026-07-20
+> 状态：已定稿（新增 TASK-055 / REQ-025-AC-006）
 
 ---
 
@@ -80,6 +80,7 @@
 | TASK-052 | 主题批量成员命令与候选过滤 | REQ-012-AC-008、009、011；REQ-026-AC-003 | done | `ui/src/domain/commands/index.ts`、`ui/src/config/domain.ts`、`ui/src/features/collections/membership-candidates.ts`、`ui/src/features/collections/apply-collection-command.ts`、`ui/src/features/collections/index.ts` | `ui/src/domain/commands/membership.test.ts`、`ui/src/features/collections/membership-candidates.test.ts`、`ui/src/features/collections/apply-collection-command.test.ts` | `docs/spec/ac/TASK-052-AC.md` | 2026-07-19 |
 | TASK-053 | 主题视图添加书签入口与挑选器 | REQ-012-AC-006~010 | done | `ui/src/features/collections/AddBookmarksToCollectionDialog.tsx`、`ui/src/components/ContentArea.tsx`、`ui/src/App.tsx`、`ui/src/features/shell/overlay-stack.ts` | `ui/src/features/collections/AddBookmarksToCollectionDialog.test.tsx`、`ui/tests/e2e/collection-membership.spec.ts` | `docs/spec/ac/TASK-053-AC.md` | 2026-07-19 |
 | TASK-054 | 主题视图移出成员 | REQ-012-AC-011；REQ-026-AC-003 | done | `ui/src/features/views/BookmarkItemActions.tsx`、`ui/src/features/collections/RemoveFromCollectionDialog.tsx`、`ui/src/components/ContentArea.tsx`、`ui/src/App.tsx` | `ui/src/features/views/BookmarkItemActions.test.tsx`、`ui/src/features/collections/RemoveFromCollectionDialog.test.tsx`、`ui/tests/e2e/collection-membership.spec.ts` | `docs/spec/ac/TASK-054-AC.md` | 2026-07-19 |
+| TASK-055 | 开发/正式本机身份槽隔离 | REQ-025-AC-006 | done | `config/identity.go`、`config/identity_dev.go`、`config/app.go`、`config/storage.go`、`config/errors.go`、`scripts/dev.ps1`、`scripts/dev.sh`、`scripts/check-identity/main.go`、`.github/workflows/ci.yml`、`.github/workflows/release.yml` | `config/identity_test.go`、`config/identity_release_test.go`、`config/identity_dev_test.go` | `docs/spec/ac/TASK-055-AC.md` | 2026-07-20 |
 
 ---
 
@@ -135,3 +136,4 @@
 | 2026-07-19 | TASK-052 更新为 done | 批量成员命令与候选过滤 Unit 验收通过 |
 | 2026-07-19 | TASK-053 更新为 done | 主题视图 Add bookmarks 挑选器与空态 CTA 验收通过 |
 | 2026-07-19 | TASK-054 更新为 done | 主题视图单条/多选移出成员验收通过 |
+| 2026-07-20 | 新增 TASK-055 与 REQ-025-AC-006 追溯 | 开发/正式 AppData 与 Keychain 身份槽隔离；Release 产物门禁 |

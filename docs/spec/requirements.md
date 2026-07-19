@@ -1,4 +1,4 @@
-# Linkit 需求文档（Requirements）
+﻿# Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
 > 版本：2.2.0
@@ -36,6 +36,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 12. Windows 与 macOS 均为目标平台；每个发布候选至少在一个选定平台执行完整桌面关键旅程，另一平台保留 Wails 构建门禁，不重复要求完整真实旅程。
 13. 外观提供 Midnight、Ocean、Graphite、Sunset、Daylight、Paper 六套主题；新增浅色主题不得改变现有设置交互、持久化流程或业务功能。
 14. 本地存储目录可在 Settings → Storage 中通过原生文件夹选择器变更；变更时迁移除 OS Keychain 密钥外的全部应用数据目录内容。目标目录已含 Linkit 数据时阻止迁移；迁移失败保持原路径与原数据并清理目标残留；默认 AppData 保留轻量 bootstrap 指针文件，真实数据根可重定向。
+15. 开发构建与正式构建使用隔离的本机身份槽：正式身份 AppData/Keychain 为 `Linkit`；开发身份（`-tags dev`）为 `Linkit-Dev`。发布产物不得嵌入开发身份字符串或携带开发者本机测试数据/密钥。
 
 ---
 
@@ -1603,6 +1604,18 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
       message: "string, authorization or RLS error"
     side_effects:
       - "No user data is inserted, updated or deleted"
+
+- id: REQ-025-AC-006
+  ears: >
+    When Linkit 以正式发布身份构建（不启用 Go build tag `dev`）,
+    the Linkit shall 使用 AppData 目录名与 OS Keychain 服务名均为 Linkit 的正式身份槽，且发布产物不得嵌入 Linkit-Dev 开发身份或开发者本机用户数据.
+  test_type: Unit
+  expected:
+    return_value: "Release identity constants resolve to Linkit for AppDataDirectoryName, SecretServiceName and AppTitle"
+    side_effects:
+      - "Dev builds with -tags dev resolve to Linkit-Dev and remain isolated from the release slot"
+      - "Release CI rejects binaries that embed the Linkit-Dev identity string"
+      - "Installers and packages do not bundle the developer's AppData or Keychain contents"
 ```
 
 ---
@@ -1939,3 +1952,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.0.0 | 2026-07-19 | 已定稿 | 新增 REQ-012-AC-005：侧栏新建/编辑主题时通过候选 Emoji 菜单选择主题图标 |
 | 2.1.0 | 2026-07-19 | 已定稿 | 新增 REQ-006-AC-005：创建书签时 URL 规范化后必须唯一，重复时显示 warning 并阻止下一步 |
 | 2.2.0 | 2026-07-19 | 已定稿 | 新增 REQ-012-AC-006~011：主题视图手动添加/移出书签（排除已成员、搜索多选、确认前零副作用、空态 CTA） |
+| 2.3.0 | 2026-07-20 | 已定稿 | 新增原则 15 与 REQ-025-AC-006：开发/正式本机身份槽隔离，发布产物不得携带开发数据 |
