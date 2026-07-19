@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { Bookmark, Category, Collection, Tag, ViewDensity } from '../types';
 import type { Filters, Selection } from '../state';
 import { sortBookmarks, type SortKey } from '../domain/query';
@@ -12,6 +12,7 @@ import {
   ThemeSpaceView,
   presentBookmarks,
 } from '../features/views';
+import { selectBookmarkRange } from '../features/bookmarks';
 
 /* ---------- AI smart aggregation banner (Feature 2) ---------- */
 function SmartAggregation({
@@ -305,6 +306,11 @@ export function ContentArea({
   onOpenAICollection,
   onOpenDuplicates,
   onOpenExplore,
+  onEditBookmark,
+  onMoveBookmarks,
+  onDeleteBookmarks,
+  onToggleBookmarkSelection,
+  onClearBookmarkSelection,
 }: {
   bookmarks: Bookmark[];
   allBookmarks: Bookmark[];
@@ -337,6 +343,11 @@ export function ContentArea({
   onOpenAICollection: () => void;
   onOpenDuplicates: () => void;
   onOpenExplore: () => void;
+  onEditBookmark: (id: string) => void;
+  onMoveBookmarks: (ids: string[]) => void;
+  onDeleteBookmarks: (ids: string[]) => void;
+  onToggleBookmarkSelection: (id: string, selected: boolean) => void;
+  onClearBookmarkSelection: () => void;
 }) {
   const [aiDismissed, setAiDismissed] = useState(false);
   const title = useSelectionTitle(selection, categories, collections);
@@ -352,6 +363,7 @@ export function ContentArea({
   const presentedAll = useMemo(() => presentBookmarks(allBookmarks, tags), [allBookmarks, tags]);
   const showAI = selection.kind === 'collection' && !aiDismissed;
   const composeSet = useMemo(() => new Set(composeSelectedIds), [composeSelectedIds]);
+  const selectionAnchorRef = useRef<string | null>(null);
 
   const startDrag = (e: React.DragEvent, bookmarkId: string) => {
     // REQ-013-AC-001：若拖拽项属于多选集合，载荷携带全部所选 ID。
@@ -365,13 +377,22 @@ export function ContentArea({
   };
 
   const handleCardClick = (e: React.MouseEvent, bookmarkId: string) => {
+    if (e.shiftKey && selectionAnchorRef.current) {
+      const range = selectBookmarkRange(sorted.map(({ id }) => id), selectionAnchorRef.current, bookmarkId);
+      onClearBookmarkSelection();
+      range.forEach((id) => onToggleBookmarkSelection(id, true));
+      onSelectBookmark(bookmarkId);
+      return;
+    }
     const additive = e.metaKey || e.ctrlKey;
     if (additive) {
       onToggleComposeSelect(bookmarkId, true);
+      selectionAnchorRef.current = bookmarkId;
       return;
     }
     onToggleComposeSelect(bookmarkId, false);
     onSelectBookmark(bookmarkId);
+    selectionAnchorRef.current = bookmarkId;
   };
 
   return (
@@ -412,19 +433,17 @@ export function ContentArea({
         />
       )}
 
-      {composeSelectedIds.length >= 2 && (
-        <div className="mx-4 mb-2 flex items-center justify-between gap-2 rounded-lg bg-accent-500/10 hairline px-3 py-2">
+      {composeSelectedIds.length > 0 && (
+        <div role="toolbar" aria-label="Bulk bookmark actions" className="mx-4 mb-2 flex items-center justify-between gap-2 rounded-lg bg-accent-500/10 hairline px-3 py-2">
           <span className="text-[12px] text-ink-200">
             {composeSelectedIds.length} bookmarks selected
           </span>
-          <Button
-            size="sm"
-            variant="primary"
-            aria-label="Create collection from selection"
-            onClick={onRequestCompose}
-          >
-            Create collection
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" onClick={() => onMoveBookmarks(composeSelectedIds)}>Move</Button>
+            <Button size="sm" variant="danger" onClick={() => onDeleteBookmarks(composeSelectedIds)}>Delete</Button>
+            {composeSelectedIds.length >= 2 && <Button size="sm" variant="primary" aria-label="Create collection from selection" onClick={onRequestCompose}>Create collection</Button>}
+            <Button size="sm" variant="ghost" onClick={onClearBookmarkSelection}>Clear selection</Button>
+          </div>
         </div>
       )}
 
@@ -434,9 +453,14 @@ export function ContentArea({
         <CardView
           items={presented}
           isSelected={(id) => selectedId === id || composeSet.has(id)}
+          isBulkSelected={(id) => composeSet.has(id)}
           onSelect={(id, e) => handleCardClick(e, id)}
           onToggleStar={onToggleStar}
           onDragStart={startDrag}
+          onEdit={onEditBookmark}
+          onMove={(id) => onMoveBookmarks([id])}
+          onDelete={(id) => onDeleteBookmarks([id])}
+          onToggleSelect={onToggleBookmarkSelection}
         />
       ) : density === 'list' ? (
         <ListView

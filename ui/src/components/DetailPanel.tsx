@@ -59,6 +59,8 @@ export function DetailPanel({
   onOpenHealth,
   onReanalyze,
   onOpenKnowledgeGraph,
+  onEdit,
+  onMove,
   onDelete,
   onClose,
 }: {
@@ -78,6 +80,8 @@ export function DetailPanel({
   onOpenHealth: () => void;
   onReanalyze?: () => void;
   onOpenKnowledgeGraph?: () => void;
+  onEdit?: () => void;
+  onMove?: () => void;
   onDelete?: () => void;
   onClose: () => void;
 }) {
@@ -199,6 +203,16 @@ export function DetailPanel({
             aria-label="Toggle pin"
             aria-pressed={b.pinned}
           />
+          {onEdit && (
+            <button type="button" aria-label="Edit bookmark" onClick={onEdit} className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md text-ink-200 hover:bg-ink-700/60 transition">
+              <Icon name="Pencil" size={13} /> Edit
+            </button>
+          )}
+          {onMove && (
+            <button type="button" aria-label="Move bookmark" onClick={onMove} className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md text-ink-200 hover:bg-ink-700/60 transition">
+              <Icon name="FolderInput" size={13} /> Move
+            </button>
+          )}
           {onDelete && (
             <button
               type="button"

@@ -12,3 +12,5 @@ export { fetchBookmarkMetadata } from './metadata-client';
 export { openExternalUrl } from './external-url';
 export { openBookmarkUrl, visitBookmark } from './visit';
 export { DeleteBookmarkDialog } from './DeleteBookmarkDialog';
+export { BookmarkEditorDialog, BookmarkMoveDialog, BulkDeleteDialog } from './BookmarkActionDialogs';
+export { applyBookmarkActionResult, batchDeleteBookmarks, batchMoveBookmarks, selectBookmarkRange, updateBookmarkFromEditor } from './batch-actions';
