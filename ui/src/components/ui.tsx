@@ -260,7 +260,7 @@ export function Button({
       disabled={disabled}
       aria-label={ariaLabel}
       aria-pressed={ariaPressed}
-      className={`inline-flex items-center justify-center font-medium transition-all focus-ring ${variants[variant]} ${sizes[size]} disabled:opacity-40 disabled:cursor-not-allowed ${className}`}
+      className={`inline-flex items-center justify-center font-medium whitespace-nowrap transition-all focus-ring ${variants[variant]} ${sizes[size]} disabled:opacity-40 disabled:cursor-not-allowed ${className}`}
     >
       {icon && <Icon name={icon} size={size === 'sm' ? 13 : 15} />}
       {children}
