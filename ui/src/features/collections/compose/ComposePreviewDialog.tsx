@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Icon, Button } from '../../../components/ui';
 import type { ComposePreviewMember } from './index';
+import { useI18n } from '../../../i18n/use-i18n';
 
 /**
  * 主题组合创建预览对话框（确认前不写库）。
@@ -15,7 +16,8 @@ export function ComposePreviewDialog({
   onCancel: () => void;
   onConfirm: (values: { name: string; emoji: string; description: string }) => void;
 }) {
-  const [name, setName] = useState('New collection');
+  const i18n = useI18n();
+  const [name, setName] = useState(() => i18n.t('collection.new'));
   const [emoji, setEmoji] = useState('🧩');
   const [description, setDescription] = useState('');
 
@@ -38,18 +40,18 @@ export function ComposePreviewDialog({
           </span>
           <div className="min-w-0 flex-1">
             <h2 id="compose-preview-title" className="text-[15px] font-semibold text-ink-100">
-              Create collection from selection
+              {i18n.t('collection.compose.title')}
             </h2>
             <p className="text-[12px] text-ink-400 mt-1">
-              Preview lists {members.length} selected bookmarks. Nothing is saved until you confirm.
+              {i18n.t('collection.compose.body', { count: members.length })}
             </p>
 
             <label className="block mt-3 text-[11px] font-medium text-ink-300 mb-1.5" htmlFor="compose-name">
-              Collection name
+              {i18n.t('collection.name')}
             </label>
             <input
               id="compose-name"
-              aria-label="Compose collection name"
+              aria-label={i18n.t('collection.compose.nameLabel')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full rounded-lg bg-ink-800/60 hairline px-3 py-2 text-[13px] text-ink-100 outline-none focus-ring"
@@ -59,20 +61,20 @@ export function ComposePreviewDialog({
             <div className="mt-3 grid grid-cols-[88px_1fr] gap-2">
               <div>
                 <label className="block text-[11px] font-medium text-ink-300 mb-1.5" htmlFor="compose-emoji">
-                  Emoji
+                  {i18n.t('collection.emoji')}
                 </label>
                 <input
                   id="compose-emoji"
-                  aria-label="Compose collection emoji"
+                  aria-label={i18n.t('collection.compose.emojiLabel')}
                   value={emoji}
                   onChange={(e) => setEmoji(e.target.value)}
                   className="w-full rounded-lg bg-ink-800/60 hairline px-3 py-2 text-[13px] text-ink-100 outline-none focus-ring text-center"
                 />
               </div>
               <div>
-                <span className="block text-[11px] font-medium text-ink-300 mb-1.5">Members</span>
+                <span className="block text-[11px] font-medium text-ink-300 mb-1.5">{i18n.t('collection.compose.members')}</span>
                 <ul
-                  aria-label="Compose preview members"
+                  aria-label={i18n.t('collection.compose.membersLabel')}
                   className="max-h-28 overflow-y-auto rounded-lg bg-ink-800/40 hairline px-2 py-1.5 space-y-1"
                 >
                   {members.map((member) => (
@@ -85,11 +87,11 @@ export function ComposePreviewDialog({
             </div>
 
             <label className="block mt-3 text-[11px] font-medium text-ink-300 mb-1.5" htmlFor="compose-description">
-              Description
+              {i18n.t('collection.description')}
             </label>
             <textarea
               id="compose-description"
-              aria-label="Compose collection description"
+              aria-label={i18n.t('collection.compose.descriptionLabel')}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
@@ -99,12 +101,12 @@ export function ComposePreviewDialog({
         </div>
 
         <div className="mt-5 flex justify-end gap-2">
-          <Button variant="ghost" aria-label="Cancel compose collection" onClick={onCancel}>
-            Cancel
+          <Button variant="ghost" aria-label={i18n.t('collection.compose.cancel')} onClick={onCancel}>
+            {i18n.t('common.cancel')}
           </Button>
           <Button
             variant="primary"
-            aria-label="Confirm compose collection"
+            aria-label={i18n.t('collection.compose.confirm')}
             disabled={!name.trim()}
             onClick={() =>
               onConfirm({
@@ -114,7 +116,7 @@ export function ComposePreviewDialog({
               })
             }
           >
-            Create collection
+            {i18n.t('common.create')}
           </Button>
         </div>
       </div>

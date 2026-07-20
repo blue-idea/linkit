@@ -1,4 +1,5 @@
 import { Icon, Button } from '../../components/ui';
+import { useI18n } from '../../i18n/use-i18n';
 
 /**
  * dirty cloud draft 启动恢复对话框。
@@ -19,6 +20,7 @@ export function CloudDraftRecoveryDialog({
   onKeepDraft: () => void;
   onDiscard: () => void;
 }) {
+  const i18n = useI18n();
   if (!open) return null;
 
   return (
@@ -40,25 +42,25 @@ export function CloudDraftRecoveryDialog({
           </span>
           <div className="min-w-0">
             <h2 id="cloud-draft-recovery-title" className="text-[15px] font-semibold text-ink-100">
-              Unsynced cloud draft found
+              {i18n.t('storage.draft.title')}
             </h2>
             <p className="text-[12px] text-ink-400 mt-1 leading-relaxed">
-              A dirty cloud draft is available. Choose how to continue without silent overwrite.
+              {i18n.t('storage.draft.body')}
             </p>
             <p className="text-[12px] text-ink-200 mt-3 tabular-nums" data-testid="cloud-draft-revisions">
-              Draft base revision: {baseRevision ?? '—'} · Cloud revision: {cloudRevision ?? '—'}
+              {i18n.t('storage.draft.revisions', { base: baseRevision ?? '—', cloud: cloudRevision ?? '—' })}
             </p>
           </div>
         </div>
         <div className="mt-5 flex flex-wrap justify-end gap-2">
           <Button variant="ghost" onClick={onCancel}>
-            Cancel
+            {i18n.t('common.cancel')}
           </Button>
           <Button variant="subtle" onClick={onKeepDraft}>
-            Keep Draft
+            {i18n.t('storage.draft.keep')}
           </Button>
           <Button variant="danger" onClick={onDiscard}>
-            Discard Draft
+            {i18n.t('storage.draft.discard')}
           </Button>
         </div>
       </div>

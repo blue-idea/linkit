@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Icon, Button } from '../../../components/ui';
 import type { Category } from '../../../types';
 import { buildCategoryTree } from '../utils';
+import { useI18n } from '../../../i18n/use-i18n';
 
 function getDescendantIds(categories: Category[], parentId: string): Set<string> {
   const descendants = new Set<string>([parentId]);
@@ -42,6 +43,7 @@ export function MoveCategoryDialog({
   onCancel: () => void;
   onConfirm: (newParentId: string | null) => void;
 }) {
+  const i18n = useI18n();
   const current = categories.find((category) => category.id === categoryId);
   const [targetParentId, setTargetParentId] = useState<string>('__root__');
 
@@ -68,22 +70,24 @@ export function MoveCategoryDialog({
           </span>
           <div className="min-w-0 flex-1">
             <h2 id="move-category-title" className="text-[15px] font-semibold text-ink-100">
-              Move category
+              {i18n.t('category.move.title')}
             </h2>
             <p className="text-[12px] text-ink-400 mt-1">
-              Move “{current?.name ?? 'Category'}” under a new parent. Invalid targets are rejected.
+              {i18n.t('category.move.body', {
+                name: current?.name ?? i18n.t('content.selection.categoryFallback'),
+              })}
             </p>
             <label className="block mt-3 text-[11px] font-medium text-ink-300 mb-1.5" htmlFor="move-category-parent">
-              New parent
+              {i18n.t('category.move.parent')}
             </label>
             <select
               id="move-category-parent"
-              aria-label="New parent category"
+              aria-label={i18n.t('category.move.parentLabel')}
               value={targetParentId}
               onChange={(e) => setTargetParentId(e.target.value)}
               className="w-full rounded-lg bg-ink-800/60 hairline px-3 py-2 text-[13px] text-ink-100 outline-none focus-ring"
             >
-              <option value="__root__" className="bg-ink-900 text-ink-100">Root (no parent)</option>
+              <option value="__root__" className="bg-ink-900 text-ink-100">{i18n.t('category.move.root')}</option>
               {treeOptions.map((option) => (
                 <option key={option.id} value={option.id} className="bg-ink-900 text-ink-100">
                   {'\u00A0\u00A0'.repeat(option.level) + (option.level > 0 ? '└─ ' : '') + option.name}
@@ -94,17 +98,17 @@ export function MoveCategoryDialog({
         </div>
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="ghost" onClick={onCancel}>
-            Cancel
+            {i18n.t('common.cancel')}
           </Button>
           <Button
             variant="primary"
-            aria-label="Confirm move category"
+            aria-label={i18n.t('category.move.confirm')}
             onClick={() => {
               const newParentId = targetParentId === '__root__' ? null : targetParentId;
               onConfirm(newParentId);
             }}
           >
-            Move
+            {i18n.t('common.move')}
           </Button>
         </div>
       </div>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button, Icon } from '../../components/ui';
 import type { CollectionSuggestion } from './collections';
 import type { DuplicatePreview } from './duplicates';
+import { useI18n } from '../../i18n/use-i18n';
 
 function Shell({
   label,
@@ -46,6 +47,7 @@ export function AICollectionGoalDialog({
   onSubmit: (goal: string) => void;
   submitting?: boolean;
 }) {
+  const i18n = useI18n();
   const [goal, setGoal] = useState('');
   const trimmed = goal.trim();
   const canSubmit = trimmed.length > 0 && !submitting;
@@ -56,22 +58,22 @@ export function AICollectionGoalDialog({
   };
 
   return (
-    <Shell label="AI create collection" onClose={onCancel} width="max-w-md">
+    <Shell label={i18n.t('ai.collection.title')} onClose={onCancel} width="max-w-md">
       <div className="flex items-start gap-3">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-500/15">
           <Icon name="Sparkles" size={16} className="text-accent-300" />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="text-[15px] font-semibold text-ink-100">AI create collection</h2>
+          <h2 className="text-[15px] font-semibold text-ink-100">{i18n.t('ai.collection.title')}</h2>
           <p className="mt-1 text-[11px] text-ink-400">
-            Describe the collection you want. AI will suggest members from your library.
+            {i18n.t('ai.collection.goalHint')}
           </p>
         </div>
       </div>
       <label className="block text-[11px] font-medium text-ink-300">
-        Collection goal
+        {i18n.t('ai.collection.goal')}
         <textarea
-          aria-label="Collection goal"
+          aria-label={i18n.t('ai.collection.goal')}
           value={goal}
           onChange={(event) => setGoal(event.target.value)}
           onKeyDown={(event) => {
@@ -81,7 +83,7 @@ export function AICollectionGoalDialog({
             }
           }}
           rows={3}
-          placeholder="Describe the collection you want"
+          placeholder={i18n.t('ai.collection.goalPlaceholder')}
           className={`${inputClass} resize-none`}
           autoFocus
           disabled={submitting}
@@ -89,10 +91,10 @@ export function AICollectionGoalDialog({
       </label>
       <div className="flex justify-end gap-2">
         <Button variant="ghost" onClick={onCancel} disabled={submitting}>
-          Cancel
+          {i18n.t('common.cancel')}
         </Button>
         <Button variant="primary" onClick={submit} disabled={!canSubmit}>
-          {submitting ? 'Generating…' : 'Generate preview'}
+          {submitting ? i18n.t('ai.collection.generating') : i18n.t('ai.collection.generate')}
         </Button>
       </div>
     </Shell>
@@ -105,30 +107,31 @@ export function AICollectionPreviewDialog({ preview, bookmarks, onCancel, onConf
   onCancel: () => void;
   onConfirm: (value: CollectionSuggestion & { acceptedBookmarkIds: string[] }) => void;
 }) {
+  const i18n = useI18n();
   const [name, setName] = useState(preview.name);
   const [description, setDescription] = useState(preview.description);
   const [accepted, setAccepted] = useState(preview.bookmarkIds);
   return (
-    <Shell label="AI collection preview" onClose={onCancel}>
+    <Shell label={i18n.t('ai.collection.previewTitle')} onClose={onCancel}>
       <div>
-        <h2 className="text-[16px] font-semibold text-ink-100">AI collection preview</h2>
+        <h2 className="text-[16px] font-semibold text-ink-100">{i18n.t('ai.collection.previewTitle')}</h2>
         <p className="text-[11px] text-ink-400">
-          Review every field before saving. Nothing has been changed yet.
+          {i18n.t('ai.collection.previewHint')}
         </p>
       </div>
       <label className="block text-[11px] font-medium text-ink-300">
-        Collection name
+        {i18n.t('collection.name')}
         <input
-          aria-label="Collection name"
+          aria-label={i18n.t('collection.name')}
           value={name}
           onChange={(event) => setName(event.target.value)}
           className={inputClass}
         />
       </label>
       <label className="block text-[11px] font-medium text-ink-300">
-        Description
+        {i18n.t('collection.description')}
         <textarea
-          aria-label="Collection description"
+          aria-label={i18n.t('collection.description')}
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           className={`${inputClass} resize-none`}
@@ -136,10 +139,12 @@ export function AICollectionPreviewDialog({ preview, bookmarks, onCancel, onConf
         />
       </label>
       <div className="text-[11px] text-ink-300">
-        Suggested tags: {preview.suggestedTags.join(', ') || 'None'}
+        {i18n.t('ai.collection.suggestedTags', {
+          tags: preview.suggestedTags.join(', ') || i18n.t('common.none'),
+        })}
       </div>
       <fieldset className="space-y-2">
-        <legend className="text-[11px] font-medium text-ink-300">Library members</legend>
+        <legend className="text-[11px] font-medium text-ink-300">{i18n.t('ai.collection.members')}</legend>
         {bookmarks
           .filter((bookmark) => preview.bookmarkIds.includes(bookmark.id))
           .map((bookmark) => (
@@ -165,7 +170,7 @@ export function AICollectionPreviewDialog({ preview, bookmarks, onCancel, onConf
       </fieldset>
       <div className="flex justify-end gap-2">
         <Button variant="ghost" onClick={onCancel}>
-          Cancel
+          {i18n.t('common.cancel')}
         </Button>
         <Button
           variant="primary"
@@ -173,7 +178,7 @@ export function AICollectionPreviewDialog({ preview, bookmarks, onCancel, onConf
             onConfirm({ ...preview, name, description, acceptedBookmarkIds: accepted })
           }
         >
-          Create collection
+          {i18n.t('content.createCollection')}
         </Button>
       </div>
     </Shell>
@@ -184,19 +189,20 @@ export function DuplicatePreviewDialog({ preview, onDecision }: {
   preview: DuplicatePreview;
   onDecision: (action: 'merge' | 'delete' | 'cancel') => void;
 }) {
+  const i18n = useI18n();
   return (
-    <Shell label="Duplicate bookmark preview" onClose={() => onDecision('cancel')}>
+    <Shell label={i18n.t('ai.duplicate.title')} onClose={() => onDecision('cancel')}>
       <div>
-        <h2 className="text-[16px] font-semibold text-ink-100">Duplicate bookmark preview</h2>
+        <h2 className="text-[16px] font-semibold text-ink-100">{i18n.t('ai.duplicate.title')}</h2>
         <p className="text-[12px] text-amber-300">{preview.reason}</p>
       </div>
       <div className="overflow-hidden rounded-lg hairline">
         <table className="w-full text-left text-[11px]">
           <thead className="bg-ink-800/70 text-ink-400">
             <tr>
-              <th className="p-2">Field</th>
-              <th className="p-2">Keep</th>
-              <th className="p-2">Duplicate</th>
+              <th className="p-2">{i18n.t('ai.duplicate.field')}</th>
+              <th className="p-2">{i18n.t('ai.duplicate.keep')}</th>
+              <th className="p-2">{i18n.t('ai.duplicate.duplicate')}</th>
             </tr>
           </thead>
           <tbody>
@@ -211,17 +217,17 @@ export function DuplicatePreviewDialog({ preview, onDecision }: {
         </table>
       </div>
       <p className="text-[11px] text-ink-400">
-        No library mutation occurs until you choose an action.
+        {i18n.t('ai.duplicate.hint')}
       </p>
       <div className="flex justify-end gap-2">
         <Button variant="ghost" onClick={() => onDecision('cancel')}>
-          Cancel
+          {i18n.t('common.cancel')}
         </Button>
         <Button variant="danger" onClick={() => onDecision('delete')}>
-          Delete duplicate
+          {i18n.t('ai.duplicate.delete')}
         </Button>
         <Button variant="primary" onClick={() => onDecision('merge')}>
-          Merge
+          {i18n.t('ai.duplicate.merge')}
         </Button>
       </div>
     </Shell>

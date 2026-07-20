@@ -25,7 +25,8 @@ test.describe('主题视图手动添加书签', () => {
   // REQ-012-AC-006 / AC-007 / AC-008 / AC-009
   test('主题视图添加书签 shall 支持搜索多选且确认前零副作用', async ({ page }) => {
     await page.getByText('周末长读', { exact: true }).first().click();
-    await expect(page.getByText(/3 个收藏/)).toBeVisible();
+    const contentArea = page.getByRole('main', { name: 'Content Area' });
+    await expect(contentArea).toContainText(/3 bookmarks/);
     await expect(page.getByRole('button', { name: 'Add bookmarks' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Add bookmarks' }).click();
@@ -43,14 +44,14 @@ test.describe('主题视图手动添加书签', () => {
 
     await page.getByRole('button', { name: 'Cancel add bookmarks' }).click();
     await expect(dialog).toBeHidden();
-    await expect(page.getByText(/3 个收藏/)).toBeVisible();
+    await expect(contentArea).toContainText(/3 bookmarks/);
 
     await page.getByRole('button', { name: 'Add bookmarks' }).click();
     await page.getByLabel('Search bookmarks').fill('Coolors');
     await page.getByRole('checkbox', { name: /Select Coolors/i }).check();
     await page.getByRole('button', { name: 'Confirm add bookmarks' }).click();
     await expect(page.getByRole('dialog', { name: 'Add bookmarks' })).toBeHidden();
-    await expect(page.getByText(/4 个收藏/)).toBeVisible();
+    await expect(contentArea).toContainText(/4 bookmarks/);
     await expect(page.getByText(/Coolors/).first()).toBeVisible();
   });
 
@@ -78,11 +79,12 @@ test.describe('主题视图手动添加书签', () => {
   // REQ-012-AC-011
   test('主题视图移出 shall 单条即时生效且多选确认前零副作用', async ({ page }) => {
     await page.getByText('周末长读', { exact: true }).first().click();
-    await expect(page.getByText(/3 个收藏/)).toBeVisible();
+    const contentArea = page.getByRole('main', { name: 'Content Area' });
+    await expect(contentArea).toContainText(/3 bookmarks/);
 
     // 使用书签项操作区的移出按钮
     await page.getByRole('button', { name: 'Remove from collection' }).first().click();
-    await expect(page.getByText(/2 个收藏/)).toBeVisible();
+    await expect(contentArea).toContainText(/2 bookmarks/);
 
     await page.getByRole('button', { name: 'Select bookmarks' }).click();
     await page.getByRole('checkbox', { name: /Select bookmark/i }).first().check();
@@ -99,14 +101,14 @@ test.describe('主题视图手动添加书签', () => {
     });
 
     await page.getByRole('button', { name: 'Cancel remove from collection' }).click();
-    await expect(page.getByText(/2 个收藏/)).toBeVisible();
+    await expect(contentArea).toContainText(/2 bookmarks/);
 
     await page.getByRole('toolbar', { name: 'Bulk bookmark actions' }).getByRole('button', { name: 'Remove from collection' }).click();
     await page.getByRole('button', { name: 'Confirm remove from collection' }).click();
-    await expect(page.getByText(/0 个收藏/)).toBeVisible();
+    await expect(contentArea).toContainText(/0 bookmarks/);
 
-    // 书签仍在资料库（全部收藏）
-    await page.getByText('全部收藏', { exact: true }).first().click();
-    await expect(page.getByText(/20 个收藏|19 个收藏|18 个收藏/)).toBeVisible();
+    // 书签仍在资料库（All bookmarks）。
+    await page.getByText('All bookmarks', { exact: true }).first().click();
+    await expect(contentArea).toContainText(/20 bookmarks|19 bookmarks|18 bookmarks/);
   });
 });

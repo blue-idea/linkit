@@ -1,4 +1,5 @@
 import { Icon, Button } from '../../../components/ui';
+import { useI18n } from '../../../i18n/use-i18n';
 
 /**
  * AI 数据发送授权对话框：确认前不得发送收藏内容。
@@ -15,6 +16,7 @@ export function AIConsentDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const i18n = useI18n();
   if (!open) return null;
 
   return (
@@ -36,23 +38,22 @@ export function AIConsentDialog({
           </span>
           <div className="min-w-0">
             <h2 id="ai-consent-title" className="text-[15px] font-semibold text-ink-100">
-              Allow sending bookmark data?
+              {i18n.t('ai.consent.title')}
             </h2>
             <p className="text-[12px] text-ink-400 mt-1 leading-relaxed">
-              Selected bookmark content will be sent to your configured AI provider. The API key stays on
-              this device.
+              {i18n.t('ai.consent.body')}
             </p>
             <p className="text-[12px] text-ink-200 mt-3 break-all" data-testid="ai-consent-api-base">
-              Provider: {apiBase || '—'}
+              {i18n.t('ai.consent.provider', { provider: apiBase || '—' })}
             </p>
           </div>
         </div>
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="ghost" onClick={onCancel}>
-            Cancel
+            {i18n.t('common.cancel')}
           </Button>
           <Button variant="primary" onClick={onConfirm}>
-            Allow and continue
+            {i18n.t('ai.consent.confirm')}
           </Button>
         </div>
       </div>

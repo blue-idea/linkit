@@ -69,7 +69,7 @@ test.describe('创建主题组合', () => {
 
     await expect(page.getByText('TASK017 Composed Theme', { exact: true }).first()).toBeVisible();
     await page.getByText('TASK017 Composed Theme', { exact: true }).first().click();
-    await expect(page.getByText(/2 个收藏/)).toBeVisible();
+    await expect(page.getByRole('main', { name: 'Content Area' })).toContainText(/2 bookmarks/);
 
     await mkdir(evidenceDirectory, { recursive: true });
     await page.screenshot({

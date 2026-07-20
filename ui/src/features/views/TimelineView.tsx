@@ -8,6 +8,7 @@ import {
 import { Icon } from '../../components/ui';
 import { CompactRow } from './CompactRow';
 import type { BookmarkItemActionHandlers } from './BookmarkItemActions';
+import { useI18n } from '../../i18n/use-i18n';
 
 type TimelineViewProps = BookmarkItemActionHandlers & {
   items: BookmarkPresentation[];
@@ -39,6 +40,7 @@ export function TimelineView({
   onMove,
   onDelete,
 }: TimelineViewProps) {
+  const i18n = useI18n();
   const [timeSource, setTimeSource] = useState<TimelineTimeSource>('createdAt');
   const parentRef = useRef<HTMLDivElement>(null);
   const byId = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
@@ -78,22 +80,22 @@ export function TimelineView({
     <div className="flex-1 flex flex-col min-h-0">
       <div className="px-5 pb-2 flex items-center justify-end">
         <label className="flex items-center gap-2 text-[11px] text-ink-400">
-          <span>Time source</span>
+          <span>{i18n.t('timeline.source')}</span>
           <select
-            aria-label="Timeline time source"
+            aria-label={i18n.t('timeline.sourceLabel')}
             value={timeSource}
             onChange={(e) => setTimeSource(e.target.value as TimelineTimeSource)}
             className="rounded-lg bg-ink-800/70 hairline text-[12px] text-ink-200 px-2 py-1.5 focus-ring"
           >
-            <option value="createdAt">Created at</option>
-            <option value="lastVisitedAt">Last visited</option>
+            <option value="createdAt">{i18n.t('timeline.created')}</option>
+            <option value="lastVisitedAt">{i18n.t('timeline.visited')}</option>
           </select>
         </label>
       </div>
       <div
         ref={parentRef}
         data-view="timeline"
-        aria-label="Timeline view"
+        aria-label={i18n.t('content.view.timeline')}
         className="flex-1 overflow-y-auto scroll-thin px-4 pb-6"
       >
         <div className="relative" style={{ height: virtualizer.getTotalSize() }}>

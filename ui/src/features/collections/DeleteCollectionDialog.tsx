@@ -1,4 +1,5 @@
 import { Icon, Button } from '../../components/ui';
+import { useI18n } from '../../i18n/use-i18n';
 
 /**
  * 删除主题确认：保留成员书签。
@@ -15,6 +16,7 @@ export function DeleteCollectionDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const i18n = useI18n();
   return (
     <div
       className="fixed inset-0 z-[80] flex items-center justify-center bg-black/55 p-4"
@@ -34,20 +36,20 @@ export function DeleteCollectionDialog({
           </span>
           <div className="min-w-0">
             <h2 id="delete-collection-title" className="text-[15px] font-semibold text-ink-100">
-              Delete this collection?
+              {i18n.t('collection.delete.title')}
             </h2>
             <p className="text-[12px] text-ink-400 mt-1 leading-relaxed">
-              “{name}” has {memberCount} members. The collection will be removed, but all bookmarks will be kept.
+              {i18n.t('collection.delete.body', { name, count: memberCount })}
             </p>
           </div>
         </div>
 
         <div className="mt-5 flex justify-end gap-2">
-          <Button variant="ghost" aria-label="Cancel collection delete" onClick={onCancel}>
-            Cancel
+          <Button variant="ghost" aria-label={i18n.t('collection.delete.cancel')} onClick={onCancel}>
+            {i18n.t('common.cancel')}
           </Button>
-          <Button variant="danger" aria-label="Confirm delete collection" onClick={onConfirm}>
-            Delete collection
+          <Button variant="danger" aria-label={i18n.t('collection.delete.confirm')} onClick={onConfirm}>
+            {i18n.t('collection.delete.button')}
           </Button>
         </div>
       </div>

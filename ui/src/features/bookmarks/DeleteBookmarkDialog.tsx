@@ -1,7 +1,8 @@
 import { Icon, Button } from '../../components/ui';
+import { useI18n } from '../../i18n/use-i18n';
 
 /**
- * 删除书签二次确认（英文文案）。
+ * 删除书签二次确认。
  * REQ-007-AC-003
  */
 export function DeleteBookmarkDialog({
@@ -13,6 +14,7 @@ export function DeleteBookmarkDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const i18n = useI18n();
   return (
     <div
       className="fixed inset-0 z-[80] flex items-center justify-center bg-black/55 p-4"
@@ -32,20 +34,19 @@ export function DeleteBookmarkDialog({
           </span>
           <div className="min-w-0">
             <h2 id="delete-bookmark-title" className="text-[15px] font-semibold text-ink-100">
-              Delete this bookmark?
+              {i18n.t('bookmark.deleteOne.title')}
             </h2>
             <p className="text-[12px] text-ink-400 mt-1 leading-relaxed">
-              “{title}” will be removed from your library and all collections. This cannot be undone
-              from this dialog.
+              {i18n.t('bookmark.deleteOne.body', { title })}
             </p>
           </div>
         </div>
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="ghost" onClick={onCancel}>
-            Cancel
+            {i18n.t('common.cancel')}
           </Button>
           <Button variant="danger" onClick={onConfirm}>
-            Delete
+            {i18n.t('common.delete')}
           </Button>
         </div>
       </div>

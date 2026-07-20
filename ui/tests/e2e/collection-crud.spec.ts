@@ -77,7 +77,7 @@ test.describe('主题 CRUD', () => {
   test('打开主题 shall 仅显示成员且计数准确', async ({ page }) => {
     await page.getByText('设计灵感', { exact: true }).first().click();
     await expect(page.getByText('设计灵感', { exact: true }).first()).toBeVisible();
-    await expect(page.getByText(/5 个收藏/)).toBeVisible();
+    await expect(page.getByRole('main', { name: 'Content Area' })).toContainText(/5 bookmarks/);
     await expect(page.getByText('Coolors', { exact: false }).first()).toBeVisible();
 
     await mkdir(evidenceDirectory, { recursive: true });
@@ -111,8 +111,8 @@ test.describe('主题成员', () => {
     await page.getByRole('button', { name: 'Confirm delete collection' }).click();
     await expect(page.getByText('TASK016 Disposable', { exact: true })).toHaveCount(0);
 
-    // 删除后应回到全部收藏；书签仍保留
-    await expect(page.getByRole('heading', { name: '全部收藏' })).toBeVisible();
+    // 删除后应回到 All bookmarks；书签仍保留。
+    await expect(page.getByRole('main', { name: 'Content Area' })).toContainText('All bookmarks');
     await expect(page.getByText('Coolors', { exact: false }).first()).toBeVisible();
 
     await mkdir(evidenceDirectory, { recursive: true });

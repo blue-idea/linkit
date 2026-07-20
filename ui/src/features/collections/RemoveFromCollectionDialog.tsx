@@ -1,4 +1,5 @@
 import { Icon, Button } from '../../components/ui';
+import { useI18n } from '../../i18n/use-i18n';
 
 /**
  * 多选移出主题确认对话框（确认前零副作用）。
@@ -15,6 +16,7 @@ export function RemoveFromCollectionDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const i18n = useI18n();
   return (
     <div
       className="fixed inset-0 z-[80] flex items-center justify-center bg-black/55 p-4"
@@ -24,7 +26,7 @@ export function RemoveFromCollectionDialog({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Remove from collection"
+        aria-label={i18n.t('collection.remove.title')}
         className="w-full max-w-md rounded-mac-xl glass-strong shadow-win border border-white/10 p-5"
         onClick={(event) => event.stopPropagation()}
       >
@@ -34,20 +36,20 @@ export function RemoveFromCollectionDialog({
           </span>
           <div className="min-w-0">
             <h2 className="text-[15px] font-semibold text-ink-100">
-              Remove {count} bookmark{count === 1 ? '' : 's'}?
+              {i18n.t('collection.remove.heading', { count })}?
             </h2>
             <p className="text-[12px] text-ink-400 mt-1 leading-relaxed">
-              Selected bookmarks will leave “{collectionName}”. Bookmark records stay in your library.
+              {i18n.t('collection.remove.body', { name: collectionName })}
             </p>
           </div>
         </div>
 
         <div className="mt-5 flex justify-end gap-2">
-          <Button variant="ghost" aria-label="Cancel remove from collection" onClick={onCancel}>
-            Cancel
+          <Button variant="ghost" aria-label={i18n.t('collection.remove.cancel')} onClick={onCancel}>
+            {i18n.t('common.cancel')}
           </Button>
-          <Button variant="danger" aria-label="Confirm remove from collection" onClick={onConfirm}>
-            Remove from collection
+          <Button variant="danger" aria-label={i18n.t('collection.remove.confirm')} onClick={onConfirm}>
+            {i18n.t('collection.remove.title')}
           </Button>
         </div>
       </div>

@@ -39,7 +39,7 @@ export function WindowChrome({
   return (
     <header
       className="h-11 shrink-0 glass-strong border-b border-white/5 flex items-center px-4 gap-3 no-select relative"
-      aria-label="Top bar"
+      aria-label={i18n.t('chrome.topBar')}
     >
       <div className="flex items-center gap-2" aria-hidden>
         <span className="w-3 h-3 rounded-full bg-coral-500" />
@@ -50,9 +50,9 @@ export function WindowChrome({
       <button
         type="button"
         onClick={onToggleSidebar}
-        aria-label="Toggle sidebar"
+        aria-label={i18n.t('chrome.toggleSidebar')}
         aria-pressed={sidebarOpen}
-        title="Toggle sidebar"
+        title={i18n.t('chrome.toggleSidebar')}
         className={`w-7 h-7 rounded-md flex items-center justify-center transition focus-ring ${
           sidebarOpen ? 'text-ink-200 hover:bg-ink-700/60' : 'text-ink-500 hover:bg-ink-700/60'
         }`}
@@ -67,7 +67,7 @@ export function WindowChrome({
         Lattice
         <span className="text-ink-600 font-normal hidden sm:inline">—</span>
         <span className="text-[12px] text-ink-400 font-normal hidden sm:inline">
-          {locale === 'zh' ? '网址收藏管理' : 'Bookmark library'}
+          {i18n.t('app.tagline')}
         </span>
       </div>
 
@@ -118,9 +118,9 @@ export function WindowChrome({
         <button
           type="button"
           onClick={onToggleDetail}
-          aria-label="Toggle detail panel"
+          aria-label={i18n.t('chrome.toggleDetail')}
           aria-pressed={detailOpen}
-          title="Toggle detail panel"
+          title={i18n.t('chrome.toggleDetail')}
           className={`w-7 h-7 rounded-md flex items-center justify-center transition focus-ring ${
             detailOpen ? 'text-ink-200 hover:bg-ink-700/60' : 'text-ink-500 hover:bg-ink-700/60'
           }`}

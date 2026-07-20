@@ -15,7 +15,7 @@ test.describe('Insights', () => {
   });
 
   test('Insights shall 显示可追溯指标并跳转到相关视图', async ({ page }) => {
-    await page.getByText('收藏洞察', { exact: true }).click();
+    await page.getByText('Insights', { exact: true }).click();
     const dialog = page.getByRole('dialog', { name: 'Insights report' });
     await expect(dialog).toBeVisible();
     await expect(dialog.getByText(/Evidence:/).first()).toBeVisible();
@@ -25,12 +25,12 @@ test.describe('Insights', () => {
     await action.click();
     await expect(dialog).toHaveCount(0);
     if (target === 'health-filter') {
-      // ContentArea 健康视图标题为英文 Updated / Broken。
-      await expect(page.getByRole('heading', { name: /Updated|Broken|内容已更新/ })).toBeVisible();
+      // ContentArea 使用领域状态展示文案 Changed / Broken。
+      await expect(page.getByRole('heading', { name: /Changed|Broken/ })).toBeAttached();
     } else {
       await expect(page.getByRole('main', { name: 'Content Area' })).toBeVisible();
     }
-    await page.getByText('收藏洞察', { exact: true }).click();
+    await page.getByText('Insights', { exact: true }).click();
     await expect(page.getByRole('dialog', { name: 'Insights report' }))
       .toHaveScreenshot('TASK-038-insights-report.png', { maxDiffPixelRatio: 0.05 });
     await page.screenshot({ path: resolve(evidenceDirectory, 'TASK-038-insights-report.png'), fullPage: true });

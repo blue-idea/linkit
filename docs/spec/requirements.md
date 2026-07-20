@@ -1,8 +1,8 @@
 ﻿# Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：2.2.0
-> 日期：2026-07-19
+> 版本：2.4.0
+> 日期：2026-07-20
 > 状态：已定稿
 
 ---
@@ -1393,7 +1393,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 
 ### 需求 REQ-023 · 设置、外观与国际化
 
-**来源：** F-SET-01、F-SET-02、F-SET-04、F-SET-05、NF-06  
+**来源：** F-SET-01、F-SET-02、F-SET-04、F-SET-05、NF-06、用户 2026-07-20 界面语言对齐指令
 **用户故事：** 作为用户，我希望管理账户、存储、外观和语言，以便按个人环境使用 Linkit。
 
 #### 验收标准
@@ -1469,6 +1469,20 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
       - "Theme-aware surfaces, text, borders, shadows and focus states use the selected palette"
       - "Daylight and Paper use a light color scheme without unreadable text or controls"
     side_effects: []
+
+- id: REQ-023-AC-008
+  ears: >
+    While 设置中已选择 English 或中文,
+    when Linkit 渲染任一非自定义界面内容,
+    the Linkit shall 使导航、视图、对话框、表单、空状态、加载状态、状态标签、提示消息、Toast 与无障碍名称全部使用所选语言，
+    并保持用户输入或导入的书签、分类、主题、标签、备注及其他自定义内容原样显示.
+  test_type: Unit + E2E
+  expected:
+    ui_state: "All system-defined visible and accessible UI text matches the persisted locale across the application"
+    side_effects:
+      - "User-provided or imported content is not translated or mutated"
+      - "Stable domain values, storage documents and business actions remain unchanged"
+      - "The document language attribute matches the selected locale"
 ```
 
 ---
@@ -1953,3 +1967,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.1.0 | 2026-07-19 | 已定稿 | 新增 REQ-006-AC-005：创建书签时 URL 规范化后必须唯一，重复时显示 warning 并阻止下一步 |
 | 2.2.0 | 2026-07-19 | 已定稿 | 新增 REQ-012-AC-006~011：主题视图手动添加/移出书签（排除已成员、搜索多选、确认前零副作用、空态 CTA） |
 | 2.3.0 | 2026-07-20 | 已定稿 | 新增原则 15 与 REQ-025-AC-006：开发/正式本机身份槽隔离，发布产物不得携带开发数据 |
+| 2.4.0 | 2026-07-20 | 已定稿 | 新增 REQ-023-AC-008：所有非自定义 UI 文案、状态与无障碍名称跟随设置语言；用户自定义内容保持原样 |

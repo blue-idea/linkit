@@ -115,6 +115,36 @@ import { ExploreDialog, recommendLibraryBookmarks, suggestThemeGaps } from './fe
 import { KnowledgeGraphDialog, buildKnowledgeGraph } from './features/knowledge-graph';
 import { InsightsReportDialog, buildLibraryInsights, type InsightAction } from './features/insights';
 import { HealthScanDialog, type HealthResult } from './features/health';
+import { I18nProvider, useI18n } from './i18n/use-i18n';
+import { createI18n, type I18nApi } from './i18n';
+import type { MessageKey } from './i18n/catalogs';
+
+const DOMAIN_ERROR_KEYS: Record<string, MessageKey> = {
+  BOOKMARK_NOT_FOUND: 'error.BOOKMARK_NOT_FOUND',
+  BOOKMARK_URL_INVALID: 'error.BOOKMARK_URL_INVALID',
+  BOOKMARK_URL_DUPLICATE: 'error.BOOKMARK_URL_DUPLICATE',
+  COLLECTION_NOT_FOUND: 'error.COLLECTION_NOT_FOUND',
+  COLLECTION_NAME_INVALID: 'error.COLLECTION_NAME_INVALID',
+  COLLECTION_EMOJI_INVALID: 'error.COLLECTION_EMOJI_INVALID',
+  COMPOSE_SELECTION_TOO_SMALL: 'error.COMPOSE_SELECTION_TOO_SMALL',
+  TAG_NOT_FOUND: 'error.TAG_NOT_FOUND',
+  TAG_LABEL_INVALID: 'error.TAG_LABEL_INVALID',
+  TAG_LABEL_DUPLICATE: 'error.TAG_LABEL_DUPLICATE',
+  READ_STATUS_INVALID: 'error.READ_STATUS_INVALID',
+  CATEGORY_NOT_FOUND: 'error.CATEGORY_NOT_FOUND',
+  CATEGORY_NAME_INVALID: 'error.CATEGORY_NAME_INVALID',
+  CATEGORY_PARENT_INVALID: 'error.CATEGORY_PARENT_INVALID',
+  CATEGORY_RECURSIVE_CONFIRM_REQUIRED: 'error.CATEGORY_RECURSIVE_CONFIRM_REQUIRED',
+  CATEGORY_ICON_INVALID: 'error.CATEGORY_ICON_INVALID',
+  CATEGORY_COLOR_INVALID: 'error.CATEGORY_COLOR_INVALID',
+};
+
+/** 仅在展示层按稳定错误码翻译，未知英文错误在中文界面回退为通用提示。 */
+function localizeCommandError(i18n: I18nApi, error: { code?: string; message?: string }): string {
+  const key = error.code ? DOMAIN_ERROR_KEYS[error.code] : undefined;
+  if (key) return i18n.t(key);
+  return i18n.getLocale() === 'en' && error.message ? error.message : i18n.t('error.generic');
+}
 
 export default function App() {
   const auth = useAuth();
@@ -128,6 +158,8 @@ export default function App() {
   const settings = startup.settings ?? defaultSettings;
   const setSettings = startup.setSettings;
   const authed = startup.view === 'main';
+  const locale = settings.locale ?? 'en';
+  const i18n = useI18n(locale);
 
   // REQ-001-AC-004：恢复已有 Supabase session 后直接进入主界面。
   const sessionMode = startup.sessionMode;
@@ -373,7 +405,7 @@ export default function App() {
       bookmarkId,
     });
     if (!result.ok) {
-      flashToast(result.message);
+      flashToast(localizeCommandError(i18n, { message: result.message }));
       return;
     }
     const visitedById = new Map(result.library.bookmarks.map((bookmark) => [bookmark.id, bookmark]));
@@ -385,7 +417,7 @@ export default function App() {
           : bookmark;
       })
     );
-  }, [bookmarks, cats, cols, flashToast, tagList]);
+  }, [bookmarks, cats, cols, flashToast, i18n, tagList]);
 
   const toggleCollection = useCallback((bookmarkId: string, collectionId: string) => {
     // REQ-012-AC-003 / REQ-026-AC-003：详情操作同步两侧成员引用。
@@ -402,13 +434,13 @@ export default function App() {
       member,
     });
     if (!result.ok) {
-      flashToast(result.error.message);
+      flashToast(localizeCommandError(i18n, result.error));
       return;
     }
     const applied = applyCollectionLibraryResult(result.value, bookmarks);
     setBookmarks(applied.bookmarks);
     setCols(applied.collections);
-  }, [bookmarks, cats, cols, flashToast, tagList]);
+  }, [bookmarks, cats, cols, flashToast, i18n, tagList]);
 
   const moveToCategory = useCallback((bookmarkId: string, categoryId: string) => {
     // REQ-011-AC-003：书签拖入分类后更新 categoryId 并显示英文提示。
@@ -419,11 +451,12 @@ export default function App() {
       );
       const applied = applyCategoryLibraryResult(result.library, bookmarks, cats);
       setBookmarks(applied.bookmarks);
-      flashToast(result.message);
+      const categoryName = cats.find((category) => category.id === categoryId)?.name ?? i18n.t('bookmark.uncategorized');
+      flashToast(i18n.t('toast.movedToCategory', { name: categoryName }));
     } catch {
-      flashToast('Failed to move bookmark');
+      flashToast(i18n.t('toast.failedMoveBookmark'));
     }
-  }, [bookmarks, cats, cols, flashToast, tagList]);
+  }, [bookmarks, cats, cols, flashToast, i18n, tagList]);
 
   const handleMoveCategory = useCallback((categoryId: string, newParentId: string | null) => {
     // REQ-011-AC-001 / REQ-011-AC-002：合法移动更新 parentId；非法抛错并保持原树。
@@ -434,15 +467,15 @@ export default function App() {
       );
       const applied = applyCategoryLibraryResult(next, bookmarks, cats);
       setCats(applied.categories);
-      flashToast('Category moved');
+      flashToast(i18n.t('toast.categoryMoved'));
     } catch (error) {
       if (error instanceof InvalidCategoryMoveError) {
-        flashToast(error.message);
+        flashToast(i18n.t('toast.failedMoveCategory'));
         return;
       }
-      flashToast('Failed to move category');
+      flashToast(i18n.t('toast.failedMoveCategory'));
     }
-  }, [bookmarks, cats, cols, flashToast, tagList]);
+  }, [bookmarks, cats, cols, flashToast, i18n, tagList]);
 
   // fix_task 1.2：从候选列表设置分类图标与颜色。
   const handleSetCategoryIcon = useCallback(
@@ -457,14 +490,14 @@ export default function App() {
         color: value.color,
       });
       if (!result.ok) {
-        flashToast(result.error.message);
+        flashToast(localizeCommandError(i18n, result.error));
         return;
       }
       const applied = applyCategoryLibraryResult(result.value, bookmarks, cats);
       setCats(applied.categories);
-      flashToast('Category icon updated');
+      flashToast(i18n.t('toast.categoryIconUpdated'));
     },
-    [bookmarks, cats, cols, flashToast, tagList]
+    [bookmarks, cats, cols, flashToast, i18n, tagList]
   );
 
   const addToCollection = useCallback((bookmarkId: string, collectionId: string) => {
@@ -479,15 +512,15 @@ export default function App() {
       member: true,
     });
     if (!result.ok) {
-      flashToast(result.error.message);
+      flashToast(localizeCommandError(i18n, result.error));
       return;
     }
     const applied = applyCollectionLibraryResult(result.value, bookmarks);
     setBookmarks(applied.bookmarks);
     setCols(applied.collections);
     const col = applied.collections.find((c) => c.id === collectionId);
-    flashToast(`已加入主题「${col?.name ?? ''}」`);
-  }, [bookmarks, cats, cols, flashToast, tagList]);
+    flashToast(i18n.t('toast.addedToCollection', { name: col?.name ?? '' }));
+  }, [bookmarks, cats, cols, flashToast, i18n, tagList]);
 
   // REQ-012-AC-008：确认添加后批量写入双向成员关系。
   const confirmAddBookmarksToCollection = useCallback((bookmarkIds: string[]) => {
@@ -502,15 +535,15 @@ export default function App() {
       member: true,
     });
     if (!result.ok) {
-      flashToast(result.error.message);
+      flashToast(localizeCommandError(i18n, result.error));
       return;
     }
     const applied = applyCollectionLibraryResult(result.value, bookmarks);
     setBookmarks(applied.bookmarks);
     setCols(applied.collections);
     setAddBookmarksCollectionId(null);
-    flashToast(`Added ${bookmarkIds.length} bookmarks to collection`);
-  }, [addBookmarksCollectionId, bookmarks, cats, cols, flashToast, tagList]);
+    flashToast(i18n.t('toast.addedBookmarks', { count: bookmarkIds.length }));
+  }, [addBookmarksCollectionId, bookmarks, cats, cols, flashToast, i18n, tagList]);
 
   // REQ-012-AC-011：单条移出立即生效，不删书签。
   const removeFromCollection = useCallback((bookmarkId: string) => {
@@ -525,14 +558,14 @@ export default function App() {
       member: false,
     });
     if (!result.ok) {
-      flashToast(result.error.message);
+      flashToast(localizeCommandError(i18n, result.error));
       return;
     }
     const applied = applyCollectionLibraryResult(result.value, bookmarks);
     setBookmarks(applied.bookmarks);
     setCols(applied.collections);
-    flashToast('Removed from collection');
-  }, [bookmarks, cats, cols, flashToast, state.selection, tagList]);
+    flashToast(i18n.t('toast.removedFromCollection'));
+  }, [bookmarks, cats, cols, flashToast, i18n, state.selection, tagList]);
 
   // REQ-012-AC-011：多选移出确认后批量解除成员关系。
   const confirmBulkRemoveFromCollection = useCallback(() => {
@@ -547,7 +580,7 @@ export default function App() {
       member: false,
     });
     if (!result.ok) {
-      flashToast(result.error.message);
+      flashToast(localizeCommandError(i18n, result.error));
       return;
     }
     const applied = applyCollectionLibraryResult(result.value, bookmarks);
@@ -555,8 +588,8 @@ export default function App() {
     setCols(applied.collections);
     setBulkRemoveFromCollectionIds(null);
     setComposeSelectedIds([]);
-    flashToast(`Removed ${bulkRemoveFromCollectionIds.length} bookmarks from collection`);
-  }, [bookmarks, bulkRemoveFromCollectionIds, cats, cols, flashToast, state.selection, tagList]);
+    flashToast(i18n.t('toast.removedBookmarks', { count: bulkRemoveFromCollectionIds.length }));
+  }, [bookmarks, bulkRemoveFromCollectionIds, cats, cols, flashToast, i18n, state.selection, tagList]);
 
   const acceptAICollection = useCallback((ids: string[]) => {
     if (state.selection.kind !== 'collection') return;
@@ -580,8 +613,8 @@ export default function App() {
     }
     setBookmarks(nextBookmarks);
     setCols(nextCols);
-    flashToast(`已将 ${ids.length} 项加入主题`);
-  }, [bookmarks, cats, cols, flashToast, state.selection, tagList]);
+    flashToast(i18n.t('toast.addedItems', { count: ids.length }));
+  }, [bookmarks, cats, cols, flashToast, i18n, state.selection, tagList]);
 
   const openAICollection = useCallback(() => {
     setAICollectionGoalOpen(true);
@@ -609,30 +642,31 @@ export default function App() {
       setAICollectionGoalOpen(false);
       setAICollectionPreview(preview);
     } catch (error) {
-      flashToast((error as { message?: string }).message ?? 'AI collection generation failed');
+      const message = (error as { message?: string }).message;
+      flashToast(i18n.getLocale() === 'en' && message ? message : i18n.t('toast.aiCollectionFailed'));
     } finally {
       setAICollectionGenerating(false);
     }
-  }, [bookmarks, flashToast, settings.ai?.apiBase, settings.ai?.model, settings.locale, tagList]);
+  }, [bookmarks, flashToast, i18n, settings.ai?.apiBase, settings.ai?.model, settings.locale, tagList]);
 
   const openDuplicates = useCallback(() => {
     const pair = bookmarks.flatMap((bookmark, index) => bookmarks.slice(index + 1).map((candidate) => [bookmark, candidate] as const))
       .find(([left, right]) => left.url.replace(/\/$/, '') === right.url.replace(/\/$/, '') || left.domain === right.domain);
-    if (!pair) { flashToast('No duplicate candidates found'); return; }
+    if (!pair) { flashToast(i18n.t('toast.noDuplicates')); return; }
     const preview = buildDuplicatePreview(toCategoryLibrary({ bookmarks, categories: cats, collections: cols, tags: tagList }), pair[0].id, pair[1].id);
     if (preview) setDuplicatePreview(preview);
-  }, [bookmarks, cats, cols, flashToast, tagList]);
+  }, [bookmarks, cats, cols, flashToast, i18n, tagList]);
 
   const createBookmark = useCallback((b: Omit<Bookmark, 'id' | 'createdAt' | 'lastVisitedAt' | 'visitCount' | 'spark'>) => {
     // REQ-006-AC-004：规范化 URL 并生成唯一 ID；确认保存后才进入此路径。
     const normalized = normalizeBookmarkUrl(b.url);
     if (!normalized.ok) {
-      flashToast('Invalid bookmark URL');
+      flashToast(i18n.t('toast.invalidBookmarkUrl'));
       return;
     }
     // REQ-006-AC-005：保存入口保留兜底去重，防止绕过 New Bookmark 输入校验。
     if (isBookmarkUrlDuplicate(bookmarks, normalized.url)) {
-      flashToast('Bookmark URL already exists');
+      flashToast(i18n.t('toast.bookmarkUrlExists'));
       return;
     }
     const id = 'b-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6);
@@ -657,8 +691,8 @@ export default function App() {
       );
     }
     setState((s) => ({ ...s, selectedBookmarkId: id }));
-    flashToast('Bookmark saved');
-  }, [bookmarks, flashToast]);
+    flashToast(i18n.t('toast.bookmarkSaved'));
+  }, [bookmarks, flashToast, i18n]);
 
   const requestDeleteBookmark = useCallback((id: string) => {
     // REQ-007-AC-003：删除前弹出确认。
@@ -684,8 +718,8 @@ export default function App() {
       selectedBookmarkId: s.selectedBookmarkId === id ? null : s.selectedBookmarkId,
     }));
     setDeleteTargetId(null);
-    flashToast('Bookmark deleted');
-  }, [deleteTargetId, flashToast]);
+    flashToast(i18n.t('toast.bookmarkDeleted'));
+  }, [deleteTargetId, flashToast, i18n]);
 
   const handleCreateCategory = useCallback((name: string) => {
     const parentId =
@@ -699,15 +733,15 @@ export default function App() {
       parentId,
     });
     if (!result.ok) {
-      flashToast(result.error.message);
+      flashToast(localizeCommandError(i18n, result.error));
       return;
     }
     const applied = applyCategoryLibraryResult(result.value, bookmarks, cats);
     setCats(applied.categories);
     setBookmarks(applied.bookmarks);
     setCategoryFormOpen(false);
-    flashToast('Category created');
-  }, [bookmarks, cats, cols, flashToast, state.selection, tagList]);
+    flashToast(i18n.t('toast.categoryCreated'));
+  }, [bookmarks, cats, cols, flashToast, i18n, state.selection, tagList]);
 
   const handleSaveCollection = useCallback((values: CollectionFormValues) => {
     // REQ-012-AC-001：创建或编辑主题后刷新侧栏并持久化。
@@ -723,15 +757,15 @@ export default function App() {
         ? runCreateCollection({ ...entities, ...values })
         : runUpdateCollection({ ...entities, id: collectionForm.id, ...values });
     if (!result.ok) {
-      flashToast(result.error.message);
+      flashToast(localizeCommandError(i18n, result.error));
       return;
     }
     const applied = applyCollectionLibraryResult(result.value, bookmarks);
     setCols(applied.collections);
     setBookmarks(applied.bookmarks);
     setCollectionForm(null);
-    flashToast(collectionForm.mode === 'create' ? 'Collection created' : 'Collection saved');
-  }, [bookmarks, cats, cols, collectionForm, flashToast, tagList]);
+    flashToast(collectionForm.mode === 'create' ? i18n.t('toast.collectionCreated') : i18n.t('toast.collectionSaved'));
+  }, [bookmarks, cats, cols, collectionForm, flashToast, i18n, tagList]);
 
   const confirmDeleteCollection = useCallback(() => {
     // REQ-012-AC-002：确认删除主题但保留成员书签。
@@ -744,7 +778,7 @@ export default function App() {
       id: collectionDeleteId,
     });
     if (!result.ok) {
-      flashToast(result.error.message);
+      flashToast(localizeCommandError(i18n, result.error));
       return;
     }
     const applied = applyCollectionLibraryResult(result.value, bookmarks);
@@ -754,8 +788,8 @@ export default function App() {
       setState((s) => ({ ...s, selection: { kind: 'all' } }));
     }
     setCollectionDeleteId(null);
-    flashToast('Collection deleted');
-  }, [bookmarks, cats, cols, collectionDeleteId, flashToast, state.selection, tagList]);
+    flashToast(i18n.t('toast.collectionDeleted'));
+  }, [bookmarks, cats, cols, collectionDeleteId, flashToast, i18n, state.selection, tagList]);
 
   const openComposePreview = useCallback((bookmarkIds: string[]) => {
     // REQ-013-AC-001：仅构建预览，确认前不写库。
@@ -767,11 +801,11 @@ export default function App() {
     }).bookmarks;
     const preview = buildComposePreview(bookmarkIds, domainBookmarks);
     if ('ok' in preview && preview.ok === false) {
-      flashToast(preview.error.message);
+      flashToast(localizeCommandError(i18n, preview.error));
       return;
     }
     setComposePreview(preview as ComposePreview);
-  }, [bookmarks, cats, cols, flashToast, tagList]);
+  }, [bookmarks, cats, cols, flashToast, i18n, tagList]);
 
   const handleComposeDrop = useCallback((rawPayload: string) => {
     const ids = parseComposeDragPayload(rawPayload);
@@ -800,7 +834,7 @@ export default function App() {
       }
     );
     if (!result.ok) {
-      flashToast(result.error.message);
+      flashToast(localizeCommandError(i18n, result.error));
       return;
     }
     const applied = applyCollectionLibraryResult(result.value, bookmarks);
@@ -808,8 +842,8 @@ export default function App() {
     setBookmarks(applied.bookmarks);
     setComposePreview(null);
     setComposeSelectedIds([]);
-    flashToast('Collection created');
-  }, [bookmarks, cats, cols, composePreview, flashToast, tagList]);
+    flashToast(i18n.t('toast.collectionCreated'));
+  }, [bookmarks, cats, cols, composePreview, flashToast, i18n, tagList]);
 
   const handleCancelCompose = useCallback(() => {
     // REQ-013-AC-001：取消不产生持久化副作用。
@@ -836,33 +870,33 @@ export default function App() {
     if (!selectedBookmark) return;
     const result = runAddTagToBookmark({ ...entities(), bookmarkId: selectedBookmark.id, tagId });
     if (!result.ok) {
-      flashToast(result.error.message);
+      flashToast(localizeCommandError(i18n, result.error));
       return;
     }
     applyTagResult(result.value);
-  }, [applyTagResult, entities, flashToast, selectedBookmark]);
+  }, [applyTagResult, entities, flashToast, i18n, selectedBookmark]);
 
   const handleRemoveTag = useCallback((tagId: string) => {
     // REQ-014-AC-002：详情移除标签后立即刷新筛选相关状态。
     if (!selectedBookmark) return;
     const result = runRemoveTagFromBookmark({ ...entities(), bookmarkId: selectedBookmark.id, tagId });
     if (!result.ok) {
-      flashToast(result.error.message);
+      flashToast(localizeCommandError(i18n, result.error));
       return;
     }
     applyTagResult(result.value);
-  }, [applyTagResult, entities, flashToast, selectedBookmark]);
+  }, [applyTagResult, entities, flashToast, i18n, selectedBookmark]);
 
   const handleAcceptSuggestedTag = useCallback((tagId: string) => {
     // REQ-014-AC-003：采纳建议标签且不重复。
     if (!selectedBookmark) return;
     const result = runAcceptSuggestedTag({ ...entities(), bookmarkId: selectedBookmark.id, tagId });
     if (!result.ok) {
-      flashToast(result.error.message);
+      flashToast(localizeCommandError(i18n, result.error));
       return;
     }
     applyTagResult(result.value);
-  }, [applyTagResult, entities, flashToast, selectedBookmark]);
+  }, [applyTagResult, entities, flashToast, i18n, selectedBookmark]);
 
   const handleCreateTag = useCallback((label: string) => {
     // REQ-014-AC-002：不存在则创建后加入当前书签。
@@ -877,7 +911,7 @@ export default function App() {
         handleAddTag(existing.id);
         return;
       }
-      flashToast(created.error.message);
+      flashToast(localizeCommandError(i18n, created.error));
       return;
     }
     const newTag = created.value.tags.find(
@@ -899,7 +933,7 @@ export default function App() {
         applyTagResult(added.value);
       }
     }
-  }, [applyTagResult, bookmarks, cats, cols, entities, flashToast, handleAddTag, selectedBookmark, tagList]);
+  }, [applyTagResult, bookmarks, cats, cols, entities, flashToast, handleAddTag, i18n, selectedBookmark, tagList]);
 
   const requestDeleteCategory = useCallback((categoryId: string) => {
     const childCount = cats.filter((c) => c.parentId === categoryId).length;
@@ -918,14 +952,14 @@ export default function App() {
       strategy: 'move-then-delete',
     });
     if (!result.ok) {
-      flashToast(result.error.message);
+      flashToast(localizeCommandError(i18n, result.error));
       return;
     }
     const applied = applyCategoryLibraryResult(result.value, bookmarks, cats);
     setCats(applied.categories);
     setBookmarks(applied.bookmarks);
-    flashToast('Category deleted');
-  }, [bookmarks, cats, cols, flashToast, tagList]);
+    flashToast(i18n.t('toast.categoryDeleted'));
+  }, [bookmarks, cats, cols, flashToast, i18n, tagList]);
 
   const applyCategoryDelete = useCallback((strategy: 'move-then-delete' | 'recursive-delete' | 'cancel') => {
     if (!categoryDeleteId) return;
@@ -953,7 +987,7 @@ export default function App() {
       recursiveConfirmed: decision === 'recursive-delete',
     });
     if (!result.ok) {
-      flashToast(result.error.message);
+      flashToast(localizeCommandError(i18n, result.error));
       return;
     }
     const applied = applyCategoryLibraryResult(result.value, bookmarks, cats);
@@ -961,15 +995,15 @@ export default function App() {
     setBookmarks(applied.bookmarks);
     setCategoryDeleteId(null);
     setCategoryRecursiveConfirm(false);
-    flashToast('Category deleted');
-  }, [bookmarks, categoryDeleteId, categoryRecursiveConfirm, cats, cols, flashToast, tagList]);
+    flashToast(i18n.t('toast.categoryDeleted'));
+  }, [bookmarks, categoryDeleteId, categoryRecursiveConfirm, cats, cols, flashToast, i18n, tagList]);
 
   const handleSaveSettings = useCallback(async (s: AppSettings) => {
     setSettings(s);
     applyTheme(s.theme);
     document.documentElement.lang = s.locale ?? 'en';
     await persistUiSettings(s);
-    flashToast(s.locale === 'zh' ? '设置已保存' : 'Settings saved');
+    flashToast(createI18n(s.locale ?? 'en').t('toast.settingsSaved'));
   }, [flashToast, setSettings]);
 
   const handleImport = useCallback((lib: LibraryData) => {
@@ -978,8 +1012,8 @@ export default function App() {
     if (lib.collections) setCols(lib.collections);
     if (lib.tags) setTagList(lib.tags);
     setState((s) => ({ ...s, selectedBookmarkId: lib.bookmarks[0]?.id ?? null }));
-    flashToast(`已导入 ${lib.bookmarks.length} 个收藏`);
-  }, [flashToast]);
+    flashToast(i18n.t('toast.imported', { count: lib.bookmarks.length }));
+  }, [flashToast, i18n]);
 
   const applySampleLibrary = useCallback(() => {
     const sample = {
@@ -995,8 +1029,8 @@ export default function App() {
     setState((s) => ({ ...s, selectedBookmarkId: seedBookmarks[0]?.id ?? null }));
     saveLocalLibrary(sample);
     void browserStorage.saveLibraryData(sample);
-    flashToast('Sample data restored');
-  }, [browserStorage, flashToast]);
+    flashToast(i18n.t('toast.sampleRestored'));
+  }, [browserStorage, flashToast, i18n]);
 
   const handleRestoreSampleData = useCallback(() => {
     const hasLocalData = browserStorage.hasLocalLibraryData() || bookmarks.length > 0;
@@ -1160,16 +1194,19 @@ export default function App() {
   /* ---------- loading gate：禁止在引导完成前闪登录或主界面 ---------- */
   if (startup.view === 'loading') {
     return (
-      <div className="h-screen w-screen workspace flex items-center justify-center" role="status" aria-label="Loading">
-        <div className="w-7 h-7 rounded-full border-2 border-white/20 border-t-white animate-spin" />
-      </div>
+      <I18nProvider locale={locale}>
+        <div className="h-screen w-screen workspace flex items-center justify-center" role="status" aria-label={i18n.t('app.loading')}>
+          <div className="w-7 h-7 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+        </div>
+      </I18nProvider>
     );
   }
 
   if (startup.view === 'recovery') {
     return (
-      <RecoveryDialog
-        onCancel={() => {
+      <I18nProvider locale={locale}>
+        <RecoveryDialog
+          onCancel={() => {
           startup.setRecoveryPending(false);
           startup.markSignedOut();
         }}
@@ -1200,15 +1237,17 @@ export default function App() {
             startup.setRecoveryPending(false);
             void startup.enterLocalMode(settings);
           })();
-        }}
-      />
+          }}
+        />
+      </I18nProvider>
     );
   }
 
   /* ---------- login gate ---------- */
   if (startup.view === 'login') {
     return (
-      <LoginScreen
+      <I18nProvider locale={locale}>
+        <LoginScreen
         loading={authSubmitting || auth.loading}
         error={auth.error}
         emailConfirmationRequired={emailConfirmationRequired}
@@ -1243,11 +1282,13 @@ export default function App() {
         onUseLocal={() => {
           void startup.enterLocalMode(settings);
         }}
-      />
+        />
+      </I18nProvider>
     );
   }
 
   return (
+    <I18nProvider locale={locale}>
     <div className="h-screen w-screen workspace flex items-center justify-center p-0 md:p-6 overflow-hidden">
       <AppShell
         syncing={syncing}
@@ -1418,8 +1459,8 @@ export default function App() {
             <div className="w-12 h-12 rounded-xl bg-accent-500/20 flex items-center justify-center">
               <Icon name="Link" size={22} className="text-accent-300" />
             </div>
-            <div className="text-[15px] font-semibold text-ink-100">拖入网址即可收藏</div>
-            <div className="text-[12px] text-ink-400">AI 将自动抓取内容并生成摘要、分类与标签</div>
+            <div className="text-[15px] font-semibold text-ink-100">{i18n.t('app.drop.title')}</div>
+            <div className="text-[12px] text-ink-400">{i18n.t('app.drop.body')}</div>
           </div>
         </div>
       )}
@@ -1538,14 +1579,14 @@ export default function App() {
             ...values,
           });
           if (!result.ok) {
-            flashToast(result.error.message);
+            flashToast(localizeCommandError(i18n, result.error));
             return;
           }
           const applied = applyBookmarkActionResult(result.value, bookmarks, cols);
           setBookmarks(applied.bookmarks);
           setCols(applied.collections);
           setBookmarkEditId(null);
-          flashToast('Bookmark updated');
+          flashToast(i18n.t('toast.bookmarkUpdated'));
         }}
       />
       <BookmarkMoveDialog
@@ -1559,7 +1600,7 @@ export default function App() {
             categoryId,
           });
           if (!result.ok) {
-            flashToast(result.error.message);
+            flashToast(localizeCommandError(i18n, result.error));
             return;
           }
           const applied = applyBookmarkActionResult(result.value, bookmarks, cols);
@@ -1567,7 +1608,7 @@ export default function App() {
           setCols(applied.collections);
           setBookmarkMoveIds([]);
           setComposeSelectedIds([]);
-          flashToast('Bookmarks moved');
+          flashToast(i18n.t('toast.bookmarksMoved'));
         }}
       />
       {bulkDeleteIds.length > 0 && (
@@ -1579,7 +1620,7 @@ export default function App() {
               bookmarkIds: bulkDeleteIds,
             });
             if (!result.ok) {
-              flashToast(result.error.message);
+              flashToast(localizeCommandError(i18n, result.error));
               return;
             }
             const applied = applyBookmarkActionResult(result.value, bookmarks, cols);
@@ -1587,13 +1628,13 @@ export default function App() {
             setCols(applied.collections);
             setBulkDeleteIds([]);
             setComposeSelectedIds([]);
-            flashToast('Bookmarks deleted');
+            flashToast(i18n.t('toast.bookmarksDeleted'));
           }}
         />
       )}
       {deleteTargetId && (
         <DeleteBookmarkDialog
-          title={bookmarks.find((b) => b.id === deleteTargetId)?.title ?? 'Bookmark'}
+          title={bookmarks.find((b) => b.id === deleteTargetId)?.title ?? i18n.t('content.selection.all')}
           onCancel={() => setDeleteTargetId(null)}
           onConfirm={confirmDeleteBookmark}
         />
@@ -1607,7 +1648,7 @@ export default function App() {
       )}
       {categoryDeleteId && (
         <DeleteCategoryDialog
-          name={cats.find((c) => c.id === categoryDeleteId)?.name ?? 'Category'}
+          name={cats.find((c) => c.id === categoryDeleteId)?.name ?? i18n.t('content.selection.categoryFallback')}
           childCount={cats.filter((c) => c.parentId === categoryDeleteId).length}
           bookmarkCount={bookmarks.filter((b) => b.categoryId === categoryDeleteId).length}
           awaitingRecursiveConfirm={categoryRecursiveConfirm}
@@ -1618,7 +1659,7 @@ export default function App() {
       )}
       {categoryIconId && (
         <SetCategoryIconDialog
-          categoryName={cats.find((c) => c.id === categoryIconId)?.name ?? 'Category'}
+          categoryName={cats.find((c) => c.id === categoryIconId)?.name ?? i18n.t('content.selection.categoryFallback')}
           currentIcon={cats.find((c) => c.id === categoryIconId)?.icon ?? 'Folder'}
           currentColor={cats.find((c) => c.id === categoryIconId)?.color ?? 'gray'}
           onCancel={() => setCategoryIconId(null)}
@@ -1652,7 +1693,7 @@ export default function App() {
       )}
       {collectionDeleteId && (
         <DeleteCollectionDialog
-          name={cols.find((c) => c.id === collectionDeleteId)?.name ?? 'Collection'}
+          name={cols.find((c) => c.id === collectionDeleteId)?.name ?? i18n.t('content.selection.collectionFallback')}
           memberCount={cols.find((c) => c.id === collectionDeleteId)?.bookmarkIds.length ?? 0}
           onCancel={() => setCollectionDeleteId(null)}
           onConfirm={confirmDeleteCollection}
@@ -1661,7 +1702,7 @@ export default function App() {
       {addBookmarksCollectionId && (
         <AddBookmarksToCollectionDialog
           collectionId={addBookmarksCollectionId}
-          collectionName={cols.find((c) => c.id === addBookmarksCollectionId)?.name ?? 'Collection'}
+          collectionName={cols.find((c) => c.id === addBookmarksCollectionId)?.name ?? i18n.t('content.selection.collectionFallback')}
           bookmarks={bookmarks}
           onCancel={() => setAddBookmarksCollectionId(null)}
           onConfirm={confirmAddBookmarksToCollection}
@@ -1673,7 +1714,7 @@ export default function App() {
         return (
           <RemoveFromCollectionDialog
             count={bulkRemoveFromCollectionIds.length}
-            collectionName={cols.find((c) => c.id === collectionId)?.name ?? 'Collection'}
+            collectionName={cols.find((c) => c.id === collectionId)?.name ?? i18n.t('content.selection.collectionFallback')}
             onCancel={() => setBulkRemoveFromCollectionIds(null)}
             onConfirm={confirmBulkRemoveFromCollection}
           />
@@ -1713,7 +1754,7 @@ export default function App() {
               const applied = applyCollectionLibraryResult(result.value, bookmarks);
               setBookmarks(applied.bookmarks);
               setCols(applied.collections);
-              flashToast('Collection created');
+              flashToast(i18n.t('toast.collectionCreated'));
             }
             setAICollectionPreview(null);
           }}
@@ -1736,7 +1777,7 @@ export default function App() {
               id: collection.id, name: collection.name, emoji: collection.emoji, color: collection.color,
               description: collection.description, bookmarkIds: [...collection.bookmarkIds],
             })));
-            flashToast(action === 'merge' ? 'Bookmarks merged' : 'Duplicate deleted');
+            flashToast(action === 'merge' ? i18n.t('toast.bookmarksMerged') : i18n.t('toast.duplicateDeleted'));
           }
           setDuplicatePreview(null);
         }} />
@@ -1762,7 +1803,7 @@ export default function App() {
               const applied = applyCollectionLibraryResult(result.value, bookmarks);
               setBookmarks(applied.bookmarks);
               setCols(applied.collections);
-              flashToast('Bookmark added to collection');
+              flashToast(i18n.t('toast.bookmarkAddedToCollection'));
             }
           }}
         />;
@@ -1847,14 +1888,14 @@ export default function App() {
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal="true" aria-labelledby="seed-confirm-title">
           <div className="w-full max-w-md rounded-xl bg-ink-900 hairline p-6 shadow-win">
             <h2 id="seed-confirm-title" className="text-[16px] font-semibold text-ink-100">
-              Replace current library?
+              {i18n.t('app.seed.title')}
             </h2>
             <p className="mt-2 text-[13px] text-ink-300">
-              Restoring sample data will replace your current local library. This cannot be undone from this dialog.
+              {i18n.t('app.seed.body')}
             </p>
             <div className="mt-5 flex justify-end gap-2">
               <button type="button" className="rounded-md px-3 py-1.5 text-[12px] text-ink-300 hover:bg-ink-800" onClick={() => setSeedConfirmOpen(false)}>
-                Cancel
+                {i18n.t('common.cancel')}
               </button>
               <button
                 type="button"
@@ -1867,13 +1908,14 @@ export default function App() {
                   setSettingsOpen(false);
                 }}
               >
-                Restore sample data
+                {i18n.t('app.seed.restore')}
               </button>
             </div>
           </div>
         </div>
       )}
     </div>
+    </I18nProvider>
   );
 }
 

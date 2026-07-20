@@ -12,11 +12,13 @@ describe('formatDate', () => {
     vi.useRealTimers();
   });
 
-  it('[单元] 当年日期 shall 显示为月日格式', () => {
-    expect(formatDate('2026-03-05T08:00:00.000Z')).toBe('3月5日');
+  it('[单元] 当年日期 shall 按 locale 显示月日格式', () => {
+    expect(formatDate('2026-03-05T08:00:00.000Z', 'zh')).toBe('3月5日');
+    expect(formatDate('2026-03-05T08:00:00.000Z', 'en')).toBe('Mar 5');
   });
 
-  it('[单元] 非当年日期 shall 显示为年/月/日格式', () => {
-    expect(formatDate('2025-12-31T08:00:00.000Z')).toBe('2025/12/31');
+  it('[单元] 非当年日期 shall 按 locale 显示年份', () => {
+    expect(formatDate('2025-12-31T08:00:00.000Z', 'zh')).toBe('2025年12月31日');
+    expect(formatDate('2025-12-31T08:00:00.000Z', 'en')).toBe('Dec 31, 2025');
   });
 });
