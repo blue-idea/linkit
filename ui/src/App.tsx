@@ -1083,6 +1083,7 @@ export default function App() {
       spotlight: spotlightOpen,
       'new-bookmark': newOpen,
       insights: insightsOpen,
+      explore: exploreOpen,
       health: healthOpen,
       settings: settingsOpen,
     }),
@@ -1100,6 +1101,7 @@ export default function App() {
       spotlightOpen,
       newOpen,
       insightsOpen,
+      exploreOpen,
       healthOpen,
       settingsOpen,
     ]
@@ -1148,6 +1150,9 @@ export default function App() {
         break;
       case 'insights':
         setInsightsOpen(false);
+        break;
+      case 'explore':
+        setExploreOpen(false);
         break;
       case 'health':
         setHealthOpen(false);

@@ -14,6 +14,7 @@ export type OverlayKind =
   | 'spotlight'
   | 'new-bookmark'
   | 'insights'
+  | 'explore'
   | 'health'
   | 'settings';
 
@@ -31,6 +32,7 @@ export const OVERLAY_PRIORITY: OverlayKind[] = [
   'spotlight',
   'new-bookmark',
   'insights',
+  'explore',
   'health',
   'settings',
 ];
