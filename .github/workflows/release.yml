@@ -197,7 +197,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release view "${{ inputs.tag }}" >/dev/null 2>&1 || gh release create "${{ inputs.tag }}" --target "$GITHUB_SHA" --generate-notes || true
-          gh release upload "${{ inputs.tag }}" build/bin/linkit-amd64-installer.exe --clobber
+          cp build/bin/linkit.exe build/bin/linkit-windows-amd64.exe
+          gh release upload "${{ inputs.tag }}" build/bin/linkit-amd64-installer.exe build/bin/linkit-windows-amd64.exe --clobber
 
       - name: Upload macOS artifacts
         if: matrix.os == 'macos'
