@@ -173,6 +173,7 @@ const messages = {
   'explore.gaps': ['Theme gaps', '主题缺口'],
   'explore.noGaps': ['No theme gaps found.', '未发现主题缺口。'],
   'explore.addTo': ['Add {{bookmark}} to {{collection}}', '将 {{bookmark}} 添加到 {{collection}}'],
+  'explore.match': ['{{score}}% Match', '{{score}}% 匹配'],
 
   'insights.title': ['Insights report', '收藏洞察报告'],
   'insights.hint': ['Traceable metrics calculated from the current library.', '根据当前资料库计算的可追溯指标。'],

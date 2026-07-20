@@ -84,7 +84,7 @@ export function ExploreDialog({
                         {item.reasons.join(', ')}
                       </span>
                       <span>·</span>
-                      <span className="text-accent-400 font-semibold">{Math.round(item.score * 100)}% Match</span>
+                      <span className="text-accent-400 font-semibold">{i18n.t('explore.match', { score: Math.round(item.score * 100) })}</span>
                     </div>
                   </div>
                   <Icon name="ChevronRight" size={12} className="text-ink-500 group-hover:text-ink-300 transition shrink-0 mt-2" />
