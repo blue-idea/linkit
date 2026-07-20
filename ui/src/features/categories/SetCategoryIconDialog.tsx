@@ -6,6 +6,7 @@ import {
 import { tagColors } from '../../colors';
 import type { TagColor } from '../../types';
 import { Icon, Button } from '../../components/ui';
+import { useI18n } from '../../i18n/use-i18n';
 
 export type SetCategoryIconResult = {
   icon: string;
@@ -29,6 +30,7 @@ export function SetCategoryIconDialog({
   onCancel: () => void;
   onConfirm: (value: SetCategoryIconResult) => void;
 }) {
+  const i18n = useI18n();
   const candidates = listCategoryIconCandidates();
   const colors = listCategoryColorCandidates();
   const [icon, setIcon] = useState(currentIcon || 'Folder');
@@ -54,17 +56,17 @@ export function SetCategoryIconDialog({
           </span>
           <div className="min-w-0 flex-1">
             <h2 id="set-category-icon-title" className="text-[15px] font-semibold text-ink-100">
-              Set category icon
+              {i18n.t('category.icon.title')}
             </h2>
             <p className="text-[12px] text-ink-400 mt-1">
-              Choose an icon and color for “{categoryName}”.
+              {i18n.t('category.icon.body', { name: categoryName })}
             </p>
 
-            <span className="block mt-3 text-[11px] font-medium text-ink-300 mb-1.5">Icon</span>
+            <span className="block mt-3 text-[11px] font-medium text-ink-300 mb-1.5">{i18n.t('category.icon.icon')}</span>
             <div
               className="max-h-52 overflow-y-auto grid grid-cols-8 gap-1.5 pr-0.5"
               role="listbox"
-              aria-label="Category icon candidates"
+              aria-label={i18n.t('category.icon.candidates')}
             >
               {candidates.map((candidate) => {
                 const selected = candidate === icon;
@@ -74,7 +76,7 @@ export function SetCategoryIconDialog({
                     type="button"
                     role="option"
                     aria-selected={selected}
-                    aria-label={`Icon ${candidate}`}
+                    aria-label={i18n.t('category.icon.option', { name: candidate })}
                     onClick={() => setIcon(candidate)}
                     className={`h-9 rounded-lg flex items-center justify-center transition hairline focus-ring ${
                       selected
@@ -88,8 +90,8 @@ export function SetCategoryIconDialog({
               })}
             </div>
 
-            <span className="block mt-3 text-[11px] font-medium text-ink-300 mb-1.5">Color</span>
-            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Category icon color">
+            <span className="block mt-3 text-[11px] font-medium text-ink-300 mb-1.5">{i18n.t('category.icon.color')}</span>
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label={i18n.t('category.icon.colorGroup')}>
               {colors.map((option) => {
                 const selected = option === color;
                 const swatch = tagColors[option];
@@ -97,7 +99,9 @@ export function SetCategoryIconDialog({
                   <button
                     key={option}
                     type="button"
-                    aria-label={`Color ${option}`}
+                    aria-label={i18n.t('category.icon.colorOption', {
+                      name: i18n.getLocale() === 'en' ? option : i18n.t(`color.${option}`),
+                    })}
                     aria-pressed={selected}
                     onClick={() => setColor(option)}
                     className={`h-7 px-2.5 rounded-md text-[11px] capitalize hairline flex items-center gap-1.5 focus-ring ${
@@ -105,7 +109,7 @@ export function SetCategoryIconDialog({
                     }`}
                   >
                     <span className={`w-2 h-2 rounded-full ${swatch.dot}`} />
-                    {option}
+                    {i18n.t(`color.${option}`)}
                   </button>
                 );
               })}
@@ -114,14 +118,14 @@ export function SetCategoryIconDialog({
         </div>
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="ghost" onClick={onCancel}>
-            Cancel
+            {i18n.t('common.cancel')}
           </Button>
           <Button
             variant="primary"
-            aria-label="Save category icon"
+            aria-label={i18n.t('category.icon.save')}
             onClick={() => onConfirm({ icon, color })}
           >
-            Save
+            {i18n.t('common.save')}
           </Button>
         </div>
       </div>

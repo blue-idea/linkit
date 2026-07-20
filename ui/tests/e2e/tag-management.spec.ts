@@ -33,7 +33,9 @@ test.describe('标签筛选', () => {
     expect(count).toBeGreaterThan(0);
 
     await cssTag.click();
-    await expect(page.getByText(new RegExp(`${count} 个收藏`))).toBeVisible();
+    await expect(page.getByRole('main', { name: 'Content Area' })).toContainText(
+      new RegExp(`${count} bookmarks`)
+    );
 
     await mkdir(evidenceDirectory, { recursive: true });
     await page.screenshot({

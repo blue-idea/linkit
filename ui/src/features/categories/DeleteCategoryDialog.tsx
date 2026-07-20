@@ -1,7 +1,8 @@
 import { Icon, Button } from '../../components/ui';
+import { useI18n } from '../../i18n/use-i18n';
 
 /**
- * 分类删除三选一确认（英文文案）。
+ * 分类删除三选一确认。
  * REQ-010-AC-003~005
  */
 export function DeleteCategoryDialog({
@@ -21,6 +22,7 @@ export function DeleteCategoryDialog({
   onMoveThenDelete: () => void;
   onRecursiveDelete: () => void;
 }) {
+  const i18n = useI18n();
   return (
     <div
       className="fixed inset-0 z-[80] flex items-center justify-center bg-black/55 p-4"
@@ -40,12 +42,18 @@ export function DeleteCategoryDialog({
           </span>
           <div className="min-w-0">
             <h2 id="delete-category-title" className="text-[15px] font-semibold text-ink-100">
-              {awaitingRecursiveConfirm ? 'Confirm recursive delete?' : 'Delete this category?'}
+              {awaitingRecursiveConfirm
+                ? i18n.t('category.delete.confirmTitle')
+                : i18n.t('category.delete.title')}
             </h2>
             <p className="text-[12px] text-ink-400 mt-1 leading-relaxed">
               {awaitingRecursiveConfirm
-                ? `“${name}” and all descendant categories will be removed. Affected bookmarks become uncategorized.`
-                : `“${name}” has ${childCount} child categories and ${bookmarkCount} bookmarks. Choose how to proceed.`}
+                ? i18n.t('category.delete.confirmBody', { name })
+                : i18n.t('category.delete.body', {
+                    name,
+                    children: childCount,
+                    bookmarks: bookmarkCount,
+                  })}
             </p>
           </div>
         </div>
@@ -53,22 +61,22 @@ export function DeleteCategoryDialog({
         {awaitingRecursiveConfirm ? (
           <div className="mt-5 flex justify-end gap-2">
             <Button variant="ghost" onClick={onCancel}>
-              Cancel
+              {i18n.t('common.cancel')}
             </Button>
-            <Button variant="danger" aria-label="Confirm recursive delete" onClick={onRecursiveDelete}>
-              Delete recursively
+            <Button variant="danger" aria-label={i18n.t('category.delete.confirmRecursive')} onClick={onRecursiveDelete}>
+              {i18n.t('category.delete.recursive')}
             </Button>
           </div>
         ) : (
           <div className="mt-5 flex flex-col gap-2">
-            <Button variant="subtle" aria-label="Move contents then delete" onClick={onMoveThenDelete}>
-              Move contents then delete
+            <Button variant="subtle" aria-label={i18n.t('category.delete.moveThen')} onClick={onMoveThenDelete}>
+              {i18n.t('category.delete.moveThen')}
             </Button>
-            <Button variant="danger" aria-label="Delete recursively" onClick={onRecursiveDelete}>
-              Delete recursively
+            <Button variant="danger" aria-label={i18n.t('category.delete.recursive')} onClick={onRecursiveDelete}>
+              {i18n.t('category.delete.recursive')}
             </Button>
-            <Button variant="ghost" aria-label="Cancel category delete" onClick={onCancel}>
-              Cancel
+            <Button variant="ghost" aria-label={i18n.t('category.delete.cancel')} onClick={onCancel}>
+              {i18n.t('common.cancel')}
             </Button>
           </div>
         )}

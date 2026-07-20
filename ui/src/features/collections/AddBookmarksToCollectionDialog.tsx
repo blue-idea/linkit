@@ -5,6 +5,7 @@ import {
   toggleCandidateSelection,
   type MembershipCandidate,
 } from './membership-candidates';
+import { useI18n } from '../../i18n/use-i18n';
 
 /**
  * 主题视图添加书签挑选器：确认前零副作用。
@@ -23,6 +24,7 @@ export function AddBookmarksToCollectionDialog({
   onCancel: () => void;
   onConfirm: (bookmarkIds: string[]) => void;
 }) {
+  const i18n = useI18n();
   const [query, setQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -42,7 +44,7 @@ export function AddBookmarksToCollectionDialog({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Add bookmarks"
+        aria-label={i18n.t('collection.add.title')}
         className="w-full max-w-lg rounded-mac-xl glass-strong shadow-win border border-white/10 p-5"
         onClick={(event) => event.stopPropagation()}
       >
@@ -51,30 +53,30 @@ export function AddBookmarksToCollectionDialog({
             <Icon name="Library" size={16} className="text-accent-300" />
           </span>
           <div className="min-w-0 flex-1">
-            <h2 className="text-[15px] font-semibold text-ink-100">Add bookmarks</h2>
+            <h2 className="text-[15px] font-semibold text-ink-100">{i18n.t('collection.add.title')}</h2>
             <p className="text-[12px] text-ink-400 mt-1">
-              Select library bookmarks to add to “{collectionName}”. Nothing is saved until you confirm.
+              {i18n.t('collection.add.body', { name: collectionName })}
             </p>
 
             <label className="block mt-3 text-[11px] font-medium text-ink-300 mb-1.5" htmlFor="add-bookmarks-search">
-              Search bookmarks
+              {i18n.t('collection.add.search')}
             </label>
             <input
               id="add-bookmarks-search"
-              aria-label="Search bookmarks"
+              aria-label={i18n.t('collection.add.search')}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search by title or URL"
+              placeholder={i18n.t('collection.add.searchPlaceholder')}
               className="w-full rounded-lg bg-ink-800/60 hairline px-3 py-2 text-[13px] text-ink-100 outline-none focus-ring"
               autoFocus
             />
 
             <ul
-              aria-label="Bookmark candidates"
+              aria-label={i18n.t('collection.add.candidates')}
               className="mt-3 max-h-56 overflow-y-auto rounded-lg bg-ink-800/40 hairline divide-y divide-white/5"
             >
               {candidates.length === 0 ? (
-                <li className="px-3 py-4 text-[12px] text-ink-400 text-center">No matching bookmarks</li>
+                <li className="px-3 py-4 text-[12px] text-ink-400 text-center">{i18n.t('collection.add.empty')}</li>
               ) : (
                 candidates.map((bookmark) => {
                   const checked = selectedIds.includes(bookmark.id);
@@ -84,7 +86,7 @@ export function AddBookmarksToCollectionDialog({
                         <input
                           type="checkbox"
                           className="mt-1"
-                          aria-label={`Select ${bookmark.title}`}
+                          aria-label={i18n.t('collection.add.select', { title: bookmark.title })}
                           checked={checked}
                           onChange={() => setSelectedIds((current) => toggleCandidateSelection(current, bookmark.id))}
                         />
@@ -102,19 +104,19 @@ export function AddBookmarksToCollectionDialog({
         </div>
 
         <div className="mt-5 flex justify-end gap-2">
-          <Button variant="ghost" aria-label="Cancel add bookmarks" onClick={onCancel}>
-            Cancel
+          <Button variant="ghost" aria-label={i18n.t('collection.add.cancel')} onClick={onCancel}>
+            {i18n.t('common.cancel')}
           </Button>
           <Button
             variant="primary"
-            aria-label="Confirm add bookmarks"
+            aria-label={i18n.t('collection.add.confirm')}
             disabled={!canConfirm}
             onClick={() => {
               if (!canConfirm) return;
               onConfirm(selectedIds);
             }}
           >
-            Add {selectedIds.length > 0 ? selectedIds.length : ''} bookmarks
+            {i18n.t('collection.add.button', { count: selectedIds.length })}
           </Button>
         </div>
       </div>

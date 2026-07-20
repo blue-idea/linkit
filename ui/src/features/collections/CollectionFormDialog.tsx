@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { TagColor } from '../../types';
 import { Icon, Button } from '../../components/ui';
 import { COLLECTION_ICON_OPTIONS } from '../../config/collection-icons';
+import { useI18n } from '../../i18n/use-i18n';
 
 const COLOR_OPTIONS: TagColor[] = ['blue', 'green', 'amber', 'coral', 'violet', 'gray'];
 
@@ -27,14 +28,15 @@ export function CollectionFormDialog({
   onCancel: () => void;
   onSubmit: (values: CollectionFormValues) => void;
 }) {
+  const i18n = useI18n();
   const [name, setName] = useState(initial?.name ?? '');
   const [emoji, setEmoji] = useState(initial?.emoji ?? '📚');
   const [iconMenuOpen, setIconMenuOpen] = useState(false);
   const [color, setColor] = useState<TagColor>(initial?.color ?? 'gray');
   const [description, setDescription] = useState(initial?.description ?? '');
 
-  const title = mode === 'create' ? 'New collection' : 'Edit collection';
-  const submitLabel = mode === 'create' ? 'Create collection' : 'Save collection';
+  const title = mode === 'create' ? i18n.t('collection.new') : i18n.t('collection.edit');
+  const submitLabel = mode === 'create' ? i18n.t('content.createCollection') : i18n.t('collection.save');
 
   const submit = () => {
     if (!name.trim()) return;
@@ -69,11 +71,11 @@ export function CollectionFormDialog({
             </h2>
 
             <label className="block mt-3 text-[11px] font-medium text-ink-300 mb-1.5" htmlFor="collection-name">
-              Collection name
+              {i18n.t('collection.name')}
             </label>
             <input
               id="collection-name"
-              aria-label="Collection name"
+              aria-label={i18n.t('collection.name')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => {
@@ -86,7 +88,7 @@ export function CollectionFormDialog({
             <div className="mt-3 grid grid-cols-[88px_1fr] gap-2">
               <div>
                 <span className="block text-[11px] font-medium text-ink-300 mb-1.5">
-                  Emoji
+                  {i18n.t('collection.emoji')}
                 </span>
                 <CollectionIconMenu
                   value={emoji}
@@ -99,20 +101,22 @@ export function CollectionFormDialog({
                 />
               </div>
               <div>
-                <span className="block text-[11px] font-medium text-ink-300 mb-1.5">Color</span>
-                <div className="flex flex-wrap gap-1.5" role="group" aria-label="Collection color">
+                <span className="block text-[11px] font-medium text-ink-300 mb-1.5">{i18n.t('collection.color')}</span>
+                <div className="flex flex-wrap gap-1.5" role="group" aria-label={i18n.t('collection.colorLabel')}>
                   {COLOR_OPTIONS.map((option) => (
                     <button
                       key={option}
                       type="button"
-                      aria-label={`Color ${option}`}
+                      aria-label={i18n.t('collection.colorOption', {
+                        name: i18n.getLocale() === 'en' ? option : i18n.t(`color.${option}`),
+                      })}
                       aria-pressed={color === option}
                       onClick={() => setColor(option)}
                       className={`h-7 px-2 rounded-md text-[11px] capitalize hairline ${
                         color === option ? 'bg-accent-500/25 text-ink-50' : 'bg-ink-800/50 text-ink-300'
                       }`}
                     >
-                      {option}
+                      {i18n.t(`color.${option}`)}
                     </button>
                   ))}
                 </div>
@@ -120,11 +124,11 @@ export function CollectionFormDialog({
             </div>
 
             <label className="block mt-3 text-[11px] font-medium text-ink-300 mb-1.5" htmlFor="collection-description">
-              Description
+              {i18n.t('collection.description')}
             </label>
             <textarea
               id="collection-description"
-              aria-label="Collection description"
+              aria-label={i18n.t('collection.description')}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
@@ -135,7 +139,7 @@ export function CollectionFormDialog({
 
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="ghost" onClick={onCancel}>
-            Cancel
+            {i18n.t('common.cancel')}
           </Button>
           <Button
             variant="primary"
@@ -143,7 +147,7 @@ export function CollectionFormDialog({
             disabled={!name.trim()}
             onClick={submit}
           >
-            {mode === 'create' ? 'Create' : 'Save'}
+            {mode === 'create' ? i18n.t('common.create') : i18n.t('common.save')}
           </Button>
         </div>
       </div>
@@ -162,11 +166,12 @@ function CollectionIconMenu({
   onToggle: () => void;
   onSelect: (emoji: string) => void;
 }) {
+  const i18n = useI18n();
   return (
     <div className="relative">
       <button
         type="button"
-        aria-label="Choose collection icon"
+        aria-label={i18n.t('collection.chooseIcon')}
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={onToggle}
@@ -177,7 +182,7 @@ function CollectionIconMenu({
       {open && (
         <div
           role="menu"
-          aria-label="Collection icon options"
+          aria-label={i18n.t('collection.iconOptions')}
           className="absolute z-[90] mt-1 grid w-[212px] grid-cols-4 gap-1 rounded-lg bg-ink-900/95 p-2 shadow-win hairline"
         >
           {COLLECTION_ICON_OPTIONS.map((option) => (

@@ -3,6 +3,7 @@ import type { Selection } from '../state';
 import { Icon, TagPill, AIBadge } from './ui';
 import { tagColors } from '../colors';
 import { CategoryDndContext, CategoryDndItem } from '../features/categories';
+import { useI18n } from '../i18n/use-i18n';
 
 function SectionLabel({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) {
   return (
@@ -50,6 +51,7 @@ function NavRow({
   trailing?: React.ReactNode;
   className?: string;
 }) {
+  const i18n = useI18n();
   return (
     <div
       onClick={(e) => {
@@ -72,7 +74,7 @@ function NavRow({
       {expandable ? (
         <button
           type="button"
-          aria-label={expanded ? `Collapse ${label}` : `Expand ${label}`}
+          aria-label={`${expanded ? i18n.t('sidebar.collapse') : i18n.t('sidebar.expand')} ${label}`}
           aria-expanded={expanded}
           onClick={(e) => {
             e.stopPropagation();
@@ -145,6 +147,7 @@ export function Sidebar({
   onDropToCompose: (rawPayload: string) => void;
   insightCount: number;
 }) {
+  const i18n = useI18n();
   const [dragOverId, setDragOverId] = useStateDrag();
   const [composeDropActive, setComposeDropActive] = useState(false);
 
@@ -194,8 +197,8 @@ export function Sidebar({
                     <span className="flex items-center gap-0.5">
                       <button
                         type="button"
-                        aria-label="Set category icon"
-                        title="Set category icon"
+                        aria-label={i18n.t('sidebar.setCategoryIcon')}
+                        title={i18n.t('sidebar.setCategoryIcon')}
                         onClick={(e) => {
                           e.stopPropagation();
                           onRequestSetCategoryIcon(cat.id);
@@ -207,8 +210,8 @@ export function Sidebar({
                       </button>
                       <button
                         type="button"
-                        aria-label="Delete category"
-                        title="Delete category"
+                        aria-label={i18n.t('sidebar.deleteCategory')}
+                        title={i18n.t('sidebar.deleteCategory')}
                         onClick={(e) => {
                           e.stopPropagation();
                           onDeleteCategory(cat.id);
@@ -242,12 +245,12 @@ export function Sidebar({
         </div>
         <div className="flex-1">
           <div className="text-[13px] font-semibold text-ink-100 leading-none">Lattice</div>
-          <div className="text-[10px] text-ink-400 mt-0.5">网址收藏管理</div>
+          <div className="text-[10px] text-ink-400 mt-0.5">{i18n.t('app.tagline')}</div>
         </div>
         <button
           onClick={onNewBookmark}
           className="w-7 h-7 rounded-lg bg-ink-700/70 hover:bg-accent-600 text-ink-200 hover:text-white flex items-center justify-center transition-all hairline"
-          title="新增收藏 (⌘N)"
+          title={`${i18n.t('sidebar.newBookmark')} (⌘N)`}
         >
           <Icon name="Plus" size={15} />
         </button>
@@ -255,12 +258,12 @@ export function Sidebar({
 
       <div className="flex-1 overflow-y-auto scroll-thin pb-4">
         {/* Library */}
-        <SectionLabel>资料库</SectionLabel>
+        <SectionLabel>{i18n.t('sidebar.library')}</SectionLabel>
         <NavRow
           active={selection.kind === 'all'}
           icon="Library"
           iconColor="text-accent-300"
-          label="全部收藏"
+          label={i18n.t('sidebar.all')}
           count={bookmarks.length}
           onClick={() => onSelect({ kind: 'all' })}
         />
@@ -268,7 +271,7 @@ export function Sidebar({
           active={selection.kind === 'starred'}
           icon="Star"
           iconColor="text-amber-400"
-          label="星标"
+          label={i18n.t('sidebar.starred')}
           count={starredCount}
           onClick={() => onSelect({ kind: 'starred' })}
         />
@@ -276,7 +279,7 @@ export function Sidebar({
           active={selection.kind === 'recent'}
           icon="Clock"
           iconColor="text-mint-400"
-          label="最近添加"
+          label={i18n.t('sidebar.recent')}
           count={recentCount}
           onClick={() => onSelect({ kind: 'recent' })}
         />
@@ -289,13 +292,13 @@ export function Sidebar({
             </span>
           }
         >
-          智能
+          {i18n.t('sidebar.smart')}
         </SectionLabel>
         <NavRow
           active={false}
           icon="Sparkles"
           iconColor="text-violet2-400"
-          label="收藏洞察"
+          label={i18n.t('sidebar.insights')}
           count={insightCount}
           onClick={onOpenInsights}
           trailing={insightCount > 0 && <span className="w-1.5 h-1.5 rounded-full bg-coral-500 animate-ai-pulse" />}
@@ -306,9 +309,9 @@ export function Sidebar({
           right={
             <button
               type="button"
-              aria-label="New category"
+              aria-label={i18n.t('sidebar.newCategory')}
               className="text-ink-400 hover:text-ink-100 transition"
-              title="New category"
+              title={i18n.t('sidebar.newCategory')}
               onClick={(e) => {
                 e.stopPropagation();
                 onNewCategory();
@@ -318,7 +321,7 @@ export function Sidebar({
             </button>
           }
         >
-          收藏分类
+          {i18n.t('sidebar.categories')}
         </SectionLabel>
         <CategoryDndContext onMoveCategory={onMoveCategory}>
           {renderTree(null, 0)}
@@ -329,9 +332,9 @@ export function Sidebar({
           right={
             <button
               type="button"
-              aria-label="New collection"
+              aria-label={i18n.t('sidebar.newCollection')}
               className="text-ink-400 hover:text-ink-100 transition"
-              title="New collection"
+              title={i18n.t('sidebar.newCollection')}
               onClick={(e) => {
                 e.stopPropagation();
                 onNewCollection();
@@ -341,12 +344,12 @@ export function Sidebar({
             </button>
           }
         >
-          收藏主题
+          {i18n.t('sidebar.collections')}
         </SectionLabel>
         <div
           role="button"
           tabIndex={0}
-          aria-label="Create collection drop zone"
+          aria-label={i18n.t('sidebar.dropZone')}
           onClick={(e) => e.stopPropagation()}
           className={`mx-2 mb-1 rounded-lg border border-dashed px-2 py-2 text-[11px] transition ${
             composeDropActive
@@ -364,7 +367,7 @@ export function Sidebar({
             onDropToCompose(e.dataTransfer.getData('text/bookmark'));
           }}
         >
-          Drop selection to create collection
+          {i18n.t('sidebar.dropSelection')}
         </div>
         {collections.map((col) => {
           const active = selection.kind === 'collection' && selection.id === col.id;
@@ -387,8 +390,8 @@ export function Sidebar({
                     <span className={`w-1.5 h-1.5 rounded-full ${c.dot} opacity-70`} />
                     <button
                       type="button"
-                      aria-label="Edit collection"
-                      title="Edit collection"
+                      aria-label={i18n.t('sidebar.editCollection')}
+                      title={i18n.t('sidebar.editCollection')}
                       onClick={(e) => {
                         e.stopPropagation();
                         onEditCollection(col.id);
@@ -399,8 +402,8 @@ export function Sidebar({
                     </button>
                     <button
                       type="button"
-                      aria-label="Delete collection"
-                      title="Delete collection"
+                      aria-label={i18n.t('sidebar.deleteCollection')}
+                      title={i18n.t('sidebar.deleteCollection')}
                       onClick={(e) => {
                         e.stopPropagation();
                         onDeleteCollection(col.id);
@@ -417,8 +420,8 @@ export function Sidebar({
         })}
 
         {/* Tags */}
-        <SectionLabel>标签</SectionLabel>
-        <div className="px-3 pt-1 pb-2 flex flex-wrap gap-1.5" aria-label="Sidebar tags" onClick={(e) => e.stopPropagation()}>
+        <SectionLabel>{i18n.t('sidebar.tags')}</SectionLabel>
+        <div className="px-3 pt-1 pb-2 flex flex-wrap gap-1.5" aria-label={i18n.t('sidebar.tagsLabel')} onClick={(e) => e.stopPropagation()}>
           {tags.map((t) => {
             const active = selection.kind === 'tag' && selection.id === t.id;
             const count = bookmarks.filter((b) => b.tags.includes(t.id)).length;
@@ -435,12 +438,12 @@ export function Sidebar({
         </div>
 
         {/* Health */}
-        <SectionLabel>链接健康</SectionLabel>
+        <SectionLabel>{i18n.t('sidebar.health')}</SectionLabel>
         <NavRow
           active={selection.kind === 'health' && selection.status === 'changed'}
           icon="RefreshCw"
           iconColor="text-amber-400"
-          label="Updated"
+          label={i18n.t('sidebar.updated')}
           count={bookmarks.filter((b) => b.health === 'changed').length}
           onClick={() => onSelect({ kind: 'health', status: 'changed' })}
         />
@@ -448,7 +451,7 @@ export function Sidebar({
           active={selection.kind === 'health' && selection.status === 'broken'}
           icon="ShieldAlert"
           iconColor="text-coral-400"
-          label="Broken"
+          label={i18n.t('sidebar.broken')}
           count={bookmarks.filter((b) => b.health === 'broken').length}
           onClick={() => onSelect({ kind: 'health', status: 'broken' })}
         />
@@ -459,7 +462,7 @@ export function Sidebar({
         <div className="flex items-center justify-between text-[10px] text-ink-400 mb-1.5">
           <span className="flex items-center gap-1.5">
             <Icon name="HardDrive" size={11} />
-            本地缓存
+            {i18n.t('sidebar.localCache')}
           </span>
           <span className="tabular-nums">{bookmarks.length} / ∞</span>
         </div>

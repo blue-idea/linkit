@@ -1,11 +1,11 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：2.2.0
+> 版本：2.3.0
 > 日期：2026-07-20  
 > 状态：已定稿
 
-执行时须严格遵循 `docs/spec/requirements.md` 2.3.0、`docs/spec/design.md` 1.7.0 和 `docs/spec/test_strategy.md` 1.7.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
+执行时须严格遵循 `docs/spec/requirements.md` 2.4.0、`docs/spec/design.md` 1.8.0 和 `docs/spec/test_strategy.md` 1.8.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
 
 AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首尾均包含。
 
@@ -82,6 +82,32 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
   _需求: REQ-026  
   验收标准：REQ-026-AC-001~004  
   _测试类型: Unit
+
+---
+
+- [ ] **TASK-056 · 全界面 UI 语言与设置对齐**
+
+  > 依赖：TASK-023 · 预计：3–4 小时 · 状态：进行中 · 2026-07-20
+
+  - [ ] Red：新增词典完整性、全局 Provider、代表性组件与硬编码 UI 审计测试，并扩展 Playwright 双语言旅程；确认测试因未覆盖文案或界面仍混合语言而失败。
+  - [ ] Green：在应用根部接入 locale 驱动的 i18n 上下文，补齐全部系统 UI 翻译键，将导航、视图、对话框、表单、空态、状态、Toast 与无障碍名称切换到统一翻译接口。
+  - [ ] Refactor：抽取枚举/状态/数量文案映射，消除重复语言分支；保持领域值、持久化格式、用户自定义内容和既有业务回调不变。
+  - [ ] 执行 Vitest 覆盖率、类型检查、Lint、构建、Playwright E2E 与视觉回归，保存 English/中文 Baseline、Actual、Diff 和自定义内容不变证据。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/i18n src/components src/features --coverage
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui build
+  pnpm --dir ui exec playwright test tests/e2e/settings-i18n.spec.ts tests/visual/ui-language-alignment.spec.ts --workers=1
+  ```
+
+  **验收证据：** 词典键完整性、硬编码审计、双语言主窗口与代表性对话框 Baseline/Actual/Diff、自定义内容不变断言、`docs/spec/ac/TASK-056-AC.md` 与 `docs/spec/reports/TASK-056-report.md`。
+
+  _需求: REQ-023
+  验收标准：REQ-023-AC-004、REQ-023-AC-005、REQ-023-AC-006、REQ-023-AC-008
+  _测试类型: Unit + E2E
 
 ---
 
@@ -1325,6 +1351,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-053 | 主题视图添加书签入口与挑选器 | Unit/E2E | done | REQ-012 |
 | TASK-054 | 主题视图移出成员 | Unit/E2E | done | REQ-012、026 |
 | TASK-055 | 开发/正式本机身份槽隔离 | Unit | done | REQ-025 |
+| TASK-056 | 全界面 UI 语言与设置对齐 | Unit/E2E | 进行中 | REQ-023 |
 
 ---
 
@@ -1346,3 +1373,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 2.0.0 | 2026-07-19 | 已定稿 | 新增 TASK-051，新建书签 URL 规范化后唯一，重复时 warning 并阻止下一步 |
 | 2.1.0 | 2026-07-19 | 已定稿 | 新增 TASK-052~054，主题视图手动添加/移出书签（REQ-012-AC-006~011） |
 | 2.2.0 | 2026-07-20 | 已定稿 | 新增 TASK-055，开发/正式本机身份槽隔离（REQ-025-AC-006） |
+| 2.3.0 | 2026-07-20 | 已定稿 | 新增 TASK-056，全界面非自定义 UI 文案与无障碍名称跟随设置语言 |

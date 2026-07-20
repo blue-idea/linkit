@@ -1,4 +1,5 @@
 import { Icon, Button } from '../../components/ui';
+import { useI18n } from '../../i18n/use-i18n';
 
 /**
  * 云 revision 冲突对话框：禁止自动合并。
@@ -17,6 +18,7 @@ export function CloudConflictDialog({
   onUseCloudCopy: () => void;
   onOverwriteCloud: () => void;
 }) {
+  const i18n = useI18n();
   if (!open) return null;
 
   return (
@@ -38,27 +40,27 @@ export function CloudConflictDialog({
           </span>
           <div className="min-w-0">
             <h2 id="cloud-conflict-title" className="text-[15px] font-semibold text-ink-100">
-              Cloud revision conflict
+              {i18n.t('storage.conflict.title')}
             </h2>
             <p className="text-[12px] text-ink-400 mt-1 leading-relaxed">
-              The cloud library changed on another device. Automatic saving is paused until you choose.
+              {i18n.t('storage.conflict.body')}
             </p>
             {cloudRevision !== null && (
               <p className="text-[12px] text-ink-200 mt-3 tabular-nums" data-testid="cloud-conflict-revision">
-                Cloud revision: {cloudRevision}
+                {i18n.t('storage.conflict.revision', { revision: cloudRevision })}
               </p>
             )}
           </div>
         </div>
         <div className="mt-5 flex flex-wrap justify-end gap-2">
           <Button variant="ghost" onClick={onCancel}>
-            Cancel
+            {i18n.t('common.cancel')}
           </Button>
           <Button variant="subtle" onClick={onUseCloudCopy}>
-            Use Cloud Copy
+            {i18n.t('storage.conflict.useCloud')}
           </Button>
           <Button variant="danger" onClick={onOverwriteCloud}>
-            Overwrite Cloud
+            {i18n.t('storage.conflict.overwrite')}
           </Button>
         </div>
       </div>

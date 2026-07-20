@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.26.0
+> 版本：1.27.0
 > 日期：2026-07-20
-> 状态：已定稿（新增 TASK-055 / REQ-025-AC-006）
+> 状态：已定稿（新增 TASK-056 / REQ-023-AC-008）
 
 ---
 
@@ -81,6 +81,7 @@
 | TASK-053 | 主题视图添加书签入口与挑选器 | REQ-012-AC-006~010 | done | `ui/src/features/collections/AddBookmarksToCollectionDialog.tsx`、`ui/src/components/ContentArea.tsx`、`ui/src/App.tsx`、`ui/src/features/shell/overlay-stack.ts` | `ui/src/features/collections/AddBookmarksToCollectionDialog.test.tsx`、`ui/tests/e2e/collection-membership.spec.ts` | `docs/spec/ac/TASK-053-AC.md` | 2026-07-19 |
 | TASK-054 | 主题视图移出成员 | REQ-012-AC-011；REQ-026-AC-003 | done | `ui/src/features/views/BookmarkItemActions.tsx`、`ui/src/features/collections/RemoveFromCollectionDialog.tsx`、`ui/src/components/ContentArea.tsx`、`ui/src/App.tsx` | `ui/src/features/views/BookmarkItemActions.test.tsx`、`ui/src/features/collections/RemoveFromCollectionDialog.test.tsx`、`ui/tests/e2e/collection-membership.spec.ts` | `docs/spec/ac/TASK-054-AC.md` | 2026-07-19 |
 | TASK-055 | 开发/正式本机身份槽隔离 | REQ-025-AC-006 | done | `config/identity.go`、`config/identity_dev.go`、`config/app.go`、`config/storage.go`、`config/errors.go`、`scripts/dev.ps1`、`scripts/dev.sh`、`scripts/check-identity/main.go`、`.github/workflows/ci.yml`、`.github/workflows/release.yml` | `config/identity_test.go`、`config/identity_release_test.go`、`config/identity_dev_test.go` | `docs/spec/ac/TASK-055-AC.md` | 2026-07-20 |
+| TASK-056 | 全界面 UI 语言与设置对齐 | REQ-023-AC-004~006、008 | 进行中 | — | `ui/src/i18n/*`、代表性组件测试、`ui/tests/e2e/settings-i18n.spec.ts`、`ui/tests/visual/ui-language-alignment.spec.ts` | `docs/spec/ac/TASK-056-AC.md` | — |
 
 ---
 
@@ -93,7 +94,7 @@
 | REQ-010~014 | TASK-014~018、025、035、044、050、052~054 |
 | REQ-015~018 | TASK-019~021、025、034、037、041、044 |
 | REQ-019~022 | TASK-007、031~040、044 |
-| REQ-023~024 | TASK-001~002、015、022~025、042~044、046~047 |
+| REQ-023~024 | TASK-001~002、015、022~025、042~044、046~047、056 |
 | REQ-025~029 | TASK-001~009、022、026~032、040~044、046~047 |
 
 ---
@@ -137,3 +138,4 @@
 | 2026-07-19 | TASK-053 更新为 done | 主题视图 Add bookmarks 挑选器与空态 CTA 验收通过 |
 | 2026-07-19 | TASK-054 更新为 done | 主题视图单条/多选移出成员验收通过 |
 | 2026-07-20 | 新增 TASK-055 与 REQ-025-AC-006 追溯 | 开发/正式 AppData 与 Keychain 身份槽隔离；Release 产物门禁 |
+| 2026-07-20 | 新增 TASK-056 与 REQ-023-AC-008 追溯 | 全部非自定义 UI 文案、状态和无障碍名称跟随设置语言；自定义内容保持原样 |

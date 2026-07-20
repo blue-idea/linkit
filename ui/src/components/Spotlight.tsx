@@ -10,6 +10,7 @@ import {
   type SemanticHit,
 } from '../features/search';
 import { Icon, Favicon, AIBadge, Kbd } from './ui';
+import { useI18n } from '../i18n/use-i18n';
 
 type Mode = 'keyword' | 'semantic';
 
@@ -38,6 +39,7 @@ export function Spotlight({
   onClose: () => void;
   onNewFromUrl: (url: string) => void;
 }) {
+  const i18n = useI18n();
   const [query, setQuery] = useState('');
   const [mode, setMode] = useState<Mode>('keyword');
   const [active, setActive] = useState(0);
@@ -177,7 +179,7 @@ export function Spotlight({
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
       <div
         role="dialog"
-        aria-label="Spotlight"
+        aria-label={i18n.t('spotlight.title')}
         aria-modal="true"
         className="relative w-full max-w-[640px] rounded-mac-xl glass-strong ring-glow overflow-hidden animate-spotlight-in"
         onClick={(e) => e.stopPropagation()}
@@ -190,7 +192,7 @@ export function Spotlight({
           />
           <input
             ref={inputRef}
-            aria-label="Spotlight search"
+            aria-label={i18n.t('spotlight.search')}
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -198,8 +200,8 @@ export function Spotlight({
             }}
             placeholder={
               mode === 'semantic'
-                ? 'Describe what you saved…'
-                : 'Search title, domain, notes…'
+                ? i18n.t('spotlight.semanticPlaceholder')
+                : i18n.t('spotlight.keywordPlaceholder')
             }
             className="flex-1 bg-transparent text-[16px] text-ink-100 placeholder:text-ink-500 outline-none"
           />
@@ -211,7 +213,7 @@ export function Spotlight({
                 mode === 'keyword' ? 'bg-ink-600 text-ink-100' : 'text-ink-400 hover:text-ink-200'
               }`}
             >
-              <Icon name="Search" size={11} /> Keyword
+              <Icon name="Search" size={11} /> {i18n.t('spotlight.keyword')}
             </button>
             <button
               type="button"
@@ -222,16 +224,16 @@ export function Spotlight({
                   : 'text-ink-400 hover:text-ink-200'
               }`}
             >
-              <Icon name="Sparkles" size={11} /> Semantic
+              <Icon name="Sparkles" size={11} /> {i18n.t('spotlight.semantic')}
             </button>
           </div>
         </div>
 
-        <div className="max-h-[52vh] overflow-y-auto scroll-thin" role="listbox" aria-label="Spotlight results">
+        <div className="max-h-[52vh] overflow-y-auto scroll-thin" role="listbox" aria-label={i18n.t('spotlight.results')}>
           {isUrl && (
             <button
               type="button"
-              aria-label="New Bookmark"
+              aria-label={i18n.t('content.newBookmark')}
               onClick={openNewBookmark}
               className="w-full flex items-center gap-3 px-4 py-3 hover:bg-ink-700/40 transition text-left border-b border-white/5"
             >
@@ -239,7 +241,7 @@ export function Spotlight({
                 <Icon name="Plus" size={16} className="text-mint-400" />
               </span>
               <div className="flex-1">
-                <div className="text-[13px] font-medium text-ink-100">New Bookmark</div>
+                <div className="text-[13px] font-medium text-ink-100">{i18n.t('content.newBookmark')}</div>
                 <div className="text-[11px] text-ink-400 truncate">{query.trim()}</div>
               </div>
               <span className="text-[10px] text-ink-500 flex items-center gap-1">
@@ -253,14 +255,14 @@ export function Spotlight({
               role="alert"
               className="px-4 py-3 border-b border-white/5 bg-amber-500/10 text-[12px] text-amber-200"
             >
-              {fallbackMessage}
+              {i18n.t('spotlight.fallback')}
             </div>
           )}
 
           {mode === 'semantic' && thinking && (
             <div className="px-4 py-2 border-b border-white/5 flex items-center gap-2" role="status">
-              <AIBadge label="Semantic" />
-              <span className="text-[10px] text-ink-400 animate-ai-pulse">Reranking library candidates…</span>
+              <AIBadge label={i18n.t('spotlight.semantic')} />
+              <span className="text-[10px] text-ink-400 animate-ai-pulse">{i18n.t('spotlight.reranking')}</span>
             </div>
           )}
 
@@ -269,9 +271,9 @@ export function Spotlight({
               <div className="px-4 pb-1 pt-1 text-[10px] uppercase tracking-wider text-ink-500 font-semibold">
                 {mode === 'semantic'
                   ? fallbackMessage
-                    ? 'Keyword fallback'
-                    : 'Semantic matches'
-                  : 'Matches'}{' '}
+                    ? i18n.t('spotlight.keywordFallback')
+                    : i18n.t('spotlight.semanticMatches')
+                  : i18n.t('spotlight.matches')}{' '}
                 · {list.length}
               </div>
               {list.map((b, i) => {
@@ -325,13 +327,13 @@ export function Spotlight({
               <div className="px-4 py-10 text-center" data-spotlight-empty role="status">
                 <div className="text-[13px] text-ink-300">
                   {mode === 'semantic' && semanticEmpty
-                    ? 'No matching bookmarks in your library'
-                    : 'No matching bookmarks'}
+                    ? i18n.t('spotlight.emptyLibrary')
+                    : i18n.t('spotlight.empty')}
                 </div>
                 <div className="text-[11px] text-ink-500 mt-1">
                   {mode === 'semantic'
-                    ? 'No external recommendations — try keyword mode or another query'
-                    : 'Try semantic mode with natural language'}
+                    ? i18n.t('spotlight.semanticEmptyHint')
+                    : i18n.t('spotlight.keywordEmptyHint')}
                 </div>
               </div>
             )
@@ -340,18 +342,18 @@ export function Spotlight({
           <div className="px-4 py-2.5 border-t border-white/5 flex items-center justify-between text-[10px] text-ink-500">
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1">
-                <Kbd>⇥</Kbd> Mode
+                <Kbd>⇥</Kbd> {i18n.t('spotlight.mode')}
               </span>
               <span className="flex items-center gap-1">
                 <Kbd>↑</Kbd>
-                <Kbd>↓</Kbd> Select
+                <Kbd>↓</Kbd> {i18n.t('spotlight.select')}
               </span>
               <span className="flex items-center gap-1">
-                <Kbd>↵</Kbd> Open
+                <Kbd>↵</Kbd> {i18n.t('spotlight.open')}
               </span>
             </div>
             <span className="flex items-center gap-1">
-              <Kbd>esc</Kbd> Close
+              <Kbd>esc</Kbd> {i18n.t('spotlight.close')}
             </span>
           </div>
         </div>

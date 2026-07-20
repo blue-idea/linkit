@@ -6,6 +6,7 @@ import { groupBookmarksByTags } from '../../domain/views';
 import { Icon, TagPill } from '../../components/ui';
 import type { Tag, TagColor } from '../../types';
 import type { BookmarkItemActionHandlers } from './BookmarkItemActions';
+import { useI18n } from '../../i18n/use-i18n';
 
 type TagAggregationViewProps = BookmarkItemActionHandlers & {
   items: BookmarkPresentation[];
@@ -46,6 +47,7 @@ export function TagAggregationView({
   onMove,
   onDelete,
 }: TagAggregationViewProps) {
+  const i18n = useI18n();
   const parentRef = useRef<HTMLDivElement>(null);
   const byId = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
   const tagColor = useMemo(() => new Map(tags.map((tag) => [tag.id, tag.color])), [tags]);
@@ -86,7 +88,7 @@ export function TagAggregationView({
     <div
       ref={parentRef}
       data-view="tag-aggregation"
-      aria-label="Tag Aggregation view"
+      aria-label={i18n.t('content.view.tags')}
       className="flex-1 overflow-y-auto scroll-thin px-4 pb-6 pt-1"
     >
       <div className="relative" style={{ height: virtualizer.getTotalSize() }}>

@@ -5,6 +5,7 @@ import { Icon, TagPill, Favicon, AIBadge } from '../../components/ui';
 import { formatDate } from '../../utils/format-date';
 import { INITIAL_VIRTUAL_VIEW_RECT } from '../../config/virtualization';
 import { BookmarkItemActions } from './BookmarkItemActions';
+import { useI18n } from '../../i18n/use-i18n';
 
 const COLUMNS = 3;
 const ROW_ESTIMATE = 168;
@@ -44,6 +45,7 @@ export function CardView({
   onToggleSelect,
   onRemoveFromCollection,
 }: CardViewProps) {
+  const i18n = useI18n();
   const parentRef = useRef<HTMLDivElement>(null);
   const rowCount = Math.ceil(items.length / COLUMNS);
   const virtualizer = useVirtualizer({
@@ -58,7 +60,7 @@ export function CardView({
     <div
       ref={parentRef}
       data-view="card"
-      aria-label="Card view"
+      aria-label={i18n.t('content.view.card')}
       className="flex-1 overflow-y-auto scroll-thin px-4 pb-6 pt-2"
     >
       <div
@@ -134,6 +136,7 @@ function CardItem({
   onToggleSelect: (selected: boolean) => void;
   onRemoveFromCollection?: () => void;
 }) {
+  const i18n = useI18n();
   return (
     <div
       draggable
@@ -163,7 +166,7 @@ function CardItem({
         </div>
         <button
           type="button"
-          aria-label={item.starred ? `Unstar ${item.title}` : `Star ${item.title}`}
+          aria-label={item.starred ? i18n.t('bookmark.unstar', { title: item.title }) : i18n.t('bookmark.star', { title: item.title })}
           onClick={(e) => {
             e.stopPropagation();
             onToggleStar();
@@ -194,7 +197,7 @@ function CardItem({
         </div>
         <span className="flex items-center gap-1 text-[10px] text-ink-400 shrink-0">
           <Icon name="Clock" size={10} />
-          {formatDate(item.createdAt)}
+          {formatDate(item.createdAt, i18n.getLocale())}
         </span>
       </div>
       <BookmarkItemActions title={item.title} selected={bulkSelected} selectionMode={selectionMode} onToggleSelect={onToggleSelect} onVisit={onVisit} onEdit={onEdit} onMove={onMove} onDelete={onDelete} onRemoveFromCollection={onRemoveFromCollection} />

@@ -82,7 +82,7 @@ test.describe('JSON import export', () => {
     await dialog.locator('[data-testid="import-file-input"]').setInputFiles(resolve(fixtures, 'valid-library.json'));
     await expect(page.getByRole('dialog', { name: 'Overwrite current library?' })).toBeVisible();
     await page.getByRole('button', { name: 'Overwrite and import' }).click();
-    await expect(page.getByText('Imported 1 bookmarks')).toBeVisible();
+    await expect(dialog.getByText('Imported 1 bookmarks', { exact: true })).toBeVisible();
     await dialog.getByRole('button', { name: 'Cancel' }).click();
     await expect(page.getByRole('dialog', { name: 'Settings' })).toHaveCount(0);
 

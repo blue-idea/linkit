@@ -4,6 +4,7 @@ import { assignMasonryColumns } from './layout';
 import { Icon, Favicon } from '../../components/ui';
 import { thumbnailGradients } from '../../colors';
 import { BookmarkItemActions, type BookmarkItemActionHandlers } from './BookmarkItemActions';
+import { useI18n } from '../../i18n/use-i18n';
 
 type MasonryViewProps = BookmarkItemActionHandlers & {
   items: BookmarkPresentation[];
@@ -32,6 +33,7 @@ export function MasonryView({
   onDelete,
   onRemoveFromCollection,
 }: MasonryViewProps) {
+  const i18n = useI18n();
   const columns = useMemo(
     () => assignMasonryColumns(items, columnCount),
     [items, columnCount]
@@ -40,7 +42,7 @@ export function MasonryView({
   return (
     <div
       data-view="masonry"
-      aria-label="Masonry view"
+      aria-label={i18n.t('content.view.masonry')}
       className="flex-1 overflow-y-auto scroll-thin px-4 pb-6 pt-2"
     >
       <div

@@ -30,8 +30,8 @@ test.describe('书签状态与访问', () => {
     await star.click();
     await expect(star).toHaveAttribute('aria-pressed', before === 'true' ? 'false' : 'true');
 
-    // 侧栏「星标」入口应可点击；具体列表内容在置顶/筛选用例中覆盖。
-    await page.getByText('星标', { exact: true }).first().click();
+    // 默认 English 下侧栏 Starred 入口应可点击；具体列表内容在置顶/筛选用例中覆盖。
+    await page.getByText('Starred', { exact: true }).first().click();
   });
 
   // REQ-008-AC-001

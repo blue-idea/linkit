@@ -6,6 +6,7 @@ import {
   localizeError,
   type I18nApi,
 } from './index';
+import { catalogs } from './catalogs';
 
 describe('i18n', () => {
   let i18n: I18nApi;
@@ -31,7 +32,7 @@ describe('i18n', () => {
   });
 
   test('content.newBookmark 英文文案', () => {
-    expect(i18n.t('content.newBookmark')).toBe('New bookmark');
+    expect(i18n.t('content.newBookmark')).toBe('New Bookmark');
   });
 
   // REQ-023-AC-005：缺失翻译键回退到 English。
@@ -72,5 +73,12 @@ describe('i18n', () => {
       '外观',
       '语言',
     ]);
+  });
+
+  // REQ-023-AC-008：除测试回退键外，全部产品键必须同时具备中英文。
+  test('产品词典的 English 与中文键完整对齐', () => {
+    const productEnglishKeys = Object.keys(catalogs.en).filter((key) => !key.startsWith('test.'));
+    expect(Object.keys(catalogs.zh).sort()).toEqual(productEnglishKeys.sort());
+    expect(Object.values(catalogs.zh).every((message) => message.trim().length > 0)).toBe(true);
   });
 });

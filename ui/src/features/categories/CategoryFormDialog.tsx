@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Icon, Button } from '../../components/ui';
+import { useI18n } from '../../i18n/use-i18n';
 
 /**
- * 新建 / 重命名分类对话框（英文文案）。
+ * 新建 / 重命名分类对话框。
  * REQ-010-AC-002
  */
 export function CategoryFormDialog({
@@ -16,9 +17,10 @@ export function CategoryFormDialog({
   onCancel: () => void;
   onSubmit: (name: string) => void;
 }) {
+  const i18n = useI18n();
   const [name, setName] = useState(initialName);
-  const title = mode === 'create' ? 'New category' : 'Rename category';
-  const submitLabel = mode === 'create' ? 'Create category' : 'Save category name';
+  const title = mode === 'create' ? i18n.t('category.new') : i18n.t('category.rename');
+  const submitLabel = mode === 'create' ? i18n.t('category.create') : i18n.t('category.saveName');
 
   return (
     <div
@@ -42,11 +44,11 @@ export function CategoryFormDialog({
               {title}
             </h2>
             <label className="block mt-3 text-[11px] font-medium text-ink-300 mb-1.5" htmlFor="category-name">
-              Category name
+              {i18n.t('category.name')}
             </label>
             <input
               id="category-name"
-              aria-label="Category name"
+              aria-label={i18n.t('category.name')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => {
@@ -59,7 +61,7 @@ export function CategoryFormDialog({
         </div>
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="ghost" onClick={onCancel}>
-            Cancel
+            {i18n.t('common.cancel')}
           </Button>
           <Button
             variant="primary"
@@ -67,7 +69,7 @@ export function CategoryFormDialog({
             disabled={!name.trim()}
             onClick={() => onSubmit(name.trim())}
           >
-            {mode === 'create' ? 'Create' : 'Save'}
+            {mode === 'create' ? i18n.t('common.create') : i18n.t('common.save')}
           </Button>
         </div>
       </div>

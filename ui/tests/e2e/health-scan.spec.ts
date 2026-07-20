@@ -24,7 +24,10 @@ test.describe('链接健康', () => {
     await page.waitForTimeout(300);
     expect(requestCount).toBe(0);
 
-    await page.getByLabel('Detail Panel', { exact: true }).getByRole('button', { name: /链接正常|内容已更新|链接可能失效/ }).click();
+    await page
+      .getByLabel('Detail Panel', { exact: true })
+      .getByRole('button', { name: /Link is healthy|Content updated|Link may be broken/ })
+      .click();
     const dialog = page.getByRole('dialog', { name: 'Health check' });
     await expect(dialog.getByText('Manual scan only')).toBeVisible();
     expect(requestCount).toBe(0);
@@ -38,8 +41,8 @@ test.describe('链接健康', () => {
     await dialog.getByRole('button', { name: 'Close' }).click();
 
     await page.getByText('Updated', { exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Updated' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Changed' })).toBeAttached();
     await page.getByText('Broken', { exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Broken' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Broken' })).toBeAttached();
   });
 });

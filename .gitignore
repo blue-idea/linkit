@@ -16,3 +16,4 @@
 # Go 本地测试与覆盖率产物
 *.test
 coverage.out
+*.tsbuildinfo

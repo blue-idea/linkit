@@ -4,6 +4,7 @@ import type { BookmarkPresentation } from './presenter';
 import { Icon, TagPill, Favicon } from '../../components/ui';
 import { INITIAL_VIRTUAL_VIEW_RECT } from '../../config/virtualization';
 import { BookmarkItemActions, type BookmarkItemActionHandlers } from './BookmarkItemActions';
+import { useI18n } from '../../i18n/use-i18n';
 
 const ROW_ESTIMATE = 84;
 
@@ -34,6 +35,7 @@ export function ListView({
   onDelete,
   onRemoveFromCollection,
 }: ListViewProps) {
+  const i18n = useI18n();
   const parentRef = useRef<HTMLDivElement>(null);
   const virtualizer = useVirtualizer({
     count: items.length,
@@ -47,7 +49,7 @@ export function ListView({
     <div
       ref={parentRef}
       data-view="list"
-      aria-label="List view"
+      aria-label={i18n.t('content.view.list')}
       className="flex-1 overflow-y-auto scroll-thin px-4 pb-6 pt-2"
     >
       <div
@@ -120,6 +122,7 @@ function ListItem({
   onDelete: () => void;
   onRemoveFromCollection?: () => void;
 }) {
+  const i18n = useI18n();
   return (
     <div
       draggable
@@ -159,7 +162,7 @@ function ListItem({
         </div>
         <button
           type="button"
-          aria-label={item.starred ? `Unstar ${item.title}` : `Star ${item.title}`}
+          aria-label={item.starred ? i18n.t('bookmark.unstar', { title: item.title }) : i18n.t('bookmark.star', { title: item.title })}
           onClick={(e) => {
             e.stopPropagation();
             onToggleStar();

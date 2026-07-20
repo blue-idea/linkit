@@ -27,8 +27,9 @@ function SmartAggregation({
   onAccept: (bookmarkIds: string[]) => void;
   onDismiss: () => void;
 }) {
+  const i18n = useI18n();
   // lightweight inline recommendation to avoid importing heavy logic into render loop
-  const recommendations = useInlineRecommend(collection, bookmarks);
+  const recommendations = useInlineRecommend(collection, bookmarks, i18n);
   const [added, setAdded] = useState<Set<string>>(new Set());
 
   if (recommendations.length === 0) return null;
@@ -43,10 +44,10 @@ function SmartAggregation({
           </span>
           <div className="flex-1">
             <div className="text-[13px] font-semibold text-ink-100 flex items-center gap-2">
-              AI 建议加入「{collection.emoji} {collection.name}」
-              <AIBadge label="智能聚合" />
+              {i18n.t('content.aiSuggestion', { name: `${collection.emoji} ${collection.name}` })}
+              <AIBadge label={i18n.t('content.aiSuggestionLabel')} />
             </div>
-            <div className="text-[11px] text-ink-400 mt-0.5">基于该主题已收录内容的标签与分类画像推荐</div>
+            <div className="text-[11px] text-ink-400 mt-0.5">{i18n.t('content.aiSuggestionHint')}</div>
           </div>
           <Button size="sm" variant="ghost" icon="X" onClick={onDismiss} />
         </div>
@@ -78,9 +79,9 @@ function SmartAggregation({
         </div>
         {added.size > 0 && (
           <div className="mt-3 flex items-center justify-end gap-2 relative animate-slide-up">
-            <span className="text-[11px] text-ink-400">已选 {added.size} 项</span>
+            <span className="text-[11px] text-ink-400">{i18n.t('common.itemsSelected', { count: added.size })}</span>
             <Button size="sm" variant="primary" icon="Check" onClick={() => onAccept([...added])}>
-              加入主题
+              {i18n.t('content.addSelectedToCollection')}
             </Button>
           </div>
         )}
@@ -89,7 +90,7 @@ function SmartAggregation({
   );
 }
 
-function useInlineRecommend(collection: Collection, bookmarks: Bookmark[]) {
+function useInlineRecommend(collection: Collection, bookmarks: Bookmark[], i18n: ReturnType<typeof useI18n>) {
   // simplified; real impl in ai.ts but kept local for the banner
   const memberIds = new Set(collection.bookmarkIds);
   const members = bookmarks.filter((b) => memberIds.has(b.id));
@@ -102,10 +103,10 @@ function useInlineRecommend(collection: Collection, bookmarks: Bookmark[]) {
       const overlap = b.tags.filter((t) => topTags.includes(t)).length;
       let score = 0.3 + overlap * 0.22 + (b.starred ? 0.08 : 0);
       const reasons: string[] = [];
-      if (overlap) reasons.push(`标签重合 ${overlap}`);
-      if (b.starred) reasons.push('你标星过');
+      if (overlap) reasons.push(i18n.t('content.recommend.tagOverlap', { count: overlap }));
+      if (b.starred) reasons.push(i18n.t('content.recommend.starred'));
       score = Math.min(score + ((b.id.length + collection.id.length) % 12) / 100, 0.97);
-      return { bookmarkId: b.id, score, reason: reasons.join(' · ') || '主题相关' };
+      return { bookmarkId: b.id, score, reason: reasons.join(' · ') || i18n.t('content.recommend.related') };
     })
     .filter((r) => r.score > 0.45)
     .sort((a, b) => b.score - a.score)
@@ -138,6 +139,7 @@ function Toolbar({
   readStatus: Filters['readStatus'];
   onReadStatus: (status: Filters['readStatus']) => void;
 }) {
+  const i18n = useI18n();
   return (
     <div className="px-5 pt-4 pb-3 flex items-center gap-3">
       <div className="min-w-0 flex-1">
@@ -151,45 +153,45 @@ function Toolbar({
             value={query}
             onChange={(e) => onSearch(e.target.value)}
             onFocus={onOpenSpotlight}
-            placeholder="搜索或语义查找…"
+            placeholder={i18n.t('content.searchPlaceholder')}
             className="w-44 rounded-lg bg-ink-800/70 hairline text-[12px] text-ink-100 placeholder:text-ink-400 pl-8 pr-2 py-1.5 focus-ring"
           />
         </div>
         <select
-          aria-label="Filter by read status"
+          aria-label={i18n.t('content.filterReadStatus')}
           value={readStatus}
           onChange={(e) => onReadStatus(e.target.value as Filters['readStatus'])}
           className="rounded-lg bg-ink-800/70 hairline text-[12px] text-ink-200 px-2 py-1.5 focus-ring"
         >
-          <option value="all">All status</option>
-          <option value="unread">Unread</option>
-          <option value="reading">Reading</option>
-          <option value="read">Read</option>
-          <option value="archived">Archived</option>
+          <option value="all">{i18n.t('content.allStatuses')}</option>
+          <option value="unread">{i18n.t('status.unread')}</option>
+          <option value="reading">{i18n.t('status.reading')}</option>
+          <option value="read">{i18n.t('status.read')}</option>
+          <option value="archived">{i18n.t('status.archived')}</option>
         </select>
         <select
-          aria-label="Sort bookmarks"
+          aria-label={i18n.t('content.sort')}
           value={sort}
           onChange={(e) => onSort(e.target.value)}
           className="rounded-lg bg-ink-800/70 hairline text-[12px] text-ink-200 px-2 py-1.5 focus-ring"
         >
-          <option value="recent">最近访问</option>
-          <option value="created">收藏时间</option>
-          <option value="visits">访问次数</option>
-          <option value="title">标题</option>
+          <option value="recent">{i18n.t('content.sort.recent')}</option>
+          <option value="created">{i18n.t('content.sort.created')}</option>
+          <option value="visits">{i18n.t('content.sort.visits')}</option>
+          <option value="title">{i18n.t('content.sort.title')}</option>
         </select>
         <Segmented<ViewDensity>
           value={density}
           onChange={onDensity}
           size="sm"
-          aria-label="View density"
+          aria-label={i18n.t('content.viewDensity')}
           options={[
-            { value: 'card', icon: 'LayoutGrid', ariaLabel: 'Card view' },
-            { value: 'list', icon: 'List', ariaLabel: 'List view' },
-            { value: 'masonry', icon: 'Columns3', ariaLabel: 'Masonry view' },
-            { value: 'timeline', icon: 'Clock', ariaLabel: 'Timeline view' },
-            { value: 'tag-aggregation', icon: 'Tags', ariaLabel: 'Tag Aggregation view' },
-            { value: 'theme-space', icon: 'Boxes', ariaLabel: 'Theme Space view' },
+            { value: 'card', icon: 'LayoutGrid', ariaLabel: i18n.t('content.view.card') },
+            { value: 'list', icon: 'List', ariaLabel: i18n.t('content.view.list') },
+            { value: 'masonry', icon: 'Columns3', ariaLabel: i18n.t('content.view.masonry') },
+            { value: 'timeline', icon: 'Clock', ariaLabel: i18n.t('content.view.timeline') },
+            { value: 'tag-aggregation', icon: 'Tags', ariaLabel: i18n.t('content.view.tags') },
+            { value: 'theme-space', icon: 'Boxes', ariaLabel: i18n.t('content.view.themes') },
           ]}
         />
       </div>
@@ -206,11 +208,12 @@ function FilterBar({ filters, tags, onClearTag, onDateRange, onToggleStarred, on
   onToggleStarred: () => void;
   onClearFilters: () => void;
 }) {
+  const i18n = useI18n();
   const dateOptions: { v: Filters['dateRange']; l: string }[] = [
-    { v: 'all', l: '全部时间' },
-    { v: '7d', l: '近 7 天' },
-    { v: '30d', l: '近 30 天' },
-    { v: '90d', l: '近 90 天' },
+    { v: 'all', l: i18n.t('content.date.all') },
+    { v: '7d', l: i18n.t('content.date.7d') },
+    { v: '30d', l: i18n.t('content.date.30d') },
+    { v: '90d', l: i18n.t('content.date.90d') },
   ];
   const active =
     filters.tagIds.length > 0 ||
@@ -220,12 +223,12 @@ function FilterBar({ filters, tags, onClearTag, onDateRange, onToggleStarred, on
   if (!active) return null;
   return (
     <div className="px-5 py-2 flex items-center gap-2 flex-wrap border-b border-white/5 animate-slide-down">
-      <span className="text-[10px] text-ink-400 uppercase tracking-wider font-semibold">筛选</span>
+      <span className="text-[10px] text-ink-400 uppercase tracking-wider font-semibold">{i18n.t('content.filters')}</span>
       {filters.onlyStarred && (
-        <TagPill label="仅星标" color="amber" onRemove={onToggleStarred} />
+        <TagPill label={i18n.t('content.onlyStarred')} color="amber" onRemove={onToggleStarred} />
       )}
       {filters.readStatus !== 'all' && (
-        <TagPill label={`Status: ${filters.readStatus}`} color="violet" onRemove={onClearFilters} />
+        <TagPill label={i18n.t('content.statusFilter', { status: i18n.t(`status.${filters.readStatus}`) })} color="violet" onRemove={onClearFilters} />
       )}
       {filters.tagIds.map((id) => {
         const t = tags.find((x) => x.id === id);
@@ -247,11 +250,11 @@ function FilterBar({ filters, tags, onClearTag, onDateRange, onToggleStarred, on
       </div>
       <button
         type="button"
-        aria-label="Clear filters"
+        aria-label={i18n.t('content.clearFilters')}
         onClick={onClearFilters}
         className="text-[11px] text-ink-400 hover:text-ink-100 px-2 py-0.5 rounded-md hover:bg-ink-700/60 transition"
       >
-        Clear filters
+        {i18n.t('content.clearFilters')}
       </button>
     </div>
   );
@@ -267,34 +270,35 @@ function EmptyState({
   onSpotlight: () => void;
   onAddBookmarks?: () => void;
 }) {
+  const i18n = useI18n();
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
       <div className="w-16 h-16 rounded-2xl bg-ink-800/60 hairline flex items-center justify-center mb-4">
         <Icon name="Bookmark" size={28} className="text-ink-400" />
       </div>
       <div className="text-[15px] font-semibold text-ink-100">
-        {onAddBookmarks ? 'This collection is empty' : '这里还没有收藏'}
+        {onAddBookmarks ? i18n.t('content.empty.collectionTitle') : i18n.t('content.empty.libraryTitle')}
       </div>
       <div className="text-[12px] text-ink-400 mt-1 max-w-xs">
         {onAddBookmarks
-          ? 'Add existing bookmarks from your library, or create a new bookmark.'
-          : '把网址拖入窗口，或用快捷键呼出搜索添加新收藏。'}
+          ? i18n.t('content.empty.collectionBody')
+          : i18n.t('content.empty.libraryBody')}
       </div>
       <div className="flex items-center gap-2 mt-5">
         {onAddBookmarks ? (
           <>
-            <Button variant="primary" icon="Library" aria-label="Add bookmarks" onClick={onAddBookmarks}>
-              Add bookmarks
+            <Button variant="primary" icon="Library" aria-label={i18n.t('content.addBookmarks')} onClick={onAddBookmarks}>
+              {i18n.t('content.addBookmarks')}
             </Button>
             <Button variant="subtle" icon="Plus" onClick={onNew}>
               {/** 次要入口：不自动归属当前主题 */}
-              New bookmark
+              {i18n.t('content.newBookmark')}
             </Button>
           </>
         ) : (
           <>
-            <Button variant="primary" icon="Plus" onClick={onNew}>新增收藏</Button>
-            <Button variant="subtle" icon="Search" onClick={onSpotlight}>全局搜索</Button>
+            <Button variant="primary" icon="Plus" onClick={onNew}>{i18n.t('content.addBookmark')}</Button>
+            <Button variant="subtle" icon="Search" onClick={onSpotlight}>{i18n.t('content.globalSearch')}</Button>
           </>
         )}
       </div>
@@ -391,8 +395,11 @@ export function ContentArea({
   const i18n = useI18n(locale);
   const [aiDismissed, setAiDismissed] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
-  const title = useSelectionTitle(selection, categories, collections);
-  const subtitle = `${bookmarks.length} 个收藏 · ${bookmarks.filter((b) => b.starred).length} 星标`;
+  const title = useSelectionTitle(selection, categories, collections, i18n);
+  const subtitle = i18n.t('content.subtitle', {
+    count: bookmarks.length,
+    starred: bookmarks.filter((b) => b.starred).length,
+  });
   // REQ-009-AC-001/002：排序与 pinned 分组由领域引擎负责。
   const sorted = useMemo(
     () => sortBookmarks(bookmarks, sort as SortKey),
@@ -489,27 +496,27 @@ export function ContentArea({
             size="sm"
             variant="ghost"
             icon="Library"
-            aria-label="Add bookmarks"
+            aria-label={i18n.t('content.addBookmarks')}
             onClick={onOpenAddBookmarks}
           >
-            Add bookmarks
+            {i18n.t('content.addBookmarks')}
           </Button>
         )}
         <Button
           size="sm"
           variant={selectionMode ? 'primary' : 'ghost'}
           icon={selectionMode ? 'Check' : 'ListChecks'}
-          aria-label={selectionMode ? 'Done selecting' : 'Select bookmarks'}
+          aria-label={selectionMode ? i18n.t('content.doneSelecting') : i18n.t('content.selectBookmarks')}
           onClick={() => {
             if (selectionMode) onClearBookmarkSelection();
             setSelectionMode((current) => !current);
           }}
         >
-          {selectionMode ? 'Done' : 'Select'}
+          {selectionMode ? i18n.t('common.done') : i18n.t('common.select')}
         </Button>
-        <Button size="sm" variant="ghost" icon="Sparkles" onClick={onOpenAICollection}>AI create collection</Button>
-        <Button size="sm" variant="ghost" icon="Copy" onClick={onOpenDuplicates}>Find duplicates</Button>
-        <Button size="sm" variant="ghost" icon="Compass" onClick={onOpenExplore}>Explore library</Button>
+        <Button size="sm" variant="ghost" icon="Sparkles" onClick={onOpenAICollection}>{i18n.t('content.aiCollection')}</Button>
+        <Button size="sm" variant="ghost" icon="Copy" onClick={onOpenDuplicates}>{i18n.t('content.findDuplicates')}</Button>
+        <Button size="sm" variant="ghost" icon="Compass" onClick={onOpenExplore}>{i18n.t('content.explore')}</Button>
       </div>
 
       {showAI && (
@@ -522,25 +529,25 @@ export function ContentArea({
       )}
 
       {composeSelectedIds.length > 0 && (
-        <div role="toolbar" aria-label="Bulk bookmark actions" className="mx-4 mb-2 flex items-center justify-between gap-2 rounded-lg bg-accent-500/10 hairline px-3 py-2">
+        <div role="toolbar" aria-label={i18n.t('content.bulkActions')} className="mx-4 mb-2 flex items-center justify-between gap-2 rounded-lg bg-accent-500/10 hairline px-3 py-2">
           <span className="text-[12px] text-ink-200">
-            {composeSelectedIds.length} bookmarks selected
+            {i18n.t('content.bookmarksSelected', { count: composeSelectedIds.length })}
           </span>
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => onMoveBookmarks(composeSelectedIds)}>Move</Button>
-            <Button size="sm" variant="danger" onClick={() => onDeleteBookmarks(composeSelectedIds)}>Delete</Button>
+            <Button size="sm" onClick={() => onMoveBookmarks(composeSelectedIds)}>{i18n.t('common.move')}</Button>
+            <Button size="sm" variant="danger" onClick={() => onDeleteBookmarks(composeSelectedIds)}>{i18n.t('common.delete')}</Button>
             {isCollectionView && onRequestBulkRemoveFromCollection && (
               <Button
                 size="sm"
                 variant="ghost"
-                aria-label="Remove from collection"
+                aria-label={i18n.t('content.removeFromCollection')}
                 onClick={onRequestBulkRemoveFromCollection}
               >
-                Remove from collection
+                {i18n.t('content.removeFromCollection')}
               </Button>
             )}
-            {composeSelectedIds.length >= 2 && <Button size="sm" variant="primary" aria-label="Create collection from selection" onClick={onRequestCompose}>Create collection</Button>}
-            <Button size="sm" variant="ghost" onClick={onClearBookmarkSelection}>Clear selection</Button>
+            {composeSelectedIds.length >= 2 && <Button size="sm" variant="primary" aria-label={i18n.t('content.createFromSelection')} onClick={onRequestCompose}>{i18n.t('content.createCollection')}</Button>}
+            <Button size="sm" variant="ghost" onClick={onClearBookmarkSelection}>{i18n.t('content.clearSelection')}</Button>
           </div>
         </div>
       )}
@@ -618,16 +625,16 @@ export function ContentArea({
 }
 
 /* ---------- hooks ---------- */
-function useSelectionTitle(selection: Selection, categories: Category[], collections: Collection[]) {
+function useSelectionTitle(selection: Selection, categories: Category[], collections: Collection[], i18n: ReturnType<typeof useI18n>) {
   return useMemo(() => {
     switch (selection.kind) {
-      case 'all': return '全部收藏';
-      case 'starred': return '星标收藏';
-      case 'recent': return '最近添加';
-      case 'category': return categories.find((c) => c.id === selection.id)?.name ?? '分类';
-      case 'collection': return collections.find((c) => c.id === selection.id)?.name ?? '主题';
-      case 'tag': return '标签筛选';
-      case 'health': return selection.status === 'changed' ? 'Updated' : 'Broken';
+      case 'all': return i18n.t('content.selection.all');
+      case 'starred': return i18n.t('content.selection.starred');
+      case 'recent': return i18n.t('content.selection.recent');
+      case 'category': return categories.find((c) => c.id === selection.id)?.name ?? i18n.t('content.selection.categoryFallback');
+      case 'collection': return collections.find((c) => c.id === selection.id)?.name ?? i18n.t('content.selection.collectionFallback');
+      case 'tag': return i18n.t('content.selection.tag');
+      case 'health': return i18n.t(selection.status === 'changed' ? 'health.changed' : 'health.broken');
     }
-  }, [selection, categories, collections]);
+  }, [selection, categories, collections, i18n]);
 }

@@ -2,7 +2,7 @@
 
 > 文件路径：`docs/spec/test_strategy.md`  
 > 参考方法论：`phases/qa_engine.md` §第1阶段  
-> 版本：1.7.0
+> 版本：1.8.0
 > 日期：2026-07-20
 > 状态：已定稿
 
@@ -48,7 +48,7 @@ test_scope:
     - "Supabase Auth、RLS、revision 与云冲突"
     - "AppData 原子 JSON、备份、云草稿、导入导出与可配置数据根迁移"
     - "Bookmark 单项/批量编辑移动删除、Category、Collection（含主题视图手动添加/移出成员）、Tag 领域命令与引用完整性"
-    - "六种浏览视图、Spotlight、快捷键、拖拽和 i18n"
+    - "六种浏览视图、Spotlight、快捷键、拖拽和全界面 i18n（排除用户自定义内容）"
     - "OpenAI-compatible AI、授权、降级、语义重排和建议确认"
     - "洞察、手动链接健康和静态知识网络"
     - "10,000 条性能预算、安全、无障碍和视觉回归"
@@ -97,7 +97,7 @@ test_scope:
 | J-09 | Spotlight 关键词、语义降级、结果定位和 URL 快捷入库 |
 | J-10 | JSON 导出、有效导入、无效导入和覆盖确认 |
 | J-11 | Local/Cloud 摘要、切换选择、revision 冲突和云草稿恢复 |
-| J-12 | Settings、六主题（含 Daylight/Paper 浅色主题）、English/中文切换和英文回退 |
+| J-12 | Settings、六主题（含 Daylight/Paper 浅色主题）、English/中文全界面切换、用户自定义内容保持原样和英文安全回退 |
 | J-13 | AI consent、重新分析、去重建议、库内推荐和静态知识图 |
 | J-14 | Insights、手动健康扫描、取消和 Updated/Broken 筛选 |
 | J-15 | 全局快捷键、URL 拖入、Esc 和键盘无障碍 |
@@ -192,6 +192,7 @@ environments:
 - UI 变更必须生成 Baseline、实际截图和 Diff。
 - 主题皮肤变更须覆盖六套主题的主窗口，并额外保存 Appearance 设置界面的 Baseline、实际截图与 Diff。
 - 每个关键旅程至少保存最终状态截图；破坏性操作、错误、降级和冲突路径保存对话框截图。
+- 全界面语言对齐须分别保存 English 与中文主窗口 Baseline、Actual 与 Diff，并补充至少一个代表性对话框截图；截图中的确定性自定义内容在切换前后必须保持一致。
 - 选定验收平台保存核心窗口、快捷键、Baseline、实际截图与 Diff；另一平台保存 Wails 构建日志。
 - 截图不得包含真实 Email、API Key、token 或用户收藏内容。
 
@@ -242,3 +243,4 @@ environments:
 | 1.5.0 | 2026-07-19 | 已定稿 | 将可配置本地数据根与迁移失败/冲突场景纳入 Unit 与 E2E 范围 |
 | 1.6.0 | 2026-07-19 | 已定稿 | J-06 扩展主题视图手动添加/移出成员；对齐 REQ-012-AC-006~011 与 TASK-052~054 |
 | 1.7.0 | 2026-07-20 | 已定稿 | 开发/正式桌面身份槽与 Release 身份门禁纳入测试环境与 Keychain 验收范围 |
+| 1.8.0 | 2026-07-20 | 已定稿 | J-12 扩展为全部非自定义 UI 文案与无障碍名称语言对齐，并要求双语言视觉证据和自定义内容不变断言 |

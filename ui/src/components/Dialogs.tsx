@@ -11,6 +11,7 @@ import {
 import { isBookmarkUrlDuplicate, normalizeBookmarkUrl } from '../domain/commands';
 import { Icon, Favicon, AIBadge, Button, Kbd, AnimateIn } from './ui';
 import { tagColors } from '../colors';
+import { useI18n } from '../i18n/use-i18n';
 
 /* ============ Modal shell ============ */
 function Modal({ open, onClose, children, width = 'max-w-lg', 'aria-label': ariaLabel }: { open: boolean; onClose: () => void; children: React.ReactNode; width?: string; 'aria-label'?: string }) {
@@ -90,6 +91,7 @@ export function NewBookmarkDialog({
   onClose: () => void;
   onCreate: (b: Omit<Bookmark, 'id' | 'createdAt' | 'lastVisitedAt' | 'visitCount' | 'spark'>) => void;
 }) {
+  const i18n = useI18n();
   const [url, setUrl] = useState(initialUrl);
   const [title, setTitle] = useState('');
   const [stage, setStage] = useState<'input' | 'analyzing' | 'review'>('input');
@@ -128,7 +130,7 @@ export function NewBookmarkDialog({
     const normalized = normalizeBookmarkUrl(url);
     // REQ-006-AC-005：重复 URL 在输入阶段弹出 warning，并阻止进入分析/确认步骤。
     if (normalized.ok && isBookmarkUrlDuplicate(bookmarks, normalized.url)) {
-      setUrlWarning('Bookmark URL already exists');
+      setUrlWarning(i18n.t('bookmark.urlDuplicate'));
       setStage('input');
       return;
     }
@@ -204,23 +206,23 @@ export function NewBookmarkDialog({
   const cat = categories.find((c) => c.id === chosenCategory);
 
   return (
-    <Modal open={open} onClose={onClose} width="max-w-[520px]" aria-label="New Bookmark">
+    <Modal open={open} onClose={onClose} width="max-w-[520px]" aria-label={i18n.t('bookmark.new.title')}>
       <ModalHeader
         icon="Plus"
-        title="New Bookmark"
-        subtitle="Paste a URL, review the preview, then save"
+        title={i18n.t('bookmark.new.title')}
+        subtitle={i18n.t('bookmark.new.subtitle')}
         onClose={onClose}
       />
 
       {stage === 'input' && (
         <div className="p-5 space-y-4">
           <div>
-            <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">URL</label>
+            <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">{i18n.t('bookmark.urlLabel')}</label>
             <div className="flex items-center gap-2 rounded-lg bg-ink-800/60 hairline px-3 py-2.5">
               <Icon name="Link" size={14} className="text-ink-400" />
               <input
                 autoFocus
-                aria-label="Bookmark URL"
+                aria-label={i18n.t('bookmark.urlInput')}
                 value={url}
                 onChange={(e) => {
                   setUrl(e.target.value);
@@ -242,34 +244,34 @@ export function NewBookmarkDialog({
           </div>
           <div>
             <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">
-              Title <span className="text-ink-500">(optional)</span>
+              {i18n.t('bookmark.title')} <span className="text-ink-500">({i18n.t('common.optional')})</span>
             </label>
             <input
-              aria-label="Bookmark title hint"
+              aria-label={i18n.t('bookmark.titleHint')}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Page title"
+              placeholder={i18n.t('bookmark.pageTitle')}
               className="w-full rounded-lg bg-ink-800/60 hairline text-[13px] text-ink-100 placeholder:text-ink-500 px-3 py-2.5 outline-none focus-ring"
             />
           </div>
           <div className="flex items-center justify-end gap-2 pt-1">
-            <Button variant="ghost" onClick={onClose}>Cancel</Button>
+            <Button variant="ghost" onClick={onClose}>{i18n.t('common.cancel')}</Button>
             <Button variant="primary" icon="Search" onClick={() => void runAnalysis()} disabled={!url.trim()}>
-              Analyze
+              {i18n.t('bookmark.analyze')}
             </Button>
           </div>
         </div>
       )}
 
       {stage === 'analyzing' && (
-        <div className="p-7 space-y-4" role="status" aria-label="Analyzing bookmark">
+        <div className="p-7 space-y-4" role="status" aria-label={i18n.t('bookmark.analyzing')}>
           <div className="flex items-center gap-3">
             <div className="relative w-10 h-10">
               <div className="absolute inset-0 rounded-full border-2 border-accent-500/30" />
               <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-accent-400 animate-spin" />
             </div>
             <div>
-              <div className="text-[14px] font-semibold text-ink-100">Fetching page metadata…</div>
+              <div className="text-[14px] font-semibold text-ink-100">{i18n.t('bookmark.fetchingMetadata')}</div>
               <div className="text-[11px] text-ink-400 truncate max-w-[300px]">{url}</div>
             </div>
           </div>
@@ -288,17 +290,17 @@ export function NewBookmarkDialog({
               </div>
             )}
             {analysisSource === 'ai' && (
-              <div className="text-[11px] text-mint-400">AI analysis ready. Review suggestions before saving.</div>
+              <div className="text-[11px] text-mint-400">{i18n.t('bookmark.aiReady')}</div>
             )}
             {analysisSource === 'metadata' && (
-              <div className="text-[11px] text-mint-400">Metadata loaded. Review and save when ready.</div>
+              <div className="text-[11px] text-mint-400">{i18n.t('bookmark.metadataReady')}</div>
             )}
 
             <div className="flex items-center gap-3 rounded-mac-lg bg-ink-800/60 hairline p-3">
               <Favicon glyph={(url.replace(/^https?:\/\//, '')[0] ?? '?').toUpperCase()} color="blue" size={36} />
               <div className="min-w-0 flex-1">
                 <input
-                  aria-label="Bookmark title"
+                  aria-label={i18n.t('bookmark.titleInput')}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="w-full bg-transparent text-[13px] font-semibold text-ink-100 outline-none"
@@ -308,36 +310,36 @@ export function NewBookmarkDialog({
             </div>
 
             <div>
-              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Description</label>
+              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">{i18n.t('bookmark.description')}</label>
               <textarea
-                aria-label="Bookmark description"
+                aria-label={i18n.t('bookmark.descriptionInput')}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Add a short description"
+                placeholder={i18n.t('bookmark.descriptionPlaceholder')}
                 rows={2}
                 className="w-full rounded-lg bg-ink-800/60 hairline text-[12px] text-ink-100 placeholder:text-ink-500 px-3 py-2.5 outline-none focus-ring resize-none"
               />
             </div>
 
             <div>
-              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">AI summary</label>
+              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">{i18n.t('bookmark.aiSummary')}</label>
               <textarea
-                aria-label="AI summary"
+                aria-label={i18n.t('bookmark.aiSummary')}
                 value={aiSummary}
                 onChange={(e) => setAiSummary(e.target.value)}
-                placeholder="Optional AI summary"
+                placeholder={i18n.t('bookmark.summaryPlaceholder')}
                 rows={2}
                 className="w-full rounded-lg bg-ink-800/60 hairline text-[12px] text-ink-100 placeholder:text-ink-500 px-3 py-2.5 outline-none focus-ring resize-none"
               />
             </div>
 
             <div>
-              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Category</label>
+              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">{i18n.t('bookmark.category')}</label>
               {categoryLocked ? (
                 <div className="rounded-lg bg-ink-800/60 hairline px-3 py-2.5 text-[12px] text-ink-100 inline-flex items-center gap-1.5">
                   {cat ? <Icon name={cat.icon} size={12} /> : null}
-                  {cat?.name ?? 'Current category'}
-                  <span className="text-[10px] text-ink-500 ml-1">(locked to current view)</span>
+                  {cat?.name ?? i18n.t('bookmark.currentCategory')}
+                  <span className="text-[10px] text-ink-500 ml-1">({i18n.t('bookmark.lockedCategory')})</span>
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-1.5">
@@ -360,12 +362,12 @@ export function NewBookmarkDialog({
                 </div>
               )}
               {cat && !categoryLocked && (
-                <div className="mt-2 text-[11px] text-ink-400">Selected: {cat.name}</div>
+                <div className="mt-2 text-[11px] text-ink-400">{i18n.t('bookmark.selectedCategory', { name: cat.name })}</div>
               )}
             </div>
 
             <div>
-              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Tags</label>
+              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">{i18n.t('bookmark.tags')}</label>
               <div className="flex flex-wrap gap-1.5">
                 {tags.map((t) => {
                   const on = chosenTags.includes(t.id);
@@ -390,7 +392,7 @@ export function NewBookmarkDialog({
             </div>
 
             <div>
-              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Collections</label>
+              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">{i18n.t('bookmark.collections')}</label>
               <div className="flex flex-wrap gap-1.5">
                 {collections.map((c) => {
                   const on = chosenCollections.includes(c.id);
@@ -406,21 +408,21 @@ export function NewBookmarkDialog({
             </div>
 
             <div>
-              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Notes</label>
+              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">{i18n.t('bookmark.notes')}</label>
               <textarea
-                aria-label="Bookmark notes"
+                aria-label={i18n.t('bookmark.notesInput')}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Why save this?"
+                placeholder={i18n.t('bookmark.notesHint')}
                 rows={3}
                 className="w-full rounded-lg bg-ink-800/60 hairline text-[12px] text-ink-100 placeholder:text-ink-500 px-3 py-2.5 outline-none focus-ring resize-none"
               />
             </div>
           </div>
           <div className="px-5 py-4 border-t border-white/5 flex items-center justify-end gap-2">
-            <Button variant="ghost" onClick={() => setStage('input')}>Back</Button>
+            <Button variant="ghost" onClick={() => setStage('input')}>{i18n.t('common.back')}</Button>
             <Button variant="primary" icon="Check" onClick={submit}>
-              Save bookmark
+              {i18n.t('bookmark.save')}
             </Button>
           </div>
         </div>
@@ -449,6 +451,7 @@ export function ReanalyzeBookmarkDialog({
   onApply: (patch: Partial<Bookmark>) => void;
   onCreateTag: (label: string) => string | null;
 }) {
+  const i18n = useI18n();
   const [stage, setStage] = useState<'idle' | 'loading' | 'preview' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [description, setDescription] = useState('');
@@ -563,16 +566,16 @@ export function ReanalyzeBookmarkDialog({
   };
 
   return (
-    <Modal open={open} onClose={onClose} width="max-w-lg" aria-label="Reanalyze bookmark">
+    <Modal open={open} onClose={onClose} width="max-w-lg" aria-label={i18n.t('bookmark.reanalyze.title')}>
       <ModalHeader
         icon="Sparkles"
-        title="Reanalyze"
-        subtitle="Review AI suggestions before applying"
+        title={i18n.t('bookmark.reanalyze')}
+        subtitle={i18n.t('bookmark.reanalyze.subtitle')}
         onClose={onClose}
       />
       {stage === 'loading' && (
-        <div className="p-7" role="status" aria-label="Reanalyzing bookmark">
-          <div className="text-[14px] font-semibold text-ink-100">Generating preview…</div>
+        <div className="p-7" role="status" aria-label={i18n.t('bookmark.reanalyzing')}>
+          <div className="text-[14px] font-semibold text-ink-100">{i18n.t('bookmark.generatingPreview')}</div>
         </div>
       )}
       {stage === 'error' && (
@@ -581,16 +584,16 @@ export function ReanalyzeBookmarkDialog({
             {errorMessage}
           </div>
           <div className="flex justify-end">
-            <Button variant="ghost" onClick={onClose}>Close</Button>
+            <Button variant="ghost" onClick={onClose}>{i18n.t('common.close')}</Button>
           </div>
         </div>
       )}
       {stage === 'preview' && (
         <div className="p-5 space-y-4">
           <div>
-            <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Suggested description</label>
+            <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">{i18n.t('bookmark.suggestedDescription')}</label>
             <textarea
-              aria-label="Reanalyze description preview"
+              aria-label={i18n.t('bookmark.reanalyze.descriptionLabel')}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
@@ -598,9 +601,9 @@ export function ReanalyzeBookmarkDialog({
             />
           </div>
           <div>
-            <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Suggested summary</label>
+            <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">{i18n.t('bookmark.suggestedSummary')}</label>
             <textarea
-              aria-label="Reanalyze summary preview"
+              aria-label={i18n.t('bookmark.reanalyze.summaryLabel')}
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
               rows={3}
@@ -608,7 +611,7 @@ export function ReanalyzeBookmarkDialog({
             />
           </div>
           <div>
-            <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Suggested tags</label>
+            <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">{i18n.t('bookmark.suggestedTags')}</label>
             <div className="flex flex-wrap gap-1.5">
               {suggestedTags.map((label) => {
                 const on = acceptedLabels.includes(label);
@@ -635,8 +638,8 @@ export function ReanalyzeBookmarkDialog({
             </div>
           </div>
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" onClick={reject}>Reject</Button>
-            <Button variant="primary" icon="Check" onClick={confirm}>Confirm</Button>
+            <Button variant="ghost" onClick={reject}>{i18n.t('bookmark.reject')}</Button>
+            <Button variant="primary" icon="Check" onClick={confirm}>{i18n.t('common.confirm')}</Button>
           </div>
         </div>
       )}

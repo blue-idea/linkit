@@ -401,7 +401,7 @@ export function SettingsDialog({
       </div>
 
       <div className="flex flex-1 min-h-0">
-        <div className="w-44 shrink-0 border-r border-white/5 p-2 space-y-0.5" role="tablist" aria-label="Settings sections">
+        <div className="w-44 shrink-0 border-r border-white/5 p-2 space-y-0.5" role="tablist" aria-label={i18n.t('settings.sectionsLabel')}>
           {sections.map((t) => (
             <button
               key={t.id}
@@ -429,16 +429,16 @@ export function SettingsDialog({
               </div>
               <Row
                 icon="Mail"
-                label={user?.email ?? 'Signed out'}
-                hint={user ? 'Signed in — cloud sync available' : 'Local mode — data stays on this device'}
+                label={user?.email ?? i18n.t('settings.general.signedOut')}
+                hint={user ? i18n.t('settings.general.signedIn') : i18n.t('settings.general.localMode')}
               >
                 {user ? (
                   <Button size="sm" variant="danger" icon="LogOut" onClick={onSignOut}>
-                    Sign out
+                    {i18n.t('settings.general.signOut')}
                   </Button>
                 ) : (
                   <Button size="sm" variant="subtle" icon="LogOut" onClick={onSignOut}>
-                    Back to login
+                    {i18n.t('settings.general.backToLogin')}
                   </Button>
                 )}
               </Row>
@@ -475,11 +475,11 @@ export function SettingsDialog({
               {onRestoreSampleData && (
                 <Row
                   icon="RefreshCw"
-                  label="Restore sample data"
-                  hint="Replace the current library with built-in sample bookmarks after confirmation"
+                  label={i18n.t('settings.general.restoreSample')}
+                  hint={i18n.t('settings.general.restoreSampleHint')}
                 >
                   <Button size="sm" variant="danger" icon="RefreshCw" onClick={onRestoreSampleData}>
-                    Restore sample data
+                    {i18n.t('settings.general.restoreSample')}
                   </Button>
                 </Row>
               )}
@@ -513,7 +513,7 @@ export function SettingsDialog({
                     onSelect={requestStorageMode}
                     label={i18n.t('settings.storage.local')}
                     icon="HardDrive"
-                    hint="Data stays on this device. No sync across machines."
+                    hint={i18n.t('settings.storage.localHint')}
                   />
                   <StorageRadio
                     mode="cloud"
@@ -521,12 +521,12 @@ export function SettingsDialog({
                     onSelect={requestStorageMode}
                     label={i18n.t('settings.storage.cloud')}
                     icon="Cloud"
-                    hint={user ? 'Sync across devices while signed in.' : 'Sign in required to use cloud storage.'}
+                    hint={user ? i18n.t('settings.storage.cloudHint') : i18n.t('settings.storage.cloudNeedsSignIn')}
                   />
                 </div>
                 {!user && draft.storageMode === 'cloud' && (
                   <div className="mt-3 rounded-lg bg-amber-500/10 border border-amber-400/30 px-3 py-2 text-[12px] text-amber-400 flex items-center gap-2">
-                    <Icon name="AlertCircle" size={13} /> Sign in before switching to cloud storage.
+                    <Icon name="AlertCircle" size={13} /> {i18n.t('settings.storage.signInFirst')}
                   </div>
                 )}
               </div>
@@ -572,10 +572,10 @@ export function SettingsDialog({
                     </p>
                     <div className="flex gap-2 pt-1">
                       <Button size="sm" onClick={() => void confirmChangeDataRoot()}>
-                        Confirm
+                        {i18n.t('common.confirm')}
                       </Button>
                       <Button variant="ghost" size="sm" onClick={() => setPendingDataRootTarget(null)}>
-                        Cancel
+                        {i18n.t('common.cancel')}
                       </Button>
                     </div>
                   </div>
@@ -602,11 +602,11 @@ export function SettingsDialog({
               <div className="flex items-center gap-2 p-3 rounded-lg bg-violet2-500/10 border border-violet2-400/20">
                 <AIBadge label="AI" />
                 <span className="text-[11px] text-ink-300">
-                  Configure API base, model, and key for summaries, tags, and semantic search.
+                  {i18n.t('settings.ai.hint')}
                 </span>
               </div>
               <div>
-                <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">API Base</label>
+                <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">{i18n.t('settings.ai.apiBase')}</label>
                 <input
                   value={draft.ai.apiBase}
                   onChange={(e) => updateAI({ apiBase: e.target.value })}
@@ -615,7 +615,7 @@ export function SettingsDialog({
                 />
               </div>
               <div>
-                <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Model</label>
+                <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">{i18n.t('settings.ai.model')}</label>
                 <input
                   value={draft.ai.model}
                   onChange={(e) => updateAI({ model: e.target.value })}
@@ -624,19 +624,19 @@ export function SettingsDialog({
                 />
               </div>
               <div>
-                <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">API Key</label>
+                <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">{i18n.t('settings.ai.apiKey')}</label>
                 <input
                   type="password"
                   value={keyDraft}
                   onChange={(e) => setKeyDraft(e.target.value)}
-                  placeholder={keyConfigured ? '•••••••• (configured)' : 'sk-…'}
-                  aria-label="API Key"
+                  placeholder={keyConfigured ? i18n.t('settings.ai.keyConfiguredPlaceholder') : 'sk-…'}
+                  aria-label={i18n.t('settings.ai.apiKey')}
                   className="w-full rounded-lg bg-ink-800/60 hairline text-[13px] text-ink-100 placeholder:text-ink-500 px-3 py-2.5 outline-none focus-ring font-mono"
                 />
                 <p className="text-[10px] text-ink-500 mt-1.5" data-testid="ai-key-status">
                   {keyConfigured
-                    ? 'API Key is configured on this device. Enter a new value to replace it.'
-                    : 'The key stays on this device and is never uploaded. Leave empty to keep unset.'}
+                    ? i18n.t('settings.ai.keyConfigured')
+                    : i18n.t('settings.ai.keyUnset')}
                 </p>
                 {keyConfigured && (
                   <button
@@ -649,7 +649,7 @@ export function SettingsDialog({
                       });
                     }}
                   >
-                    Remove API Key
+                    {i18n.t('settings.ai.removeKey')}
                   </button>
                 )}
               </div>

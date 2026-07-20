@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { WindowChrome } from './WindowChrome';
+import { useI18n } from '../../i18n/use-i18n';
 
 type AppShellProps = {
   chrome: React.ComponentProps<typeof WindowChrome>;
@@ -24,6 +25,7 @@ export function AppShell({
   detailOpen,
   syncing = false,
 }: AppShellProps) {
+  const i18n = useI18n();
   return (
     <div className="w-full h-full rounded-none md:rounded-mac-xl glass-strong shadow-win overflow-hidden flex flex-col">
       <WindowChrome {...chrome} />
@@ -37,20 +39,20 @@ export function AppShell({
       <div className="flex-1 flex min-h-0">
         {sidebarOpen && (
           <nav
-            aria-label="Sidebar"
+            aria-label={i18n.t('shell.sidebar')}
             className="w-[248px] shrink-0 hidden sm:block animate-slide-down"
           >
             {sidebar}
           </nav>
         )}
 
-        <main aria-label="Content Area" className="flex-1 min-w-0">
+        <main aria-label={i18n.t('shell.content')} className="flex-1 min-w-0">
           {content}
         </main>
 
         {detailOpen && (
           <aside
-            aria-label="Detail Panel"
+            aria-label={i18n.t('shell.detail')}
             className="w-[320px] shrink-0 hidden lg:block animate-slide-down"
           >
             {detail}

@@ -5,6 +5,7 @@ import { CompactRow } from './CompactRow';
 import { groupBookmarksByThemes } from '../../domain/views';
 import type { Collection } from '../../types';
 import type { BookmarkItemActionHandlers } from './BookmarkItemActions';
+import { useI18n } from '../../i18n/use-i18n';
 
 type ThemeSpaceViewProps = BookmarkItemActionHandlers & {
   items: BookmarkPresentation[];
@@ -32,6 +33,7 @@ export function ThemeSpaceView({
   onMove,
   onDelete,
 }: ThemeSpaceViewProps) {
+  const i18n = useI18n();
   const parentRef = useRef<HTMLDivElement>(null);
   const byId = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
 
@@ -52,7 +54,7 @@ export function ThemeSpaceView({
     <div
       ref={parentRef}
       data-view="theme-space"
-      aria-label="Theme Space view"
+      aria-label={i18n.t('content.view.themes')}
       className="flex-1 overflow-y-auto scroll-thin px-4 pb-6 pt-1"
     >
       <div className="relative" style={{ height: virtualizer.getTotalSize() }}>

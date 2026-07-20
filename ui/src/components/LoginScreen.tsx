@@ -43,7 +43,7 @@ export function LoginScreen({
             </div>
             <h1 className="text-[20px] font-bold text-ink-100">Lattice</h1>
             <p className="text-[12px] text-ink-400 mt-1">
-              {locale === 'zh' ? '登录以同步你的收藏到云端' : 'Sign in to sync your library to the cloud'}
+              {i18n.t('auth.subtitle')}
             </p>
           </div>
 
@@ -54,14 +54,14 @@ export function LoginScreen({
                 onClick={() => setMode('signin')}
                 className={`flex-1 text-[12px] py-1.5 rounded-md font-medium transition ${mode === 'signin' ? 'bg-ink-600 text-ink-100' : 'text-ink-400 hover:text-ink-200'}`}
               >
-                {locale === 'zh' ? '登录' : 'Sign in'}
+                {i18n.t('auth.signIn')}
               </button>
               <button
                 type="button"
                 onClick={() => setMode('signup')}
                 className={`flex-1 text-[12px] py-1.5 rounded-md font-medium transition ${mode === 'signup' ? 'bg-ink-600 text-ink-100' : 'text-ink-400 hover:text-ink-200'}`}
               >
-                {locale === 'zh' ? '注册' : 'Sign up'}
+                {i18n.t('auth.signUp')}
               </button>
             </div>
           </div>
@@ -79,7 +79,7 @@ export function LoginScreen({
               />
             </div>
             <div>
-              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">Password</label>
+              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">{i18n.t('auth.password')}</label>
               <input
                 type="password"
                 value={password}
@@ -109,23 +109,17 @@ export function LoginScreen({
 
             <Button type="submit" variant="primary" className="w-full" disabled={loading}>
               {loading
-                ? locale === 'zh'
-                  ? '请稍候…'
-                  : 'Please wait…'
+                ? i18n.t('auth.wait')
                 : mode === 'signin'
-                  ? locale === 'zh'
-                    ? '登录'
-                    : 'Sign in'
-                  : locale === 'zh'
-                    ? '创建账户'
-                    : 'Create account'}
+                  ? i18n.t('auth.signIn')
+                  : i18n.t('auth.createAccount')}
             </Button>
           </form>
 
           <div className="px-8 py-4 flex items-center gap-3">
             <div className="flex-1 h-px bg-white/5" />
             <span className="text-[10px] text-ink-500 uppercase tracking-wider">
-              {locale === 'zh' ? '或' : 'or'}
+              {i18n.t('auth.or')}
             </span>
             <div className="flex-1 h-px bg-white/5" />
           </div>
@@ -140,9 +134,7 @@ export function LoginScreen({
               {i18n.t('auth.localMode')}
             </button>
             <p className="text-[10px] text-ink-500 text-center mt-2.5 leading-relaxed">
-              {locale === 'zh'
-                ? '本地模式下数据仅保存在本机，登录后可在设置中开启云同步。'
-                : 'Local mode keeps data on this device. Sign in later to enable cloud sync in Settings.'}
+              {i18n.t('auth.localHint')}
             </p>
           </div>
         </div>

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { TagColor } from '../types';
 import { tagColors, thumbnailGradients } from '../colors';
 import { iconComponents, type IconName } from '../config/icons';
+import { useI18n } from '../i18n/use-i18n';
 
 /* ---------- Icon helper ---------- */
 export function Icon({ name, size = 16, className = '', strokeWidth = 2, fill = 'none' }: { name: string; size?: number; className?: string; strokeWidth?: number; fill?: string }) {
@@ -27,6 +28,7 @@ export function TagPill({
   active?: boolean;
   className?: string;
 }) {
+  const i18n = useI18n();
   const c = tagColors[color];
   const sizes = {
     xs: 'text-[10px] px-1.5 py-0.5 gap-1',
@@ -45,7 +47,7 @@ export function TagPill({
       {onRemove && (
         <button
           type="button"
-          aria-label={`Remove tag ${label}`}
+          aria-label={i18n.t('bookmark.removeTag', { label })}
           onClick={(e) => {
             e.stopPropagation();
             onRemove();
