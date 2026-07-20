@@ -208,6 +208,7 @@ export default function App() {
   const [bookmarkMoveIds, setBookmarkMoveIds] = useState<string[]>([]);
   const [bulkDeleteIds, setBulkDeleteIds] = useState<string[]>([]);
   const [categoryFormOpen, setCategoryFormOpen] = useState(false);
+  const [categoryFormParentId, setCategoryFormParentId] = useState<string | null>(null);
   const [categoryDeleteId, setCategoryDeleteId] = useState<string | null>(null);
   const [categoryRecursiveConfirm, setCategoryRecursiveConfirm] = useState(false);
   const [categoryIconId, setCategoryIconId] = useState<string | null>(null);
@@ -722,8 +723,7 @@ export default function App() {
   }, [deleteTargetId, flashToast, i18n]);
 
   const handleCreateCategory = useCallback((name: string) => {
-    const parentId =
-      state.selection.kind === 'category' ? state.selection.id : null;
+    const parentId = categoryFormParentId;
     const result = runCreateCategory({
       bookmarks,
       categories: cats,
@@ -741,7 +741,7 @@ export default function App() {
     setBookmarks(applied.bookmarks);
     setCategoryFormOpen(false);
     flashToast(i18n.t('toast.categoryCreated'));
-  }, [bookmarks, cats, cols, flashToast, i18n, state.selection, tagList]);
+  }, [bookmarks, cats, cols, flashToast, i18n, categoryFormParentId, tagList]);
 
   const handleSaveCollection = useCallback((values: CollectionFormValues) => {
     // REQ-012-AC-001：创建或编辑主题后刷新侧栏并持久化。
@@ -1343,7 +1343,10 @@ export default function App() {
               setNewUrl('');
               setNewOpen(true);
             }}
-            onNewCategory={() => setCategoryFormOpen(true)}
+            onNewCategory={(parentId) => {
+              setCategoryFormParentId(parentId ?? (state.selection.kind === 'category' ? state.selection.id : null));
+              setCategoryFormOpen(true);
+            }}
             onDeleteCategory={requestDeleteCategory}
             onMoveCategory={(categoryId, newParentId) =>
               handleMoveCategory(categoryId, newParentId)

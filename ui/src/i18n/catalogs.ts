@@ -81,6 +81,7 @@ const messages = {
   'sidebar.expand': ['Expand', '展开'],
   'sidebar.collapse': ['Collapse', '折叠'],
   'sidebar.newCategory': ['New category', '新建分类'],
+  'sidebar.newSubCategory': ['New subcategory', '新建子分类'],
   'sidebar.newCollection': ['New collection', '新建主题'],
   'sidebar.editCollection': ['Edit collection', '编辑主题'],
   'sidebar.deleteCollection': ['Delete collection', '删除主题'],
