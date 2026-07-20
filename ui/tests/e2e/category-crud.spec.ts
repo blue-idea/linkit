@@ -37,6 +37,21 @@ test.describe('分类 CRUD', () => {
     });
   });
 
+  test('在已有分类下创建子分类 shall 成功并展示在层级中', async ({ page }) => {
+    // 鼠标移动到并点击第一个分类的“新建子分类”按钮
+    await page.getByRole('button', { name: 'New subcategory' }).first().click();
+    await expect(page.getByRole('dialog', { name: 'New category' })).toBeVisible();
+    await page.getByLabel('Category name').fill('SubCategory Test');
+    await page.getByRole('button', { name: 'Create category' }).click();
+    await expect(page.getByText('SubCategory Test', { exact: true })).toBeVisible();
+
+    await mkdir(evidenceDirectory, { recursive: true });
+    await page.screenshot({
+      path: resolve(evidenceDirectory, 'TASK-014-subcategory-create.png'),
+      fullPage: true,
+    });
+  });
+
   // REQ-010-AC-003
   test('分类删除 shall 显示移动、递归与取消三种选择', async ({ page }) => {
     // 选中一个已知有内容的分类入口后打开删除

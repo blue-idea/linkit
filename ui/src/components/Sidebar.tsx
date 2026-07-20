@@ -137,7 +137,7 @@ export function Sidebar({
   onDropToCollection: (collectionId: string, bookmarkId: string) => void;
   onOpenInsights: () => void;
   onNewBookmark: () => void;
-  onNewCategory: () => void;
+  onNewCategory: (parentId?: string) => void;
   onDeleteCategory: (categoryId: string) => void;
   onMoveCategory: (categoryId: string, newParentId: string) => void;
   onRequestSetCategoryIcon: (categoryId: string) => void;
@@ -195,6 +195,19 @@ export function Sidebar({
                   onDragLeave={() => setDragOverId(null)}
                   trailing={
                     <span className="flex items-center gap-0.5">
+                      <button
+                        type="button"
+                        aria-label={i18n.t('sidebar.newSubCategory')}
+                        title={i18n.t('sidebar.newSubCategory')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onNewCategory(cat.id);
+                        }}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-accent-300 flex items-center justify-center transition"
+                      >
+                        <Icon name="Plus" size={11} />
+                      </button>
                       <button
                         type="button"
                         aria-label={i18n.t('sidebar.setCategoryIcon')}
