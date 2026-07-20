@@ -160,73 +160,100 @@ export function DetailPanel({
 
       <div className="flex-1 overflow-y-auto scroll-thin">
         {/* Actions */}
-        <div className="px-4 py-3 flex items-center gap-2">
-          <Button
-            variant="primary"
-            size="sm"
-            icon="ExternalLink"
-            onClick={onVisit}
-            className="flex-1"
-            aria-label={i18n.t('bookmark.openUrl')}
-          >
-            {i18n.t('bookmark.visit')}
-          </Button>
-          {onReanalyze && (
+        <div className="px-4 py-3 flex flex-col gap-2">
+          {/* Main Actions Row */}
+          <div className="flex items-center gap-2 w-full">
+            <Button
+              variant="primary"
+              size="sm"
+              icon="ExternalLink"
+              onClick={onVisit}
+              className="flex-1 shrink-0"
+              aria-label={i18n.t('bookmark.openUrl')}
+            >
+              {i18n.t('bookmark.visit')}
+            </Button>
+            {onReanalyze && (
+              <Button
+                variant="subtle"
+                size="sm"
+                icon="Sparkles"
+                onClick={onReanalyze}
+                className="shrink-0"
+                aria-label={i18n.t('bookmark.regenerateSummary')}
+              >
+                {i18n.t('bookmark.reanalyze')}
+              </Button>
+            )}
+            {onOpenKnowledgeGraph && (
+              <Button
+                variant="subtle"
+                size="sm"
+                icon="Share2"
+                onClick={onOpenKnowledgeGraph}
+                className="shrink-0"
+                aria-label={i18n.t('bookmark.openNetwork')}
+              >
+                {i18n.t('bookmark.network')}
+              </Button>
+            )}
             <Button
               variant="subtle"
               size="sm"
-              icon="Sparkles"
-              onClick={onReanalyze}
-              aria-label={i18n.t('bookmark.regenerateSummary')}
+              icon="Star"
+              onClick={onToggleStar}
+              className={`shrink-0 ${b.starred ? 'text-amber-400' : ''}`}
+              aria-label={i18n.t('bookmark.toggleStar')}
+              aria-pressed={b.starred}
             >
-              {i18n.t('bookmark.reanalyze')}
+              <Icon name="Star" size={13} fill={b.starred ? 'currentColor' : 'none'} />
             </Button>
-          )}
-          {onOpenKnowledgeGraph && (
-            <Button variant="subtle" size="sm" icon="Share2" onClick={onOpenKnowledgeGraph} aria-label={i18n.t('bookmark.openNetwork')}>
-              {i18n.t('bookmark.network')}
-            </Button>
-          )}
-          <Button
-            variant="subtle"
-            size="sm"
-            icon="Star"
-            onClick={onToggleStar}
-            className={b.starred ? 'text-amber-400' : ''}
-            aria-label={i18n.t('bookmark.toggleStar')}
-            aria-pressed={b.starred}
-          >
-            <Icon name="Star" size={13} fill={b.starred ? 'currentColor' : 'none'} />
-          </Button>
-          <Button
-            variant="subtle"
-            size="sm"
-            onClick={onTogglePin}
-            className={b.pinned ? 'text-amber-400' : ''}
-            icon="Pin"
-            aria-label={i18n.t('bookmark.togglePin')}
-            aria-pressed={b.pinned}
-          />
-          {onEdit && (
-            <button type="button" aria-label={i18n.t('bookmark.edit')} onClick={onEdit} className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md text-ink-200 hover:bg-ink-700/60 transition">
-              <Icon name="Pencil" size={13} /> {i18n.t('common.edit')}
-            </button>
-          )}
-          {onMove && (
-            <button type="button" aria-label={i18n.t('bookmark.move')} onClick={onMove} className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md text-ink-200 hover:bg-ink-700/60 transition">
-              <Icon name="FolderInput" size={13} /> {i18n.t('common.move')}
-            </button>
-          )}
-          {onDelete && (
-            <button
-              type="button"
-              aria-label={i18n.t('bookmark.delete')}
-              onClick={onDelete}
-              className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md text-coral-400 hover:bg-coral-500/15 transition"
-            >
-              <Icon name="Trash2" size={13} />
-              {i18n.t('common.delete')}
-            </button>
+            <Button
+              variant="subtle"
+              size="sm"
+              onClick={onTogglePin}
+              className={`shrink-0 ${b.pinned ? 'text-amber-400' : ''}`}
+              icon="Pin"
+              aria-label={i18n.t('bookmark.togglePin')}
+              aria-pressed={b.pinned}
+            />
+          </div>
+
+          {/* Edit / Move / Delete Actions Row */}
+          {(onEdit || onMove || onDelete) && (
+            <div className="flex items-center gap-1.5 border-t border-white/5 pt-2">
+              {onEdit && (
+                <button
+                  type="button"
+                  aria-label={i18n.t('bookmark.edit')}
+                  onClick={onEdit}
+                  className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md text-ink-200 hover:bg-ink-700/60 transition whitespace-nowrap"
+                >
+                  <Icon name="Pencil" size={13} /> {i18n.t('common.edit')}
+                </button>
+              )}
+              {onMove && (
+                <button
+                  type="button"
+                  aria-label={i18n.t('bookmark.move')}
+                  onClick={onMove}
+                  className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md text-ink-200 hover:bg-ink-700/60 transition whitespace-nowrap"
+                >
+                  <Icon name="FolderInput" size={13} /> {i18n.t('common.move')}
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  type="button"
+                  aria-label={i18n.t('bookmark.delete')}
+                  onClick={onDelete}
+                  className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md text-coral-400 hover:bg-coral-500/15 transition whitespace-nowrap"
+                >
+                  <Icon name="Trash2" size={13} />
+                  {i18n.t('common.delete')}
+                </button>
+              )}
+            </div>
           )}
         </div>
 
