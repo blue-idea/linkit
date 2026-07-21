@@ -81,7 +81,9 @@ export function ShortcutsPanel({ shortcuts, locale, onChange }: ShortcutsPanelPr
             <button
               type="button"
               className="text-[12px] font-mono text-ink-200 px-2 py-1 rounded-md bg-ink-900/60 hover:bg-ink-700/60 focus-ring"
-              aria-label={`${i18n.t(`settings.shortcuts.action.${actionId}`)} shortcut`}
+              aria-label={i18n.t('settings.shortcuts.editBinding', {
+                action: i18n.t(`settings.shortcuts.action.${actionId}`),
+              })}
               onClick={() => {
                 setError(null);
                 setListening(actionId);
