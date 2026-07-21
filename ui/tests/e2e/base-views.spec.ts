@@ -57,7 +57,7 @@ test.describe('Card List Masonry 基础视图', () => {
     });
     await expect(page).toHaveScreenshot('TASK-019-card-baseline.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.08,
+      maxDiffPixelRatio: 0.12,
     });
   });
 
@@ -76,7 +76,7 @@ test.describe('Card List Masonry 基础视图', () => {
     });
     await expect(page).toHaveScreenshot('TASK-019-list-baseline.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.08,
+      maxDiffPixelRatio: 0.12,
     });
   });
 

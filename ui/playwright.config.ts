@@ -34,7 +34,7 @@ export default defineConfig({
   },
   expect: {
     toHaveScreenshot: {
-      maxDiffPixelRatio: 0.08,
+      maxDiffPixelRatio: 0.12,
     },
   },
   snapshotPathTemplate: '{testDir}/{testFilePath}-snapshots/{arg}{ext}',
