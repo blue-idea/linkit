@@ -36,14 +36,16 @@ func DefaultMenuItems() []MenuItem {
 }
 
 func (h *Host) HandleMenuClick(id string) {
+	var callback func()
 	switch id {
 	case MenuShow:
-		if h.callbacks.OnShow != nil {
-			h.callbacks.OnShow()
-		}
+		callback = h.callbacks.OnShow
 	case MenuQuit:
-		if h.callbacks.OnQuit != nil {
-			h.callbacks.OnQuit()
-		}
+		callback = h.callbacks.OnQuit
+	}
+	if callback != nil {
+		// 第三方托盘会在原生消息回调中同步调用此方法。
+		// 异步派发可避免 Wails 窗口操作重入 Win32/AppKit 消息循环。
+		go callback()
 	}
 }

@@ -52,6 +52,10 @@ func WithDesktopCapability(capability DesktopCapability) Option {
 	}
 }
 
+func WithOnBeforeQuit(fn func()) Option {
+	return func(service *Service) { service.onBeforeQuit = fn }
+}
+
 // ShouldPreventClose 在 allowQuit=false 时拦截退出，配合 HideWindowOnClose 实现关闭隐藏。
 // REQ-030-AC-001
 func (service *Service) ShouldPreventClose() bool {
@@ -88,9 +92,16 @@ func (service *Service) ToggleMainWindow() error {
 }
 
 // QuitApplication 允许进程退出并调用运行时 Quit。
+// 在调用 window.Quit() 之前先执行 onBeforeQuit 钩子（若已配置），
+// 确保 systray 等依赖原生消息循环的资源在 Wails 退出流程开始前完成停止。
 // REQ-030-AC-004
 func (service *Service) QuitApplication() error {
 	service.allowQuit.Store(true)
+	// Windows 的 systray 通过 WM_CLOSE 清理托盘窗口；必须先投递清理消息，
+	// 再让 Wails 投递 WM_QUIT，避免退出后留下无法处理的托盘消息。
+	if service.onBeforeQuit != nil {
+		service.onBeforeQuit()
+	}
 	if service.window == nil {
 		return nil
 	}

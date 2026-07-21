@@ -57,9 +57,15 @@ func main() {
 
 	windowRuntime := platform.NewWailsWindowRuntime(nil)
 	hotkeyManager := hotkey.NewManager(hotkey.NewDesignBackend())
+
+	// trayRunner 在 nativeFileService 之前创建，以便将原生资源清理接入退出前钩子。
+	trayRunner := tray.NewSystrayRunner(nil, config.AppTitle, selectTrayIcon())
+
 	nativeFileService := platform.NewService(
 		platform.WithWindowRuntime(windowRuntime),
 		platform.WithHotkeyManager(hotkeyManager),
+		// REQ-030-AC-004：先停止托盘，再进入 Wails 退出流程。
+		platform.WithOnBeforeQuit(func() { trayRunner.Stop() }),
 	)
 	_ = nativeFileService.WireHotkeyToggle()
 
@@ -67,7 +73,7 @@ func main() {
 		OnShow: func() { _ = nativeFileService.ShowMainWindow() },
 		OnQuit: func() { _ = nativeFileService.QuitApplication() },
 	})
-	trayRunner := tray.NewSystrayRunner(trayHost, config.AppTitle, selectTrayIcon())
+	trayRunner.SetHost(trayHost)
 
 	metadataService := metadata.NewService()
 	aiService := ai.NewDefaultService(
@@ -123,6 +129,9 @@ func main() {
 			return false
 		},
 		OnShutdown: func(ctx context.Context) {
+			// hotkeyManager.Close() 必须在 OnShutdown 执行。
+			// trayRunner.Stop() 作为 fallback：正常退出时 onBeforeQuit 已经停止了 systray，
+			// 但其他关闭路径（如系统关机）仍需要此处清理。
 			trayRunner.Stop()
 			_ = hotkeyManager.Close()
 		},

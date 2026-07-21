@@ -1,6 +1,9 @@
 package tray
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 // REQ-030-AC-002：托盘菜单至少包含 Show 与 Quit。
 func TestDefaultMenuItems(t *testing.T) {
@@ -17,19 +20,53 @@ func TestDefaultMenuItems(t *testing.T) {
 }
 
 func TestHostDispatchesShowAndQuit(t *testing.T) {
-	var showed, quit bool
+	showed := make(chan struct{}, 1)
+	quit := make(chan struct{}, 1)
 	host := NewHost(Callbacks{
-		OnShow: func() { showed = true },
-		OnQuit: func() { quit = true },
+		OnShow: func() { showed <- struct{}{} },
+		OnQuit: func() { quit <- struct{}{} },
 	})
 
 	host.HandleMenuClick(MenuShow)
 	host.HandleMenuClick(MenuQuit)
 
-	if !showed {
+	select {
+	case <-showed:
+	case <-time.After(time.Second):
 		t.Fatal("Show callback was not invoked")
 	}
-	if !quit {
+	select {
+	case <-quit:
+	case <-time.After(time.Second):
 		t.Fatal("Quit callback was not invoked")
+	}
+}
+
+// REQ-030-AC-004：托盘原生消息线程不得等待退出回调完成。
+// Windows 的菜单回调运行在 WndProc 中；同步执行 Quit 会造成 GUI 消息循环重入。
+func TestHostHandleMenuClickReturnsBeforeQuitCallbackCompletes(t *testing.T) {
+	callbackStarted := make(chan struct{})
+	releaseCallback := make(chan struct{})
+	handlerReturned := make(chan struct{})
+
+	host := NewHost(Callbacks{
+		OnQuit: func() {
+			close(callbackStarted)
+			<-releaseCallback
+		},
+	})
+
+	go func() {
+		host.HandleMenuClick(MenuQuit)
+		close(handlerReturned)
+	}()
+
+	<-callbackStarted
+	select {
+	case <-handlerReturned:
+		close(releaseCallback)
+	case <-time.After(250 * time.Millisecond):
+		close(releaseCallback)
+		t.Fatal("HandleMenuClick blocked on the Quit callback")
 	}
 }

@@ -8,17 +8,18 @@ import (
 )
 
 type stubWindowRuntime struct {
-	visible   bool
-	showN     int
-	hideN     int
-	quitN     int
-	setSizeN  int
-	lastW     int
-	lastH     int
-	showErr   error
-	hideErr   error
-	quitErr   error
+	visible    bool
+	showN      int
+	hideN      int
+	quitN      int
+	setSizeN   int
+	lastW      int
+	lastH      int
+	showErr    error
+	hideErr    error
+	quitErr    error
 	setSizeErr error
+	quitFn     func() // 可选：Quit 调用时额外执行的函数（用于记录调用顺序）
 }
 
 func (s *stubWindowRuntime) Show() error {
@@ -41,6 +42,9 @@ func (s *stubWindowRuntime) Hide() error {
 
 func (s *stubWindowRuntime) Quit() error {
 	s.quitN++
+	if s.quitFn != nil {
+		s.quitFn()
+	}
 	return s.quitErr
 }
 
@@ -106,8 +110,8 @@ func TestToggleMainWindow(t *testing.T) {
 
 // REQ-030-AC-004：Quit 允许退出并调用运行时 Quit。
 func TestQuitApplicationAllowsExit(t *testing.T) {
-	runtime := &stubWindowRuntime{visible: true}
-	service := NewService(WithWindowRuntime(runtime))
+	rt := &stubWindowRuntime{visible: true}
+	service := NewService(WithWindowRuntime(rt))
 
 	if err := service.QuitApplication(); err != nil {
 		t.Fatalf("QuitApplication: %v", err)
@@ -115,8 +119,52 @@ func TestQuitApplicationAllowsExit(t *testing.T) {
 	if !service.allowQuit.Load() {
 		t.Fatal("QuitApplication must set allowQuit")
 	}
-	if runtime.quitN != 1 {
-		t.Fatalf("quitN = %d, want 1", runtime.quitN)
+	if rt.quitN != 1 {
+		t.Fatalf("quitN = %d, want 1", rt.quitN)
+	}
+}
+
+// REQ-030-AC-004（扩展）：QuitApplication 必须在调用 window.Quit 之前执行 onBeforeQuit 钩子。
+// 这确保 Windows 上 systray 能在 Wails 主消息循环退出之前被正确停止。
+func TestQuitApplicationCallsOnBeforeQuitBeforeWindowQuit(t *testing.T) {
+	var callOrder []string
+	rt := &stubWindowRuntime{visible: true}
+	rt.quitFn = func() {
+		callOrder = append(callOrder, "window.Quit")
+	}
+	service := NewService(
+		WithWindowRuntime(rt),
+		WithOnBeforeQuit(func() {
+			callOrder = append(callOrder, "onBeforeQuit")
+		}),
+	)
+
+	if err := service.QuitApplication(); err != nil {
+		t.Fatalf("QuitApplication: %v", err)
+	}
+
+	// onBeforeQuit 必须在 window.Quit 之前被调用
+	if len(callOrder) != 2 {
+		t.Fatalf("call order length = %d, want 2; calls = %v", len(callOrder), callOrder)
+	}
+	if callOrder[0] != "onBeforeQuit" {
+		t.Fatalf("first call = %q, want \"onBeforeQuit\"", callOrder[0])
+	}
+	if callOrder[1] != "window.Quit" {
+		t.Fatalf("second call = %q, want \"window.Quit\"", callOrder[1])
+	}
+}
+
+// REQ-030-AC-004（扩展）：当 onBeforeQuit 为 nil 时，QuitApplication 正常工作（向后兼容）。
+func TestQuitApplicationWithoutOnBeforeQuit(t *testing.T) {
+	rt := &stubWindowRuntime{visible: true}
+	service := NewService(WithWindowRuntime(rt))
+
+	if err := service.QuitApplication(); err != nil {
+		t.Fatalf("QuitApplication without onBeforeQuit: %v", err)
+	}
+	if rt.quitN != 1 {
+		t.Fatalf("quitN = %d, want 1", rt.quitN)
 	}
 }
 

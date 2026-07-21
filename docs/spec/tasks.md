@@ -1,8 +1,8 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：2.7.0
-> 日期：2026-07-21  
+> 版本：2.8.0
+> 日期：2026-07-22
 > 状态：已定稿
 
 执行时须严格遵循 `docs/spec/requirements.md` 2.6.0、`docs/spec/design.md` 1.10.0 和 `docs/spec/test_strategy.md` 2.1.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
@@ -1465,6 +1465,31 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-064 · 修复 Windows 托盘 Quit 无法退出**
+
+  > 依赖：TASK-059、TASK-061 · 预计：1–2 小时 · 状态：done · 2026-07-22
+
+  - [x] Red：增加退出前清理顺序与托盘回调非阻塞测试，复现同步 Quit 回调和 Windows 消息线程生命周期问题。
+  - [x] Green：Windows 托盘使用锁定 OS 线程的 `systray.Run`；Show/Quit 回调异步派发；Wails Quit 前先停止托盘。
+  - [x] Refactor：按 build tag 拆分 Windows 与非 Windows Runner；macOS/Linux 继续使用 `RunWithExternalLoop`。
+  - [x] QA：Go 全量测试、`go vet`、Wails Windows 构建通过；Windows 原生 Show 与 Quit 验收通过。
+  - [x] 跨平台审查：macOS/Linux 不使用 Windows HWND 消息线程路径；共享退出顺序修复同时生效，原生运行验收保留给对应平台环境。
+
+  **验证方式：**
+  ```powershell
+  go test ./... -count=1
+  go vet ./...
+  wails build
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-064-AC.md`、`docs/spec/evidence/TASK-064-evidence.md`、`docs/spec/reports/TASK-064-report.md`；用户于 2026-07-22 确认 Windows 托盘 Quit 可正常退出。
+
+  _需求: REQ-030
+  验收标准：REQ-030-AC-002、REQ-030-AC-003、REQ-030-AC-004、REQ-030-AC-010
+  _测试类型: Unit + Manual
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1532,6 +1557,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-061 | 托盘与快捷键跨平台验收 | Manual | done | REQ-030、027 |
 | TASK-062 | uiSize 预设、Schema 与冷启动尺寸 | Unit/Manual | done | REQ-031 |
 | TASK-063 | Appearance 窗口大小 UI 与 i18n | Unit/E2E/Manual | done | REQ-031、023 |
+| TASK-064 | 修复 Windows 托盘 Quit 无法退出 | Unit/Manual | done | REQ-030 |
 
 ---
 
@@ -1558,3 +1584,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 2.5.0 | 2026-07-21 | 已定稿 | 新增 TASK-058，合并 Vitest/Coverage 重复执行，PR/main 精简非必要浏览器测试，定时保留全量回归 |
 | 2.6.0 | 2026-07-21 | 已定稿 | 新增 TASK-059~061，覆盖 REQ-030 关闭隐藏/托盘/全局热键与 Shortcuts 设置 |
 | 2.7.0 | 2026-07-21 | 已定稿 | 新增 TASK-062~063，覆盖 REQ-031 Appearance 窗口大小 |
+| 2.8.0 | 2026-07-22 | 已定稿 | 新增 TASK-064，修复 Windows 托盘消息线程与 Wails 退出顺序导致的 Quit 无法退出 |
