@@ -37,6 +37,31 @@ test.describe('分类 CRUD', () => {
     });
   });
 
+  // REQ-010-AC-002 · fix_task 1.7
+  test('分类改名 shall 在侧栏树中显示新名称', async ({ page }) => {
+    await page.getByRole('button', { name: 'New category' }).click();
+    await page.getByLabel('Category name').fill('FIX17 Rename Source');
+    await page.getByRole('button', { name: 'Create category' }).click();
+    await expect(page.getByText('FIX17 Rename Source', { exact: true })).toBeVisible();
+
+    const label = page.getByText('FIX17 Rename Source', { exact: true }).first();
+    const row = label.locator('xpath=ancestor::div[contains(@class,"group")][1]');
+    await row.hover();
+    await row.getByRole('button', { name: 'Rename category' }).click();
+    const renameDialog = page.getByRole('dialog', { name: 'Rename category' });
+    await expect(renameDialog).toBeVisible();
+    await renameDialog.getByRole('textbox', { name: 'Category name' }).fill('FIX17 Renamed Category');
+    await renameDialog.getByRole('button', { name: 'Save category name' }).click();
+    await expect(page.getByText('FIX17 Renamed Category', { exact: true })).toBeVisible();
+    await expect(page.getByText('FIX17 Rename Source', { exact: true })).toHaveCount(0);
+
+    await mkdir(evidenceDirectory, { recursive: true });
+    await page.screenshot({
+      path: resolve(evidenceDirectory, 'FIX-1.7-category-rename.png'),
+      fullPage: true,
+    });
+  });
+
   test('在已有分类下创建子分类 shall 成功并展示在层级中', async ({ page }) => {
     // 鼠标移动到并点击第一个分类的“新建子分类”按钮
     await page.getByRole('button', { name: 'New subcategory' }).first().click();

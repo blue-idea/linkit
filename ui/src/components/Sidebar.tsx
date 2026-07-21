@@ -116,6 +116,7 @@ export function Sidebar({
   onOpenInsights,
   onNewBookmark,
   onNewCategory,
+  onRenameCategory,
   onDeleteCategory,
   onMoveCategory,
   onRequestSetCategoryIcon,
@@ -138,6 +139,7 @@ export function Sidebar({
   onOpenInsights: () => void;
   onNewBookmark: () => void;
   onNewCategory: (parentId?: string) => void;
+  onRenameCategory: (categoryId: string) => void;
   onDeleteCategory: (categoryId: string) => void;
   onMoveCategory: (categoryId: string, newParentId: string) => void;
   onRequestSetCategoryIcon: (categoryId: string) => void;
@@ -207,6 +209,19 @@ export function Sidebar({
                         className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-accent-300 flex items-center justify-center transition"
                       >
                         <Icon name="Plus" size={11} />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={i18n.t('sidebar.renameCategory')}
+                        title={i18n.t('sidebar.renameCategory')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRenameCategory(cat.id);
+                        }}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-accent-300 flex items-center justify-center transition"
+                      >
+                        <Icon name="PenTool" size={11} />
                       </button>
                       <button
                         type="button"
