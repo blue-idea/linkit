@@ -1,9 +1,20 @@
 import { z } from 'zod';
 import { THEME_IDS } from '../config/themes';
+import { DEFAULT_SHORTCUTS, SHORTCUT_ACTION_IDS } from '../features/shell/shortcuts';
 
 const colorSchema = z.enum(['blue', 'green', 'amber', 'coral', 'violet', 'gray']);
 const idSchema = z.string().trim().min(1);
 const nullableDateTimeSchema = z.iso.datetime().nullable();
+const shortcutActionIdSchema = z.enum(SHORTCUT_ACTION_IDS);
+const shortcutMapSchema = z.record(shortcutActionIdSchema, z.string().trim().min(1)).transform((value) => {
+  const merged = { ...DEFAULT_SHORTCUTS };
+  for (const id of SHORTCUT_ACTION_IDS) {
+    if (typeof value[id] === 'string' && value[id].trim()) {
+      merged[id] = value[id].trim();
+    }
+  }
+  return merged;
+});
 
 export const BookmarkSchema = z.strictObject({
   id: idSchema, title: z.string().trim().min(1), url: z.url({ protocol: /^https?$/ }),
@@ -36,14 +47,24 @@ const apiBaseSchema = z.url().refine((value) => {
 // 空字符串表示 AI 未配置；非空时必须满足 HTTPS/loopback 约束。
 const optionalApiBaseSchema = z.union([z.literal(''), apiBaseSchema]);
 
-export const AppSettingsSchema = z.strictObject({
+export const AppSettingsSchema = z.preprocess((raw) => {
+  if (!raw || typeof raw !== 'object') {
+    return raw;
+  }
+  const record = raw as Record<string, unknown>;
+  if (record.shortcuts == null) {
+    return { ...record, shortcuts: DEFAULT_SHORTCUTS };
+  }
+  return raw;
+}, z.strictObject({
   settingsVersion: z.int().min(1), storageMode: z.enum(['local', 'cloud']),
   theme: z.enum(THEME_IDS), locale: z.enum(['en', 'zh']),
   ai: z.strictObject({ apiBase: optionalApiBaseSchema, model: z.string().trim() }),
   aiConsent: z.strictObject({ apiBase: apiBaseSchema, grantedAt: z.iso.datetime() }).nullable(),
   view: z.strictObject({ defaultMode: z.enum(['card', 'list', 'masonry', 'timeline', 'tag-aggregation', 'theme-space']) }),
   lastCloudRevision: z.int().min(0).nullable(),
-});
+  shortcuts: shortcutMapSchema,
+}));
 
 export type Bookmark = z.infer<typeof BookmarkSchema>;
 export type LibraryData = z.infer<typeof LibraryDataSchema>;

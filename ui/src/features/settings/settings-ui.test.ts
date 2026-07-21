@@ -6,7 +6,7 @@ import { resolveThemeLabel } from './themes';
 
 describe('设置 UI 规格', () => {
   // REQ-023-AC-001：打开 Settings 时可发现五个分区。
-  test('listSettingsSections 暴露五个稳定分区 id', () => {
+  test('listSettingsSections 暴露六个稳定分区 id', () => {
     expect(listSettingsSections()).toEqual([...SETTINGS_SECTION_KEYS]);
   });
 

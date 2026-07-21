@@ -1292,6 +1292,130 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+---
+
+- [x] **TASK-057 · 按变更影响优化 E2E 与发布门禁**
+
+  > 依赖：TASK-002、TASK-044 · 预计：2–3 小时 · 状态：done · 2026-07-21
+
+  - [x] Red：新增影响选择器测试，覆盖功能域、共享基础设施、文档、直接测试文件、视觉与未知生产代码场景。
+  - [x] Green：实现集中式路径映射与安全升级规则，输出 PR 可消费的 E2E/视觉测试集合。
+  - [x] Refactor：PR 运行 Smoke 与受影响测试，main 运行全量 E2E/视觉，Release 校验同 SHA 主干 CI 并执行关键旅程后再构建。
+  - [x] 规定未执行且确认不受影响的用例标记为 `NOT_RUN_UNAFFECTED`，不得标记为 PASS。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui test:e2e:impact:test
+  pnpm --dir ui verify:quality-config
+  pnpm --dir ui lint
+  pnpm --dir ui typecheck
+  pnpm --dir ui build
+  ```
+
+  **验收证据：** 影响选择器真实测试输出、CI/Release 工作流、测试策略与追溯矩阵。
+
+  _需求: REQ-024、REQ-028
+  验收标准：REQ-024-AC-006、REQ-028-AC-004
+  _测试类型: Unit + E2E
+
+---
+
+- [x] **TASK-058 · 合并 Coverage 并减少非必要 E2E**
+
+  > 依赖：TASK-057 · 预计：2–3 小时 · 状态：done · 2026-07-21
+
+  - [x] Red：增加质量配置断言，禁止同一 CI 重复执行普通 Vitest 与 Coverage；增加文档、纯 Go 和浏览器门禁测试。
+  - [x] Green：以单次 `test:coverage` 承担 300 项测试及覆盖率报告；PR/main 统一按变更影响选择浏览器测试。
+  - [x] Refactor：删除重复影响域；无浏览器影响时跳过 Playwright 安装与执行；定时和手动工作流保留全量 E2E/视觉。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui verify:quality-config
+  pnpm --dir ui test:e2e:impact:test
+  pnpm --dir ui test:coverage
+  pnpm --dir ui lint
+  pnpm --dir ui typecheck
+  pnpm --dir ui build
+  ```
+
+  **验收证据：** Coverage 单次执行结果、9 项影响选择测试、质量配置契约与远程 CI 日志。
+
+  _需求: REQ-024、REQ-028
+  验收标准：REQ-024-AC-006、REQ-028-AC-004
+  _测试类型: Unit + E2E
+
+---
+
+- [x] **TASK-059 · 关闭隐藏、系统托盘与窗口显隐全局热键**
+
+  > 依赖：TASK-007、TASK-022 · 预计：3–4 小时 · 状态：done（Unit）；Manual → TASK-061 · 2026-07-21
+
+  - [x] Red：为 `HideWindowOnClose`/`allowQuit`、托盘 Show/Quit 回调、`internal/hotkey` 注册/替换/失败码编写失败的 Go 单元测试；确认因能力缺失而失败。
+  - [x] Green：实现 `OnBeforeClose` 隐藏、托盘菜单、`SystemService`（Show/Hide/Quit/SetToggleWindowHotkey/GetDesktopCapability）与系统级默认 `CmdOrCtrl+L`；Linux 失败时降级并返回稳定错误。
+  - [x] Refactor：将托盘与热键封装到 `internal/tray`、`internal/hotkey`；桌面态前端不重复绑定 `toggleWindow`。
+  - [x] 在选定目标平台执行 Manual 检查清单（OS 关闭隐藏、托盘 Show/Quit、隐藏态全局热键）；另一平台保留 Wails 构建门禁；Linux 记 best-effort。
+
+  **验证方式：**
+  ```powershell
+  go test ./internal/hotkey ./internal/tray ./internal/platform -count=1
+  go test ./config -count=1
+  ```
+
+  **验收证据：** Go 测试输出、Manual 检查记录与截图/日志、`docs/spec/ac/TASK-059-AC.md`、`docs/spec/evidence/TASK-059-evidence.md`、`docs/spec/reports/TASK-059-report.md`。
+
+  _需求: REQ-030、REQ-027
+  验收标准：REQ-030-AC-001~005、REQ-030-AC-010
+  _测试类型: Unit + Manual
+
+---
+
+- [x] **TASK-060 · Settings→Shortcuts 可配置绑定与冲突检测**
+
+  > 依赖：TASK-059、TASK-023、TASK-056 · 预计：3–4 小时 · 状态：done · 2026-07-21
+
+  - [x] Red：扩展 `AppSettingsSchema.shortcuts`、默认合并、冲突检测纯函数与 Shortcuts 分区组件测试，确认因字段/分区缺失而失败。
+  - [x] Green：实现 Shortcuts 设置分区、九项 action 列表、改绑保存、恢复默认、本地持久化；保存 `toggleWindow` 时调用 `SetToggleWindowHotkey`；`useGlobalShortcuts` 读取设置且桌面态跳过 `toggleWindow`。
+  - [x] Refactor：抽取 accelerator 解析/展示与冲突检测到可复用模块；补齐 en/zh 文案键。
+  - [x] E2E：Settings 可见 Shortcuts；列表完整；冲突拒绝；恢复默认；改绑后应用内快捷键按新绑定生效。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/domain src/features/shell src/features/settings src/components/SettingsDialog --coverage
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui exec playwright test -g "Shortcuts|快捷键设置" --workers=1
+  ```
+
+  **验收证据：** Vitest/Playwright 真实输出、Shortcuts 分区截图、`docs/spec/ac/TASK-060-AC.md`、`docs/spec/evidence/TASK-060-evidence.md`、`docs/spec/reports/TASK-060-report.md`。
+
+  _需求: REQ-030、REQ-023、REQ-024
+  验收标准：REQ-030-AC-006~009、REQ-023-AC-001、REQ-024-AC-002~003
+  _测试类型: Unit + E2E
+
+---
+
+- [x] **TASK-061 · 托盘与快捷键跨平台验收（Win/mac + Linux best-effort）**
+
+  > 依赖：TASK-059、TASK-060 · 预计：1–2 小时 · 状态：done · 2026-07-21
+
+  - [x] 在选定验收平台执行 J-17：OS 关闭隐藏、托盘 Show/Quit、全局显隐热键、Shortcuts 改绑后全局热键同步。
+  - [x] 记录另一目标平台 Wails 构建门禁结果；Linux 托盘/热键按能力探测记 best-effort 或 BLOCKED，禁止假 PASS。
+  - [x] 汇总 TASK-059/060 证据，关闭 `fix_task` 1.8。
+
+  **验证方式：**
+  ```powershell
+  # 选定平台 Manual J-17 + 另一平台：
+  wails build
+  ```
+
+  **验收证据：** J-17 检查清单、构建日志、`docs/spec/ac/TASK-061-AC.md`、`docs/spec/reports/TASK-061-report.md`；`fix_task.md` 1.8 勾选。
+
+  _需求: REQ-030、REQ-027
+  验收标准：REQ-030-AC-001~010、REQ-027-AC-001
+  _测试类型: Manual
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1352,6 +1476,11 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-054 | 主题视图移出成员 | Unit/E2E | done | REQ-012、026 |
 | TASK-055 | 开发/正式本机身份槽隔离 | Unit | done | REQ-025 |
 | TASK-056 | 全界面 UI 语言与设置对齐 | Unit/E2E | done | REQ-023 |
+| TASK-057 | 变更影响 E2E 与发布门禁 | Unit/E2E | done | REQ-024、028 |
+| TASK-058 | 合并 Coverage 与精简 E2E | Unit/E2E | done | REQ-024、028 |
+| TASK-059 | 关闭隐藏、托盘与显隐全局热键 | Unit/Manual | done | REQ-030、027 |
+| TASK-060 | Settings→Shortcuts 可配置绑定 | Unit/E2E | done | REQ-030、023、024 |
+| TASK-061 | 托盘与快捷键跨平台验收 | Manual | done | REQ-030、027 |
 
 ---
 
@@ -1374,3 +1503,6 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 2.1.0 | 2026-07-19 | 已定稿 | 新增 TASK-052~054，主题视图手动添加/移出书签（REQ-012-AC-006~011） |
 | 2.2.0 | 2026-07-20 | 已定稿 | 新增 TASK-055，开发/正式本机身份槽隔离（REQ-025-AC-006） |
 | 2.3.0 | 2026-07-20 | 已定稿 | 新增 TASK-056，全界面非自定义 UI 文案与无障碍名称跟随设置语言 |
+| 2.4.0 | 2026-07-21 | 已定稿 | 新增 TASK-057，PR 按变更影响执行测试，main 全量回归，Release 校验同 SHA 质量门禁 |
+| 2.5.0 | 2026-07-21 | 已定稿 | 新增 TASK-058，合并 Vitest/Coverage 重复执行，PR/main 精简非必要浏览器测试，定时保留全量回归 |
+| 2.6.0 | 2026-07-21 | 已定稿 | 新增 TASK-059~061，覆盖 REQ-030 关闭隐藏/托盘/全局热键与 Shortcuts 设置 |

@@ -14,6 +14,7 @@ export const SETTINGS_SECTION_KEYS = [
   'ai',
   'appearance',
   'language',
+  'shortcuts',
 ] as const;
 
 export type SettingsSectionKey = (typeof SETTINGS_SECTION_KEYS)[number];

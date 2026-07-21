@@ -32,13 +32,13 @@ test.describe('Settings theme locale', () => {
   });
 
   // REQ-023-AC-001 / REQ-023-AC-002
-  test('settings exposes five sections with storage capacity', async ({ page }) => {
+  test('settings exposes sections with storage capacity', async ({ page }) => {
     await enterLocalMode(page);
     await page.getByRole('button', { name: 'Settings' }).click();
     const dialog = page.getByRole('dialog', { name: 'Settings' });
     await expect(dialog).toBeVisible();
 
-    for (const name of ['General', 'Storage', 'AI', 'Appearance', 'Language']) {
+    for (const name of ['General', 'Storage', 'AI', 'Appearance', 'Language', 'Shortcuts']) {
       await expect(dialog.getByRole('tab', { name })).toBeVisible();
     }
 

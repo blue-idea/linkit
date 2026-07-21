@@ -6,7 +6,7 @@ import { exportLibrary, importLibrary } from '../storage';
 import { getSettingsSections } from '../i18n';
 import { useI18n } from '../i18n/use-i18n';
 import type { SettingsSectionKey } from '../config/i18n';
-import { resolveThemeLabel } from '../features/settings';
+import { resolveThemeLabel, ShortcutsPanel } from '../features/settings';
 import {
   applyConfirmedImport,
   buildExportEnvelopeFromUi,
@@ -169,11 +169,12 @@ const TAB_ICONS: Record<Tab, string> = {
   ai: 'Sparkles',
   appearance: 'Palette',
   language: 'Languages',
+  shortcuts: 'Key',
 };
 
 /**
- * Settings 对话框：General / Storage / AI / Appearance / Language。
- * 覆盖 REQ-023-AC-001~005。
+ * Settings 对话框：General / Storage / AI / Appearance / Language / Shortcuts。
+ * 覆盖 REQ-023-AC-001~005、REQ-030-AC-006~009。
  */
 export function SettingsDialog({
   open,
@@ -734,6 +735,14 @@ export function SettingsDialog({
                 </div>
               </div>
             </div>
+          )}
+
+          {tab === 'shortcuts' && (
+            <ShortcutsPanel
+              shortcuts={draft.shortcuts}
+              locale={(draft.locale ?? 'en') as UiLocale}
+              onChange={(shortcuts) => update({ shortcuts })}
+            />
           )}
         </div>
       </div>

@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/blue-idea/collection/config"
@@ -32,13 +33,17 @@ type Option func(*Service)
 type urlOpener func(rawURL string) error
 
 type Service struct {
-	ctx       context.Context
-	dialogs   fileDialogs
-	maxBytes  int64
-	now       func() time.Time
-	readFile  func(path string) ([]byte, error)
-	writeFile func(path string, content []byte, permission os.FileMode) error
-	openURL   urlOpener
+	ctx        context.Context
+	dialogs    fileDialogs
+	maxBytes   int64
+	now        func() time.Time
+	readFile   func(path string) ([]byte, error)
+	writeFile  func(path string, content []byte, permission os.FileMode) error
+	openURL    urlOpener
+	window     WindowRuntime
+	hotkeys    HotkeyManager
+	capability *DesktopCapability
+	allowQuit  atomic.Bool
 }
 
 func NewService(options ...Option) *Service {

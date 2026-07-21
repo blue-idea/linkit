@@ -1,4 +1,4 @@
-﻿# 1. 优化任务
+# 1. 优化任务
 
 - [X] 1.1收藏分类后面的图标修改为鼠标放置到上面显示。分类操作不要点击Drag category进行拖拽，直接拖拽分类。删除Drag category。
 - [X] 1.2增加分类的图标设置功能，需要有候选图标功能。
@@ -18,8 +18,8 @@
 
 ## 3. 项目打包
 
-- [X] 3.1 开发/正式本机身份槽隔离（TASK-055）：正式 `Linkit`，开发 `Linkit-Dev`（`wails dev -tags dev`）；Release CI 断言产物不含开发身份。详见 `docs/knowledge/打包.md`。
-- [X] 3.2 用 GitHub Actions 发布安装包到 Releases：`release.yml` 已支持 Windows installer / macOS dmg / Linux deb；触发后验证身份门禁与产物。
+- [X] 3.1 开发/正式本机身份槽隔离（TASK-055）：正式 \Linkit\，开发 \Linkit-Dev\（\wails dev -tags dev\）；Release CI 断言产物不含开发身份。详见 \docs/knowledge/打包.md\。
+- [X] 3.2 用 GitHub Actions 发布安装包到 Releases：elease.yml\ 已支持 Windows installer / macOS dmg / Linux deb；触发后验证身份门禁与产物。
 
 用 GitHub Actions（已配置好）
 你的项目已经有 desktop-build.yml，它会：

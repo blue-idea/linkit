@@ -53,8 +53,8 @@ describe('i18n', () => {
     );
   });
 
-  // REQ-023-AC-001：Settings 必须提供五类入口。
-  test('getSettingsSections 返回 General Storage AI Appearance Language', () => {
+  // REQ-023-AC-001：Settings 必须提供含 Shortcuts 的入口。
+  test('getSettingsSections 返回 General Storage AI Appearance Language Shortcuts', () => {
     const sections = getSettingsSections(i18n);
     expect(sections.map((s) => s.id)).toEqual([...SETTINGS_SECTION_KEYS]);
     expect(sections.map((s) => s.label)).toEqual([
@@ -63,6 +63,7 @@ describe('i18n', () => {
       'AI',
       'Appearance',
       'Language',
+      'Shortcuts',
     ]);
 
     i18n.setLocale('zh');
@@ -72,6 +73,7 @@ describe('i18n', () => {
       'AI',
       '外观',
       '语言',
+      '快捷键',
     ]);
   });
 
