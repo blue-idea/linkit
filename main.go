@@ -77,10 +77,18 @@ func main() {
 	healthEmitter := health.NewWailsEmitter()
 	healthService := health.NewService(health.WithEmitter(healthEmitter))
 
+	// REQ-031：冷启动按已存 uiSize 设宽高；缺省 medium。
+	launchWidth, launchHeight := config.AppWidth, config.AppHeight
+	if w, h, sizeErr := settingsService.LaunchWindowSize(); sizeErr == nil {
+		launchWidth, launchHeight = w, h
+	} else {
+		log.Printf("settings: unable to resolve launch window size: %v", sizeErr)
+	}
+
 	err = wails.Run(&options.App{
 		Title:  config.AppTitle,
-		Width:  config.AppWidth,
-		Height: config.AppHeight,
+		Width:  launchWidth,
+		Height: launchHeight,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

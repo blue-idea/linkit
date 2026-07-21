@@ -109,6 +109,23 @@ func (service *Service) ReadSettings() (SettingsReadResult, error) {
 	return SettingsReadResult{State: "default", SettingsJSON: defaults}, nil
 }
 
+// LaunchWindowSize 按已存 uiSize 解析冷启动宽高；缺省 medium。REQ-031-AC-004 / AC-005
+func (service *Service) LaunchWindowSize() (width int, height int, err error) {
+	result, readErr := service.ReadSettings()
+	if readErr != nil {
+		return 0, 0, readErr
+	}
+	settings, decodeErr := decodeAndValidateSettings([]byte(result.SettingsJSON))
+	if decodeErr != nil {
+		return 0, 0, decodeErr
+	}
+	w, h, ok := config.ResolveWindowSize(settings.UiSize)
+	if !ok {
+		return config.AppWidth, config.AppHeight, nil
+	}
+	return w, h, nil
+}
+
 func (service *Service) WriteSettings(request SettingsWriteRequest) error {
 	settings, err := decodeAndValidateSettings([]byte(request.SettingsJSON))
 	if err != nil {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import type { AppSettings, LibraryData, StorageMode, ThemeId, UiLocale } from '../types';
+import type { AppSettings, LibraryData, StorageMode, ThemeId, UiLocale, UiSize } from '../types';
 import { themes, applyTheme } from '../themes';
+import { DEFAULT_UI_SIZE, UI_SIZE_IDS } from '../config/window-size';
 import { Icon, Button, AIBadge } from './ui';
 import { exportLibrary, importLibrary } from '../storage';
 import { getSettingsSections } from '../i18n';
@@ -225,7 +226,8 @@ export function SettingsDialog({
 
   useEffect(() => {
     if (open) {
-      setDraft(settings);
+      // 旧设置缺省 uiSize 时合并为 medium，避免 Appearance 无选中态。
+      setDraft({ ...settings, uiSize: settings.uiSize ?? DEFAULT_UI_SIZE });
       setImportMsg(null);
       setImportError(null);
       setPendingEnvelope(null);
@@ -694,6 +696,35 @@ export function SettingsDialog({
                         <p className="text-[10px] text-ink-400 leading-relaxed">
                           {i18n.t(themeDescKey(t.id))}
                         </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <div className="text-[11px] uppercase tracking-wider text-ink-500 font-semibold mb-2">
+                  {i18n.t('settings.uiSize.label')}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {UI_SIZE_IDS.map((size) => {
+                    const active = (draft.uiSize ?? DEFAULT_UI_SIZE) === size;
+                    return (
+                      <button
+                        type="button"
+                        key={size}
+                        onClick={() => update({ uiSize: size as UiSize })}
+                        className={`rounded-mac-lg p-3 text-left transition hairline ${
+                          active
+                            ? 'ring-1 ring-accent-400/40 bg-ink-700/40'
+                            : 'bg-ink-800/50 hover:bg-ink-700/60'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-[13px] font-semibold text-ink-100">
+                            {i18n.t(`settings.uiSize.${size}`)}
+                          </span>
+                          {active && <Icon name="Check" size={13} className="text-accent-300 ml-auto" />}
+                        </div>
                       </button>
                     );
                   })}

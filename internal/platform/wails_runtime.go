@@ -55,6 +55,15 @@ func (r *WailsWindowRuntime) IsVisible() bool {
 	return r.visible.Load()
 }
 
+// SetSize 调整原生主窗口宽高。REQ-031-AC-003
+func (r *WailsWindowRuntime) SetSize(width, height int) error {
+	if r.ctx == nil {
+		return nil
+	}
+	wailsruntime.WindowSetSize(r.ctx, width, height)
+	return nil
+}
+
 // MarkHidden 在 HideWindowOnClose 触发后同步可见性状态。
 func (r *WailsWindowRuntime) MarkHidden() {
 	r.visible.Store(false)

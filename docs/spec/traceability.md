@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.27.0
-> 日期：2026-07-20
-> 状态：已定稿（新增 TASK-056 / REQ-023-AC-008）
+> 版本：1.28.0
+> 日期：2026-07-21
+> 状态：已定稿（新增 TASK-062~063 / REQ-031）
 
 ---
 
@@ -87,6 +87,8 @@
 | TASK-059 | 关闭隐藏、托盘与显隐全局热键 | REQ-030-AC-001~005、REQ-030-AC-010；REQ-027-AC-001 | done | `internal/hotkey/*`、`internal/tray/*`、`internal/platform/desktop.go`、`main.go` | `internal/hotkey/*_test.go`、`internal/tray/*_test.go`、`internal/platform/desktop_test.go` | `docs/spec/ac/TASK-059-AC.md` | 2026-07-21 |
 | TASK-060 | Settings→Shortcuts 可配置绑定 | REQ-030-AC-006~009；REQ-023-AC-001；REQ-024-AC-002~003 | done | `ui/src/features/shell/shortcuts.ts`、`ShortcutsPanel.tsx`、`SettingsDialog.tsx`、`schemas.ts` | `shortcuts.test.ts`、`ShortcutsPanel.test.tsx`、`settings-shortcuts.spec.ts` | `docs/spec/ac/TASK-060-AC.md` | 2026-07-21 |
 | TASK-061 | 托盘与快捷键跨平台验收 | REQ-030-AC-001~010；REQ-027-AC-001 | done | `main.go`、`internal/tray/*`、`internal/hotkey/*`、Settings Shortcuts | J-17 Manual（用户 2026-07-21 确认） | `docs/spec/ac/TASK-061-AC.md` | 2026-07-21 |
+| TASK-062 | uiSize 预设、Schema 与冷启动尺寸 | REQ-031-AC-002~005 | done | `config/window_size.go`、`internal/platform/desktop.go`、`internal/settingsstore/*`、`main.go`、`ui/src/config/window-size.ts`、`schemas.ts` | `config/window_size_test.go`、`platform/window_size_test.go`、`settingsstore/window_size_test.go`、`window-size.test.ts`、`library.test.ts` | `docs/spec/ac/TASK-062-AC.md` | 2026-07-21 |
+| TASK-063 | Appearance 窗口大小 UI 与 i18n | REQ-031-AC-001~006；REQ-023-AC-001 | done | `SettingsDialog.tsx`、`desktop-window-size.ts`、`catalogs.ts`、`App.tsx` | `i18n.test.ts`、`desktop-window-size.test.ts`、`settings-window-size.spec.ts`、J-18 Manual | `docs/spec/ac/TASK-063-AC.md` | 2026-07-21 |
 
 ---
 
@@ -150,3 +152,6 @@
 | 2026-07-21 | 新增 TASK-059~061 与 REQ-030 追溯 | 关闭隐藏/托盘/全局热键与 Settings→Shortcuts；对齐 fix_task 1.8 |
 | 2026-07-21 | TASK-059 Unit done；TASK-060 done | Manual 托盘/全局热键并入 TASK-061 J-17 |
 | 2026-07-21 | TASK-061 done；fix_task 1.8 关闭 | 用户确认 J-17 Manual 通过 |
+| 2026-07-21 | 新增 TASK-062~063 与 REQ-031 追溯 | Appearance 窗口大小四档；对齐 fix_task 1.9 |
+| 2026-07-21 | TASK-062 Unit done | Manual/J-18 并入 TASK-063 |
+| 2026-07-21 | TASK-063 done；fix_task 1.9 关闭 | 用户确认 J-18 Manual 通过 |

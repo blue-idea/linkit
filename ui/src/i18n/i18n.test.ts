@@ -77,6 +77,22 @@ describe('i18n', () => {
     ]);
   });
 
+  // REQ-031-AC-001 / AC-006：窗口大小选项文案中英对齐。
+  test('窗口大小四档文案 en/zh 对齐且键完整', () => {
+    expect(i18n.t('settings.uiSize.label')).toBe('Window size');
+    expect(i18n.t('settings.uiSize.small')).toBe('Small');
+    expect(i18n.t('settings.uiSize.medium')).toBe('Medium');
+    expect(i18n.t('settings.uiSize.large')).toBe('Large');
+    expect(i18n.t('settings.uiSize.xlarge')).toBe('Extra large');
+
+    i18n.setLocale('zh');
+    expect(i18n.t('settings.uiSize.label')).toBe('界面大小');
+    expect(i18n.t('settings.uiSize.small')).toBe('小');
+    expect(i18n.t('settings.uiSize.medium')).toBe('中');
+    expect(i18n.t('settings.uiSize.large')).toBe('大');
+    expect(i18n.t('settings.uiSize.xlarge')).toBe('超大');
+  });
+
   // REQ-023-AC-008：除测试回退键外，全部产品键必须同时具备中英文。
   test('产品词典的 English 与中文键完整对齐', () => {
     const productEnglishKeys = Object.keys(catalogs.en).filter((key) => !key.startsWith('test.'));

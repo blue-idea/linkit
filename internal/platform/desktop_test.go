@@ -12,9 +12,13 @@ type stubWindowRuntime struct {
 	showN     int
 	hideN     int
 	quitN     int
+	setSizeN  int
+	lastW     int
+	lastH     int
 	showErr   error
 	hideErr   error
 	quitErr   error
+	setSizeErr error
 }
 
 func (s *stubWindowRuntime) Show() error {
@@ -42,6 +46,13 @@ func (s *stubWindowRuntime) Quit() error {
 
 func (s *stubWindowRuntime) IsVisible() bool {
 	return s.visible
+}
+
+func (s *stubWindowRuntime) SetSize(width, height int) error {
+	s.setSizeN++
+	s.lastW = width
+	s.lastH = height
+	return s.setSizeErr
 }
 
 type stubHotkeyManager struct {

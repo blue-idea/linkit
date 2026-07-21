@@ -25,6 +25,8 @@ import {
   type ShortcutMap,
 } from './features/shell';
 import { setToggleWindowHotkey } from './features/shell/desktop-hotkey';
+import { setMainWindowSize } from './features/shell/desktop-window-size';
+import { DEFAULT_UI_SIZE } from './config/window-size';
 import { useAuth } from './auth';
 import { loadCloudLibrary, saveCloudLibrary } from './cloud';
 import { loadLocalLibrary, saveLocalLibrary } from './storage';
@@ -1026,13 +1028,16 @@ export default function App() {
   }, [bookmarks, categoryDeleteId, categoryRecursiveConfirm, cats, cols, flashToast, i18n, tagList]);
 
   const handleSaveSettings = useCallback(async (s: AppSettings) => {
-    setSettings(s);
-    applyTheme(s.theme);
-    document.documentElement.lang = s.locale ?? 'en';
-    await persistUiSettings(s);
-    const toggle = mergeShortcuts((s as { shortcuts?: Partial<ShortcutMap> }).shortcuts).toggleWindow;
+    const uiSize = s.uiSize ?? DEFAULT_UI_SIZE;
+    const next = { ...s, uiSize };
+    setSettings(next);
+    applyTheme(next.theme);
+    document.documentElement.lang = next.locale ?? 'en';
+    await persistUiSettings(next);
+    const toggle = mergeShortcuts((next as { shortcuts?: Partial<ShortcutMap> }).shortcuts).toggleWindow;
     await setToggleWindowHotkey(toggle);
-    flashToast(createI18n(s.locale ?? 'en').t('toast.settingsSaved'));
+    await setMainWindowSize(uiSize);
+    flashToast(createI18n(next.locale ?? 'en').t('toast.settingsSaved'));
   }, [flashToast, setSettings]);
 
   const handleImport = useCallback((lib: LibraryData) => {

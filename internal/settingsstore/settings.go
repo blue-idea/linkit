@@ -20,6 +20,7 @@ type appSettings struct {
 	View            viewSettings      `json:"view"`
 	LastCloudRev    *int              `json:"lastCloudRevision"`
 	Shortcuts       map[string]string `json:"shortcuts"`
+	UiSize          string            `json:"uiSize"`
 }
 
 type aiSettings struct {
@@ -64,6 +65,13 @@ var allowedViewModes = map[string]struct{}{
 	"theme-space":     {},
 }
 
+var allowedUiSizes = map[string]struct{}{
+	config.UiSizeSmall:  {},
+	config.UiSizeMedium: {},
+	config.UiSizeLarge:  {},
+	config.UiSizeXLarge: {},
+}
+
 // DefaultAppSettings 返回首次启动使用的正式默认值（locale=en，AI 未配置）。
 func DefaultAppSettings() appSettings {
 	return appSettings{
@@ -75,6 +83,7 @@ func DefaultAppSettings() appSettings {
 		AIConsent:       nil,
 		View:            viewSettings{DefaultMode: "card"},
 		LastCloudRev:    nil,
+		UiSize:          config.UiSizeMedium,
 		Shortcuts: map[string]string{
 			"spotlight":     "CmdOrCtrl+K",
 			"newBookmark":   "CmdOrCtrl+N",
@@ -112,10 +121,17 @@ func decodeAndValidateSettings(content []byte) (appSettings, error) {
 	if err := decoder.Decode(&settings); err != nil {
 		return appSettings{}, invalidSettingsError(err)
 	}
+	normalizeUiSize(&settings)
 	if err := validateAppSettings(settings); err != nil {
 		return appSettings{}, err
 	}
 	return settings, nil
+}
+
+func normalizeUiSize(settings *appSettings) {
+	if strings.TrimSpace(settings.UiSize) == "" {
+		settings.UiSize = config.UiSizeMedium
+	}
 }
 
 func validateAppSettings(settings appSettings) error {
@@ -133,6 +149,9 @@ func validateAppSettings(settings appSettings) error {
 	}
 	if _, ok := allowedViewModes[settings.View.DefaultMode]; !ok {
 		return invalidSettingsError(fmt.Errorf("invalid view.defaultMode"))
+	}
+	if _, ok := allowedUiSizes[settings.UiSize]; !ok {
+		return invalidSettingsError(fmt.Errorf("invalid uiSize"))
 	}
 	if settings.LastCloudRev != nil && *settings.LastCloudRev < 0 {
 		return invalidSettingsError(fmt.Errorf("invalid lastCloudRevision"))

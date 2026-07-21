@@ -26,6 +26,7 @@ const (
 	ErrorCodeDataRootEmpty           = "DATA_ROOT_EMPTY"
 	ErrorCodeHotkeyInvalid           = "HOTKEY_INVALID"
 	ErrorCodeHotkeyUnavailable       = "HOTKEY_UNAVAILABLE"
+	ErrorCodeWindowSizeInvalid       = "WINDOW_SIZE_INVALID"
 
 	ErrorMessageInvalidArgument     = "Invalid local document request"
 	ErrorMessageDocumentInvalid     = "Library document is invalid"
@@ -55,6 +56,7 @@ const (
 	ErrorMessageDataRootEmpty          = "No library or settings data available to migrate"
 	ErrorMessageHotkeyInvalid          = "Hotkey accelerator is invalid"
 	ErrorMessageHotkeyUnavailable      = "Global hotkey is unavailable on this platform"
+	ErrorMessageWindowSizeInvalid      = "Window size preset is invalid"
 
 	// AIAPIKeySecretKey 是 AI Key 的逻辑键；前端仅可见 configured 状态。
 	AIAPIKeySecretKey = "linkit.ai.api-key"

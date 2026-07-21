@@ -1,7 +1,7 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：2.5.0
+> 版本：2.6.0
 > 日期：2026-07-21
 > 状态：已定稿
 
@@ -38,6 +38,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 14. 本地存储目录可在 Settings → Storage 中通过原生文件夹选择器变更；变更时迁移除 OS Keychain 密钥外的全部应用数据目录内容。目标目录已含 Linkit 数据时阻止迁移；迁移失败保持原路径与原数据并清理目标残留；默认 AppData 保留轻量 bootstrap 指针文件，真实数据根可重定向。
 15. 开发构建与正式构建使用隔离的本机身份槽：正式身份 AppData/Keychain 为 `Linkit`；开发身份（`-tags dev`）为 `Linkit-Dev`。发布产物不得嵌入开发身份字符串或携带开发者本机测试数据/密钥。
 16. OS 窗口关闭将应用隐藏到系统托盘/菜单栏且不退出进程；托盘菜单至少提供 Show 与 Quit；默认窗口显隐热键为 Windows `Ctrl+L` / macOS `Cmd+L`，且必须注册为系统级全局热键；Settings → Shortcuts 列出全部可配置快捷键，支持修改、冲突检测与本地持久化；Linux 对托盘与全局热键为 best-effort。
+17. Settings → Appearance 提供界面窗口大小四档：Small / Medium / Large / Extra large（中文界面对应小 / 中 / 大 / 超大）；默认 Medium；仅缩放主窗口宽高（不缩放 UI 字号/控件密度）；档位尺寸为 Small 1152×720（相对 Medium 0.9）、Medium 1280×800、Large 1536×960、Extra large 1792×1120；保存后立即生效并写入 AppSettings；重启按档位恢复；用户手动拖拽窗口不单独持久化，下次启动仍按档位重置。
 
 ---
 
@@ -2026,6 +2027,79 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 
 ---
 
+### 需求 REQ-031 · Appearance 界面窗口大小
+
+**来源：** `fix_task` 1.9、已确认需求决策 17  
+**用户故事：** 作为桌面用户，我希望在 Settings → Appearance 中选择主窗口大小档位，以便按屏幕与使用习惯调整工作区，并在下次打开时保持该设置。
+
+#### 验收标准
+
+```yaml
+- id: REQ-031-AC-001
+  ears: >
+    When 用户打开 Settings → Appearance,
+    the Linkit shall 显示界面大小选项 Small、Medium、Large、Extra large
+    （中文界面文案为 小、中、大、超大）.
+  test_type: E2E
+  expected:
+    ui_state: "Appearance section exposes four window-size options with locale-aligned labels"
+    side_effects: []
+
+- id: REQ-031-AC-002
+  ears: >
+    When Linkit 首次启动且不存在窗口大小偏好,
+    the Linkit shall 使用 Medium（1280×800）作为默认主窗口尺寸.
+  test_type: Unit
+  expected:
+    return_value: "Default uiSize is medium mapped to 1280x800"
+    side_effects: []
+
+- id: REQ-031-AC-003
+  ears: >
+    When 用户选择某一窗口大小档位并确认保存,
+    the Linkit shall 立即将主窗口宽高调整为该档位预设尺寸
+    （Small 1152×720、Medium 1280×800、Large 1536×960、Extra large 1792×1120），
+    且不得仅通过缩放字号或控件密度冒充尺寸变更.
+  test_type: Unit
+  expected:
+    return_value: "Native window width and height equal the selected preset"
+    side_effects:
+      - "Window size is applied immediately after settings save"
+
+- id: REQ-031-AC-004
+  ears: >
+    When 用户保存窗口大小偏好,
+    the Linkit shall 将档位写入本机 AppSettings，并在后续启动时按所存档位恢复对应宽高.
+  test_type: Unit
+  expected:
+    return_value: "Persisted uiSize restores matching width and height on next launch"
+    side_effects:
+      - "settings document stores uiSize preference"
+
+- id: REQ-031-AC-005
+  ears: >
+    While 已保存某一窗口大小档位,
+    when 用户在会话中手动拖拽改变主窗口尺寸后再次启动应用,
+    the Linkit shall 仍按已保存档位的预设宽高打开主窗口，不得单独持久化手动拖拽尺寸.
+  test_type: Unit
+  expected:
+    return_value: "Launch size equals the saved uiSize preset, ignoring prior manual resize"
+    side_effects: []
+
+- id: REQ-031-AC-006
+  ears: >
+    When 用户切换界面语言,
+    the Linkit shall 使 Appearance 中窗口大小选项文案跟随当前语言
+    （en: Small/Medium/Large/Extra large；zh: 小/中/大/超大），
+    且不得改变已保存的档位值.
+  test_type: Unit
+  expected:
+    return_value: "Localized labels change with locale; uiSize enum value unchanged"
+    side_effects: []
+```
+
+---
+
 ## 非目标
 
 以下能力不属于 Linkit MVP，不得在未更新需求规格的情况下加入当前任务范围：
@@ -2072,6 +2146,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | NF-04 | REQ-028 |
 | float_task 1.3、F-STORE-01、F-SET-01 | REQ-029 |
 | fix_task 1.8、关闭隐藏/托盘/可配置快捷键 | REQ-030 |
+| fix_task 1.9、Appearance 界面窗口大小 | REQ-031 |
 
 ---
 
@@ -2096,3 +2171,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.3.0 | 2026-07-20 | 已定稿 | 新增原则 15 与 REQ-025-AC-006：开发/正式本机身份槽隔离，发布产物不得携带开发数据 |
 | 2.4.0 | 2026-07-20 | 已定稿 | 新增 REQ-023-AC-008：所有非自定义 UI 文案、状态与无障碍名称跟随设置语言；用户自定义内容保持原样 |
 | 2.5.0 | 2026-07-21 | 已定稿 | 新增原则 16 与 REQ-030：关闭隐藏到托盘、Show/Quit、全局显隐热键、Settings→Shortcuts 可配置；修订 REQ-023-AC-001 与 REQ-024 默认快捷键说明 |
+| 2.6.0 | 2026-07-21 | 已定稿 | 新增原则 17 与 REQ-031：Appearance 窗口大小四档（仅改宽高）、默认 Medium、立即生效与持久化、手动拖拽不单独记忆 |

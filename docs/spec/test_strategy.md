@@ -2,7 +2,7 @@
 
 > 文件路径：`docs/spec/test_strategy.md`  
 > 参考方法论：`phases/qa_engine.md` §第1阶段  
-> 版本：1.9.0
+> 版本：2.1.0
 > 日期：2026-07-21
 > 状态：已定稿
 
@@ -50,6 +50,7 @@ test_scope:
     - "Bookmark 单项/批量编辑移动删除、Category、Collection（含主题视图手动添加/移出成员）、Tag 领域命令与引用完整性"
     - "六种浏览视图、Spotlight、快捷键、拖拽和全界面 i18n（排除用户自定义内容）"
     - "关闭隐藏到托盘、系统托盘 Show/Quit、窗口显隐全局热键与 Settings→Shortcuts 可配置绑定"
+    - "Settings→Appearance 窗口大小四档（uiSize）、立即套用与冷启动恢复"
     - "OpenAI-compatible AI、授权、降级、语义重排和建议确认"
     - "洞察、手动链接健康和静态知识网络"
     - "10,000 条性能预算、安全、无障碍和视觉回归"
@@ -104,6 +105,7 @@ test_scope:
 | J-15 | 全局快捷键、URL 拖入、Esc 和键盘无障碍 |
 | J-16 | 10,000 条性能、选定平台完整桌面旅程与另一平台构建门禁 |
 | J-17 | OS 关闭隐藏、托盘 Show/Quit、Ctrl/Cmd+L 全局显隐、Settings→Shortcuts 改绑/冲突/恢复默认 |
+| J-18 | Settings→Appearance 选择 Small/Medium/Large/Extra large；保存后窗口立即变为预设宽高；重启按档位恢复；手动拖拽后重启仍按档位 |
 
 ---
 
@@ -230,6 +232,7 @@ environments:
 | OS Keychain | 在真实 Windows Credential Manager 与 macOS Keychain 中执行；开发与正式服务名分别验证 `Linkit-Dev` / `Linkit` |
 | Release 身份门禁 | `go test ./config` 正式身份断言 + Release 产物扫描不得包含 `Linkit-Dev` |
 | 托盘 / 全局热键 | 在真实 Windows 或 macOS 桌面进程验证；Linux 无能力时记 best-effort / BLOCKED，不得伪造 PASS |
+| 原生窗口尺寸 | 在真实桌面进程验证 `WindowSetSize` 与冷启动 Width/Height；浏览器 Playwright 仅覆盖 Appearance UI，不得冒充原生尺寸 PASS |
 
 ---
 
@@ -250,3 +253,4 @@ environments:
 | 1.9.0 | 2026-07-21 | 已定稿 | 新增 J-17 与托盘/全局热键门禁；对齐 REQ-030 与 fix_task 1.8 |
 | 1.9.0 | 2026-07-21 | 已定稿 | 增加 PR 变更影响测试、共享基础设施全量升级、main 全量回归与 Release 同 SHA 质量门禁 |
 | 2.0.0 | 2026-07-21 | 已定稿 | 合并 Vitest 与 Coverage 单次执行；PR/main 按影响运行浏览器测试；定时/手动保留全量回归 |
+| 2.1.0 | 2026-07-21 | 已定稿 | 新增 J-18 与原生窗口尺寸门禁；对齐 REQ-031 与 fix_task 1.9 |
