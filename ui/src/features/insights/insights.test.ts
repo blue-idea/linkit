@@ -7,8 +7,11 @@ describe('收藏洞察计算', () => {
   test('空资料库返回可执行的入库提示且指标可追溯', () => {
     const insights = buildLibraryInsights(createLibraryEnvelope({ bookmarks: [], categories: [], collections: [], tags: [] }).data);
     expect(insights).toEqual([expect.objectContaining({
-      id: 'empty-library', metric: { label: 'Bookmarks', value: 0 },
-      action: { type: 'new-bookmark' }, evidence: ['bookmarkCount=0'],
+      id: 'empty-library',
+      titleKey: 'insights.card.empty.title',
+      metric: { labelKey: 'insights.metric.label.bookmarks', value: 0 },
+      action: { type: 'new-bookmark' },
+      evidence: ['bookmarkCount=0'],
     })]);
   });
 

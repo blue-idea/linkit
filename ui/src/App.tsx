@@ -1876,6 +1876,9 @@ export default function App() {
       <InsightsReportDialog
         open={insightsOpen}
         insights={insights}
+        bookmarks={bookmarks}
+        categories={cats.map((c) => ({ id: c.id, name: c.name }))}
+        collections={cols.map((c) => ({ id: c.id, name: c.name, bookmarkIds: c.bookmarkIds }))}
         onClose={() => setInsightsOpen(false)}
         onAction={(action: InsightAction) => {
           setInsightsOpen(false);
