@@ -20,7 +20,7 @@
 | fix-1.8 | REQ-030-AC-008 | Unit | 冲突拒绝并保持原绑定 | PASS | `shortcuts.test.ts` | — |
 | fix-1.8 | REQ-030-AC-009 | Unit | 恢复默认回调默认映射 | PASS | `shortcuts.test.ts`、`ShortcutsPanel.test.tsx` | — |
 | fix-1.8 | REQ-030-AC-010 | Unit | `GetDesktopCapability` 含 platform；Win/mac Mod 为 CmdOrCtrl | PASS | `desktop_test.go`、`accelerator_test.go` | Linux best-effort |
-| fix-1.8 | REQ-030-AC-001~005 | Manual | J-17：OS 关闭隐藏、托盘 Show/Quit、Ctrl+L | PENDING | 桌面冒烟：`linkit.exe` 可启动并保持运行 | 等待用户确认交互项 |
+| fix-1.8 | REQ-030-AC-001~005 | Manual | J-17：OS 关闭隐藏、托盘 Show/Quit、Ctrl+L | PASS | 用户 2026-07-21 确认（`./scripts/dev.ps1`） | — |
 | fix-1.8 | REQ-027-AC-001 | Manual | `wails build -platform windows/amd64` 产物可启动 | PASS | `build/bin/linkit.exe` 冒烟 pid 存活 | — |
 
 ---
@@ -52,4 +52,4 @@ wails build -platform windows/amd64
 ## 说明
 
 本任务将曾误从 `main` reset 掉的 REQ-030 实现（原 `f302122`）恢复到 `feat/FIX-1.8-tray-shortcuts`。  
-单元与 E2E、Windows 构建冒烟已通过；J-17 交互项（关闭隐藏 / 托盘 Show·Quit / Ctrl+L）待用户确认后勾选 `fix_task` 1.8 并合并 `main`。
+单元 / E2E / Windows 构建冒烟已通过；用户已确认 J-17 Manual，`fix_task` 1.8 关闭。
