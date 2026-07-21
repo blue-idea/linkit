@@ -21,11 +21,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # golang.design/x/hotkey 在 Linux 上链接 hotkey/platform 测试二进制需要 -lX11
+      # golang.design/x/hotkey 在 Linux 上链接与运行测试需要 libX11 与虚拟显示
       - name: Install Linux X11 build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libx11-dev
+          sudo apt-get install -y libx11-dev xvfb
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -70,10 +70,10 @@ jobs:
         run: go vet ./...
 
       - name: Go tests
-        run: go test ./...
+        run: xvfb-run -a go test ./...
 
       - name: Go tests (dev identity)
-        run: go test -tags=dev ./config
+        run: xvfb-run -a go test -tags=dev ./config
 
       - name: Frontend build
         run: pnpm --dir ui build
