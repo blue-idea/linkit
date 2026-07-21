@@ -31,6 +31,10 @@ function NavRow({
   onDragOver,
   onDragLeave,
   trailing,
+  /** 分类名换行显示，避免 truncate 截断。 */
+  wrapLabel = false,
+  /** 悬停时操作按钮叠在名称末端，并带左侧淡出。 */
+  overlayTrailing = false,
   className = '',
 }: {
   active: boolean;
@@ -49,9 +53,32 @@ function NavRow({
   onDragOver?: (e: React.DragEvent) => void;
   onDragLeave?: (e: React.DragEvent) => void;
   trailing?: React.ReactNode;
+  wrapLabel?: boolean;
+  overlayTrailing?: boolean;
   className?: string;
 }) {
   const i18n = useI18n();
+  const labelClass = wrapLabel
+    ? 'break-words whitespace-normal text-[13px] font-medium leading-snug'
+    : 'truncate text-[13px] font-medium';
+
+  const actions = trailing ? (
+    <span
+      data-nav-actions={overlayTrailing ? 'overlay' : 'inline'}
+      className={
+        overlayTrailing
+          ? `pointer-events-none absolute inset-y-0 right-0 z-[1] flex items-center justify-end pl-6 opacity-0 transition-opacity group-hover:opacity-100 has-[:focus-visible]:opacity-100 ${
+              active
+                ? 'bg-gradient-to-l from-[rgb(18,28,48)] via-[rgb(18,28,48)]/90 to-transparent'
+                : 'bg-gradient-to-l from-ink-800 via-ink-800/90 to-transparent group-hover:from-ink-700 group-hover:via-ink-700/90'
+            }`
+          : 'flex items-center gap-0.5'
+      }
+    >
+      {trailing}
+    </span>
+  ) : null;
+
   return (
     <div
       onClick={(e) => {
@@ -65,7 +92,9 @@ function NavRow({
         const id = e.dataTransfer.getData('text/bookmark');
         if (id && onDropBookmark) onDropBookmark(id);
       }}
-      className={`group flex items-center gap-2 pr-2 rounded-lg mx-1.5 transition-all cursor-pointer no-select ${
+      className={`group flex gap-2 pr-2 rounded-lg mx-1.5 transition-all cursor-pointer no-select ${
+        wrapLabel ? 'items-start py-1' : 'items-center'
+      } ${
         active ? 'bg-accent-500/20 text-ink-100 shadow-[inset_0_0_0_1px_rgba(45,127,249,0.3)]' : 'text-ink-200 hover:bg-ink-700/50'
       } ${dragOver ? 'drop-target' : ''} ${className}`}
       data-category-drop={label}
@@ -79,24 +108,37 @@ function NavRow({
           onClick={(e) => {
             e.stopPropagation();
             onToggleExpand?.();
+            // 避免展开按钮保留焦点导致父行悬停操作区残留显示。
+            e.currentTarget.blur();
           }}
           onPointerDown={(e) => e.stopPropagation()}
-          className="w-4 h-4 flex items-center justify-center text-ink-400 hover:text-ink-100 shrink-0 focus-ring rounded-sm"
+          className={`w-4 h-4 flex items-center justify-center text-ink-400 hover:text-ink-100 shrink-0 focus-ring rounded-sm ${wrapLabel ? 'mt-0.5' : ''}`}
         >
           <Icon name="ChevronRight" size={12} className={`transition-transform ${expanded ? 'rotate-90' : ''}`} />
         </button>
       ) : (
-        <span className="w-4 shrink-0" />
+        <span className={`w-4 shrink-0 ${wrapLabel ? 'mt-0.5' : ''}`} />
       )}
       {emoji ? (
-        <span className="text-sm leading-none w-4 text-center shrink-0">{emoji}</span>
+        <span className={`text-sm leading-none w-4 text-center shrink-0 ${wrapLabel ? 'mt-0.5' : ''}`}>{emoji}</span>
       ) : icon ? (
-        <Icon name={icon} size={14} className={`shrink-0 ${iconColor ?? 'text-ink-300'}`} />
+        <Icon name={icon} size={14} className={`shrink-0 ${wrapLabel ? 'mt-0.5' : ''} ${iconColor ?? 'text-ink-300'}`} />
       ) : null}
-      <span className="flex-1 truncate text-[13px] font-medium">{label}</span>
-      {trailing}
+      <span className={`relative min-w-0 flex-1 ${overlayTrailing ? 'pr-0' : ''}`}>
+        <span data-nav-label="true" className={labelClass}>
+          {label}
+        </span>
+        {overlayTrailing ? actions : null}
+      </span>
+      {!overlayTrailing ? actions : null}
       {count !== undefined && (
-        <span className={`text-[11px] tabular-nums ${active ? 'text-accent-200' : 'text-ink-400'} group-hover:text-ink-300`}>{count}</span>
+        <span
+          className={`text-[11px] tabular-nums shrink-0 ${wrapLabel ? 'mt-0.5' : ''} ${
+            active ? 'text-accent-200' : 'text-ink-400'
+          } group-hover:text-ink-300`}
+        >
+          {count}
+        </span>
       )}
     </div>
   );
@@ -195,20 +237,23 @@ export function Sidebar({
                   dragOver={dragOverId === cat.id}
                   onDragOver={(e) => { e.preventDefault(); setDragOverId(cat.id); }}
                   onDragLeave={() => setDragOverId(null)}
+                  wrapLabel
+                  overlayTrailing
                   trailing={
-                    <span className="flex items-center gap-0.5">
+                    <span className="pointer-events-auto relative z-[1] flex items-center gap-0.5 bg-transparent">
+                      {/* 顺序：设置图标 ↔ 新建子分类（与 + 互换） */}
                       <button
                         type="button"
-                        aria-label={i18n.t('sidebar.newSubCategory')}
-                        title={i18n.t('sidebar.newSubCategory')}
+                        aria-label={i18n.t('sidebar.setCategoryIcon')}
+                        title={i18n.t('sidebar.setCategoryIcon')}
                         onClick={(e) => {
                           e.stopPropagation();
-                          onNewCategory(cat.id);
+                          onRequestSetCategoryIcon(cat.id);
                         }}
                         onPointerDown={(e) => e.stopPropagation()}
-                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-accent-300 flex items-center justify-center transition"
+                        className="bg-transparent w-5 h-5 rounded text-ink-400 hover:text-accent-300 flex items-center justify-center transition"
                       >
-                        <Icon name="Plus" size={11} />
+                        <Icon name="Shapes" size={11} />
                       </button>
                       <button
                         type="button"
@@ -219,22 +264,22 @@ export function Sidebar({
                           onRenameCategory(cat.id);
                         }}
                         onPointerDown={(e) => e.stopPropagation()}
-                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-accent-300 flex items-center justify-center transition"
+                        className="bg-transparent w-5 h-5 rounded text-ink-400 hover:text-accent-300 flex items-center justify-center transition"
                       >
                         <Icon name="PenTool" size={11} />
                       </button>
                       <button
                         type="button"
-                        aria-label={i18n.t('sidebar.setCategoryIcon')}
-                        title={i18n.t('sidebar.setCategoryIcon')}
+                        aria-label={i18n.t('sidebar.newSubCategory')}
+                        title={i18n.t('sidebar.newSubCategory')}
                         onClick={(e) => {
                           e.stopPropagation();
-                          onRequestSetCategoryIcon(cat.id);
+                          onNewCategory(cat.id);
                         }}
                         onPointerDown={(e) => e.stopPropagation()}
-                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-accent-300 flex items-center justify-center transition"
+                        className="bg-transparent w-5 h-5 rounded text-ink-400 hover:text-accent-300 flex items-center justify-center transition"
                       >
-                        <Icon name="Shapes" size={11} />
+                        <Icon name="Plus" size={11} />
                       </button>
                       <button
                         type="button"
@@ -245,7 +290,7 @@ export function Sidebar({
                           onDeleteCategory(cat.id);
                         }}
                         onPointerDown={(e) => e.stopPropagation()}
-                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 w-5 h-5 rounded text-ink-400 hover:text-coral-400 flex items-center justify-center transition"
+                        className="bg-transparent w-5 h-5 rounded text-ink-400 hover:text-coral-400 flex items-center justify-center transition"
                       >
                         <Icon name="Trash2" size={11} />
                       </button>
