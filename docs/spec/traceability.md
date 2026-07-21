@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.29.0
+> 版本：1.30.0
 > 日期：2026-07-22
-> 状态：已定稿（新增 TASK-064 / Windows 托盘 Quit 修复）
+> 状态：已定稿（新增 TASK-065 / 托盘 Settings 入口）
 
 ---
 
@@ -90,6 +90,7 @@
 | TASK-062 | uiSize 预设、Schema 与冷启动尺寸 | REQ-031-AC-002~005 | done | `config/window_size.go`、`internal/platform/desktop.go`、`internal/settingsstore/*`、`main.go`、`ui/src/config/window-size.ts`、`schemas.ts` | `config/window_size_test.go`、`platform/window_size_test.go`、`settingsstore/window_size_test.go`、`window-size.test.ts`、`library.test.ts` | `docs/spec/ac/TASK-062-AC.md` | 2026-07-21 |
 | TASK-063 | Appearance 窗口大小 UI 与 i18n | REQ-031-AC-001~006；REQ-023-AC-001 | done | `SettingsDialog.tsx`、`desktop-window-size.ts`、`catalogs.ts`、`App.tsx` | `i18n.test.ts`、`desktop-window-size.test.ts`、`settings-window-size.spec.ts`、J-18 Manual | `docs/spec/ac/TASK-063-AC.md` | 2026-07-21 |
 | TASK-064 | 修复 Windows 托盘 Quit 无法退出 | REQ-030-AC-002~004、010 | done | `internal/tray/menu.go`、`internal/tray/systray_runner*.go`、`internal/platform/desktop.go`、`internal/platform/service.go`、`main.go` | `internal/tray/menu_test.go`、`internal/platform/desktop_test.go`、Windows Manual | `docs/spec/ac/TASK-064-AC.md` | 2026-07-22 |
+| TASK-065 | 托盘 Show 替换为 Settings | REQ-030-AC-002~004 | done | `config/events.go`、`internal/tray/menu.go`、`main.go`、`ui/src/config/events.ts`、`ui/src/services/wails-events.ts`、`ui/src/features/shell/tray-settings.ts`、`ui/src/App.tsx` | `internal/tray/menu_test.go`、`tray-settings.test.ts`、Windows native automation | `docs/spec/ac/TASK-065-AC.md` | 2026-07-22 |
 
 ---
 
@@ -104,6 +105,7 @@
 | REQ-019~022 | TASK-007、031~040、044 |
 | REQ-023~024 | TASK-001~002、015、022~025、042~044、046~047、056 |
 | REQ-025~029 | TASK-001~009、022、026~032、040~044、046~047 |
+| REQ-030~031 | TASK-059~065 |
 
 ---
 
@@ -157,3 +159,4 @@
 | 2026-07-21 | TASK-062 Unit done | Manual/J-18 并入 TASK-063 |
 | 2026-07-21 | TASK-063 done；fix_task 1.9 关闭 | 用户确认 J-18 Manual 通过 |
 | 2026-07-22 | 新增并完成 TASK-064 | Windows 托盘 HWND 与消息循环线程不一致，且 Quit 清理顺序可能晚于 Wails 退出；修复后用户确认可正常退出 |
+| 2026-07-22 | 新增并完成 TASK-065 | 用户确认托盘 Show 替换为 Settings；Windows 原生设置弹窗与未改动 Quit 回归通过 |

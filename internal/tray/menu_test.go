@@ -5,35 +5,35 @@ import (
 	"time"
 )
 
-// REQ-030-AC-002：托盘菜单至少包含 Show 与 Quit。
+// REQ-030-AC-002：托盘菜单至少包含 Settings 与 Quit。
 func TestDefaultMenuItems(t *testing.T) {
 	items := DefaultMenuItems()
 	if len(items) != 2 {
 		t.Fatalf("menu items = %d, want 2", len(items))
 	}
-	if items[0].ID != MenuShow || items[0].Label != "Show" {
-		t.Fatalf("first item = %+v, want Show", items[0])
+	if items[0].ID != MenuSettings || items[0].Label != "Settings" {
+		t.Fatalf("first item = %+v, want Settings", items[0])
 	}
 	if items[1].ID != MenuQuit || items[1].Label != "Quit" {
 		t.Fatalf("second item = %+v, want Quit", items[1])
 	}
 }
 
-func TestHostDispatchesShowAndQuit(t *testing.T) {
-	showed := make(chan struct{}, 1)
+func TestHostDispatchesSettingsAndQuit(t *testing.T) {
+	settingsOpened := make(chan struct{}, 1)
 	quit := make(chan struct{}, 1)
 	host := NewHost(Callbacks{
-		OnShow: func() { showed <- struct{}{} },
-		OnQuit: func() { quit <- struct{}{} },
+		OnSettings: func() { settingsOpened <- struct{}{} },
+		OnQuit:     func() { quit <- struct{}{} },
 	})
 
-	host.HandleMenuClick(MenuShow)
+	host.HandleMenuClick(MenuSettings)
 	host.HandleMenuClick(MenuQuit)
 
 	select {
-	case <-showed:
+	case <-settingsOpened:
 	case <-time.After(time.Second):
-		t.Fatal("Show callback was not invoked")
+		t.Fatal("Settings callback was not invoked")
 	}
 	select {
 	case <-quit:

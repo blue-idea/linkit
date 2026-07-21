@@ -7,7 +7,7 @@ import (
 	"github.com/energye/systray"
 )
 
-// SystrayRunner 使用 energye/systray 显示托盘图标与 Show/Quit。
+// SystrayRunner 使用 energye/systray 显示托盘图标与 Settings/Quit。
 type SystrayRunner struct {
 	mu      sync.Mutex
 	host    *Host

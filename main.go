@@ -21,6 +21,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
+	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // REQ-024-AC-001：Wails 构建会将 ui/dist 同步到此嵌入目录。
@@ -69,8 +70,14 @@ func main() {
 	)
 	_ = nativeFileService.WireHotkeyToggle()
 
+	var appContext context.Context
 	trayHost := tray.NewHost(tray.Callbacks{
-		OnShow: func() { _ = nativeFileService.ShowMainWindow() },
+		OnSettings: func() {
+			_ = nativeFileService.ShowMainWindow()
+			if appContext != nil {
+				wailsruntime.EventsEmit(appContext, config.EventOpenSettings)
+			}
+		},
 		OnQuit: func() { _ = nativeFileService.QuitApplication() },
 	})
 	trayRunner.SetHost(trayHost)
@@ -107,6 +114,7 @@ func main() {
 		// 关闭走 OnBeforeClose → Hide，以便同步可见性；真正退出由托盘 Quit 触发。
 		HideWindowOnClose: false,
 		OnStartup: func(ctx context.Context) {
+			appContext = ctx
 			windowRuntime.SetContext(ctx)
 			nativeFileService.SetContext(ctx)
 			localDocumentService.SetContext(ctx)

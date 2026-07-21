@@ -26,6 +26,7 @@ import {
 } from './features/shell';
 import { setToggleWindowHotkey } from './features/shell/desktop-hotkey';
 import { setMainWindowSize } from './features/shell/desktop-window-size';
+import { subscribeTraySettings } from './features/shell/tray-settings';
 import { DEFAULT_UI_SIZE } from './config/window-size';
 import { useAuth } from './auth';
 import { loadCloudLibrary, saveCloudLibrary } from './cloud';
@@ -207,6 +208,9 @@ export default function App() {
   const [draftCloudRevision, setDraftCloudRevision] = useState<number | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+
+  // 原生托盘 Settings：窗口由 Go 侧显示，前端事件只负责打开设置弹窗。
+  useEffect(() => subscribeTraySettings(() => setSettingsOpen(true)), []);
   const [syncing, setSyncing] = useState(false);
   const [seedConfirmOpen, setSeedConfirmOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);

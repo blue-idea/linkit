@@ -1,8 +1,8 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：2.6.0
-> 日期：2026-07-21
+> 版本：2.7.0
+> 日期：2026-07-22
 > 状态：已定稿
 
 ---
@@ -1928,25 +1928,26 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
   ears: >
     While Linkit 正在运行,
     when 宿主平台提供系统托盘或菜单栏托盘能力,
-    the Linkit shall 显示托盘图标，且菜单至少包含 Show 与 Quit；
+    the Linkit shall 显示托盘图标，且菜单至少包含 Settings 与 Quit；
     Linux 无可用托盘时不得阻断主流程，也不得将托盘能力报告为已通过.
   test_type: Manual
   expected:
     checklist:
       - "Windows notification-area tray icon is available"
       - "macOS menu-bar tray icon is available"
-      - "Tray menu exposes Show and Quit"
+      - "Tray menu exposes Settings and Quit"
       - "Linux tray is best-effort and never falsely marked PASS when unavailable"
     side_effects: []
 
 - id: REQ-030-AC-003
   ears: >
     While 主窗口已隐藏,
-    when 用户选择托盘 Show 或触发当前生效的窗口显隐全局热键,
-    the Linkit shall 显示并聚焦主窗口.
+    when 用户选择托盘 Settings,
+    the Linkit shall 显示并聚焦主窗口并打开 Settings 对话框；
+    当前生效的窗口显隐全局热键仍 shall 按原行为切换主窗口显隐.
   test_type: Manual
   expected:
-    ui_state: "Main window is visible and focused"
+    ui_state: "Main window is visible and focused with the Settings dialog open"
     side_effects: []
 
 - id: REQ-030-AC-004
@@ -2172,3 +2173,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.4.0 | 2026-07-20 | 已定稿 | 新增 REQ-023-AC-008：所有非自定义 UI 文案、状态与无障碍名称跟随设置语言；用户自定义内容保持原样 |
 | 2.5.0 | 2026-07-21 | 已定稿 | 新增原则 16 与 REQ-030：关闭隐藏到托盘、Show/Quit、全局显隐热键、Settings→Shortcuts 可配置；修订 REQ-023-AC-001 与 REQ-024 默认快捷键说明 |
 | 2.6.0 | 2026-07-21 | 已定稿 | 新增原则 17 与 REQ-031：Appearance 窗口大小四档（仅改宽高）、默认 Medium、立即生效与持久化、手动拖拽不单独记忆 |
+| 2.7.0 | 2026-07-22 | 已定稿 | 用户确认将托盘 Show 替换为 Settings；点击后显示主窗口并打开设置，Quit 业务保持不变 |
