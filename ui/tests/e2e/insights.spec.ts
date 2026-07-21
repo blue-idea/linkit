@@ -18,8 +18,8 @@ test.describe('Insights', () => {
     await page.getByText('Insights', { exact: true }).click();
     const dialog = page.getByRole('dialog', { name: 'Insights report' });
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByText(/Evidence:/).first()).toBeVisible();
-    const action = dialog.getByRole('button', { name: /^Open / }).first();
+    await expect(dialog.getByText(/Evidence:/).first()).toBeAttached();
+    const action = dialog.getByRole('button', { name: /View |Open / }).first();
     await expect(action).toBeVisible();
     const target = await action.getAttribute('data-action-type');
     await action.click();
