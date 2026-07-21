@@ -1,4 +1,7 @@
 import { THEME_IDS } from './config/themes';
+import type { UiSize } from './config/window-size';
+
+export type { UiSize };
 
 export type ViewDensity =
   | 'card'
@@ -107,6 +110,8 @@ export interface AppSettings {
   aiConsent?: AIConsentRecord | null;
   /** 可配置快捷键；缺省使用平台默认。REQ-030 */
   shortcuts?: Partial<Record<string, string>>;
+  /** 主窗口大小档位；缺省 medium。REQ-031 */
+  uiSize?: UiSize;
 }
 
 export interface LibraryData {

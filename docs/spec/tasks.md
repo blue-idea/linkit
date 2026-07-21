@@ -1,11 +1,11 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：2.3.0
-> 日期：2026-07-20  
+> 版本：2.7.0
+> 日期：2026-07-21  
 > 状态：已定稿
 
-执行时须严格遵循 `docs/spec/requirements.md` 2.4.0、`docs/spec/design.md` 1.8.0 和 `docs/spec/test_strategy.md` 1.8.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
+执行时须严格遵循 `docs/spec/requirements.md` 2.6.0、`docs/spec/design.md` 1.10.0 和 `docs/spec/test_strategy.md` 2.1.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
 
 AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首尾均包含。
 
@@ -1416,6 +1416,55 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-062 · uiSize 预设、Schema 与 SetMainWindowSize / 冷启动尺寸**
+
+  > 依赖：TASK-007、TASK-059 · 预计：2–3 小时 · 状态：done · 2026-07-21
+
+  - [x] Red：为 `config` 四档预设映射、`AppSettings.uiSize` 缺省合并与非法值拒绝、`SystemService.SetMainWindowSize`（mock `WindowRuntime.SetSize`）、冷启动从 settings 解析 Width/Height 编写失败的单元测试。
+  - [x] Green：在 `config/` 与 `ui/src/config/` 落地一致预设；扩展 Zod / Go settings 校验；实现 `SetMainWindowSize` + Wails `WindowSetSize`；`main` 在 `wails.Run` 前按 `uiSize` 设置 `options.App.Width/Height`；不得持久化手动拖拽宽高。
+  - [x] Refactor：抽取 `ResolveWindowSize(uiSize)` 供 Go 启动与 API 共用；错误码 `WINDOW_SIZE_INVALID` 进入 `config`。
+  - [x] Manual/冒烟：J-18 用户 2026-07-21 确认。
+
+  **验证方式：**
+  ```powershell
+  go test ./config ./internal/platform ./internal/settingsstore -count=1
+  pnpm --dir ui exec vitest run src/domain src/config src/services/settings --coverage
+  ```
+
+  **验收证据：** Go/Vitest 真实输出、`docs/spec/ac/TASK-062-AC.md`、`docs/spec/evidence/TASK-062-evidence.md`、`docs/spec/reports/TASK-062-report.md`。
+
+  _需求: REQ-031
+  验收标准：REQ-031-AC-002~005
+  _测试类型: Unit + Manual
+
+---
+
+- [x] **TASK-063 · Appearance 窗口大小 UI、保存应用与 i18n**
+
+  > 依赖：TASK-062、TASK-023、TASK-056 · 预计：2–3 小时 · 状态：done · 2026-07-21
+
+  - [x] Red：Appearance 四档选项组件测试与 i18n 键测试因缺失失败；E2E 骨架断言 Settings→Appearance 可见 Small/Medium/Large/Extra large（中文：小/中/大/超大）。
+  - [x] Green：Appearance 增加 Window size 选择组；保存时写入 `uiSize` 并调用 `SetMainWindowSize`；en/zh 文案对齐；档位枚举值不随语言改变。
+  - [x] Refactor：复用主题选择按钮交互模式；文案仅走 catalogs。
+  - [x] E2E：四档可发现、语言切换标签正确；截图留证。
+  - [x] Manual J-18；`fix_task` 1.9 已关闭。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/components/SettingsDialog src/i18n src/features/settings --coverage
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui exec playwright test -g "Appearance|窗口大小|uiSize" --workers=1
+  ```
+
+  **验收证据：** Vitest/Playwright 输出、Appearance 截图、`docs/spec/ac/TASK-063-AC.md`、`docs/spec/evidence/TASK-063-evidence.md`、`docs/spec/reports/TASK-063-report.md`；`fix_task.md` 1.9 勾选。
+
+  _需求: REQ-031、REQ-023
+  验收标准：REQ-031-AC-001、REQ-031-AC-006、REQ-023-AC-001
+  _测试类型: Unit + E2E + Manual
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1481,6 +1530,8 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-059 | 关闭隐藏、托盘与显隐全局热键 | Unit/Manual | done | REQ-030、027 |
 | TASK-060 | Settings→Shortcuts 可配置绑定 | Unit/E2E | done | REQ-030、023、024 |
 | TASK-061 | 托盘与快捷键跨平台验收 | Manual | done | REQ-030、027 |
+| TASK-062 | uiSize 预设、Schema 与冷启动尺寸 | Unit/Manual | done | REQ-031 |
+| TASK-063 | Appearance 窗口大小 UI 与 i18n | Unit/E2E/Manual | done | REQ-031、023 |
 
 ---
 
@@ -1506,3 +1557,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 2.4.0 | 2026-07-21 | 已定稿 | 新增 TASK-057，PR 按变更影响执行测试，main 全量回归，Release 校验同 SHA 质量门禁 |
 | 2.5.0 | 2026-07-21 | 已定稿 | 新增 TASK-058，合并 Vitest/Coverage 重复执行，PR/main 精简非必要浏览器测试，定时保留全量回归 |
 | 2.6.0 | 2026-07-21 | 已定稿 | 新增 TASK-059~061，覆盖 REQ-030 关闭隐藏/托盘/全局热键与 Shortcuts 设置 |
+| 2.7.0 | 2026-07-21 | 已定稿 | 新增 TASK-062~063，覆盖 REQ-031 Appearance 窗口大小 |

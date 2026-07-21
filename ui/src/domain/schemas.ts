@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { THEME_IDS } from '../config/themes';
+import { DEFAULT_UI_SIZE, UI_SIZE_IDS } from '../config/window-size';
 import { DEFAULT_SHORTCUTS, SHORTCUT_ACTION_IDS } from '../features/shell/shortcuts';
 
 const colorSchema = z.enum(['blue', 'green', 'amber', 'coral', 'violet', 'gray']);
@@ -52,10 +53,14 @@ export const AppSettingsSchema = z.preprocess((raw) => {
     return raw;
   }
   const record = raw as Record<string, unknown>;
-  if (record.shortcuts == null) {
-    return { ...record, shortcuts: DEFAULT_SHORTCUTS };
+  const next = { ...record };
+  if (next.shortcuts == null) {
+    next.shortcuts = DEFAULT_SHORTCUTS;
   }
-  return raw;
+  if (next.uiSize == null || next.uiSize === '') {
+    next.uiSize = DEFAULT_UI_SIZE;
+  }
+  return next;
 }, z.strictObject({
   settingsVersion: z.int().min(1), storageMode: z.enum(['local', 'cloud']),
   theme: z.enum(THEME_IDS), locale: z.enum(['en', 'zh']),
@@ -64,6 +69,7 @@ export const AppSettingsSchema = z.preprocess((raw) => {
   view: z.strictObject({ defaultMode: z.enum(['card', 'list', 'masonry', 'timeline', 'tag-aggregation', 'theme-space']) }),
   lastCloudRevision: z.int().min(0).nullable(),
   shortcuts: shortcutMapSchema,
+  uiSize: z.enum(UI_SIZE_IDS),
 }));
 
 export type Bookmark = z.infer<typeof BookmarkSchema>;

@@ -243,7 +243,7 @@ describe('AppSettings Schema', () => {
     const domain = await loadDomainModule();
     const settings = { settingsVersion: 1, storageMode: 'local', theme: 'midnight', locale: 'en',
       ai: { apiBase: 'https://api.example.com/v1', model: 'gpt-compatible' }, aiConsent: null,
-      view: { defaultMode: 'card' }, lastCloudRevision: null,
+      view: { defaultMode: 'card' }, lastCloudRevision: null, uiSize: 'medium',
       shortcuts: {
         spotlight: 'CmdOrCtrl+K', newBookmark: 'CmdOrCtrl+N', insights: 'CmdOrCtrl+I',
         settings: 'CmdOrCtrl+,', viewCard: 'CmdOrCtrl+1', viewList: 'CmdOrCtrl+2',
@@ -254,13 +254,32 @@ describe('AppSettings Schema', () => {
     expect(domain.AppSettingsSchema?.safeParse(settings)).toEqual({ success: true, data: settings });
   });
 
+  // REQ-031-AC-002 / AC-004：缺省 uiSize 合并为 medium。
+  test('AppSettings 缺省 uiSize 时合并为 medium', async () => {
+    const domain = await loadDomainModule();
+    const result = domain.AppSettingsSchema?.safeParse({
+      settingsVersion: 1, storageMode: 'local', theme: 'midnight', locale: 'en',
+      ai: { apiBase: '', model: '' }, aiConsent: null,
+      view: { defaultMode: 'card' }, lastCloudRevision: null,
+      shortcuts: {
+        spotlight: 'CmdOrCtrl+K', newBookmark: 'CmdOrCtrl+N', insights: 'CmdOrCtrl+I',
+        settings: 'CmdOrCtrl+,', viewCard: 'CmdOrCtrl+1', viewList: 'CmdOrCtrl+2',
+        viewMasonry: 'CmdOrCtrl+3', toggleSidebar: 'CmdOrCtrl+\\', toggleWindow: 'CmdOrCtrl+L',
+      },
+    });
+    expect(result?.success).toBe(true);
+    if (result?.success) {
+      expect(result.data.uiSize).toBe('medium');
+    }
+  });
+
   // TASK-003：本机设置必须使用独立的版本化 Schema。
   test('AppSettings 在 API Base 使用非 loopback HTTP 时拒绝配置', async () => {
     const domain = await loadDomainModule();
     expect(domain.AppSettingsSchema).toBeDefined();
     const result = domain.AppSettingsSchema?.safeParse({ settingsVersion: 1, storageMode: 'local',
       theme: 'midnight', locale: 'en', ai: { apiBase: 'http://example.com/v1', model: 'gpt-compatible' },
-      aiConsent: null, view: { defaultMode: 'card' }, lastCloudRevision: null,
+      aiConsent: null, view: { defaultMode: 'card' }, lastCloudRevision: null, uiSize: 'medium',
       shortcuts: {
         spotlight: 'CmdOrCtrl+K', newBookmark: 'CmdOrCtrl+N', insights: 'CmdOrCtrl+I',
         settings: 'CmdOrCtrl+,', viewCard: 'CmdOrCtrl+1', viewList: 'CmdOrCtrl+2',

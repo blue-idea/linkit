@@ -1,7 +1,7 @@
 # Linkit 接口设计（API）
 
 > 文件路径：`docs/spec/api.md`  
-> 版本：1.3.0  
+> 版本：1.4.0  
 > 日期：2026-07-21  
 > 状态：已定稿
 
@@ -568,6 +568,21 @@ GetDesktopCapability(): Promise<DesktopCapability>
 
 用于 UI 降级提示与验收记录；Linux 上任一能力为 false 时不得将对应 AC 标为 PASS。
 
+#### `SetMainWindowSize(request)`
+
+```typescript
+interface SetMainWindowSizeRequest {
+  uiSize: 'small' | 'medium' | 'large' | 'xlarge';
+}
+
+SetMainWindowSize(request: SetMainWindowSizeRequest): Promise<void>
+```
+
+- 按 `docs/spec/data.md` 预设表将主窗口宽高设为对应值（Wails `runtime.WindowSetSize`）。
+- 非法或未知 `uiSize` 返回稳定 `AppError`（如 `WINDOW_SIZE_INVALID`），不得静默回退。
+- 窗口运行时未配置时返回 `InvalidArgument` 类错误。
+- 浏览器独立 UI / 无原生窗口绑定：实现可为 no-op，但桌面验收必须以真实 `WindowSetSize` 为准。
+
 ---
 
 ## 4. Supabase 接口
@@ -810,3 +825,4 @@ interface LibrarySnapshot {
 | 1.2.0 | 2026-07-19 | 已定稿 | 新增数据根查询、目录选择与迁移接口及错误码，覆盖 REQ-029 |
 | 1.2.1 | 2026-07-20 | 已定稿 | SecretService 补充开发/正式 Keychain 服务名隔离说明，对齐 REQ-025-AC-006 |
 | 1.3.0 | 2026-07-21 | 已定稿 | SystemService 增加窗口显隐、退出、全局热键与桌面能力探测；对齐 REQ-030 |
+| 1.4.0 | 2026-07-21 | 已定稿 | SystemService 增加 `SetMainWindowSize`；对齐 REQ-031 |

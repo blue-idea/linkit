@@ -9,12 +9,13 @@ import (
 	"github.com/blue-idea/collection/internal/hotkey"
 )
 
-// WindowRuntime 抽象 Wails 窗口显隐与退出。
+// WindowRuntime 抽象 Wails 窗口显隐、尺寸与退出。
 type WindowRuntime interface {
 	Show() error
 	Hide() error
 	Quit() error
 	IsVisible() bool
+	SetSize(width, height int) error
 }
 
 // HotkeyManager 抽象全局热键管理。
@@ -25,6 +26,10 @@ type HotkeyManager interface {
 
 type SetToggleWindowHotkeyRequest struct {
 	Accelerator string `json:"accelerator"`
+}
+
+type SetMainWindowSizeRequest struct {
+	UiSize string `json:"uiSize"`
 }
 
 type DesktopCapability struct {
@@ -129,6 +134,19 @@ func (service *Service) GetDesktopCapability() DesktopCapability {
 		return *service.capability
 	}
 	return defaultDesktopCapability()
+}
+
+// SetMainWindowSize 按 uiSize 预设调整主窗口宽高。
+// REQ-031-AC-003
+func (service *Service) SetMainWindowSize(request SetMainWindowSizeRequest) error {
+	if service.window == nil {
+		return newServiceError(config.ErrorCodeInvalidArgument, "Window runtime is not configured", false, nil)
+	}
+	width, height, ok := config.ResolveWindowSize(request.UiSize)
+	if !ok {
+		return newServiceError(config.ErrorCodeWindowSizeInvalid, config.ErrorMessageWindowSizeInvalid, false, nil)
+	}
+	return service.window.SetSize(width, height)
 }
 
 func defaultDesktopCapability() DesktopCapability {

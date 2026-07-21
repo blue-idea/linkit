@@ -1,5 +1,6 @@
 import { TEST_DATA_CONFIG } from '../../config/test-data';
 import type { AppSettings, Bookmark, LibraryData, LibraryEnvelope } from '../../domain/library';
+import { DEFAULT_UI_SIZE } from '../../config/window-size';
 
 type Category = LibraryData['categories'][number];
 type Collection = LibraryData['collections'][number];
@@ -100,6 +101,7 @@ export function createAppSettings(overrides: Partial<AppSettings> = {}): AppSett
     aiConsent: null,
     view: { defaultMode: 'card' },
     lastCloudRevision: null,
+    uiSize: DEFAULT_UI_SIZE,
     shortcuts: {
       spotlight: 'CmdOrCtrl+K',
       newBookmark: 'CmdOrCtrl+N',
