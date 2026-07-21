@@ -21,6 +21,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # golang.design/x/hotkey 在 Linux 上链接 hotkey/platform 测试二进制需要 -lX11
+      - name: Install Linux X11 build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libx11-dev
+
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
