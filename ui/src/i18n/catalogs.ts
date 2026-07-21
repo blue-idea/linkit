@@ -391,6 +391,7 @@ const messages = {
   'settings.shortcuts.hint': ['Click a row and press a new key combination', '点击一行后按下新的组合键'],
   'settings.shortcuts.restoreDefaults': ['Restore Defaults', '恢复默认'],
   'settings.shortcuts.conflict': ['Shortcut conflicts with another action', '快捷键与其他动作冲突'],
+  'settings.shortcuts.editBinding': ['{{action}} shortcut', '{{action}} 快捷键'],
   'settings.shortcuts.action.spotlight': ['Spotlight search', 'Spotlight 搜索'],
   'settings.shortcuts.action.newBookmark': ['New bookmark', '新建书签'],
   'settings.shortcuts.action.insights': ['Insights', '洞察'],
