@@ -221,6 +221,8 @@ export function SettingsDialog({
   const [pendingDataRootTarget, setPendingDataRootTarget] = useState<string | null>(null);
   const [dataRootMessage, setDataRootMessage] = useState<string | null>(null);
   const [dataRootError, setDataRootError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const i18n = useI18n(draft.locale ?? 'en');
 
@@ -238,6 +240,8 @@ export function SettingsDialog({
       setPendingDataRootTarget(null);
       setDataRootMessage(null);
       setDataRootError(null);
+      setSaving(false);
+      setSaveError(null);
       void getPreferredAIKeyStatus().then((status) => setKeyConfigured(status.configured));
       void dataRootBindings.getDataRoot().then(setDataRootInfo).catch(() => setDataRootInfo(null));
     }
@@ -254,6 +258,24 @@ export function SettingsDialog({
           : null;
       return { ...d, ai, aiConsent: consent };
     });
+
+  const submitSettings = async (next: AppSettings) => {
+    setSaving(true);
+    setSaveError(null);
+    try {
+      if (keyDraft.trim()) {
+        await setPreferredAIKey(keyDraft.trim());
+        setKeyConfigured(true);
+        setKeyDraft('');
+      }
+      await onSave(next);
+      onClose();
+    } catch {
+      setSaveError(i18n.t('settings.saveError'));
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const requestStorageMode = (mode: StorageMode) => {
     // 与已持久化模式相同：直接改草稿；不同则先确认（REQ-004-AC-001）。
@@ -778,13 +800,19 @@ export function SettingsDialog({
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-white/5 shrink-0">
-        <Button variant="ghost" onClick={onClose}>
+      <div className="flex items-center gap-2 px-5 py-3.5 border-t border-white/5 shrink-0">
+        {saveError && (
+          <p role="alert" className="mr-auto text-xs text-coral-400">
+            {saveError}
+          </p>
+        )}
+        <Button variant="ghost" onClick={onClose} disabled={saving}>
           {i18n.t('settings.cancel')}
         </Button>
         <Button
           variant="primary"
           icon="Check"
+          disabled={saving}
           onClick={() => {
             void (async () => {
               const apiBase = draft.ai.apiBase.trim();
@@ -803,18 +831,12 @@ export function SettingsDialog({
                 setConsentOpen(true);
                 return;
               }
-              if (keyDraft.trim()) {
-                await setPreferredAIKey(keyDraft.trim());
-                setKeyConfigured(true);
-                setKeyDraft('');
-              }
               // 必须等待持久化完成，避免 E2E reload 早于写入。
-              await onSave(draft);
-              onClose();
+              await submitSettings(draft);
             })();
           }}
         >
-          {i18n.t('settings.save')}
+          {saving ? i18n.t('settings.saving') : i18n.t('settings.save')}
         </Button>
       </div>
       <ImportOverwriteDialog
@@ -865,13 +887,7 @@ export function SettingsDialog({
             };
             setDraft(next);
             setConsentOpen(false);
-            if (keyDraft.trim()) {
-              await setPreferredAIKey(keyDraft.trim());
-              setKeyConfigured(true);
-              setKeyDraft('');
-            }
-            await onSave(next);
-            onClose();
+            await submitSettings(next);
           })();
         }}
       />

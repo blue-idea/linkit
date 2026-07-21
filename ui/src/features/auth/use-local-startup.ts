@@ -1,10 +1,12 @@
 import type { AppSettings as DomainSettings } from '../../domain/library';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { AppSettings as UiSettings, ThemeId } from '../../types';
+import { DEFAULT_UI_SIZE } from '../../config/window-size';
 import { getDefaultAppSettings, prepareSettingsForPersist } from '../../services/settings';
 import { bootstrapApp, createPreferredStorageAdapters, type BootstrapPhase } from '../../services/storage';
 import { loadSettings as loadLegacySettings } from '../../storage';
 import { applyTheme } from '../../themes';
+import { mergeShortcuts } from '../shell/shortcuts';
 import { resolveStartupView, type StartupView } from './startup-gate';
 
 function toUiSettings(domain: DomainSettings, legacy: UiSettings): UiSettings {
@@ -18,6 +20,8 @@ function toUiSettings(domain: DomainSettings, legacy: UiSettings): UiSettings {
       model: domain.ai.model || legacy.ai.model,
     },
     aiConsent: domain.aiConsent,
+    shortcuts: domain.shortcuts,
+    uiSize: domain.uiSize,
   };
 }
 
@@ -33,6 +37,8 @@ function toDomainSettings(settings: UiSettings): DomainSettings {
       model: settings.ai.model || '',
     },
     aiConsent: settings.aiConsent ?? null,
+    shortcuts: mergeShortcuts(settings.shortcuts),
+    uiSize: settings.uiSize ?? DEFAULT_UI_SIZE,
   });
 }
 

@@ -1517,6 +1517,33 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-066 · 修复设置保存反馈与窗口大小重启恢复**
+
+  > 依赖：TASK-060、TASK-062、TASK-063 · 预计：2–3 小时 · 状态：done · 2026-07-22
+
+  - [x] Red：设置持久化测试复现 `uiSize` 在 UI/Domain 映射中丢失；桌面热键适配测试复现未变更绑定仍重复注册；组件测试复现保存失败时无反馈。
+  - [x] Green：完整映射 `uiSize` 与快捷键；仅在显隐热键实际变化时重注册；保存中禁用按钮并在失败时显示本地化错误。
+  - [x] Refactor：复用设置提交函数，统一普通保存与 AI consent 保存的异步状态处理。
+  - [x] QA：Vitest 相关与全量回归、TypeScript/ESLint、Go 全量测试、Wails 构建；Windows 原生验证冷启动恢复。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/features/auth/persist-ui-settings.test.ts src/features/shell/desktop-hotkey.test.ts src/components/SettingsDialog.test.tsx
+  pnpm --dir ui test --run
+  pnpm --dir ui quality
+  go test ./... -count=1
+  go vet ./...
+  wails build
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-066-AC.md`、`docs/spec/evidence/TASK-066-evidence.md`、`docs/spec/reports/TASK-066-report.md`、Windows 原生脱敏截图。
+
+  _需求: REQ-031、REQ-023、REQ-030
+  验收标准：REQ-031-AC-003~005、REQ-023-AC-001、REQ-030-AC-007
+  _测试类型: Unit + Component + Manual
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1586,6 +1613,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-063 | Appearance 窗口大小 UI 与 i18n | Unit/E2E/Manual | done | REQ-031、023 |
 | TASK-064 | 修复 Windows 托盘 Quit 无法退出 | Unit/Manual | done | REQ-030 |
 | TASK-065 | 托盘 Show 替换为 Settings | Unit/Manual | done | REQ-030 |
+| TASK-066 | 修复设置保存反馈与窗口大小重启恢复 | Unit/Component/Manual | done | REQ-031、023、030 |
 
 ---
 
@@ -1614,3 +1642,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 2.7.0 | 2026-07-21 | 已定稿 | 新增 TASK-062~063，覆盖 REQ-031 Appearance 窗口大小 |
 | 2.8.0 | 2026-07-22 | 已定稿 | 新增 TASK-064，修复 Windows 托盘消息线程与 Wails 退出顺序导致的 Quit 无法退出 |
 | 2.9.0 | 2026-07-22 | 已定稿 | 新增 TASK-065，将托盘 Show 替换为 Settings 并保持 Quit 业务不变 |
+| 3.0.0 | 2026-07-22 | 已定稿 | 完成 TASK-066，修复设置保存无反馈与 uiSize 冷启动恢复回归 |

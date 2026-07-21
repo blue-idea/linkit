@@ -91,6 +91,7 @@
 | TASK-063 | Appearance 窗口大小 UI 与 i18n | REQ-031-AC-001~006；REQ-023-AC-001 | done | `SettingsDialog.tsx`、`desktop-window-size.ts`、`catalogs.ts`、`App.tsx` | `i18n.test.ts`、`desktop-window-size.test.ts`、`settings-window-size.spec.ts`、J-18 Manual | `docs/spec/ac/TASK-063-AC.md` | 2026-07-21 |
 | TASK-064 | 修复 Windows 托盘 Quit 无法退出 | REQ-030-AC-002~004、010 | done | `internal/tray/menu.go`、`internal/tray/systray_runner*.go`、`internal/platform/desktop.go`、`internal/platform/service.go`、`main.go` | `internal/tray/menu_test.go`、`internal/platform/desktop_test.go`、Windows Manual | `docs/spec/ac/TASK-064-AC.md` | 2026-07-22 |
 | TASK-065 | 托盘 Show 替换为 Settings | REQ-030-AC-002~004 | done | `config/events.go`、`internal/tray/menu.go`、`main.go`、`ui/src/config/events.ts`、`ui/src/services/wails-events.ts`、`ui/src/features/shell/tray-settings.ts`、`ui/src/App.tsx` | `internal/tray/menu_test.go`、`tray-settings.test.ts`、Windows native automation | `docs/spec/ac/TASK-065-AC.md` | 2026-07-22 |
+| TASK-066 | 修复设置保存反馈与窗口大小重启恢复 | REQ-031-AC-003~005；REQ-023-AC-001；REQ-030-AC-007 | done | `ui/src/features/auth/use-local-startup.ts`、`ui/src/features/shell/desktop-hotkey.ts`、`ui/src/components/SettingsDialog.tsx`、`ui/src/App.tsx`、`ui/src/i18n/catalogs.ts` | `persist-ui-settings.test.ts`、`desktop-hotkey.test.ts`、`SettingsDialog.test.tsx`、`settings-save-feedback.spec.ts`、Windows native automation | `docs/spec/ac/TASK-066-AC.md` | 2026-07-22 |
 
 ---
 
@@ -105,7 +106,7 @@
 | REQ-019~022 | TASK-007、031~040、044 |
 | REQ-023~024 | TASK-001~002、015、022~025、042~044、046~047、056 |
 | REQ-025~029 | TASK-001~009、022、026~032、040~044、046~047 |
-| REQ-030~031 | TASK-059~065 |
+| REQ-030~031 | TASK-059~066 |
 
 ---
 
@@ -160,3 +161,5 @@
 | 2026-07-21 | TASK-063 done；fix_task 1.9 关闭 | 用户确认 J-18 Manual 通过 |
 | 2026-07-22 | 新增并完成 TASK-064 | Windows 托盘 HWND 与消息循环线程不一致，且 Quit 清理顺序可能晚于 Wails 退出；修复后用户确认可正常退出 |
 | 2026-07-22 | 新增并完成 TASK-065 | 用户确认托盘 Show 替换为 Settings；Windows 原生设置弹窗与未改动 Quit 回归通过 |
+| 2026-07-22 | 新增 TASK-066 | 用户反馈保存设置无响应且 uiSize 重启未恢复；进入 TDD 修复与回归验收 |
+| 2026-07-22 | TASK-066 更新为 done | UI/Domain 双向映射、热键变更检测、保存反馈、视觉回归与 Windows 1536×960 冷启动验收通过 |

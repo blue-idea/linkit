@@ -1039,10 +1039,13 @@ export default function App() {
     document.documentElement.lang = next.locale ?? 'en';
     await persistUiSettings(next);
     const toggle = mergeShortcuts((next as { shortcuts?: Partial<ShortcutMap> }).shortcuts).toggleWindow;
-    await setToggleWindowHotkey(toggle);
+    const currentToggle = mergeShortcuts(
+      (settings as { shortcuts?: Partial<ShortcutMap> }).shortcuts,
+    ).toggleWindow;
+    await setToggleWindowHotkey(toggle, currentToggle);
     await setMainWindowSize(uiSize);
     flashToast(createI18n(next.locale ?? 'en').t('toast.settingsSaved'));
-  }, [flashToast, setSettings]);
+  }, [flashToast, setSettings, settings]);
 
   const handleImport = useCallback((lib: LibraryData) => {
     setBookmarks(lib.bookmarks);

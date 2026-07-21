@@ -2,7 +2,13 @@
  * 桌面端优先调用 Go platform.SetToggleWindowHotkey；浏览器环境忽略。
  * REQ-030-AC-007
  */
-export async function setToggleWindowHotkey(accelerator: string): Promise<void> {
+export async function setToggleWindowHotkey(
+  accelerator: string,
+  currentAccelerator?: string,
+): Promise<void> {
+  if (currentAccelerator === accelerator) {
+    return;
+  }
   const binder = (
     window as unknown as {
       go?: {
