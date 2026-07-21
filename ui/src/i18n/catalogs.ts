@@ -436,6 +436,8 @@ const messages = {
   'settings.shortcuts.action.toggleSidebar': ['Toggle sidebar', '切换侧栏'],
   'settings.shortcuts.action.toggleWindow': ['Show / hide window', '显示/隐藏窗口'],
   'settings.save': ['Save settings', '保存设置'],
+  'settings.saving': ['Saving…', '正在保存…'],
+  'settings.saveError': ['Unable to save settings.', '无法保存设置。'],
   'settings.cancel': ['Cancel', '取消'],
   'settings.sectionsLabel': ['Settings sections', '设置分区'],
   'settings.language.label': ['Interface language', '界面语言'],
