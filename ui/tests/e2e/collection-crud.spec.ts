@@ -43,6 +43,31 @@ test.describe('主题 CRUD', () => {
     });
   });
 
+  // REQ-012-AC-001 · fix_task 1.7
+  test('主题改名 shall 在侧栏显示更新后的名称', async ({ page }) => {
+    await page.getByRole('button', { name: 'New collection' }).click();
+    await page.getByLabel('Collection name').fill('FIX17 Theme Source');
+    await page.getByRole('button', { name: 'Create collection', exact: true }).click();
+    await expect(page.getByText('FIX17 Theme Source', { exact: true }).first()).toBeVisible();
+
+    const row = page.getByText('FIX17 Theme Source', { exact: true }).first();
+    await row.hover();
+    // 主题改名入口：悬停后的编辑按钮（编辑对话框含名称字段）
+    await page.getByRole('button', { name: 'Edit collection' }).last().click();
+    const editDialog = page.getByRole('dialog', { name: 'Edit collection' });
+    await expect(editDialog).toBeVisible();
+    await page.getByLabel('Collection name').fill('FIX17 Theme Renamed');
+    await page.getByRole('button', { name: 'Save collection', exact: true }).click();
+    await expect(page.getByText('FIX17 Theme Renamed', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('FIX17 Theme Source', { exact: true })).toHaveCount(0);
+
+    await mkdir(evidenceDirectory, { recursive: true });
+    await page.screenshot({
+      path: resolve(evidenceDirectory, 'FIX-1.7-collection-rename.png'),
+      fullPage: true,
+    });
+  });
+
   // REQ-012-AC-005
   test('主题新建和编辑 shall 通过候选菜单选择 Emoji 图标', async ({ page }) => {
     await mkdir(evidenceDirectory, { recursive: true });
