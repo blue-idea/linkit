@@ -63,8 +63,11 @@ test.describe('分类 CRUD', () => {
   });
 
   test('在已有分类下创建子分类 shall 成功并展示在层级中', async ({ page }) => {
-    // 鼠标移动到并点击第一个分类的“新建子分类”按钮
-    await page.getByRole('button', { name: 'New subcategory' }).first().click();
+    // 悬停首个分类行后点击“新建子分类”
+    const firstCategory = page.getByText('技术', { exact: true }).first();
+    const row = firstCategory.locator('xpath=ancestor::div[contains(@class,"group")][1]');
+    await row.hover();
+    await row.getByRole('button', { name: 'New subcategory' }).click();
     await expect(page.getByRole('dialog', { name: 'New category' })).toBeVisible();
     await page.getByLabel('Category name').fill('SubCategory Test');
     await page.getByRole('button', { name: 'Create category' }).click();
