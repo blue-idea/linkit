@@ -11,14 +11,15 @@ import (
 )
 
 type appSettings struct {
-	SettingsVersion int          `json:"settingsVersion"`
-	StorageMode     string       `json:"storageMode"`
-	Theme           string       `json:"theme"`
-	Locale          string       `json:"locale"`
-	AI              aiSettings   `json:"ai"`
-	AIConsent       *aiConsent   `json:"aiConsent"`
-	View            viewSettings `json:"view"`
-	LastCloudRev    *int         `json:"lastCloudRevision"`
+	SettingsVersion int               `json:"settingsVersion"`
+	StorageMode     string            `json:"storageMode"`
+	Theme           string            `json:"theme"`
+	Locale          string            `json:"locale"`
+	AI              aiSettings        `json:"ai"`
+	AIConsent       *aiConsent        `json:"aiConsent"`
+	View            viewSettings      `json:"view"`
+	LastCloudRev    *int              `json:"lastCloudRevision"`
+	Shortcuts       map[string]string `json:"shortcuts"`
 }
 
 type aiSettings struct {
@@ -74,6 +75,17 @@ func DefaultAppSettings() appSettings {
 		AIConsent:       nil,
 		View:            viewSettings{DefaultMode: "card"},
 		LastCloudRev:    nil,
+		Shortcuts: map[string]string{
+			"spotlight":     "CmdOrCtrl+K",
+			"newBookmark":   "CmdOrCtrl+N",
+			"insights":      "CmdOrCtrl+I",
+			"settings":      "CmdOrCtrl+,",
+			"viewCard":      "CmdOrCtrl+1",
+			"viewList":      "CmdOrCtrl+2",
+			"viewMasonry":   "CmdOrCtrl+3",
+			"toggleSidebar": "CmdOrCtrl+\\",
+			"toggleWindow":  "CmdOrCtrl+L",
+		},
 	}
 }
 

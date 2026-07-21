@@ -1,4 +1,5 @@
 export { listSettingsSections } from './sections';
+export { ShortcutsPanel } from './ShortcutsPanel';
 export { resolveThemeLabel } from './themes';
 export {
   buildConsentRecord,

@@ -100,12 +100,24 @@ export function createAppSettings(overrides: Partial<AppSettings> = {}): AppSett
     aiConsent: null,
     view: { defaultMode: 'card' },
     lastCloudRevision: null,
+    shortcuts: {
+      spotlight: 'CmdOrCtrl+K',
+      newBookmark: 'CmdOrCtrl+N',
+      insights: 'CmdOrCtrl+I',
+      settings: 'CmdOrCtrl+,',
+      viewCard: 'CmdOrCtrl+1',
+      viewList: 'CmdOrCtrl+2',
+      viewMasonry: 'CmdOrCtrl+3',
+      toggleSidebar: 'CmdOrCtrl+\\',
+      toggleWindow: 'CmdOrCtrl+L',
+    },
   };
   return {
     ...defaults,
     ...overrides,
     ai: { ...defaults.ai, ...overrides.ai },
     view: { ...defaults.view, ...overrides.view },
+    shortcuts: { ...defaults.shortcuts, ...overrides.shortcuts },
   };
 }
 

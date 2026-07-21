@@ -105,6 +105,8 @@ export interface AppSettings {
   ai: AISettings;
   /** 本机 AI 数据发送授权；与当前 apiBase 匹配才有效。 */
   aiConsent?: AIConsentRecord | null;
+  /** 可配置快捷键；缺省使用平台默认。REQ-030 */
+  shortcuts?: Partial<Record<string, string>>;
 }
 
 export interface LibraryData {

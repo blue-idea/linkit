@@ -1,8 +1,8 @@
-﻿# Linkit 需求文档（Requirements）
+# Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：2.4.0
-> 日期：2026-07-20
+> 版本：2.5.0
+> 日期：2026-07-21
 > 状态：已定稿
 
 ---
@@ -37,6 +37,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 13. 外观提供 Midnight、Ocean、Graphite、Sunset、Daylight、Paper 六套主题；新增浅色主题不得改变现有设置交互、持久化流程或业务功能。
 14. 本地存储目录可在 Settings → Storage 中通过原生文件夹选择器变更；变更时迁移除 OS Keychain 密钥外的全部应用数据目录内容。目标目录已含 Linkit 数据时阻止迁移；迁移失败保持原路径与原数据并清理目标残留；默认 AppData 保留轻量 bootstrap 指针文件，真实数据根可重定向。
 15. 开发构建与正式构建使用隔离的本机身份槽：正式身份 AppData/Keychain 为 `Linkit`；开发身份（`-tags dev`）为 `Linkit-Dev`。发布产物不得嵌入开发身份字符串或携带开发者本机测试数据/密钥。
+16. OS 窗口关闭将应用隐藏到系统托盘/菜单栏且不退出进程；托盘菜单至少提供 Show 与 Quit；默认窗口显隐热键为 Windows `Ctrl+L` / macOS `Cmd+L`，且必须注册为系统级全局热键；Settings → Shortcuts 列出全部可配置快捷键，支持修改、冲突检测与本地持久化；Linux 对托盘与全局热键为 best-effort。
 
 ---
 
@@ -1402,7 +1403,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 - id: REQ-023-AC-001
   ears: >
     When 用户打开 Settings,
-    the Linkit shall 提供 General、Storage、AI、Appearance 和 Language 相关设置入口.
+    the Linkit shall 提供 General、Storage、AI、Appearance、Language 和 Shortcuts 相关设置入口.
   test_type: E2E
   expected:
     ui_state: "All required settings sections are discoverable"
@@ -1506,21 +1507,25 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 
 - id: REQ-024-AC-002
   ears: >
-    When 用户按 Cmd/Ctrl+N、Cmd/Ctrl+I 或 Cmd/Ctrl+逗号,
+    When 用户按当前生效的 New Bookmark、Insights 或 Settings 快捷键（默认分别为 Cmd/Ctrl+N、Cmd/Ctrl+I、Cmd/Ctrl+逗号）,
     the Linkit shall 分别打开 New Bookmark、Insights 或 Settings.
   test_type: E2E
   expected:
     ui_state: "Each shortcut opens its corresponding surface"
     side_effects: []
+  notes: >
+    默认绑定由 REQ-030 可配置快捷键覆盖；未自定义时使用上述默认值。
 
 - id: REQ-024-AC-003
   ears: >
-    When 用户按 Cmd/Ctrl+1、2、3 或 Cmd/Ctrl+反斜杠,
+    When 用户按当前生效的视图或侧栏快捷键（默认分别为 Cmd/Ctrl+1、2、3 或 Cmd/Ctrl+反斜杠）,
     the Linkit shall 分别切换 Card、List、Masonry 或 Sidebar 可见性.
   test_type: E2E
   expected:
     ui_state: "The requested view or sidebar state is applied"
     side_effects: []
+  notes: >
+    默认绑定由 REQ-030 可配置快捷键覆盖；未自定义时使用上述默认值。
 
 - id: REQ-024-AC-004
   ears: >
@@ -1900,6 +1905,127 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 
 ---
 
+### 需求 REQ-030 · 关闭隐藏、系统托盘与可配置快捷键
+
+**来源：** `fix_task` 1.8、已确认需求决策 16  
+**用户故事：** 作为桌面用户，我希望关闭窗口时应用留在托盘，并能用全局快捷键与设置页管理快捷键，以便快速唤回与定制操作。
+
+#### 验收标准
+
+```yaml
+- id: REQ-030-AC-001
+  ears: >
+    When 用户触发操作系统主窗口关闭控件,
+    the Linkit shall 隐藏主窗口并保持进程运行，不得退出应用.
+  test_type: Manual
+  expected:
+    ui_state: "Main window is hidden while the process remains running"
+    side_effects:
+      - "No full application quit occurs on OS close"
+
+- id: REQ-030-AC-002
+  ears: >
+    While Linkit 正在运行,
+    when 宿主平台提供系统托盘或菜单栏托盘能力,
+    the Linkit shall 显示托盘图标，且菜单至少包含 Show 与 Quit；
+    Linux 无可用托盘时不得阻断主流程，也不得将托盘能力报告为已通过.
+  test_type: Manual
+  expected:
+    checklist:
+      - "Windows notification-area tray icon is available"
+      - "macOS menu-bar tray icon is available"
+      - "Tray menu exposes Show and Quit"
+      - "Linux tray is best-effort and never falsely marked PASS when unavailable"
+    side_effects: []
+
+- id: REQ-030-AC-003
+  ears: >
+    While 主窗口已隐藏,
+    when 用户选择托盘 Show 或触发当前生效的窗口显隐全局热键,
+    the Linkit shall 显示并聚焦主窗口.
+  test_type: Manual
+  expected:
+    ui_state: "Main window is visible and focused"
+    side_effects: []
+
+- id: REQ-030-AC-004
+  ears: >
+    When 用户选择托盘 Quit 或使用平台惯例退出（例如 macOS Cmd+Q）,
+    the Linkit shall 完全退出进程.
+  test_type: Manual
+  expected:
+    ui_state: "Application process terminates"
+    side_effects:
+      - "Tray icon is removed"
+
+- id: REQ-030-AC-005
+  ears: >
+    When 用户按下默认窗口显隐快捷键（Windows Ctrl+L 或 macOS Cmd+L，可被设置覆盖）,
+    the Linkit shall 切换主窗口显隐；即使窗口已隐藏，该热键仍须作为系统级全局热键生效.
+  test_type: Manual
+  expected:
+    ui_state: "Window visibility toggles on each activation of the bound global hotkey"
+    side_effects:
+      - "Global hotkey remains registered while the process is running"
+
+- id: REQ-030-AC-006
+  ears: >
+    When 用户打开 Settings → Shortcuts,
+    the Linkit shall 列出全部可配置快捷键及其当前绑定，至少包含 Spotlight、New Bookmark、Insights、Settings、Card/List/Masonry 视图、Toggle Sidebar 与 Toggle Window Visibility.
+  test_type: E2E
+  expected:
+    ui_state: "Shortcuts section lists every configurable action with its current binding"
+    side_effects: []
+
+- id: REQ-030-AC-007
+  ears: >
+    When 用户修改某一快捷键绑定并确认保存,
+    the Linkit shall 立即按新绑定生效，将偏好写入本机 AppSettings，并在重启后恢复；
+    若修改的是窗口显隐快捷键，shall 同步更新系统级全局热键注册.
+  test_type: Unit
+  expected:
+    return_value: "Updated shortcut map persists locally and drives both in-app and global handlers"
+    side_effects:
+      - "settings.json shortcuts field is updated"
+      - "Global toggle hotkey registration matches the saved binding"
+
+- id: REQ-030-AC-008
+  ears: >
+    When 用户尝试保存与已有快捷键冲突的新绑定,
+    the Linkit shall 拒绝保存，显示英文冲突提示，并保持原绑定不变.
+  test_type: Unit
+  expected:
+    return_value: "Conflict error with stable English message; previous bindings unchanged"
+    side_effects: []
+
+- id: REQ-030-AC-009
+  ears: >
+    When 用户选择恢复默认快捷键,
+    the Linkit shall 将全部可配置快捷键重置为平台默认绑定并持久化到本机.
+  test_type: Unit
+  expected:
+    return_value: "All configurable shortcuts equal platform defaults after reset"
+    side_effects:
+      - "Persisted shortcuts match defaults"
+      - "Global toggle hotkey re-registers to the default binding"
+
+- id: REQ-030-AC-010
+  ears: >
+    While Windows 与 macOS 为目标平台且 Linux 为 best-effort,
+    when Linkit 应用快捷键修饰键与托盘行为,
+    the Linkit shall 在 Windows 使用 Ctrl、在 macOS 使用 Cmd 作为默认 Mod，并遵循各平台托盘惯例；
+    Linux 缺少托盘或全局热键能力时 shall 降级运行且不得伪造验收通过.
+  test_type: Manual
+  expected:
+    checklist:
+      - "Default modifiers follow Ctrl on Windows and Cmd on macOS"
+      - "Tray and global hotkey behavior matches platform conventions where supported"
+      - "Linux limitations are recorded as best-effort, never false PASS"
+    side_effects: []
+```
+
+---
+
 ## 非目标
 
 以下能力不属于 Linkit MVP，不得在未更新需求规格的情况下加入当前任务范围：
@@ -1945,6 +2071,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | NF-03、NF-05 | REQ-027 |
 | NF-04 | REQ-028 |
 | float_task 1.3、F-STORE-01、F-SET-01 | REQ-029 |
+| fix_task 1.8、关闭隐藏/托盘/可配置快捷键 | REQ-030 |
 
 ---
 
@@ -1968,3 +2095,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.2.0 | 2026-07-19 | 已定稿 | 新增 REQ-012-AC-006~011：主题视图手动添加/移出书签（排除已成员、搜索多选、确认前零副作用、空态 CTA） |
 | 2.3.0 | 2026-07-20 | 已定稿 | 新增原则 15 与 REQ-025-AC-006：开发/正式本机身份槽隔离，发布产物不得携带开发数据 |
 | 2.4.0 | 2026-07-20 | 已定稿 | 新增 REQ-023-AC-008：所有非自定义 UI 文案、状态与无障碍名称跟随设置语言；用户自定义内容保持原样 |
+| 2.5.0 | 2026-07-21 | 已定稿 | 新增原则 16 与 REQ-030：关闭隐藏到托盘、Show/Quit、全局显隐热键、Settings→Shortcuts 可配置；修订 REQ-023-AC-001 与 REQ-024 默认快捷键说明 |

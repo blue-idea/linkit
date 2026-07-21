@@ -1,4 +1,5 @@
 import type { AppSettings } from '../domain/library';
+import { DEFAULT_SHORTCUTS } from '../features/shell/shortcuts';
 
 /** 本机设置正式默认值；locale 默认 en，AI 默认未配置。 */
 export const DEFAULT_APP_SETTINGS: AppSettings = {
@@ -10,6 +11,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   aiConsent: null,
   view: { defaultMode: 'card' },
   lastCloudRevision: null,
+  shortcuts: { ...DEFAULT_SHORTCUTS },
 };
 
 /** 稳定英文错误键到中英文本的映射（UI 文案层使用）。 */

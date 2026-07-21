@@ -24,6 +24,8 @@ const (
 	ErrorCodeDataRootMigrateFailed   = "DATA_ROOT_MIGRATE_FAILED"
 	ErrorCodeDataRootInvalid         = "DATA_ROOT_INVALID"
 	ErrorCodeDataRootEmpty           = "DATA_ROOT_EMPTY"
+	ErrorCodeHotkeyInvalid           = "HOTKEY_INVALID"
+	ErrorCodeHotkeyUnavailable       = "HOTKEY_UNAVAILABLE"
 
 	ErrorMessageInvalidArgument     = "Invalid local document request"
 	ErrorMessageDocumentInvalid     = "Library document is invalid"
@@ -51,6 +53,8 @@ const (
 	ErrorMessageDataRootMigrateFailed  = "Failed to migrate local data directory"
 	ErrorMessageDataRootInvalid        = "Target data directory is invalid"
 	ErrorMessageDataRootEmpty          = "No library or settings data available to migrate"
+	ErrorMessageHotkeyInvalid          = "Hotkey accelerator is invalid"
+	ErrorMessageHotkeyUnavailable      = "Global hotkey is unavailable on this platform"
 
 	// AIAPIKeySecretKey 是 AI Key 的逻辑键；前端仅可见 configured 状态。
 	AIAPIKeySecretKey = "linkit.ai.api-key"

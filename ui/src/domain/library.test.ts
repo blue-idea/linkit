@@ -243,7 +243,13 @@ describe('AppSettings Schema', () => {
     const domain = await loadDomainModule();
     const settings = { settingsVersion: 1, storageMode: 'local', theme: 'midnight', locale: 'en',
       ai: { apiBase: 'https://api.example.com/v1', model: 'gpt-compatible' }, aiConsent: null,
-      view: { defaultMode: 'card' }, lastCloudRevision: null } as const;
+      view: { defaultMode: 'card' }, lastCloudRevision: null,
+      shortcuts: {
+        spotlight: 'CmdOrCtrl+K', newBookmark: 'CmdOrCtrl+N', insights: 'CmdOrCtrl+I',
+        settings: 'CmdOrCtrl+,', viewCard: 'CmdOrCtrl+1', viewList: 'CmdOrCtrl+2',
+        viewMasonry: 'CmdOrCtrl+3', toggleSidebar: 'CmdOrCtrl+\\', toggleWindow: 'CmdOrCtrl+L',
+      },
+    } as const;
     expect(domain.AppSettingsSchema).toBeDefined();
     expect(domain.AppSettingsSchema?.safeParse(settings)).toEqual({ success: true, data: settings });
   });
@@ -254,7 +260,13 @@ describe('AppSettings Schema', () => {
     expect(domain.AppSettingsSchema).toBeDefined();
     const result = domain.AppSettingsSchema?.safeParse({ settingsVersion: 1, storageMode: 'local',
       theme: 'midnight', locale: 'en', ai: { apiBase: 'http://example.com/v1', model: 'gpt-compatible' },
-      aiConsent: null, view: { defaultMode: 'card' }, lastCloudRevision: null });
+      aiConsent: null, view: { defaultMode: 'card' }, lastCloudRevision: null,
+      shortcuts: {
+        spotlight: 'CmdOrCtrl+K', newBookmark: 'CmdOrCtrl+N', insights: 'CmdOrCtrl+I',
+        settings: 'CmdOrCtrl+,', viewCard: 'CmdOrCtrl+1', viewList: 'CmdOrCtrl+2',
+        viewMasonry: 'CmdOrCtrl+3', toggleSidebar: 'CmdOrCtrl+\\', toggleWindow: 'CmdOrCtrl+L',
+      },
+    });
     expect(result?.success).toBe(false);
   });
 });

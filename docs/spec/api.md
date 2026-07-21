@@ -1,8 +1,8 @@
-﻿# Linkit 接口设计（API）
+# Linkit 接口设计（API）
 
 > 文件路径：`docs/spec/api.md`  
-> 版本：1.2.1  
-> 日期：2026-07-20  
+> 版本：1.3.0  
+> 日期：2026-07-21  
 > 状态：已定稿
 
 ---
@@ -515,6 +515,59 @@ OpenExternalURL(url: string): Promise<void>
 
 仅允许 HTTP(S)，使用系统默认浏览器。调用成功后前端才更新访问计数；调用失败不得增加计数。
 
+#### `ShowMainWindow()`
+
+```typescript
+ShowMainWindow(): Promise<void>
+```
+
+显示并聚焦主窗口（托盘 Show 与全局显隐热键复用）。
+
+#### `HideMainWindow()`
+
+```typescript
+HideMainWindow(): Promise<void>
+```
+
+隐藏主窗口且不退出进程。
+
+#### `QuitApplication()`
+
+```typescript
+QuitApplication(): Promise<void>
+```
+
+设置允许退出标志后调用 `runtime.Quit`，真正结束进程并移除托盘。
+
+#### `SetToggleWindowHotkey(accelerator)`
+
+```typescript
+interface SetToggleWindowHotkeyRequest {
+  accelerator: string; // 例：CmdOrCtrl+L
+}
+
+SetToggleWindowHotkey(request: SetToggleWindowHotkeyRequest): Promise<void>
+```
+
+- 注册/替换系统级全局热键，用于切换主窗口显隐。
+- 空字符串或非法 accelerator 返回稳定 `AppError`（如 `HOTKEY_INVALID`）。
+- 平台不支持或注册失败返回 `HOTKEY_UNAVAILABLE`；Linux best-effort，不得假装成功。
+- 触发时在 Go 侧直接切换窗口，不依赖前端焦点。
+
+#### `GetDesktopCapability()`
+
+```typescript
+interface DesktopCapability {
+  trayAvailable: boolean;
+  globalHotkeyAvailable: boolean;
+  platform: 'windows' | 'darwin' | 'linux' | 'unknown';
+}
+
+GetDesktopCapability(): Promise<DesktopCapability>
+```
+
+用于 UI 降级提示与验收记录；Linux 上任一能力为 false 时不得将对应 AC 标为 PASS。
+
 ---
 
 ## 4. Supabase 接口
@@ -756,3 +809,4 @@ interface LibrarySnapshot {
 | 1.1.0 | 2026-07-16 | 已定稿 | STEP 4 修正 Snapshot revision 重复、补充设置/云草稿接口、注册分支、AI 授权和原生 RLS 响应 |
 | 1.2.0 | 2026-07-19 | 已定稿 | 新增数据根查询、目录选择与迁移接口及错误码，覆盖 REQ-029 |
 | 1.2.1 | 2026-07-20 | 已定稿 | SecretService 补充开发/正式 Keychain 服务名隔离说明，对齐 REQ-025-AC-006 |
+| 1.3.0 | 2026-07-21 | 已定稿 | SystemService 增加窗口显隐、退出、全局热键与桌面能力探测；对齐 REQ-030 |

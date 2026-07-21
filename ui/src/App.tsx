@@ -17,11 +17,14 @@ import {
 } from './features/storage';
 import {
   AppShell,
+  mergeShortcuts,
   useEscapeOverlayStack,
   useGlobalShortcuts,
   useWindowUrlDrop,
   type OverlayKind,
+  type ShortcutMap,
 } from './features/shell';
+import { setToggleWindowHotkey } from './features/shell/desktop-hotkey';
 import { useAuth } from './auth';
 import { loadCloudLibrary, saveCloudLibrary } from './cloud';
 import { loadLocalLibrary, saveLocalLibrary } from './storage';
@@ -1027,6 +1030,8 @@ export default function App() {
     applyTheme(s.theme);
     document.documentElement.lang = s.locale ?? 'en';
     await persistUiSettings(s);
+    const toggle = mergeShortcuts((s as { shortcuts?: Partial<ShortcutMap> }).shortcuts).toggleWindow;
+    await setToggleWindowHotkey(toggle);
     flashToast(createI18n(s.locale ?? 'en').t('toast.settingsSaved'));
   }, [flashToast, setSettings]);
 
@@ -1090,7 +1095,10 @@ export default function App() {
     }),
     []
   );
-  useGlobalShortcuts(shortcutHandlers);
+  useGlobalShortcuts(shortcutHandlers, {
+    shortcuts: mergeShortcuts((settings as { shortcuts?: Partial<ShortcutMap> }).shortcuts),
+    skipToggleWindow: true,
+  });
 
   const overlayOpen = useMemo(
     () => ({
