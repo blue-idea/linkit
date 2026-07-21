@@ -1,11 +1,11 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：2.8.0
+> 版本：2.9.0
 > 日期：2026-07-22
 > 状态：已定稿
 
-执行时须严格遵循 `docs/spec/requirements.md` 2.6.0、`docs/spec/design.md` 1.10.0 和 `docs/spec/test_strategy.md` 2.1.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
+执行时须严格遵循 `docs/spec/requirements.md` 2.7.0、`docs/spec/design.md` 1.11.0 和 `docs/spec/test_strategy.md` 2.2.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
 
 AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首尾均包含。
 
@@ -1490,6 +1490,33 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-065 · 托盘 Show 替换为 Settings**
+
+  > 依赖：TASK-059、TASK-064 · 预计：1–2 小时 · 状态：done · 2026-07-22
+
+  - [x] Red：Go 菜单测试期望 `Settings`/`OnSettings` 并因能力缺失失败；Vitest 事件订阅测试因模块缺失失败。
+  - [x] Green：托盘第一项改为 `Settings`；点击时显示窗口并发送 `linkit:open-settings`，React 订阅后打开现有设置弹窗。
+  - [x] Refactor：将既有 Wails 事件订阅器抽到共享 Service，健康扫描保留兼容导出，事件名集中到 `config/`。
+  - [x] Quit 保护：未修改 `QuitApplication`、退出前托盘清理或 Windows 消息线程业务；原生第二项 Quit 回归正常退出。
+  - [x] Windows 原生验收：关闭隐藏后触发托盘 Settings，窗口恢复且设置弹窗打开；保存脱敏裁剪截图。
+
+  **验证方式：**
+  ```powershell
+  go test ./... -count=1
+  go vet ./...
+  pnpm --dir ui test --run
+  pnpm --dir ui quality
+  wails build
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-065-AC.md`、`docs/spec/evidence/TASK-065-evidence.md`、`docs/spec/evidence/TASK-065-tray-settings.png`、`docs/spec/reports/TASK-065-report.md`。
+
+  _需求: REQ-030
+  验收标准：REQ-030-AC-002、REQ-030-AC-003、REQ-030-AC-004
+  _测试类型: Unit + Manual
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1558,6 +1585,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-062 | uiSize 预设、Schema 与冷启动尺寸 | Unit/Manual | done | REQ-031 |
 | TASK-063 | Appearance 窗口大小 UI 与 i18n | Unit/E2E/Manual | done | REQ-031、023 |
 | TASK-064 | 修复 Windows 托盘 Quit 无法退出 | Unit/Manual | done | REQ-030 |
+| TASK-065 | 托盘 Show 替换为 Settings | Unit/Manual | done | REQ-030 |
 
 ---
 
@@ -1585,3 +1613,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 2.6.0 | 2026-07-21 | 已定稿 | 新增 TASK-059~061，覆盖 REQ-030 关闭隐藏/托盘/全局热键与 Shortcuts 设置 |
 | 2.7.0 | 2026-07-21 | 已定稿 | 新增 TASK-062~063，覆盖 REQ-031 Appearance 窗口大小 |
 | 2.8.0 | 2026-07-22 | 已定稿 | 新增 TASK-064，修复 Windows 托盘消息线程与 Wails 退出顺序导致的 Quit 无法退出 |
+| 2.9.0 | 2026-07-22 | 已定稿 | 新增 TASK-065，将托盘 Show 替换为 Settings 并保持 Quit 业务不变 |

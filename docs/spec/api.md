@@ -1,8 +1,8 @@
 # Linkit 接口设计（API）
 
 > 文件路径：`docs/spec/api.md`  
-> 版本：1.4.0  
-> 日期：2026-07-21  
+> 版本：1.5.0
+> 日期：2026-07-22
 > 状态：已定稿
 
 ---
@@ -521,7 +521,7 @@ OpenExternalURL(url: string): Promise<void>
 ShowMainWindow(): Promise<void>
 ```
 
-显示并聚焦主窗口（托盘 Show 与全局显隐热键复用）。
+显示并聚焦主窗口（托盘 Settings 与全局显隐热键复用）。
 
 #### `HideMainWindow()`
 
@@ -762,6 +762,7 @@ MetadataService 和 HealthService 共用受限 HTTP Client：
 | `linkit:health-scan-progress` | Go HealthService | React healthSlice | 单项结果和总体进度 |
 | `linkit:health-scan-finished` | Go HealthService | React healthSlice | completed/cancelled/failed 最终状态 |
 | `linkit:ai-progress` | Go AIService | React 对应 feature | 可选的流式或阶段进度，不代表业务成功 |
+| `linkit:open-settings` | Go 托盘回调 | React App | 显示窗口后打开现有 Settings 对话框；无 payload |
 
 事件 payload 必须包含操作 ID，前端忽略与当前操作 ID 不匹配的过期事件。组件卸载或操作结束时必须取消订阅。
 
@@ -826,3 +827,4 @@ interface LibrarySnapshot {
 | 1.2.1 | 2026-07-20 | 已定稿 | SecretService 补充开发/正式 Keychain 服务名隔离说明，对齐 REQ-025-AC-006 |
 | 1.3.0 | 2026-07-21 | 已定稿 | SystemService 增加窗口显隐、退出、全局热键与桌面能力探测；对齐 REQ-030 |
 | 1.4.0 | 2026-07-21 | 已定稿 | SystemService 增加 `SetMainWindowSize`；对齐 REQ-031 |
+| 1.5.0 | 2026-07-22 | 已定稿 | 托盘 Show 替换为 Settings，新增 `linkit:open-settings` 无 payload 事件；Quit 接口不变 |
