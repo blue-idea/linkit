@@ -1,11 +1,14 @@
 name: Release
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       tag:
         description: Release tag
-        required: true
+        required: false
 
 permissions:
   contents: write
@@ -41,6 +44,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Determine Release Tag
+        shell: bash
+        run: |
+          TAG="${{ inputs.tag }}"
+          if [ -z "$TAG" ]; then
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          echo "RELEASE_TAG=${TAG}" >> $GITHUB_ENV
 
       - name: Install Linux build dependencies
         if: matrix.os == 'linux'
@@ -148,15 +160,15 @@ jobs:
         if: matrix.os == 'linux'
         env:
           NFPM_ARCH: ${{ matrix.deb_arch }}
-          PACKAGE_VERSION: ${{ inputs.tag }}
+          PACKAGE_VERSION: ${{ env.RELEASE_TAG }}
           PACKAGE_RELEASE: '1'
-        run: nfpm pkg --packager deb --target build/bin/linkit_${{ inputs.tag }}_${{ matrix.deb_arch }}.deb
+        run: nfpm pkg --packager deb --target build/bin/linkit_${{ env.RELEASE_TAG }}_${{ matrix.deb_arch }}.deb
 
       - name: Verify release artifacts (Linux)
         if: matrix.os == 'linux'
         run: |
           test -x "build/bin/linkit-${{ matrix.deb_arch }}"
-          test -f "build/bin/linkit_${{ inputs.tag }}_${{ matrix.deb_arch }}.deb"
+          test -f "build/bin/linkit_${{ env.RELEASE_TAG }}_${{ matrix.deb_arch }}.deb"
           if grep -aF "Linkit-Dev" "build/bin/linkit-${{ matrix.deb_arch }}"; then
             echo "Release binary must not embed Linkit-Dev" >&2
             exit 1
@@ -188,8 +200,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view "${{ inputs.tag }}" >/dev/null 2>&1 || gh release create "${{ inputs.tag }}" --target "$GITHUB_SHA" --generate-notes || true
-          gh release upload "${{ inputs.tag }}" build/bin/linkit-${{ matrix.deb_arch }} build/bin/linkit_${{ inputs.tag }}_${{ matrix.deb_arch }}.deb --clobber
+          gh release view "${{ env.RELEASE_TAG }}" >/dev/null 2>&1 || gh release create "${{ env.RELEASE_TAG }}" --target "$GITHUB_SHA" --generate-notes || true
+          gh release upload "${{ env.RELEASE_TAG }}" build/bin/linkit-${{ matrix.deb_arch }} build/bin/linkit_${{ env.RELEASE_TAG }}_${{ matrix.deb_arch }}.deb --clobber
 
       - name: Upload Windows artifacts
         if: matrix.os == 'windows'
@@ -197,14 +209,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view "${{ inputs.tag }}" >/dev/null 2>&1 || gh release create "${{ inputs.tag }}" --target "$GITHUB_SHA" --generate-notes || true
+          gh release view "${{ env.RELEASE_TAG }}" >/dev/null 2>&1 || gh release create "${{ env.RELEASE_TAG }}" --target "$GITHUB_SHA" --generate-notes || true
           cp build/bin/linkit.exe build/bin/linkit-windows-amd64.exe
-          gh release upload "${{ inputs.tag }}" build/bin/linkit-amd64-installer.exe build/bin/linkit-windows-amd64.exe --clobber
+          gh release upload "${{ env.RELEASE_TAG }}" build/bin/linkit-amd64-installer.exe build/bin/linkit-windows-amd64.exe --clobber
 
       - name: Upload macOS artifacts
         if: matrix.os == 'macos'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view "${{ inputs.tag }}" >/dev/null 2>&1 || gh release create "${{ inputs.tag }}" --target "$GITHUB_SHA" --generate-notes || true
-          gh release upload "${{ inputs.tag }}" build/bin/Linkit.dmg --clobber
+          gh release view "${{ env.RELEASE_TAG }}" >/dev/null 2>&1 || gh release create "${{ env.RELEASE_TAG }}" --target "$GITHUB_SHA" --generate-notes || true
+          gh release upload "${{ env.RELEASE_TAG }}" build/bin/Linkit.dmg --clobber
