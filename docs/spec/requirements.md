@@ -1,7 +1,7 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：2.8.0
+> 版本：2.11.0
 > 日期：2026-07-22
 > 状态：已定稿
 
@@ -433,6 +433,18 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
     side_effects:
       - "Domain bookmark persists favicon (URL or glyph up to 8 code points) and faviconColor in library envelope"
       - "Round-trip UI → envelope → UI preserves icon fields"
+
+- id: REQ-006-AC-008
+  ears: >
+    While Linkit 生成或重新生成书签 AI 摘要,
+    when AI 服务返回摘要文本,
+    the Linkit shall 在提示词中要求摘要不超过 200 个 Unicode 字符，并在服务边界将超长结果安全截断为最多 200 个字符.
+  test_type: Unit + API
+  expected:
+    return_value: "AnalyzeBookmarkResult.summary with at most 200 Unicode code points"
+    side_effects:
+      - "Chinese and other multi-byte characters are not split into invalid text"
+      - "No additional AI request is introduced"
 ```
 
 ---
@@ -2208,3 +2220,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.8.0 | 2026-07-22 | 已定稿 | 新增 REQ-006-AC-006：新建书签优先元数据 favicon，缺省时文字图标与稳定背景色 |
 | 2.9.0 | 2026-07-22 | 已定稿 | 新增 REQ-006-AC-007：书签图标与背景色在本地信封与重载后一致持久化 |
 | 2.10.0 | 2026-07-22 | 已定稿 | 修订 REQ-006-AC-006：新建默认网站 favicon；无图时文字+随机色；桌面 faviconDataUrl |
+| 2.11.0 | 2026-07-22 | 已定稿 | 新增 REQ-006-AC-008：AI 书签摘要提示词与服务结果双重限制为最多 200 个 Unicode 字符 |
