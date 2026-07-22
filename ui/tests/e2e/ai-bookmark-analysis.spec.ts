@@ -26,6 +26,49 @@ test.describe('AI 入库分析', () => {
     await page.getByRole('button', { name: 'Save bookmark' }).click();
     await expect(page.getByText('AI Inbound Bookmark').first()).toBeVisible();
   });
+
+  // TASK-069 / REQ-006-AC-002 / REQ-014-AC-003：AI 建议应复用现有标签并随确认保存。
+  test('AI 入库分析 shall 将格式等价建议映射为现有标签且不创建新标签', async ({ page }) => {
+    await page.evaluate(() => {
+      const go = ((window as unknown as { go?: Record<string, unknown> }).go ??= {});
+      (go as { metadata?: unknown }).metadata = {
+        Service: {
+          FetchMetadata: async () => ({
+            title: 'React Documentation',
+            description: 'Official React documentation.',
+            contentText: 'React components, hooks, and API reference.',
+            faviconUrl: null,
+            faviconDataUrl: null,
+          }),
+        },
+      };
+      (go as { ai?: unknown }).ai = {
+        Service: {
+          AnalyzeBookmark: async () => ({
+            title: 'React Documentation',
+            description: 'Official React documentation.',
+            summary: 'React API reference and guides.',
+            suggestedCategoryId: null,
+            suggestedTags: ['# React'],
+          }),
+        },
+      };
+    });
+
+    await page.getByRole('button', { name: 'New', exact: true }).click();
+    await page.getByRole('textbox', { name: 'Bookmark URL' }).fill('https://react.dev/reference');
+    await page.getByRole('button', { name: 'Analyze', exact: true }).click();
+    await page.getByRole('button', { name: 'Save bookmark' }).click();
+
+    const savedTag = page.getByRole('button', { name: 'Remove tag React' });
+    await expect(savedTag).toBeVisible();
+    await expect(page.getByText('# React', { exact: true })).toHaveCount(0);
+    await savedTag.scrollIntoViewIfNeeded();
+    await page.screenshot({
+      path: '../docs/spec/evidence/TASK-069-ai-tag-match.png',
+      fullPage: true,
+    });
+  });
 });
 
 test.describe('重新分析', () => {

@@ -15,6 +15,7 @@ import {
   type AIContext,
 } from '../features/ai';
 import { isBookmarkUrlDuplicate, normalizeBookmarkUrl } from '../domain/commands';
+import { matchSuggestedTags } from '../features/tags';
 import { Icon, Favicon, AIBadge, Button, Kbd, AnimateIn } from './ui';
 import { tagColors } from '../colors';
 import { useI18n } from '../i18n/use-i18n';
@@ -58,18 +59,6 @@ function ModalHeader({ icon, title, subtitle, onClose }: { icon: string; title: 
       </button>
     </div>
   );
-}
-
-function mapSuggestedLabelsToTagIds(labels: string[], tags: Tag[]): string[] {
-  const byLabel = new Map(tags.map((tag) => [tag.label.trim().toLowerCase(), tag.id]));
-  const ids: string[] = [];
-  for (const label of labels) {
-    const id = byLabel.get(label.trim().toLowerCase());
-    if (id && !ids.includes(id)) {
-      ids.push(id);
-    }
-  }
-  return ids;
 }
 
 /* ============ New Bookmark Dialog：分析确认后入库，失败则手动降级 ============ */
@@ -187,13 +176,9 @@ export function NewBookmarkDialog({
     ) {
       setChosenCategory(result.preview.suggestedCategoryId);
     }
-    const matched = mapSuggestedLabelsToTagIds(result.preview.suggestedTags, tags);
-    setChosenTags(matched);
-    setPendingTagLabels(
-      result.preview.suggestedTags.filter(
-        (label) => !tags.some((tag) => tag.label.trim().toLowerCase() === label.trim().toLowerCase())
-      )
-    );
+    const tagMatches = matchSuggestedTags(result.preview.suggestedTags, tags);
+    setChosenTags(tagMatches.tagIds);
+    setPendingTagLabels(tagMatches.unmatchedLabels);
     setFaviconUrl(result.preview.faviconUrl);
     setIconEditor(
       initialIconEditorForNewBookmark({
