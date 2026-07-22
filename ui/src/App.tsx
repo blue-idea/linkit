@@ -1366,12 +1366,12 @@ export default function App() {
             bookmarks={bookmarks}
             selection={state.selection}
             expanded={state.expandedCategories}
-            onToggleExpand={(id) =>
+            onToggleExpand={(id, currentlyExpanded) =>
               setState((s) => ({
                 ...s,
                 expandedCategories: {
                   ...s.expandedCategories,
-                  [id]: !(s.expandedCategories[id] ?? false),
+                  [id]: !currentlyExpanded,
                 },
               }))
             }
@@ -1983,4 +1983,3 @@ export default function App() {
     </I18nProvider>
   );
 }
-
