@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.30.0
+> 版本：1.34.0
 > 日期：2026-07-22
-> 状态：已定稿（新增 TASK-065 / 托盘 Settings 入口）
+> 状态：已定稿（新增并完成 TASK-070 / AI 摘要 200 字限制）
 
 ---
 
@@ -95,6 +95,7 @@
 | TASK-067 | 新建书签图标（元数据图片与文字回退） | REQ-006-AC-006 | done | `ui/src/features/bookmarks/icon.ts`、`ui/src/components/Dialogs.tsx`、`ui/src/components/ui.tsx`、`ui/src/features/ai/bookmark-analysis/inbound.ts` | `icon.test.ts`、`ui.test.tsx`、`bookmark-analysis.test.ts`、`tests/e2e/bookmark-crud.spec.ts` | `docs/spec/ac/TASK-067-AC.md` | 2026-07-22 |
 | TASK-068 | 书签图标领域持久化 | REQ-006-AC-006~007 | done | `ui/src/domain/bookmark-icon.ts`、`ui/src/features/bookmarks/icon-persistence.ts`、`BookmarkIconEditor.tsx`、`metadata/favicon_fetch.go`、`Dialogs.tsx`、`BookmarkActionDialogs.tsx`、`supabase/migrations/20260722101627_*`、`supabase/seed.sql` | `icon-persistence.test.ts`、`BookmarkIconEditor.test.ts`、`library.test.ts`、`service_test.go`、bookmarks Vitest 套件 | `docs/spec/ac/TASK-068-AC.md` | 2026-07-22 |
 | TASK-069 | AI 新建书签标签匹配与复用 | REQ-006-AC-002、004；REQ-014-AC-003 | done | `internal/ai/prompt.go`、`ui/src/features/tags/suggested-tag-matching.ts`、`ui/src/components/Dialogs.tsx` | `internal/ai/prompt_test.go`、`suggested-tag-matching.test.ts`、`NewBookmarkDialog.ai-tags.test.tsx`、`ai-bookmark-analysis.spec.ts` | `docs/spec/ac/TASK-069-AC.md` | `docs/spec/evidence/TASK-069-evidence.md`、`TASK-069-ai-tag-match.png` |
+| TASK-070 | AI 书签摘要 200 字限制 | REQ-006-AC-008 | done | `config/network.go`、`internal/ai/prompt.go`、`internal/ai/service.go` | `internal/ai/prompt_test.go`、`internal/ai/service_test.go` | `docs/spec/ac/TASK-070-AC.md` | `docs/spec/evidence/TASK-070-evidence.md`、`docs/spec/reports/TASK-070-report.md` |
 
 ---
 
@@ -103,7 +104,7 @@
 | REQ 范围 | 主要 TASK |
 |----------|-----------|
 | REQ-001~005 | TASK-006、008、010、024、026~030、040、042、044 |
-| REQ-006~009 | TASK-009、011~013、025、033、037、044、048、051、069 |
+| REQ-006~009 | TASK-009、011~013、025、033、037、044、048、051、069~070 |
 | REQ-010~014 | TASK-014~018、025、035、044、050、052~054、069 |
 | REQ-015~018 | TASK-019~021、025、034、037、041、044 |
 | REQ-019~022 | TASK-007、031~040、044 |
@@ -169,3 +170,4 @@
 | 2026-07-22 | 新增 TASK-067 | REQ-006-AC-006 新建书签 favicon 图片优先与文字图标稳定背景色 |
 | 2026-07-22 | 新增 TASK-068 | REQ-006-AC-007 书签图标 glyph≤8 与 faviconColor 信封持久化 |
 | 2026-07-22 | 新增并完成 TASK-069 | 对齐 fix_task 1.11；修复 AI 建议标签与现有标签候选之间的语言/格式匹配断层，且不新增数据库结构 |
+| 2026-07-22 | 新增并完成 TASK-070 | 对齐 fix_task 1.12；提示词与服务边界双重保证 AI 书签摘要最多 200 个 Unicode 字符 |

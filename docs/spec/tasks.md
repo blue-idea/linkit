@@ -1,11 +1,11 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：3.1.0
+> 版本：3.4.0
 > 日期：2026-07-22
 > 状态：已定稿
 
-执行时须严格遵循 `docs/spec/requirements.md` 2.8.0、`docs/spec/design.md` 1.11.0 和 `docs/spec/test_strategy.md` 2.2.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
+执行时须严格遵循 `docs/spec/requirements.md` 2.11.0、`docs/spec/design.md` 1.11.0 和 `docs/spec/test_strategy.md` 2.2.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
 
 AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首尾均包含。
 
@@ -1621,6 +1621,33 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-070 · 限制 AI 书签摘要为 200 字以内**
+
+  > 依赖：TASK-032、TASK-033 · 对齐：fix_task 1.12 · 预计：1 小时 · 状态：done · 2026-07-22
+
+  - [x] Red：提示词缺少长度约束，服务解析 201 个中文字符时原样返回。
+  - [x] Green：在 `config` 集中定义摘要上限，提示词显式要求最多 200 个 Unicode 字符。
+  - [x] Green：服务解析边界复用 Unicode 安全截断函数，模型忽略指令时仍保证上限。
+  - [x] Refactor：不新增网络调用、数据库字段或前端重复截断逻辑。
+  - [x] QA：Go 目标测试、包覆盖率、全量测试与 `go vet` 通过。
+
+  **验证方式：**
+  ```powershell
+  go test ./internal/ai -run "TestBuildAnalyzeBookmarkSystemPromptLocale|TestParseAnalyzeResultEnforcesSummaryRuneLimit|TestAnalyzeAndReanalyzeLimitSummaryWithoutExtraAIRequests" -count=1
+  go test ./internal/ai -count=1 -cover
+  go test ./config/... -count=1
+  go test ./... -count=1
+  go vet ./...
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-070-AC.md`、`docs/spec/evidence/TASK-070-evidence.md`、`docs/spec/reports/TASK-070-report.md`。
+
+  _需求: REQ-006
+  验收标准：REQ-006-AC-008
+  _测试类型: Unit + API
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1694,6 +1721,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-067 | 新建书签图标（元数据图片与文字回退） | Unit/E2E | done | REQ-006 |
 | TASK-068 | 书签图标领域持久化 | Unit/Integration | done | REQ-006 |
 | TASK-069 | AI 新建书签标签匹配与复用 | Unit/API/E2E | done | REQ-006、014 |
+| TASK-070 | AI 书签摘要 200 字限制 | Unit/API | done | REQ-006 |
 
 ---
 
@@ -1726,3 +1754,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 3.1.0 | 2026-07-22 | 已定稿 | 完成 TASK-067，新建书签元数据 favicon 与文字图标稳定背景色 |
 | 3.2.0 | 2026-07-22 | 已定稿 | 完成 TASK-068，书签图标与背景色在 library 信封中 round-trip 持久化 |
 | 3.3.0 | 2026-07-22 | 已定稿 | 完成 TASK-069，修复 AI 标签候选复用、保守匹配与新建流程标签膨胀风险 |
+| 3.4.0 | 2026-07-22 | 已定稿 | 完成 TASK-070，AI 书签摘要提示词与服务结果限制为最多 200 个 Unicode 字符 |

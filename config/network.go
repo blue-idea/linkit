@@ -36,4 +36,6 @@ const (
 	AIRetryBaseDelay = 50 * time.Millisecond
 	// AIMaxSemanticCandidates 限制送入 AI 重排的本地候选数量。
 	AIMaxSemanticCandidates = 40
+	// AISummaryMaxRunes 限制 AI 书签摘要的 Unicode 字符数。
+	AISummaryMaxRunes = 200
 )

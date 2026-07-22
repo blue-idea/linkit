@@ -18,6 +18,10 @@ func TestBuildAnalyzeBookmarkSystemPromptLocale(t *testing.T) {
 	if !strings.Contains(en, "Return at most 3 unique suggestedTags") {
 		t.Fatalf("prompt missing suggested tag limit: %s", en)
 	}
+	// TASK-070 / REQ-006-AC-008：模型生成阶段先约束摘要长度，减少无效输出。
+	if !strings.Contains(en, "summary must be at most 200 Unicode characters") {
+		t.Fatalf("prompt missing summary length limit: %s", en)
+	}
 	if strings.Contains(en, "title, description, summary, and suggestedTags entirely in English") {
 		t.Fatalf("prompt must not force existing candidate labels into the UI locale: %s", en)
 	}

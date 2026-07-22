@@ -208,9 +208,11 @@ func parseAnalyzeResult(raw json.RawMessage, categories []IDName) (AnalyzeBookma
 	if err := json.Unmarshal(raw, &dto); err != nil {
 		return AnalyzeBookmarkResult{}, newServiceError(config.ErrorCodeAIResponseInvalid, config.ErrorMessageAIResponseInvalid, true, err)
 	}
-	if strings.TrimSpace(dto.Summary) == "" {
+	summary := strings.TrimSpace(dto.Summary)
+	if summary == "" {
 		return AnalyzeBookmarkResult{}, newServiceError(config.ErrorCodeAIResponseInvalid, config.ErrorMessageAIResponseInvalid, true, fmt.Errorf("summary is required"))
 	}
+	summary = truncateRunes(summary, config.AISummaryMaxRunes)
 
 	categoryID, err := parseOptionalCategoryID(dto.SuggestedCategoryID, categories)
 	if err != nil {
@@ -233,7 +235,7 @@ func parseAnalyzeResult(raw json.RawMessage, categories []IDName) (AnalyzeBookma
 	return AnalyzeBookmarkResult{
 		Title:               title,
 		Description:         strings.TrimSpace(dto.Description),
-		Summary:             strings.TrimSpace(dto.Summary),
+		Summary:             summary,
 		SuggestedCategoryID: categoryID,
 		SuggestedTags:       tags,
 	}, nil

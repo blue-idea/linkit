@@ -21,9 +21,11 @@ func (stub stubCompleter) ChatCompletions(ChatRequest) (ChatResult, error) {
 type capturingCompleter struct {
 	last    ChatRequest
 	content json.RawMessage
+	calls   int
 }
 
 func (c *capturingCompleter) ChatCompletions(request ChatRequest) (ChatResult, error) {
+	c.calls++
 	c.last = request
 	return ChatResult{ContentJSON: c.content}, nil
 }
@@ -129,6 +131,96 @@ func TestAnalyzeBookmarkReturnsValidatedSuggestions(t *testing.T) {
 	}
 	if result.Description != "AI description" {
 		t.Fatalf("Unexpected description: %+v", result)
+	}
+}
+
+func TestParseAnalyzeResultEnforcesSummaryRuneLimit(t *testing.T) {
+	// TASK-070 / REQ-006-AC-008：覆盖边界、Unicode 空白和非 BMP 字符。
+	tests := []struct {
+		name      string
+		summary   string
+		expected  string
+		wantError bool
+	}{
+		{name: "199 个字符保持不变", summary: strings.Repeat("摘", 199), expected: strings.Repeat("摘", 199)},
+		{name: "200 个字符保持不变", summary: strings.Repeat("摘", 200), expected: strings.Repeat("摘", 200)},
+		{name: "201 个字符截断", summary: strings.Repeat("摘", 201), expected: strings.Repeat("摘", 200)},
+		{name: "首尾 Unicode 空白先移除", summary: "\u3000" + strings.Repeat("摘", 200) + "\u3000", expected: strings.Repeat("摘", 200)},
+		{name: "emoji 在 rune 边界截断", summary: strings.Repeat("🙂", 201), expected: strings.Repeat("🙂", 200)},
+		{name: "纯空白仍拒绝", summary: " \t\u3000\n", wantError: true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			raw, err := json.Marshal(map[string]any{
+				"title":               "Title",
+				"description":         "Description",
+				"summary":             test.summary,
+				"suggestedCategoryId": nil,
+				"suggestedTags":       []string{},
+			})
+			if err != nil {
+				t.Fatalf("Unable to encode test response: %v", err)
+			}
+
+			result, err := parseAnalyzeResult(raw, nil)
+			if test.wantError {
+				assertCodedError(t, err, config.ErrorCodeAIResponseInvalid, true)
+				return
+			}
+			if err != nil {
+				t.Fatalf("parseAnalyzeResult returned error: %v", err)
+			}
+			if result.Summary != test.expected {
+				t.Fatalf("Unexpected summary: got %q, want %q", result.Summary, test.expected)
+			}
+		})
+	}
+}
+
+func TestAnalyzeAndReanalyzeLimitSummaryWithoutExtraAIRequests(t *testing.T) {
+	// TASK-070 / REQ-006-AC-008：公共服务路径每次仅调用一次 Completer，并返回最多 200 个字符。
+	longSummary := strings.Repeat("🙂", 201)
+	raw, err := json.Marshal(map[string]any{
+		"title":               "Title",
+		"description":         "Description",
+		"summary":             longSummary,
+		"suggestedCategoryId": nil,
+		"suggestedTags":       []string{},
+	})
+	if err != nil {
+		t.Fatalf("Unable to encode test response: %v", err)
+	}
+
+	capture := &capturingCompleter{content: raw}
+	service := NewService(WithCompleter(capture))
+	request := AnalyzeBookmarkRequest{
+		Context:     AIContext{APIBase: "https://api.example.test/v1", Model: "m", Locale: "zh"},
+		URL:         "https://example.test",
+		Title:       "Title",
+		ContentText: "Body",
+	}
+
+	analyzed, err := service.AnalyzeBookmark(request)
+	if err != nil {
+		t.Fatalf("AnalyzeBookmark returned error: %v", err)
+	}
+	if got := len([]rune(analyzed.Summary)); got != 200 {
+		t.Fatalf("AnalyzeBookmark summary runes = %d, want 200", got)
+	}
+	if capture.calls != 1 {
+		t.Fatalf("AnalyzeBookmark completer calls = %d, want 1", capture.calls)
+	}
+
+	reanalyzed, err := service.ReanalyzeBookmark(request)
+	if err != nil {
+		t.Fatalf("ReanalyzeBookmark returned error: %v", err)
+	}
+	if got := len([]rune(reanalyzed.Summary)); got != 200 {
+		t.Fatalf("ReanalyzeBookmark summary runes = %d, want 200", got)
+	}
+	if capture.calls != 2 {
+		t.Fatalf("Total completer calls = %d, want 2", capture.calls)
 	}
 }
 
