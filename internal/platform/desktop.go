@@ -59,7 +59,10 @@ func WithOnBeforeQuit(fn func()) Option {
 // ShouldPreventClose 在 allowQuit=false 时拦截退出，配合 HideWindowOnClose 实现关闭隐藏。
 // REQ-030-AC-001
 func (service *Service) ShouldPreventClose() bool {
-	return !service.allowQuit.Load()
+	if service.allowQuit.Load() {
+		return false
+	}
+	return service.GetDesktopCapability().TrayAvailable
 }
 
 // ShowMainWindow 显示并聚焦主窗口。
@@ -145,6 +148,11 @@ func (service *Service) GetDesktopCapability() DesktopCapability {
 		return *service.capability
 	}
 	return defaultDesktopCapability()
+}
+
+// SetDesktopCapability 在运行时刷新桌面能力，供原生托盘启动结果回写。
+func (service *Service) SetDesktopCapability(capability DesktopCapability) {
+	service.capability = &capability
 }
 
 // SetMainWindowSize 按 uiSize 预设调整主窗口宽高。
