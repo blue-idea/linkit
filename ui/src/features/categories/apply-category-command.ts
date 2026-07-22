@@ -7,6 +7,7 @@ import {
 } from '../../domain/categories';
 import type { LibraryData } from '../../domain/library';
 import type { Bookmark, Category, Collection, Tag } from '../../types';
+import { bookmarkIconToDomain } from '../bookmarks/icon-persistence';
 
 /**
  * 将 UI 实体投影为领域 LibraryData，供分类命令使用。
@@ -41,12 +42,18 @@ export function toCategoryLibrary(input: {
       createdAt: '2026-01-01T00:00:00.000Z',
       updatedAt: '2026-01-01T00:00:00.000Z',
     })),
-    bookmarks: input.bookmarks.map((bookmark) => ({
+    bookmarks: input.bookmarks.map((bookmark) => {
+      const icon = bookmarkIconToDomain({
+        favicon: bookmark.favicon,
+        faviconColor: bookmark.faviconColor,
+      });
+      return {
       id: bookmark.id,
       title: bookmark.title,
       url: bookmark.url.startsWith('http') ? bookmark.url : `https://${bookmark.url}`,
       domain: bookmark.domain || 'unknown',
-      favicon: null,
+      favicon: icon.favicon,
+      faviconColor: icon.faviconColor,
       description: bookmark.description ?? '',
       notes: bookmark.notes ?? '',
       tagIds: [...(bookmark.tags ?? [])],
@@ -67,7 +74,8 @@ export function toCategoryLibrary(input: {
       aiSummary: bookmark.aiSummary ?? '',
       aiSuggestedTags: [...(bookmark.aiSuggestedTags ?? [])],
       thumbnail: bookmark.thumbnail ?? null,
-    })),
+      };
+    }),
   };
 }
 

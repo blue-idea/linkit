@@ -25,6 +25,6 @@
 |----|----|
 | 本地 API | `http://127.0.0.1:54321` |
 | 远程项目 | `linkit` / `zheqhjsctvkuzmtohrnm`（ap-southeast-1） |
-| Migration | `supabase/migrations/20260715112414_create_user_bookmarks.sql` |
+| Migration | `supabase/migrations/20260718113845_create_user_bookmarks.sql`（历史记录亦曾使用 `20260715112414` 文件名） |
 | Seed | `supabase/seed.sql`（本地）；远程已执行等价双用户初始化 |
 | 生成类型 | `ui/src/database.types.ts` |

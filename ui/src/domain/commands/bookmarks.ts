@@ -1,4 +1,5 @@
 import { DOMAIN_CONFIG } from '../../config/domain';
+import { normalizeDomainFavicon, normalizeDomainFaviconColor } from '../bookmark-icon';
 import type { Bookmark, LibraryData } from '../library';
 import type { CommandResult } from './types';
 
@@ -13,6 +14,7 @@ export interface CreateBookmarkInput {
   aiSummary?: string;
   aiSuggestedTags?: string[];
   favicon?: string | null;
+  faviconColor?: Bookmark['faviconColor'];
   thumbnail?: string | null;
   idFactory?: () => string;
   now?: () => Date;
@@ -97,7 +99,8 @@ function buildBookmark(
     title,
     url: normalized.url,
     domain: normalized.domain,
-    favicon: input.favicon ?? null,
+    favicon: normalizeDomainFavicon(input.favicon ?? null),
+    faviconColor: normalizeDomainFaviconColor(input.faviconColor),
     description: input.description ?? '',
     notes: input.notes ?? '',
     tagIds: [...(input.tagIds ?? [])],

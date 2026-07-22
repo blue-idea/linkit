@@ -9,10 +9,12 @@ type MetadataResultPayload = {
   description?: string;
   contentText?: string;
   faviconUrl?: string | null;
+  faviconDataUrl?: string | null;
 };
 
 type GoMetadataService = {
   FetchMetadata?: (request: MetadataRequest) => Promise<MetadataResultPayload>;
+  FetchFaviconDataURL?: (request: { url: string }) => Promise<string>;
 };
 
 function getGoFetchMetadata(): GoMetadataService['FetchMetadata'] | null {
@@ -45,9 +47,25 @@ export async function fetchBookmarkMetadata(url: string): Promise<MetadataFetchR
       description: payload.description ?? '',
       contentText: payload.contentText ?? '',
       favicon: payload.faviconUrl ?? null,
+      faviconDataUrl: payload.faviconDataUrl ?? null,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to fetch page metadata';
     return { ok: false, code: 'METADATA_FETCH_FAILED', message };
+  }
+}
+
+/** WebView 加载外链 favicon 失败时，由 Go 抓取并返回 data URL。 */
+export async function fetchFaviconDataUrl(faviconUrl: string): Promise<string | null> {
+  try {
+    const fetchFn = (window as unknown as { go?: { metadata?: { Service?: GoMetadataService } } }).go?.metadata
+      ?.Service?.FetchFaviconDataURL;
+    if (typeof fetchFn !== 'function' || !faviconUrl.trim()) {
+      return null;
+    }
+    const dataUrl = await fetchFn({ url: faviconUrl.trim() });
+    return typeof dataUrl === 'string' && dataUrl.startsWith('data:image/') ? dataUrl : null;
+  } catch {
+    return null;
   }
 }

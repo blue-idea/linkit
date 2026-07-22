@@ -1568,6 +1568,31 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-068 · 书签图标领域持久化（信封 round-trip）**
+
+  > 依赖：TASK-067、TASK-003 · 预计：2–3 小时 · 状态：done · 2026-07-22
+
+  - [x] Red：`icon-persistence` round-trip、`toCategoryLibrary` 不再丢弃 favicon 的测试。
+  - [x] Green：领域 Schema `favicon`（URL/glyph≤8）+ `faviconColor`；映射与迁移；编辑保存写入领域。
+  - [x] Green：新建/编辑 `BookmarkIconEditor`；有 favicon 默认网站图标，否则文字+随机色；Go `faviconDataUrl` 与 `FetchFaviconDataURL`。
+  - [x] Refactor：图标持久化集中于 `icon-persistence.ts` / `domain/bookmark-icon.ts`；Supabase migration 与远程版本对齐。
+  - [x] QA：Go test + Vitest + typecheck；用户 Manual 确认新建书签图标流程。
+
+  **验证方式：**
+  ```powershell
+  go test ./internal/metadata/... ./config/... -count=1
+  pnpm --dir ui exec vitest run src/features/bookmarks src/domain/library.test.ts src/components/ui.test.tsx
+  pnpm --dir ui typecheck
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-068-AC.md`、`docs/spec/evidence/TASK-068-evidence.md`。
+
+  _需求: REQ-006
+  验收标准：REQ-006-AC-007
+  _测试类型: Unit + Integration
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1639,6 +1664,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-065 | 托盘 Show 替换为 Settings | Unit/Manual | done | REQ-030 |
 | TASK-066 | 修复设置保存反馈与窗口大小重启恢复 | Unit/Component/Manual | done | REQ-031、023、030 |
 | TASK-067 | 新建书签图标（元数据图片与文字回退） | Unit/E2E | done | REQ-006 |
+| TASK-068 | 书签图标领域持久化 | Unit/Integration | done | REQ-006 |
 
 ---
 
@@ -1669,3 +1695,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 2.9.0 | 2026-07-22 | 已定稿 | 新增 TASK-065，将托盘 Show 替换为 Settings 并保持 Quit 业务不变 |
 | 3.0.0 | 2026-07-22 | 已定稿 | 完成 TASK-066，修复设置保存无反馈与 uiSize 冷启动恢复回归 |
 | 3.1.0 | 2026-07-22 | 已定稿 | 完成 TASK-067，新建书签元数据 favicon 与文字图标稳定背景色 |
+| 3.2.0 | 2026-07-22 | 已定稿 | 完成 TASK-068，书签图标与背景色在 library 信封中 round-trip 持久化 |

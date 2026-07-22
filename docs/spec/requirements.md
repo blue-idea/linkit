@@ -409,13 +409,30 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
     when 页面元数据提供可用的 http 或 https favicon URL,
     the Linkit shall 在预览与保存后的书签项中使用该图片作为图标;
     when favicon 不可用,
-    the Linkit shall 使用标题或域名的首字母作为文字图标，并使用由域名确定的稳定背景色（非固定单色）.
+    the Linkit shall 使用标题或域名的首字母作为文字图标;
+    when 新建预览且无可用网站图标,
+    the Linkit shall 为文字图标从预设色板随机选取背景色（用户可在保存前修改）.
   test_type: Unit + E2E
   expected:
     ui_state: "Review preview and saved bookmark cards show favicon image or letter glyph with consistent background color"
     side_effects:
       - "Saved bookmark favicon field stores image URL or single-letter glyph"
       - "No generative AI image is fabricated when metadata favicon is missing"
+      - "When metadata provides faviconUrl or server-side faviconDataUrl, new bookmark preview defaults to site icon"
+      - "When no favicon is available, new bookmark preview defaults to text glyph with random palette color"
+
+- id: REQ-006-AC-007
+  ears: >
+    While 用户保存或同步资料库（本地数据根 library.json 或导入/导出 linkit-library 信封）,
+    when 书签已设置图片 URL、展示 glyph 或用户指定的图标背景色,
+    the Linkit shall 在重新加载后仍显示相同的图标与背景色;
+    when 旧资料缺少 faviconColor,
+    the Linkit shall 按域名稳定色或 blue 回退，且不丢弃可用的 favicon URL 或 glyph.
+  test_type: Unit + Integration
+  expected:
+    side_effects:
+      - "Domain bookmark persists favicon (URL or glyph up to 8 code points) and faviconColor in library envelope"
+      - "Round-trip UI → envelope → UI preserves icon fields"
 ```
 
 ---
@@ -2189,3 +2206,5 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.6.0 | 2026-07-21 | 已定稿 | 新增原则 17 与 REQ-031：Appearance 窗口大小四档（仅改宽高）、默认 Medium、立即生效与持久化、手动拖拽不单独记忆 |
 | 2.7.0 | 2026-07-22 | 已定稿 | 用户确认将托盘 Show 替换为 Settings；点击后显示主窗口并打开设置，Quit 业务保持不变 |
 | 2.8.0 | 2026-07-22 | 已定稿 | 新增 REQ-006-AC-006：新建书签优先元数据 favicon，缺省时文字图标与稳定背景色 |
+| 2.9.0 | 2026-07-22 | 已定稿 | 新增 REQ-006-AC-007：书签图标与背景色在本地信封与重载后一致持久化 |
+| 2.10.0 | 2026-07-22 | 已定稿 | 修订 REQ-006-AC-006：新建默认网站 favicon；无图时文字+随机色；桌面 faviconDataUrl |

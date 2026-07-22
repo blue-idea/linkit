@@ -17,6 +17,7 @@ const defaultBookmark: Bookmark = {
   url: 'https://example.test/reference',
   domain: 'example.test',
   favicon: null,
+  faviconColor: 'blue',
   description: 'Deterministic bookmark fixture.',
   notes: '',
   tagIds: ['tag-reference'],

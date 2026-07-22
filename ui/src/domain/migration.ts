@@ -1,4 +1,5 @@
 import type { LibraryEnvelope } from './schemas';
+import { normalizeDomainFavicon, normalizeDomainFaviconColor } from './bookmark-icon';
 import { validateLibraryEnvelope, type ValidationResult } from './validation';
 
 type RecordValue = Record<string, unknown>;
@@ -20,7 +21,8 @@ export function migrateLibraryDocument(input: unknown, options: { now: string })
   }));
   const bookmarks = records(input.bookmarks).map((bookmark) => ({
     id: bookmark.id, title: bookmark.title, url: bookmark.url, domain: bookmark.domain,
-    favicon: typeof bookmark.favicon === 'string' && /^https?:\/\//.test(bookmark.favicon) ? bookmark.favicon : null,
+    favicon: normalizeDomainFavicon(bookmark.favicon),
+    faviconColor: normalizeDomainFaviconColor(bookmark.faviconColor),
     description: bookmark.description ?? '', notes: bookmark.notes ?? '',
     tagIds: strings(bookmark.tagIds ?? bookmark.tags),
     categoryId: typeof bookmark.categoryId === 'string' && bookmark.categoryId.length > 0 ? bookmark.categoryId : null,

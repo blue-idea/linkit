@@ -13,12 +13,16 @@ describe('书签统一编辑与批量操作', () => {
       title: 'Updated title', description: 'Updated description', notes: 'Updated notes',
       categoryId: category.id, tagIds: [library.tags[0].id], collectionIds: [library.collections[0].id],
       readStatus: 'reading',
+      favicon: 'Z',
+      faviconColor: 'amber',
     });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.value.bookmarks.find(({ id }) => id === bookmark.id)).toEqual(expect.objectContaining({
       url: 'https://example.com/updated/path', domain: 'example.com', title: 'Updated title',
       description: 'Updated description', notes: 'Updated notes', categoryId: category.id, readStatus: 'reading',
+      favicon: 'Z',
+      faviconColor: 'amber',
     }));
   });
 

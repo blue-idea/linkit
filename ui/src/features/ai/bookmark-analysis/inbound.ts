@@ -17,6 +17,7 @@ export interface InboundAnalysisPreview {
   suggestedTags: string[];
   suggestedCategoryId: string | null;
   faviconUrl: string | null;
+  faviconDataUrl: string | null;
 }
 
 export interface InboundAnalysisResult {
@@ -109,6 +110,7 @@ export async function buildInboundAnalysis(input: {
           suggestedTags: [],
           suggestedCategoryId: null,
           faviconUrl: metadata.ok ? (metadata.favicon ?? null) : null,
+          faviconDataUrl: metadata.ok ? (metadata.faviconDataUrl ?? null) : null,
         },
       };
     }
@@ -124,6 +126,7 @@ export async function buildInboundAnalysis(input: {
         suggestedTags: validated.suggestedTags,
         suggestedCategoryId: validated.suggestedCategoryId,
         faviconUrl: metadata.ok ? (metadata.favicon ?? null) : null,
+        faviconDataUrl: metadata.ok ? (metadata.faviconDataUrl ?? null) : null,
       },
     };
   } catch (error) {
@@ -138,6 +141,7 @@ export async function buildInboundAnalysis(input: {
         suggestedTags: [],
         suggestedCategoryId: null,
         faviconUrl: metadata.ok ? (metadata.favicon ?? null) : null,
+        faviconDataUrl: metadata.ok ? (metadata.faviconDataUrl ?? null) : null,
       },
     };
   }

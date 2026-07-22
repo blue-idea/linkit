@@ -72,7 +72,8 @@
 | `title` | string | 是 | trim 后非空 |
 | `url` | string | 是 | 仅 `http`/`https`，规范化后保存 |
 | `domain` | string | 是 | 从规范化 URL 推导 |
-| `favicon` | string/null | 否 | URL 或空值 |
+| `favicon` | string/null | 否 | http(s) URL、展示用 glyph（1–8 码点）或 null |
+| `faviconColor` | enum | 是 | `blue`、`green`、`amber`、`coral`、`violet`、`gray`；缺省解析为 `blue` |
 | `description` | string | 是 | 可为空字符串 |
 | `notes` | string | 是 | 可为空字符串 |
 | `tagIds` | string[] | 是 | 去重，必须引用现有 Tag |
@@ -288,6 +289,15 @@ AI Key 使用逻辑键保存到 OS Keychain：
 | `updated_at` | timestamptz | NOT NULL，默认 now() | 触发器维护 |
 
 `UNIQUE(user_id)` 同时为所有权查找和 RLS 条件提供索引；不得在云端保存 AppSettings 中的 AI API Key。
+
+`data` 列存 **领域 `LibraryData`**（与 `library.json` 内 `data` 同形），非完整 `LibraryEnvelope`；`revision` / `schema_version` 列与信封元数据对齐。书签图标字段（TASK-068 / REQ-006-AC-007）：
+
+| JSON 路径 | 类型 | 说明 |
+|-----------|------|------|
+| `bookmarks[].favicon` | string / null | http(s) URL、展示 glyph（客户端 ≤8 码点）或 null |
+| `bookmarks[].faviconColor` | string | `blue`、`green`、`amber`、`coral`、`violet`、`gray`；缺省时由客户端解析为 `blue` |
+
+远程 migration：`20260722101627_user_bookmarks_bookmark_icon_contract.sql`（列注释 + `library_bookmark_icon_fields_valid` 辅助函数，**未**对 `data` 加硬 CHECK，以免拒绝历史种子）。
 
 ### 6.2 目标 DDL 增量
 

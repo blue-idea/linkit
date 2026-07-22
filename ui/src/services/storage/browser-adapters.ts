@@ -1,6 +1,7 @@
 import { getDefaultAppSettings, parseSettingsJson } from '../settings';
 import type { AppSettings } from '../../domain/library';
 import { validateLibraryEnvelope } from '../../domain/library';
+import { normalizeDomainFavicon, normalizeDomainFaviconColor } from '../../domain/bookmark-icon';
 import type { RepositoryLoadResult } from '../../repositories';
 import type { SettingsLoadResult } from './bootstrap';
 
@@ -71,7 +72,8 @@ export function createBrowserStorageAdapters(storage: Storage = localStorage): B
               title: String(bm.title || ''),
               url: String(bm.url || ''),
               domain: String(bm.domain || ''),
-              favicon: (bm.favicon as string | null) || null,
+              favicon: normalizeDomainFavicon(bm.favicon),
+              faviconColor: normalizeDomainFaviconColor(bm.faviconColor),
               description: String(bm.description || ''),
               notes: String(bm.notes || ''),
               tagIds: (Array.isArray(bm.tagIds) ? bm.tagIds : Array.isArray(bm.tags) ? bm.tags : []) as string[],

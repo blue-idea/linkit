@@ -1,9 +1,24 @@
 import type { TagColor } from '../../types';
 
-const ICON_COLORS: TagColor[] = ['blue', 'green', 'amber', 'coral', 'violet', 'gray'];
+export const BOOKMARK_ICON_COLORS: TagColor[] = ['blue', 'green', 'amber', 'coral', 'violet', 'gray'];
 
 function isHttpUrl(value: string): boolean {
   return /^https?:\/\//i.test(value.trim());
+}
+
+export function randomBookmarkIconColor(random: () => number = Math.random): TagColor {
+  const index = Math.floor(random() * BOOKMARK_ICON_COLORS.length);
+  return BOOKMARK_ICON_COLORS[Math.max(0, Math.min(index, BOOKMARK_ICON_COLORS.length - 1))] ?? 'blue';
+}
+
+export function isBookmarkImageSrc(value: string): boolean {
+  const trimmed = value.trim();
+  return isHttpUrl(trimmed) || /^data:image\//i.test(trimmed);
+}
+
+/** 书签 favicon 字段是否为远程图片 URL。 */
+export function isBookmarkFaviconImage(favicon: string | null | undefined): boolean {
+  return Boolean(favicon?.trim() && isBookmarkImageSrc(favicon));
 }
 
 function readDomain(url: string): string {
@@ -17,7 +32,7 @@ function readDomain(url: string): string {
   }
 }
 
-function buildGlyph(domain: string, title: string): string {
+export function buildBookmarkTextGlyph(domain: string, title: string): string {
   const fromTitle = title.trim().charAt(0);
   const fromDomain = domain.trim().charAt(0);
   return (fromTitle || fromDomain || '?').toUpperCase();
@@ -28,7 +43,11 @@ function pickColor(seed: string): TagColor {
   for (let index = 0; index < seed.length; index += 1) {
     hash = (hash * 31 + seed.charCodeAt(index)) >>> 0;
   }
-  return ICON_COLORS[hash % ICON_COLORS.length] ?? 'blue';
+  return BOOKMARK_ICON_COLORS[hash % BOOKMARK_ICON_COLORS.length] ?? 'blue';
+}
+
+export function defaultBookmarkIconColor(seed: string): TagColor {
+  return pickColor(seed);
 }
 
 /**
@@ -38,15 +57,16 @@ export function resolveBookmarkIcon(input: {
   url: string;
   title: string;
   faviconUrl?: string | null;
+  faviconColor?: TagColor | null;
 }): { favicon: string; faviconColor: TagColor } {
   const domain = readDomain(input.url);
-  const fallbackColor = pickColor(domain);
+  const fallbackColor = input.faviconColor ?? pickColor(domain);
   const faviconUrl = input.faviconUrl?.trim() ?? '';
   if (faviconUrl && isHttpUrl(faviconUrl)) {
     return { favicon: faviconUrl, faviconColor: fallbackColor };
   }
   return {
-    favicon: buildGlyph(domain, input.title),
+    favicon: buildBookmarkTextGlyph(domain, input.title),
     faviconColor: fallbackColor,
   };
 }

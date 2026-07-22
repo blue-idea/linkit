@@ -7,6 +7,7 @@ export type MetadataFetchResult =
       description: string;
       contentText: string;
       favicon?: string | null;
+      faviconDataUrl?: string | null;
     }
   | {
       ok: false;

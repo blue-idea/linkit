@@ -22,6 +22,11 @@ func TestFetchMetadataExtractsStaticHTML(t *testing.T) {
 		if request.Header.Get("User-Agent") != config.HTTPUserAgent {
 			t.Errorf("Unexpected User-Agent: %s", request.Header.Get("User-Agent"))
 		}
+		if request.URL.Path == "/favicon.ico" {
+			writer.Header().Set("Content-Type", "image/png")
+			_, _ = writer.Write([]byte{0x89, 0x50, 0x4e, 0x47})
+			return
+		}
 		writer.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_, _ = io.WriteString(writer, `<!doctype html><html><head>
 <title>Example Title</title>
@@ -46,6 +51,9 @@ func TestFetchMetadataExtractsStaticHTML(t *testing.T) {
 	}
 	if result.FaviconURL == nil || !strings.HasSuffix(*result.FaviconURL, "/favicon.ico") {
 		t.Fatalf("Unexpected favicon: %+v", result.FaviconURL)
+	}
+	if result.FaviconDataURL == nil || !strings.HasPrefix(*result.FaviconDataURL, "data:image/png;base64,") {
+		t.Fatalf("Unexpected favicon data url: %+v", result.FaviconDataURL)
 	}
 	if strings.Contains(result.ContentText, "should-not-appear") || strings.Contains(result.ContentText, ".x{") {
 		t.Fatalf("Script/style content leaked into contentText: %q", result.ContentText)

@@ -1,7 +1,8 @@
 import type { Bookmark, LibraryData } from '../../domain/library';
 import type { CommandResult } from '../../domain/commands';
 import { normalizeBookmarkUrl } from '../../domain/commands';
-import type { Bookmark as UiBookmark, Collection as UiCollection } from '../../types';
+import type { Bookmark as UiBookmark, Collection as UiCollection, TagColor } from '../../types';
+import { bookmarkIconToDomain, bookmarkIconToUi } from './icon-persistence';
 
 type EditorInput = {
   bookmarkId: string;
@@ -13,6 +14,8 @@ type EditorInput = {
   tagIds: string[];
   collectionIds: string[];
   readStatus: Bookmark['readStatus'];
+  favicon: string;
+  faviconColor: TagColor;
 };
 
 function error(code: string, message: string): CommandResult<LibraryData> {
@@ -49,6 +52,7 @@ export function updateBookmarkFromEditor(library: LibraryData, input: EditorInpu
     return error('COLLECTION_NOT_FOUND', 'Collection was not found');
   }
   const updatedAt = new Date().toISOString();
+  const icon = bookmarkIconToDomain({ favicon: input.favicon, faviconColor: input.faviconColor });
   return {
     ok: true,
     value: {
@@ -57,6 +61,8 @@ export function updateBookmarkFromEditor(library: LibraryData, input: EditorInpu
         ...current, url: normalized.url, domain: normalized.domain, title: input.title.trim(),
         description: input.description, notes: input.notes, categoryId: input.categoryId,
         tagIds, collectionIds, readStatus: input.readStatus, updatedAt,
+        favicon: icon.favicon,
+        faviconColor: icon.faviconColor,
       } : current),
       collections: library.collections.map((collection) => ({
         ...collection,
@@ -110,13 +116,32 @@ export function batchDeleteBookmarks(library: LibraryData, input: { bookmarkIds:
 export function applyBookmarkActionResult(result: LibraryData, current: UiBookmark[], collections: UiCollection[]) {
   const previous = new Map(current.map((bookmark) => [bookmark.id, bookmark]));
   return {
-    bookmarks: result.bookmarks.map((bookmark): UiBookmark => ({
-      ...previous.get(bookmark.id)!,
-      id: bookmark.id, title: bookmark.title, url: bookmark.url, domain: bookmark.domain,
-      description: bookmark.description, notes: bookmark.notes, tags: [...bookmark.tagIds],
-      categoryId: bookmark.categoryId ?? '', collectionIds: [...bookmark.collectionIds],
-      readStatus: bookmark.readStatus,
-    })),
+    bookmarks: result.bookmarks.map((bookmark): UiBookmark => {
+      const icon = bookmarkIconToUi(bookmark);
+      const prior = previous.get(bookmark.id);
+      return {
+        ...(prior ?? {
+          createdAt: bookmark.createdAt,
+          lastVisitedAt: bookmark.lastVisitedAt,
+          visitCount: bookmark.visitCount,
+          starred: bookmark.starred,
+          pinned: bookmark.pinned,
+          health: bookmark.health,
+        }),
+        id: bookmark.id,
+        title: bookmark.title,
+        url: bookmark.url,
+        domain: bookmark.domain,
+        favicon: icon.favicon,
+        faviconColor: icon.faviconColor,
+        description: bookmark.description,
+        notes: bookmark.notes,
+        tags: [...bookmark.tagIds],
+        categoryId: bookmark.categoryId ?? '',
+        collectionIds: [...bookmark.collectionIds],
+        readStatus: bookmark.readStatus,
+      };
+    }),
     collections: collections.map((collection) => ({
       ...collection,
       bookmarkIds: result.collections.find(({ id }) => id === collection.id)?.bookmarkIds ?? [],
