@@ -80,7 +80,7 @@ describe('NewBookmarkDialog AI 标签保存', () => {
     );
 
     await user.type(screen.getByRole('textbox', { name: 'Bookmark URL' }), 'https://react.dev');
-    await user.click(screen.getByRole('button', { name: 'Analyze' }));
+    await user.click(screen.getByRole('button', { name: 'Smart' }));
     await user.click(await screen.findByRole('button', { name: 'Save bookmark' }));
 
     expect(onCreate).toHaveBeenCalledOnce();

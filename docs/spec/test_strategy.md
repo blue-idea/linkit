@@ -2,7 +2,7 @@
 
 > 文件路径：`docs/spec/test_strategy.md`  
 > 参考方法论：`phases/qa_engine.md` §第1阶段  
-> 版本：2.2.0
+> 版本：2.3.0
 > 日期：2026-07-22
 > 状态：已定稿
 
@@ -52,6 +52,7 @@ test_scope:
     - "关闭隐藏到托盘、系统托盘 Settings/Quit、窗口显隐全局热键与 Settings→Shortcuts 可配置绑定"
     - "Settings→Appearance 窗口大小四档（uiSize）、立即套用与冷启动恢复"
     - "OpenAI-compatible AI、授权、降级、语义重排和建议确认"
+    - "New Bookmark Manual 零 AI 与 Smart/Enter 智能分析双入口"
     - "洞察、手动链接健康和静态知识网络"
     - "10,000 条性能预算、安全、无障碍和视觉回归"
   out_of_scope:
@@ -255,3 +256,4 @@ environments:
 | 2.0.0 | 2026-07-21 | 已定稿 | 合并 Vitest 与 Coverage 单次执行；PR/main 按影响运行浏览器测试；定时/手动保留全量回归 |
 | 2.1.0 | 2026-07-21 | 已定稿 | 新增 J-18 与原生窗口尺寸门禁；对齐 REQ-031 与 fix_task 1.9 |
 | 2.2.0 | 2026-07-22 | 已定稿 | J-17 托盘 Show 改为 Settings；增加设置事件 Unit 与 Windows 原生截图验收，Quit 保留回归门禁 |
+| 2.3.0 | 2026-07-22 | 已定稿 | 将 New Bookmark Manual 零 AI、Smart/Enter 智能分析与按钮视觉回归纳入 Component/E2E 范围 |

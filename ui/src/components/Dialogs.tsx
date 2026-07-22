@@ -1,6 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Bookmark, Category, Collection, Tag, AIInsight } from '../types';
-import { fetchBookmarkMetadata, resolveNewBookmarkCategoryId, shouldApplyAiCategorySuggestion } from '../features/bookmarks';
+import {
+  fetchBookmarkMetadata,
+  resolveBookmarkAnalysis,
+  resolveNewBookmarkCategoryId,
+  shouldApplyAiCategorySuggestion,
+} from '../features/bookmarks';
 import {
   initialIconEditorForNewBookmark,
   resolveIconEditorIcon,
@@ -13,6 +18,8 @@ import {
   mapAIFailureMessage,
   wailsAnalyzeClient,
   type AIContext,
+  type InboundAnalysisPreview,
+  type InboundAnalysisSource,
 } from '../features/ai';
 import { isBookmarkUrlDuplicate, normalizeBookmarkUrl } from '../domain/commands';
 import { matchSuggestedTags } from '../features/tags';
@@ -108,9 +115,12 @@ export function NewBookmarkDialog({
     glyphOverride: '',
     faviconColor: 'blue',
   });
+  const previewRequestIdRef = useRef(0);
   const categoryLocked = Boolean(activeCategoryId?.trim());
 
   useEffect(() => {
+    // 对话框关闭、重开或入口上下文变化时，使旧异步预览结果失效。
+    previewRequestIdRef.current += 1;
     if (open) {
       setUrl(initialUrl);
       setTitle('');
@@ -137,17 +147,61 @@ export function NewBookmarkDialog({
     }
   }, [open, initialUrl, activeCategoryId]);
 
-  const runAnalysis = async () => {
+  useEffect(() => () => {
+    previewRequestIdRef.current += 1;
+  }, []);
+
+  const closeDialog = () => {
+    previewRequestIdRef.current += 1;
+    onClose();
+  };
+
+  const beginPreview = () => {
+    const requestId = previewRequestIdRef.current + 1;
+    previewRequestIdRef.current = requestId;
     const normalized = normalizeBookmarkUrl(url);
     // REQ-006-AC-005：重复 URL 在输入阶段弹出 warning，并阻止进入分析/确认步骤。
     if (normalized.ok && isBookmarkUrlDuplicate(bookmarks, normalized.url)) {
       setUrlWarning(i18n.t('bookmark.urlDuplicate'));
       setStage('input');
-      return;
+      return null;
     }
     setStage('analyzing');
     setFallbackMessage(null);
     setUrlWarning(null);
+    return requestId;
+  };
+
+  const applyReviewPreview = (input: {
+    source: InboundAnalysisSource;
+    preview: InboundAnalysisPreview;
+    fallbackMessage: string | null;
+  }) => {
+    setTitle(input.preview.title);
+    setDescription(input.preview.description);
+    setAiSummary(input.preview.aiSummary);
+    setFallbackMessage(input.fallbackMessage);
+    setAnalysisSource(input.source);
+    if (shouldApplyAiCategorySuggestion(activeCategoryId)) {
+      setChosenCategory(input.preview.suggestedCategoryId ?? '');
+    }
+    const tagMatches = matchSuggestedTags(input.preview.suggestedTags, tags);
+    setChosenTags(tagMatches.tagIds);
+    setPendingTagLabels(tagMatches.unmatchedLabels);
+    setFaviconUrl(input.preview.faviconUrl);
+    setIconEditor(
+      initialIconEditorForNewBookmark({
+        url,
+        faviconUrl: input.preview.faviconUrl,
+        faviconDataUrl: input.preview.faviconDataUrl,
+      })
+    );
+    setStage('review');
+  };
+
+  const runSmartAnalysis = async () => {
+    const requestId = beginPreview();
+    if (requestId === null) return;
     // REQ-006-AC-001 / REQ-006-AC-002：进入分析/确认，确认前不调用 onCreate。
     const context: AIContext = aiContext ?? {
       apiBase: 'https://api.example.test/v1',
@@ -164,30 +218,30 @@ export function NewBookmarkDialog({
       client: wailsAnalyzeClient,
       fetchMetadata: fetchBookmarkMetadata,
     });
-    setTitle(result.preview.title);
-    setDescription(result.preview.description);
-    setAiSummary(result.preview.aiSummary);
+    if (requestId !== previewRequestIdRef.current) return;
     const alerts = [result.metadataErrorMessage, result.aiErrorMessage].filter(Boolean);
-    setFallbackMessage(alerts.length > 0 ? alerts.join(' ') : null);
-    setAnalysisSource(result.source);
-    if (
-      shouldApplyAiCategorySuggestion(activeCategoryId) &&
-      result.preview.suggestedCategoryId
-    ) {
-      setChosenCategory(result.preview.suggestedCategoryId);
-    }
-    const tagMatches = matchSuggestedTags(result.preview.suggestedTags, tags);
-    setChosenTags(tagMatches.tagIds);
-    setPendingTagLabels(tagMatches.unmatchedLabels);
-    setFaviconUrl(result.preview.faviconUrl);
-    setIconEditor(
-      initialIconEditorForNewBookmark({
-        url,
-        faviconUrl: result.preview.faviconUrl,
-        faviconDataUrl: result.preview.faviconDataUrl,
-      })
-    );
-    setStage('review');
+    applyReviewPreview({
+      source: result.source,
+      preview: result.preview,
+      fallbackMessage: alerts.length > 0 ? alerts.join(' ') : null,
+    });
+  };
+
+  const runManualEntry = async () => {
+    const requestId = beginPreview();
+    if (requestId === null) return;
+    // TASK-071 / REQ-006-AC-009：Manual 仅获取网页元数据，禁止调用 AI 客户端。
+    const result = await resolveBookmarkAnalysis({
+      url,
+      titleHint: title,
+      fetchMetadata: fetchBookmarkMetadata,
+    });
+    if (requestId !== previewRequestIdRef.current) return;
+    applyReviewPreview({
+      source: result.source,
+      preview: result.preview,
+      fallbackMessage: result.fallbackMessage,
+    });
   };
 
   const submit = () => {
@@ -215,18 +269,18 @@ export function NewBookmarkDialog({
       aiSummary: aiSummary.trim(),
       aiSuggestedTags: [],
     });
-    onClose();
+    closeDialog();
   };
 
   const cat = categories.find((c) => c.id === chosenCategory);
 
   return (
-    <Modal open={open} onClose={onClose} width="max-w-[520px]" aria-label={i18n.t('bookmark.new.title')}>
+    <Modal open={open} onClose={closeDialog} width="max-w-[520px]" aria-label={i18n.t('bookmark.new.title')}>
       <ModalHeader
         icon="Plus"
         title={i18n.t('bookmark.new.title')}
         subtitle={i18n.t('bookmark.new.subtitle')}
-        onClose={onClose}
+        onClose={closeDialog}
       />
 
       {stage === 'input' && (
@@ -243,7 +297,7 @@ export function NewBookmarkDialog({
                   setUrl(e.target.value);
                   setUrlWarning(null);
                 }}
-                onKeyDown={(e) => { if (e.key === 'Enter' && url.trim()) void runAnalysis(); }}
+                onKeyDown={(e) => { if (e.key === 'Enter' && url.trim()) void runSmartAnalysis(); }}
                 placeholder="https://…"
                 className="flex-1 bg-transparent text-[13px] text-ink-100 placeholder:text-ink-500 outline-none"
               />
@@ -270,9 +324,12 @@ export function NewBookmarkDialog({
             />
           </div>
           <div className="flex items-center justify-end gap-2 pt-1">
-            <Button variant="ghost" onClick={onClose}>{i18n.t('common.cancel')}</Button>
-            <Button variant="primary" icon="Search" onClick={() => void runAnalysis()} disabled={!url.trim()}>
-              {i18n.t('bookmark.analyze')}
+            <Button variant="ghost" onClick={closeDialog}>{i18n.t('common.cancel')}</Button>
+            <Button variant="subtle" icon="Pencil" onClick={() => void runManualEntry()} disabled={!url.trim()}>
+              {i18n.t('bookmark.manual')}
+            </Button>
+            <Button variant="primary" icon="Sparkles" onClick={() => void runSmartAnalysis()} disabled={!url.trim()}>
+              {i18n.t('bookmark.smart')}
             </Button>
           </div>
         </div>

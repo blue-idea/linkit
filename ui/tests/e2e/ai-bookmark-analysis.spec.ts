@@ -17,7 +17,7 @@ test.describe('AI 入库分析', () => {
 
     await page.getByRole('textbox', { name: 'Bookmark URL' }).fill('https://example.test/ai-inbound');
     await page.getByLabel('Bookmark title hint').fill('AI Inbound Bookmark');
-    await page.getByRole('button', { name: 'Analyze', exact: true }).click();
+    await page.getByRole('button', { name: 'Smart', exact: true }).click();
 
     await expect(page.getByRole('alert')).toContainText(/AI analysis is unavailable|manual|Could not fetch/i);
     await expect(page.getByRole('button', { name: 'Save bookmark' })).toBeVisible();
@@ -57,7 +57,7 @@ test.describe('AI 入库分析', () => {
 
     await page.getByRole('button', { name: 'New', exact: true }).click();
     await page.getByRole('textbox', { name: 'Bookmark URL' }).fill('https://react.dev/reference');
-    await page.getByRole('button', { name: 'Analyze', exact: true }).click();
+    await page.getByRole('button', { name: 'Smart', exact: true }).click();
     await page.getByRole('button', { name: 'Save bookmark' }).click();
 
     const savedTag = page.getByRole('button', { name: 'Remove tag React' });
@@ -123,7 +123,7 @@ test.describe('AI 降级', () => {
     await page.getByRole('button', { name: 'New', exact: true }).click();
     await page.getByRole('textbox', { name: 'Bookmark URL' }).fill('https://example.test/ai-fallback');
     await page.getByLabel('Bookmark title hint').fill('Fallback Bookmark');
-    await page.getByRole('button', { name: 'Analyze', exact: true }).click();
+    await page.getByRole('button', { name: 'Smart', exact: true }).click();
 
     await expect(page.getByRole('alert')).toContainText(/API Key is not configured|no simulated AI result/i);
     await expect(page.getByRole('textbox', { name: 'AI summary' })).toHaveValue('');

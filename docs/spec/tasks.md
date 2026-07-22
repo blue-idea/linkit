@@ -1,11 +1,11 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：3.4.0
+> 版本：3.5.0
 > 日期：2026-07-22
 > 状态：已定稿
 
-执行时须严格遵循 `docs/spec/requirements.md` 2.11.0、`docs/spec/design.md` 1.11.0 和 `docs/spec/test_strategy.md` 2.2.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
+执行时须严格遵循 `docs/spec/requirements.md` 2.12.0、`docs/spec/design.md` 1.11.0 和 `docs/spec/test_strategy.md` 2.3.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
 
 AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首尾均包含。
 
@@ -1648,6 +1648,32 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-071 · 新建书签 Manual 与 Smart 双入口**
+
+  > 依赖：TASK-011、TASK-033、TASK-067 · 对齐：fix_task 1.13 · 预计：1–2 小时 · 状态：done · 2026-07-22
+
+  - [x] Red：组件测试先证明 Manual/Smart 按钮与 Manual 零 AI 行为尚不存在；E2E 骨架先因入口缺失失败。
+  - [x] Green：复用元数据手动预览编排，Manual 仅获取元数据；Smart 与 URL Enter 复用原智能分析。
+  - [x] Refactor：抽取输入校验与预览状态应用逻辑，避免 Manual/Smart 重复处理 URL、图标与预览字段。
+  - [x] QA：Vitest、typecheck、lint、build、Playwright 功能旅程及 Baseline/Actual/Diff。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/components/NewBookmarkDialog.entry-modes.test.tsx src/features/bookmarks/analysis.test.ts
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui build
+  pnpm --dir ui exec playwright test tests/e2e/new-bookmark-entry-modes.spec.ts --workers=1
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-071-AC.md`、`docs/spec/evidence/TASK-071-evidence.md`、`docs/spec/reports/TASK-071-report.md`。
+
+  _需求: REQ-006
+  验收标准：REQ-006-AC-001、REQ-006-AC-004、REQ-006-AC-009
+  _测试类型: Component + E2E
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1722,6 +1748,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-068 | 书签图标领域持久化 | Unit/Integration | done | REQ-006 |
 | TASK-069 | AI 新建书签标签匹配与复用 | Unit/API/E2E | done | REQ-006、014 |
 | TASK-070 | AI 书签摘要 200 字限制 | Unit/API | done | REQ-006 |
+| TASK-071 | 新建书签 Manual 与 Smart 双入口 | Component/E2E | done | REQ-006 |
 
 ---
 
@@ -1755,3 +1782,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 3.2.0 | 2026-07-22 | 已定稿 | 完成 TASK-068，书签图标与背景色在 library 信封中 round-trip 持久化 |
 | 3.3.0 | 2026-07-22 | 已定稿 | 完成 TASK-069，修复 AI 标签候选复用、保守匹配与新建流程标签膨胀风险 |
 | 3.4.0 | 2026-07-22 | 已定稿 | 完成 TASK-070，AI 书签摘要提示词与服务结果限制为最多 200 个 Unicode 字符 |
+| 3.5.0 | 2026-07-22 | 已定稿 | 完成 TASK-071，New Bookmark 提供 Manual 零 AI 与 Smart/Enter 智能分析双入口 |
