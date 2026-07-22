@@ -7,7 +7,7 @@ import (
 	"github.com/energye/systray"
 )
 
-// SystrayRunner 使用 energye/systray 显示托盘图标与 Settings/Quit。
+// SystrayRunner 使用平台托盘显示 Settings/Quit。
 type SystrayRunner struct {
 	mu      sync.Mutex
 	host    *Host
@@ -47,15 +47,19 @@ func (r *SystrayRunner) onReady() {
 }
 
 // SafeStart 启动托盘；失败时记录日志但不崩溃（Linux best-effort）。
-func SafeStart(runner *SystrayRunner) {
+func SafeStart(runner *SystrayRunner) (started bool) {
 	if !shouldStartNativeSystray() {
 		log.Print("tray: native system tray disabled on this platform")
-		return
+		return false
 	}
 	defer func() {
 		if recovered := recover(); recovered != nil {
 			log.Printf("tray: failed to start system tray: %v", recovered)
+			started = false
 		}
 	}()
-	runner.Start()
+	if runner == nil {
+		return false
+	}
+	return runner.Start()
 }

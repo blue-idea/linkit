@@ -3,5 +3,5 @@
 package tray
 
 func shouldStartNativeSystray() bool {
-	return false
+	return true
 }

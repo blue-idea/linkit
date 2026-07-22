@@ -1,15 +1,15 @@
-//go:build !windows
+//go:build !windows && !darwin
 
 package tray
 
 import "github.com/energye/systray"
 
 // Start 使用第三方包的外部循环与 Wails 共存。
-func (r *SystrayRunner) Start() {
+func (r *SystrayRunner) Start() bool {
 	r.mu.Lock()
 	if r.started {
 		r.mu.Unlock()
-		return
+		return true
 	}
 	r.started = true
 	r.mu.Unlock()
@@ -19,6 +19,7 @@ func (r *SystrayRunner) Start() {
 	r.endLoop = end
 	r.mu.Unlock()
 	go start()
+	return true
 }
 
 // Stop 结束托盘循环。

@@ -2,9 +2,21 @@ package platform
 
 import (
 	"context"
+	"runtime"
 	"sync/atomic"
 
 	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
+)
+
+var (
+	runtimePlatform  = runtime.GOOS
+	windowShow       = wailsruntime.WindowShow
+	windowHide       = wailsruntime.WindowHide
+	windowUnminimise = wailsruntime.WindowUnminimise
+	appShow          = wailsruntime.Show
+	appHide          = wailsruntime.Hide
+	quitApplication  = wailsruntime.Quit
+	windowSetSize    = wailsruntime.WindowSetSize
 )
 
 // WailsWindowRuntime 封装 Wails runtime 窗口操作。
@@ -27,9 +39,9 @@ func (r *WailsWindowRuntime) Show() error {
 	if r.ctx == nil {
 		return nil
 	}
-	wailsruntime.WindowShow(r.ctx)
-	wailsruntime.WindowUnminimise(r.ctx)
-	wailsruntime.Show(r.ctx)
+	windowShow(r.ctx)
+	windowUnminimise(r.ctx)
+	appShow(r.ctx)
 	r.visible.Store(true)
 	return nil
 }
@@ -38,7 +50,11 @@ func (r *WailsWindowRuntime) Hide() error {
 	if r.ctx == nil {
 		return nil
 	}
-	wailsruntime.WindowHide(r.ctx)
+	if runtimePlatform == "darwin" {
+		appHide(r.ctx)
+	} else {
+		windowHide(r.ctx)
+	}
 	r.visible.Store(false)
 	return nil
 }
@@ -47,7 +63,7 @@ func (r *WailsWindowRuntime) Quit() error {
 	if r.ctx == nil {
 		return nil
 	}
-	wailsruntime.Quit(r.ctx)
+	quitApplication(r.ctx)
 	return nil
 }
 
@@ -60,7 +76,7 @@ func (r *WailsWindowRuntime) SetSize(width, height int) error {
 	if r.ctx == nil {
 		return nil
 	}
-	wailsruntime.WindowSetSize(r.ctx, width, height)
+	windowSetSize(r.ctx, width, height)
 	return nil
 }
 

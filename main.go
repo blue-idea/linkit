@@ -71,14 +71,17 @@ func main() {
 	_ = nativeFileService.WireHotkeyToggle()
 
 	var appContext context.Context
+	openSettings := func() {
+		_ = nativeFileService.ShowMainWindow()
+		if appContext != nil {
+			wailsruntime.EventsEmit(appContext, config.EventOpenSettings)
+		}
+	}
+	quitApplication := func() { _ = nativeFileService.QuitApplication() }
+
 	trayHost := tray.NewHost(tray.Callbacks{
-		OnSettings: func() {
-			_ = nativeFileService.ShowMainWindow()
-			if appContext != nil {
-				wailsruntime.EventsEmit(appContext, config.EventOpenSettings)
-			}
-		},
-		OnQuit: func() { _ = nativeFileService.QuitApplication() },
+		OnSettings: openSettings,
+		OnQuit:     quitApplication,
 	})
 	trayRunner.SetHost(trayHost)
 
@@ -105,6 +108,10 @@ func main() {
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
+		Menu: buildApplicationMenu(runtime.GOOS, appMenuCallbacks{
+			OnSettings: openSettings,
+			OnQuit:     quitApplication,
+		}),
 		BackgroundColour: &options.RGBA{
 			R: config.BackgroundRed,
 			G: config.BackgroundGreen,
@@ -120,7 +127,9 @@ func main() {
 			localDocumentService.SetContext(ctx)
 			healthEmitter.SetContext(ctx)
 
-			tray.SafeStart(trayRunner)
+			desktopCapability := nativeFileService.GetDesktopCapability()
+			desktopCapability.TrayAvailable = tray.SafeStart(trayRunner)
+			nativeFileService.SetDesktopCapability(desktopCapability)
 
 			if err := nativeFileService.SetToggleWindowHotkey(platform.SetToggleWindowHotkeyRequest{
 				Accelerator: hotkey.DefaultToggleAccelerator(),

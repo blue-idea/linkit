@@ -1,6 +1,7 @@
 package platform
 
 import (
+	stdruntime "runtime"
 	"testing"
 
 	"github.com/blue-idea/collection/config"
@@ -79,12 +80,25 @@ func (s *stubHotkeyManager) SetOnTrigger(fn func()) {}
 // REQ-030-AC-001：OS 关闭时默认阻止退出（隐藏由 HideWindowOnClose 处理）。
 func TestShouldPreventCloseRespectsAllowQuit(t *testing.T) {
 	service := NewService()
-	if !service.ShouldPreventClose() {
-		t.Fatal("default close must be prevented so the window can hide")
+	expectedPrevent := service.GetDesktopCapability().TrayAvailable
+	if service.ShouldPreventClose() != expectedPrevent {
+		t.Fatalf("default close prevent = %v, want %v", service.ShouldPreventClose(), expectedPrevent)
 	}
 	service.allowQuit.Store(true)
 	if service.ShouldPreventClose() {
 		t.Fatal("allowQuit=true must permit process exit")
+	}
+}
+
+// REQ-030-AC-010（darwin 回归）：没有托盘恢复入口时，不得拦截关闭导致应用无法退出。
+func TestShouldPreventCloseRequiresTrayAvailability(t *testing.T) {
+	service := NewService(WithDesktopCapability(DesktopCapability{
+		TrayAvailable:         false,
+		GlobalHotkeyAvailable: true,
+		Platform:              "darwin",
+	}))
+	if service.ShouldPreventClose() {
+		t.Fatal("tray unavailable must not prevent close")
 	}
 }
 
@@ -224,6 +238,29 @@ func TestGetDesktopCapability(t *testing.T) {
 	}
 	if cap.Platform != "windows" && cap.Platform != "darwin" && cap.Platform != "linux" && cap.Platform != "unknown" {
 		t.Fatalf("platform = %q", cap.Platform)
+	}
+	if stdruntime.GOOS == "darwin" && !cap.TrayAvailable {
+		t.Fatalf("darwin tray capability must report available once native tray integration exists: %+v", cap)
+	}
+}
+
+func TestSetDesktopCapabilityOverridesClosePolicy(t *testing.T) {
+	service := NewService(WithDesktopCapability(DesktopCapability{
+		TrayAvailable:         true,
+		GlobalHotkeyAvailable: true,
+		Platform:              "darwin",
+	}))
+	if !service.ShouldPreventClose() {
+		t.Fatal("tray-enabled capability must prevent close")
+	}
+
+	service.SetDesktopCapability(DesktopCapability{
+		TrayAvailable:         false,
+		GlobalHotkeyAvailable: true,
+		Platform:              "darwin",
+	})
+	if service.ShouldPreventClose() {
+		t.Fatal("updated tray-disabled capability must allow close")
 	}
 }
 

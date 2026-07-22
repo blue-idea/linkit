@@ -10,11 +10,11 @@ import (
 
 // Start 在专用 Windows 消息线程中启动托盘。
 // HWND 的创建、GetMessage 循环与销毁必须位于同一 OS 线程。
-func (r *SystrayRunner) Start() {
+func (r *SystrayRunner) Start() bool {
 	r.mu.Lock()
 	if r.started {
 		r.mu.Unlock()
-		return
+		return true
 	}
 	r.started = true
 	r.mu.Unlock()
@@ -28,6 +28,7 @@ func (r *SystrayRunner) Start() {
 			r.mu.Unlock()
 		})
 	}()
+	return true
 }
 
 // Stop 请求 Windows 托盘消息循环销毁隐藏窗口并结束。
