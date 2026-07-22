@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.35.0
+> 版本：1.36.0
 > 日期：2026-07-22
-> 状态：已定稿（新增并完成 TASK-071 / Manual 与 Smart 双入口）
+> 状态：已定稿（新增并完成 TASK-072 / 分类名称双击展开与折叠）
 
 ---
 
@@ -97,6 +97,7 @@
 | TASK-069 | AI 新建书签标签匹配与复用 | REQ-006-AC-002、004；REQ-014-AC-003 | done | `internal/ai/prompt.go`、`ui/src/features/tags/suggested-tag-matching.ts`、`ui/src/components/Dialogs.tsx` | `internal/ai/prompt_test.go`、`suggested-tag-matching.test.ts`、`NewBookmarkDialog.ai-tags.test.tsx`、`ai-bookmark-analysis.spec.ts` | `docs/spec/ac/TASK-069-AC.md` | `docs/spec/evidence/TASK-069-evidence.md`、`TASK-069-ai-tag-match.png` |
 | TASK-070 | AI 书签摘要 200 字限制 | REQ-006-AC-008 | done | `config/network.go`、`internal/ai/prompt.go`、`internal/ai/service.go` | `internal/ai/prompt_test.go`、`internal/ai/service_test.go` | `docs/spec/ac/TASK-070-AC.md` | `docs/spec/evidence/TASK-070-evidence.md`、`docs/spec/reports/TASK-070-report.md` |
 | TASK-071 | 新建书签 Manual 与 Smart 双入口 | REQ-006-AC-001、004、009 | done | `ui/src/components/Dialogs.tsx`、`ui/src/features/bookmarks/analysis.ts`、`ui/src/i18n/catalogs.ts` | `NewBookmarkDialog.entry-modes.test.tsx`、`analysis.test.ts`、`new-bookmark-entry-modes.spec.ts`、相关书签 E2E | `docs/spec/ac/TASK-071-AC.md` | `docs/spec/evidence/TASK-071-evidence.md`、`docs/spec/reports/TASK-071-report.md`、`TASK-071-entry-modes-*.png` |
+| TASK-072 | 分类名称双击展开与折叠 | REQ-010-AC-001、006；REQ-011-AC-001 | done | `ui/src/components/Sidebar.tsx`、`ui/src/App.tsx` | `Sidebar.category-double-click.test.tsx`、`Sidebar.category-label.test.tsx`、`category-name-double-click.spec.ts`、分类 CRUD/拖拽 E2E | `docs/spec/ac/TASK-072-AC.md` | `docs/spec/evidence/TASK-072-evidence.md`、`docs/spec/reports/TASK-072-report.md`、`TASK-072-category-name-double-click-*.png` |
 
 ---
 
@@ -106,7 +107,7 @@
 |----------|-----------|
 | REQ-001~005 | TASK-006、008、010、024、026~030、040、042、044 |
 | REQ-006~009 | TASK-009、011~013、025、033、037、044、048、051、069~071 |
-| REQ-010~014 | TASK-014~018、025、035、044、050、052~054、069 |
+| REQ-010~014 | TASK-014~018、025、035、044、050、052~054、069、072 |
 | REQ-015~018 | TASK-019~021、025、034、037、041、044 |
 | REQ-019~022 | TASK-007、031~040、044 |
 | REQ-023~024 | TASK-001~002、015、022~025、042~044、046~047、056 |
@@ -173,3 +174,4 @@
 | 2026-07-22 | 新增并完成 TASK-069 | 对齐 fix_task 1.11；修复 AI 建议标签与现有标签候选之间的语言/格式匹配断层，且不新增数据库结构 |
 | 2026-07-22 | 新增并完成 TASK-070 | 对齐 fix_task 1.12；提示词与服务边界双重保证 AI 书签摘要最多 200 个 Unicode 字符 |
 | 2026-07-22 | 新增并完成 TASK-071 | 对齐 fix_task 1.13；Manual 仅获取元数据且零 AI，Smart 与 URL Enter 保持智能分析 |
+| 2026-07-22 | 新增并完成 TASK-072 | 对齐 fix_task 1.14；双击分类名称切换子分类，修正根分类默认展开的首次切换语义 |

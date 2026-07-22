@@ -25,6 +25,7 @@ function NavRow({
   expandable,
   expanded,
   onToggleExpand,
+  onLabelDoubleClick,
   onClick,
   onDropBookmark,
   dragOver,
@@ -47,6 +48,7 @@ function NavRow({
   expandable?: boolean;
   expanded?: boolean;
   onToggleExpand?: () => void;
+  onLabelDoubleClick?: () => void;
   onClick: () => void;
   onDropBookmark?: (bookmarkId: string) => void;
   dragOver?: boolean;
@@ -125,7 +127,15 @@ function NavRow({
         <Icon name={icon} size={14} className={`shrink-0 ${wrapLabel ? 'mt-0.5' : ''} ${iconColor ?? 'text-ink-300'}`} />
       ) : null}
       <span className={`relative min-w-0 flex-1 ${overlayTrailing ? 'pr-0' : ''}`}>
-        <span data-nav-label="true" className={labelClass}>
+        {/* 分类名称双击仅复用展开回调；单击选择仍由父行处理。 */}
+        <span
+          data-nav-label="true"
+          className={labelClass}
+          onDoubleClick={onLabelDoubleClick ? (event) => {
+            event.stopPropagation();
+            onLabelDoubleClick();
+          } : undefined}
+        >
           {label}
         </span>
         {overlayTrailing ? actions : null}
@@ -174,7 +184,7 @@ export function Sidebar({
   bookmarks: Bookmark[];
   selection: Selection;
   expanded: Record<string, boolean>;
-  onToggleExpand: (id: string) => void;
+  onToggleExpand: (id: string, currentlyExpanded: boolean) => void;
   onSelect: (s: Selection) => void;
   onDropToCategory: (categoryId: string, bookmarkId: string) => void;
   onDropToCollection: (collectionId: string, bookmarkId: string) => void;
@@ -212,6 +222,9 @@ export function Sidebar({
       const isExpanded = expanded[cat.id] ?? depth < 1;
       const active = selection.kind === 'category' && selection.id === cat.id;
       const c = cat.color ? tagColors[cat.color] : null;
+      const toggleExpand = kids.length > 0
+        ? () => onToggleExpand(cat.id, isExpanded)
+        : undefined;
       return (
         <div key={cat.id}>
           <CategoryDndItem categoryId={cat.id}>
@@ -231,7 +244,8 @@ export function Sidebar({
                   depth={depth}
                   expandable={kids.length > 0}
                   expanded={isExpanded}
-                  onToggleExpand={() => onToggleExpand(cat.id)}
+                  onToggleExpand={toggleExpand}
+                  onLabelDoubleClick={toggleExpand}
                   onClick={() => onSelect({ kind: 'category', id: cat.id })}
                   onDropBookmark={(bid) => onDropToCategory(cat.id, bid)}
                   dragOver={dragOverId === cat.id}

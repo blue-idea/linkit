@@ -1,11 +1,11 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：3.5.0
+> 版本：3.6.0
 > 日期：2026-07-22
 > 状态：已定稿
 
-执行时须严格遵循 `docs/spec/requirements.md` 2.12.0、`docs/spec/design.md` 1.11.0 和 `docs/spec/test_strategy.md` 2.3.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
+执行时须严格遵循 `docs/spec/requirements.md` 2.13.0、`docs/spec/design.md` 1.12.0 和 `docs/spec/test_strategy.md` 2.4.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
 
 AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首尾均包含。
 
@@ -1674,6 +1674,32 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-072 · 分类名称双击展开与折叠**
+
+  > 依赖：TASK-014、TASK-015 · 对齐：fix_task 1.14 · 预计：1 小时 · 状态：done · 2026-07-22
+
+  - [x] Red：组件测试证明双击父分类名称未触发展开回调；E2E 证明双击后子分类仍可见。
+  - [x] Green：仅在可展开分类名称绑定双击，并让 Sidebar 把当前实际展开值传给 App 后取反。
+  - [x] Refactor：名称与 Chevron 复用同一 `toggleExpand` 回调，叶子分类不产生展开状态。
+  - [x] QA：Sidebar 组件回归、分类 CRUD/拖拽 E2E、Playwright MCP 与 Baseline/Actual/Diff。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/components/Sidebar.category-double-click.test.tsx src/components/Sidebar.category-label.test.tsx src/components/Sidebar.rename.test.tsx
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui build
+  pnpm --dir ui exec playwright test tests/e2e/category-name-double-click.spec.ts tests/e2e/category-crud.spec.ts tests/e2e/category-drag.spec.ts --workers=1
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-072-AC.md`、`docs/spec/evidence/TASK-072-evidence.md`、`docs/spec/reports/TASK-072-report.md`。
+
+  _需求: REQ-010、REQ-011
+  验收标准：REQ-010-AC-001、REQ-010-AC-006、REQ-011-AC-001
+  _测试类型: Component + E2E
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1749,6 +1775,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-069 | AI 新建书签标签匹配与复用 | Unit/API/E2E | done | REQ-006、014 |
 | TASK-070 | AI 书签摘要 200 字限制 | Unit/API | done | REQ-006 |
 | TASK-071 | 新建书签 Manual 与 Smart 双入口 | Component/E2E | done | REQ-006 |
+| TASK-072 | 分类名称双击展开与折叠 | Component/E2E | done | REQ-010、011 |
 
 ---
 
@@ -1783,3 +1810,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 3.3.0 | 2026-07-22 | 已定稿 | 完成 TASK-069，修复 AI 标签候选复用、保守匹配与新建流程标签膨胀风险 |
 | 3.4.0 | 2026-07-22 | 已定稿 | 完成 TASK-070，AI 书签摘要提示词与服务结果限制为最多 200 个 Unicode 字符 |
 | 3.5.0 | 2026-07-22 | 已定稿 | 完成 TASK-071，New Bookmark 提供 Manual 零 AI 与 Smart/Enter 智能分析双入口 |
+| 3.6.0 | 2026-07-22 | 已定稿 | 完成 TASK-072，分类名称双击切换子分类并修正默认展开状态切换语义 |

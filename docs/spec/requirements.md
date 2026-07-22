@@ -1,7 +1,7 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：2.12.0
+> 版本：2.13.0
 > 日期：2026-07-22
 > 状态：已定稿
 
@@ -743,6 +743,21 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
   expected:
     return_value: "LibraryData without the deleted category subtree and with affected categoryId values cleared"
     side_effects: []
+
+- id: REQ-010-AC-006
+  ears: >
+    While 侧栏分类具有子分类,
+    when 用户双击该分类名称,
+    the Linkit shall 切换其子分类展开或折叠状态;
+    when 用户单击分类名称或点击现有展开箭头,
+    the Linkit shall 分别保持选择分类与切换展开的既有行为.
+  test_type: Component + E2E
+  expected:
+    ui_state: "Each double-click on an expandable category name toggles its descendants exactly once"
+    side_effects:
+      - "A single name click selects the category without changing expansion"
+      - "Leaf category name double-clicks do not create expansion state"
+      - "The chevron remains an equivalent expand/collapse control"
 ```
 
 ---
@@ -2237,3 +2252,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.10.0 | 2026-07-22 | 已定稿 | 修订 REQ-006-AC-006：新建默认网站 favicon；无图时文字+随机色；桌面 faviconDataUrl |
 | 2.11.0 | 2026-07-22 | 已定稿 | 新增 REQ-006-AC-008：AI 书签摘要提示词与服务结果双重限制为最多 200 个 Unicode 字符 |
 | 2.12.0 | 2026-07-22 | 已定稿 | 新增 REQ-006-AC-009：New Bookmark 提供 Manual 零 AI 路径，Smart 与 Enter 保持智能分析 |
+| 2.13.0 | 2026-07-22 | 已定稿 | 新增 REQ-010-AC-006：双击分类名称切换子分类展开/折叠，保留单击选择与箭头入口 |
