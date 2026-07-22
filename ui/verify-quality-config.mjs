@@ -73,7 +73,7 @@ async function verifyWorkflows() {
   assert.match(releaseWorkflow, /NFPM_VERSION:/, 'Release workflow must pin nFPM version');
   assert.match(releaseWorkflow, /goreleaser\/nfpm\/v2\/cmd\/nfpm/, 'Release workflow must install pinned nFPM');
   assert.match(releaseWorkflow, /nfpm pkg --packager deb/, 'Release workflow must build Debian packages');
-  assert.match(releaseWorkflow, /linkit_\$\{\{ inputs\.tag \}\}_\$\{\{ matrix\.deb_arch \}\}\.deb/, 'Release workflow must produce architecture-specific deb artifacts');
+  assert.match(releaseWorkflow, /linkit_\$\{\{ env\.RELEASE_TAG \}\}_\$\{\{ matrix\.deb_arch \}\}\.deb/, 'Release workflow must produce architecture-specific deb artifacts');
 
   assert.match(nfpmConfig, /^name: linkit$/m, 'nFPM package name must be linkit');
   assert.match(nfpmConfig, /^arch: \$\{NFPM_ARCH\}$/m, 'nFPM architecture must come from NFPM_ARCH');
