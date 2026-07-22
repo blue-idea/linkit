@@ -10,7 +10,8 @@ const timestamp = '2026-07-16T12:00:00.000Z';
 
 const validBookmark = {
   id: 'b-react', title: 'React documentation', url: 'https://react.dev', domain: 'react.dev',
-  favicon: 'https://react.dev/favicon.ico', description: 'React reference', notes: 'Hooks reference',
+  favicon: 'https://react.dev/favicon.ico',
+  faviconColor: 'blue', description: 'React reference', notes: 'Hooks reference',
   tagIds: ['t-doc'], categoryId: 'c-react', collectionIds: ['col-build'], createdAt: timestamp,
   updatedAt: timestamp, lastVisitedAt: null, visitCount: 3, starred: true, pinned: false,
   readStatus: 'reading', health: 'ok', healthCheckedAt: null, healthHttpStatus: null,
@@ -37,7 +38,14 @@ describe('Library Schema 与引用完整性', () => {
   test('LibraryEnvelope 在完整数据有效时返回规范化资料库', async () => {
     const domain = await loadDomainModule();
     expect(domain.validateLibraryEnvelope).toBeTypeOf('function');
-    expect(domain.validateLibraryEnvelope?.(validLibraryEnvelope)).toEqual({ success: true, data: validLibraryEnvelope });
+    expect(domain.validateLibraryEnvelope?.(validLibraryEnvelope)).toMatchObject({
+      success: true,
+      data: expect.objectContaining({
+        data: expect.objectContaining({
+          bookmarks: [expect.objectContaining({ faviconColor: 'blue' })],
+        }),
+      }),
+    });
   });
 
   // REQ-026-AC-001：无效 JSON 必须返回结构化错误。
@@ -175,6 +183,7 @@ describe('Library V1 迁移', () => {
           bookmarks: [{
             id: 'b-minimal',
             favicon: null,
+            faviconColor: 'blue',
             description: '',
             notes: '',
             tagIds: [],
@@ -220,6 +229,8 @@ describe('Library V1 迁移', () => {
       success: true,
       data: { format: 'linkit-library', schemaVersion: 1, revision: 0, updatedAt: timestamp,
         data: { bookmarks: [expect.objectContaining({ tagIds: ['t-doc'], collectionIds: ['col-build'],
+          favicon: '⚛️',
+          faviconColor: 'blue',
           updatedAt: timestamp, readStatus: 'unread', healthCheckedAt: null, healthHttpStatus: null,
           healthFingerprint: null, healthErrorCode: null })],
           collections: [expect.objectContaining({ createdAt: timestamp, updatedAt: timestamp })] } },

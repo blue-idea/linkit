@@ -28,6 +28,7 @@ describe('fetchBookmarkMetadata', () => {
       description: 'Desc',
       contentText: 'Body',
       favicon: 'https://example.com/favicon.ico',
+      faviconDataUrl: null,
     });
   });
 

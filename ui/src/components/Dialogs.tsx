@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { Bookmark, Category, Collection, Tag, AIInsight } from '../types';
 import { fetchBookmarkMetadata, resolveNewBookmarkCategoryId, shouldApplyAiCategorySuggestion } from '../features/bookmarks';
-import { resolveBookmarkIcon } from '../features/bookmarks/icon';
+import {
+  initialIconEditorForNewBookmark,
+  resolveIconEditorIcon,
+  type BookmarkIconEditorValue,
+} from '../features/bookmarks/bookmark-icon-editor-model';
+import { BookmarkIconEditor } from '../features/bookmarks/BookmarkIconEditor';
 import {
   applyReanalyzeConfirmation,
   buildInboundAnalysis,
@@ -107,6 +112,13 @@ export function NewBookmarkDialog({
   const [pendingTagLabels, setPendingTagLabels] = useState<string[]>([]);
   const [urlWarning, setUrlWarning] = useState<string | null>(null);
   const [faviconUrl, setFaviconUrl] = useState<string | null>(null);
+  const [iconEditor, setIconEditor] = useState<BookmarkIconEditorValue>({
+    mode: 'text',
+    siteFaviconUrl: null,
+    siteFaviconPreview: null,
+    glyphOverride: '',
+    faviconColor: 'blue',
+  });
   const categoryLocked = Boolean(activeCategoryId?.trim());
 
   useEffect(() => {
@@ -126,6 +138,13 @@ export function NewBookmarkDialog({
       setPendingTagLabels([]);
       setUrlWarning(null);
       setFaviconUrl(null);
+      setIconEditor({
+        mode: 'text',
+        siteFaviconUrl: null,
+        siteFaviconPreview: null,
+        glyphOverride: '',
+        faviconColor: 'blue',
+      });
     }
   }, [open, initialUrl, activeCategoryId]);
 
@@ -176,12 +195,19 @@ export function NewBookmarkDialog({
       )
     );
     setFaviconUrl(result.preview.faviconUrl);
+    setIconEditor(
+      initialIconEditorForNewBookmark({
+        url,
+        faviconUrl: result.preview.faviconUrl,
+        faviconDataUrl: result.preview.faviconDataUrl,
+      })
+    );
     setStage('review');
   };
 
   const submit = () => {
     const domain = url.replace(/^https?:\/\//, '').split('/')[0] || 'unknown';
-    const icon = resolveBookmarkIcon({ url, title, faviconUrl });
+    const icon = resolveIconEditorIcon({ url, title, value: iconEditor });
     // REQ-006-AC-004：仅在用户确认保存时创建。
     onCreate({
       title: title.trim() || domain,
@@ -208,7 +234,6 @@ export function NewBookmarkDialog({
   };
 
   const cat = categories.find((c) => c.id === chosenCategory);
-  const previewIcon = resolveBookmarkIcon({ url, title, faviconUrl });
 
   return (
     <Modal open={open} onClose={onClose} width="max-w-[520px]" aria-label={i18n.t('bookmark.new.title')}>
@@ -301,9 +326,22 @@ export function NewBookmarkDialog({
               <div className="text-[11px] text-mint-400">{i18n.t('bookmark.metadataReady')}</div>
             )}
 
-            <div className="flex items-center gap-3 rounded-mac-lg bg-ink-800/60 hairline p-3">
-              <Favicon glyph={previewIcon.favicon} color={previewIcon.faviconColor} size={36} />
-              <div className="min-w-0 flex-1">
+            <BookmarkIconEditor
+              url={url}
+              title={title}
+              value={{
+                ...iconEditor,
+                siteFaviconUrl: iconEditor.siteFaviconUrl ?? faviconUrl,
+                siteFaviconPreview:
+                  iconEditor.siteFaviconPreview ??
+                  iconEditor.siteFaviconUrl ??
+                  faviconUrl,
+              }}
+              onChange={setIconEditor}
+            />
+
+            <div className="rounded-mac-lg bg-ink-800/60 hairline p-3">
+              <div className="min-w-0">
                 <input
                   aria-label={i18n.t('bookmark.titleInput')}
                   value={title}

@@ -2,8 +2,16 @@ import { z } from 'zod';
 import { THEME_IDS } from '../config/themes';
 import { DEFAULT_UI_SIZE, UI_SIZE_IDS } from '../config/window-size';
 import { DEFAULT_SHORTCUTS, SHORTCUT_ACTION_IDS } from '../features/shell/shortcuts';
+import { isGlyphFaviconValue, isHttpFaviconValue } from './bookmark-icon';
 
 const colorSchema = z.enum(['blue', 'green', 'amber', 'coral', 'violet', 'gray']);
+const bookmarkFaviconSchema = z
+  .string()
+  .trim()
+  .refine((value) => isHttpFaviconValue(value) || isGlyphFaviconValue(value), {
+    message: 'favicon must be an http(s) URL or a display glyph (1-8 code points)',
+  })
+  .nullable();
 const idSchema = z.string().trim().min(1);
 const nullableDateTimeSchema = z.iso.datetime().nullable();
 const shortcutActionIdSchema = z.enum(SHORTCUT_ACTION_IDS);
@@ -19,7 +27,9 @@ const shortcutMapSchema = z.record(shortcutActionIdSchema, z.string().trim().min
 
 export const BookmarkSchema = z.strictObject({
   id: idSchema, title: z.string().trim().min(1), url: z.url({ protocol: /^https?$/ }),
-  domain: z.string().trim().min(1), favicon: z.url({ protocol: /^https?$/ }).nullable(),
+  domain: z.string().trim().min(1),
+  favicon: bookmarkFaviconSchema,
+  faviconColor: colorSchema.default('blue'),
   description: z.string(), notes: z.string(), tagIds: z.array(idSchema), categoryId: idSchema.nullable(),
   collectionIds: z.array(idSchema), createdAt: z.iso.datetime(), updatedAt: z.iso.datetime(),
   lastVisitedAt: nullableDateTimeSchema, visitCount: z.int().min(0), starred: z.boolean(), pinned: z.boolean(),

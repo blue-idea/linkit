@@ -20,6 +20,7 @@ type MetadataResult struct {
 	Description        string  `json:"description"`
 	Domain             string  `json:"domain"`
 	FaviconURL         *string `json:"faviconUrl"`
+	FaviconDataURL     *string `json:"faviconDataUrl"`
 	ContentText        string  `json:"contentText"`
 	ContentFingerprint string  `json:"contentFingerprint"`
 }
@@ -117,9 +118,13 @@ func (service *Service) FetchMetadata(request MetadataRequest) (MetadataResult, 
 	}
 
 	var favicon *string
+	var faviconData *string
 	if page.faviconURL != "" {
 		value := page.faviconURL
 		favicon = &value
+		if dataURL, err := service.fetchFaviconDataURL(value); err == nil && dataURL != "" {
+			faviconData = &dataURL
+		}
 	}
 
 	return MetadataResult{
@@ -128,6 +133,7 @@ func (service *Service) FetchMetadata(request MetadataRequest) (MetadataResult, 
 		Description:        page.description,
 		Domain:             parsedFinal.Hostname(),
 		FaviconURL:         favicon,
+		FaviconDataURL:     faviconData,
 		ContentText:        page.contentText,
 		ContentFingerprint: page.fingerprint,
 	}, nil

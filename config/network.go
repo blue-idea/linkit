@@ -13,6 +13,8 @@ const (
 	HTTPMaxRedirects = 5
 	// HTTPMaxResponseBytes 达到上限后立即停止读取响应体。
 	HTTPMaxResponseBytes int64 = 2 * 1024 * 1024
+	// HTTPMaxFaviconBytes 限制 favicon 抓取体积。
+	HTTPMaxFaviconBytes int64 = 256 * 1024
 	// MetadataMaxContentRunes 限制清洗后纯文本长度。
 	MetadataMaxContentRunes = 8_000
 	// HTTPUserAgent 标识 Linkit 版本，避免伪装浏览器。

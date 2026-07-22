@@ -84,6 +84,10 @@ func parseHTMLMetadata(body io.Reader, base *url.URL) (parsedPage, error) {
 	}
 	walk(root)
 
+	if favicon == "" && base != nil && (base.Scheme == "http" || base.Scheme == "https") {
+		favicon = base.Scheme + "://" + base.Host + "/favicon.ico"
+	}
+
 	content := truncateRunes(textBuilder.String(), config.MetadataMaxContentRunes)
 	sum := sha256.Sum256([]byte(content))
 	return parsedPage{
@@ -128,7 +132,7 @@ func faviconHref(node *html.Node) string {
 	if href == "" {
 		return ""
 	}
-	if strings.Contains(rel, "icon") {
+	if strings.Contains(rel, "icon") || strings.Contains(rel, "apple-touch-icon") {
 		return href
 	}
 	return ""

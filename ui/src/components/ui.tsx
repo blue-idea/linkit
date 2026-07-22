@@ -154,12 +154,43 @@ export function Favicon({
   // 本机恢复数据可能缺少颜色；回退 blue，避免整个主界面白屏。
   const c = tagColors[color ?? 'blue'] ?? tagColors.blue;
   const raw = (glyph && String(glyph).trim()) || '?';
-  const isImage = /^https?:\/\//i.test(raw);
+  const [displaySrc, setDisplaySrc] = useState(raw);
   const [imageFailed, setImageFailed] = useState(false);
   useEffect(() => {
+    setDisplaySrc(raw);
     setImageFailed(false);
   }, [raw]);
-  const label = isImage ? '?' : raw;
+  const isImage =
+    /^https?:\/\//i.test(displaySrc) || /^data:image\//i.test(displaySrc);
+
+  const handleImageError = () => {
+    void (async () => {
+      if (/^https?:\/\//i.test(displaySrc)) {
+        const { fetchFaviconDataUrl } = await import('../features/bookmarks/metadata-client');
+        const dataUrl = await fetchFaviconDataUrl(displaySrc);
+        if (dataUrl) {
+          setDisplaySrc(dataUrl);
+          return;
+        }
+      }
+      setImageFailed(true);
+    })();
+  };
+
+  const textLabel = (() => {
+    if (/^https?:\/\//i.test(raw)) {
+      try {
+        return new URL(raw).hostname.charAt(0).toUpperCase() || '?';
+      } catch {
+        return '?';
+      }
+    }
+    if (/^data:image\//i.test(raw)) {
+      return '?';
+    }
+    return raw;
+  })();
+
   return (
     <div
       className={`rounded-[7px] bg-gradient-to-br ${c.gradFrom} ${c.gradTo} flex items-center justify-center text-white hairline shrink-0 ${className}`}
@@ -167,14 +198,15 @@ export function Favicon({
     >
       {isImage && !imageFailed ? (
         <img
-          src={raw}
+          src={displaySrc}
           alt=""
+          referrerPolicy="no-referrer"
           className="w-full h-full object-cover rounded-[7px]"
-          onError={() => setImageFailed(true)}
+          onError={handleImageError}
           loading="lazy"
         />
       ) : (
-        <span className="drop-shadow-sm">{label}</span>
+        <span className="drop-shadow-sm">{textLabel}</span>
       )}
     </div>
   );

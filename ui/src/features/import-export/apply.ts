@@ -1,5 +1,6 @@
 import type { LibraryEnvelope } from '../../domain/library';
 import type { Bookmark, Category, Collection, LibraryData, Tag, TagColor } from '../../types';
+import { bookmarkIconToUi } from '../bookmarks/icon-persistence';
 
 /**
  * 将领域信封投影为 UI LibraryData（tags 字段使用 tag id 数组）。
@@ -8,13 +9,15 @@ import type { Bookmark, Category, Collection, LibraryData, Tag, TagColor } from 
 export function toUiLibraryFromEnvelope(envelope: LibraryEnvelope): LibraryData {
   const data = envelope.data;
   return {
-    bookmarks: data.bookmarks.map((bookmark): Bookmark => ({
+    bookmarks: data.bookmarks.map((bookmark): Bookmark => {
+      const icon = bookmarkIconToUi(bookmark);
+      return {
       id: bookmark.id,
       title: bookmark.title,
       url: bookmark.url,
       domain: bookmark.domain,
-      favicon: bookmark.favicon ?? bookmark.title.slice(0, 1).toUpperCase(),
-      faviconColor: 'blue',
+      favicon: icon.favicon,
+      faviconColor: icon.faviconColor,
       description: bookmark.description,
       notes: bookmark.notes,
       tags: [...bookmark.tagIds],
@@ -30,7 +33,8 @@ export function toUiLibraryFromEnvelope(envelope: LibraryEnvelope): LibraryData 
       aiSummary: bookmark.aiSummary || undefined,
       aiSuggestedTags: bookmark.aiSuggestedTags.length > 0 ? [...bookmark.aiSuggestedTags] : undefined,
       thumbnail: bookmark.thumbnail ?? undefined,
-    })),
+      };
+    }),
     categories: data.categories.map((category): Category => ({
       id: category.id,
       name: category.name,

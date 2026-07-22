@@ -331,6 +331,7 @@ interface MetadataResult {
   description: string;
   domain: string;
   faviconUrl: string | null;
+  faviconDataUrl: string | null;
   contentText: string;
   contentFingerprint: string;
 }
@@ -338,7 +339,24 @@ interface MetadataResult {
 FetchMetadata(request: MetadataRequest): Promise<MetadataResult>
 ```
 
+#### `FetchFaviconDataURL(request)`
+
+桌面端抓取 favicon 二进制并返回 `data:image/...;base64,...`，供 WebView 展示外链图标（避免防盗链导致 `<img>` 失败）。
+
+```typescript
+interface FaviconDataURLRequest {
+  url: string;
+}
+
+FetchFaviconDataURL(request: FaviconDataURLRequest): Promise<string>
+```
+
 约束：
+
+- 仅允许 HTTP(S) URL；体积上限见 `config/network.go` 的 `HTTPMaxFaviconBytes`。
+- 失败时返回错误；UI 可回退文字图标。
+
+`FetchMetadata` 约束：
 
 - 仅允许 HTTP(S)。
 - 重定向、响应时间、响应体大小由 `config/network.go` 限制。
