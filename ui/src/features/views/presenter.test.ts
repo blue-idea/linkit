@@ -62,6 +62,41 @@ describe('BookmarkPresenter 共享投影', () => {
     ]);
   });
 
+  // 列表/卡片摘要：优先 aiSummary，缺失时回退 description，避免有描述却空白。
+  test('presentBookmark 在无 aiSummary 时 summary 回退为 description', async () => {
+    const mod = await loadPresenter();
+    expect(mod?.presentBookmark).toBeTypeOf('function');
+    if (!mod?.presentBookmark) throw new Error('presentBookmark is required');
+
+    const bookmark: Bookmark = {
+      id: 'b-desc',
+      title: '哔哩哔哩',
+      url: 'https://www.bilibili.com/',
+      domain: 'www.bilibili.com',
+      favicon: 'B',
+      faviconColor: 'coral',
+      description: '国内知名的视频弹幕网站',
+      notes: '',
+      tags: [],
+      categoryId: 'c-1',
+      collectionIds: [],
+      createdAt: '2026-07-01T00:00:00.000Z',
+      lastVisitedAt: null,
+      visitCount: 0,
+      starred: false,
+      pinned: false,
+      thumbnail: undefined,
+      health: 'ok',
+      aiSummary: '',
+      aiSuggestedTags: [],
+      spark: [],
+    };
+
+    const presented = mod.presentBookmark(bookmark, []);
+    expect(presented.description).toBe('国内知名的视频弹幕网站');
+    expect(presented.summary).toBe('国内知名的视频弹幕网站');
+  });
+
   test('presentBookmarks 保持顺序并映射全部条目', async () => {
     const mod = await loadPresenter();
     expect(mod?.presentBookmarks).toBeTypeOf('function');
