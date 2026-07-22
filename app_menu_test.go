@@ -72,3 +72,10 @@ func TestBuildApplicationMenuForDarwinBindsQuitAndSettings(t *testing.T) {
 		t.Fatal("quit callback must be invoked")
 	}
 }
+
+func TestSelectTrayIcon(t *testing.T) {
+	icon := selectTrayIcon()
+	if len(icon) == 0 {
+		t.Fatal("selectTrayIcon must return non-empty icon bytes")
+	}
+}

@@ -32,6 +32,9 @@ var assets embed.FS
 //go:embed build/windows/icon.ico
 var trayIconWindows []byte
 
+//go:embed build/darwin/trayicon.png
+var trayIconMacOS []byte
+
 //go:embed build/appicon.png
 var trayIconPNG []byte
 
@@ -173,6 +176,9 @@ func main() {
 func selectTrayIcon() []byte {
 	if runtime.GOOS == "windows" {
 		return trayIconWindows
+	}
+	if runtime.GOOS == "darwin" {
+		return trayIconMacOS
 	}
 	return trayIconPNG
 }
