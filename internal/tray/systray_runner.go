@@ -48,6 +48,10 @@ func (r *SystrayRunner) onReady() {
 
 // SafeStart 启动托盘；失败时记录日志但不崩溃（Linux best-effort）。
 func SafeStart(runner *SystrayRunner) {
+	if !shouldStartNativeSystray() {
+		log.Print("tray: native system tray disabled on this platform")
+		return
+	}
 	defer func() {
 		if recovered := recover(); recovered != nil {
 			log.Printf("tray: failed to start system tray: %v", recovered)
