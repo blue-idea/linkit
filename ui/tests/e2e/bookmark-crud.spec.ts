@@ -21,7 +21,7 @@ test.describe('书签 CRUD', () => {
 
     await page.getByRole('textbox', { name: 'Bookmark URL' }).fill('https://example.test/new-bookmark');
     await page.getByLabel('Bookmark title hint').fill('Manual Entry Bookmark');
-    await page.getByRole('button', { name: 'Analyze', exact: true }).click();
+    await page.getByRole('button', { name: 'Smart', exact: true }).click();
 
     await expect(page.getByRole('alert')).toContainText(/Could not fetch|manual|AI analysis is unavailable/i);
     await expect(page.getByRole('button', { name: 'Save bookmark' })).toBeVisible();
@@ -37,7 +37,7 @@ test.describe('书签 CRUD', () => {
     await expect(page.getByRole('heading', { name: 'New Bookmark' })).toBeVisible();
 
     await page.getByRole('textbox', { name: 'Bookmark URL' }).fill('coolors.co/');
-    await page.getByRole('button', { name: 'Analyze', exact: true }).click();
+    await page.getByRole('button', { name: 'Smart', exact: true }).click();
 
     await expect(page.getByRole('alert')).toContainText('Bookmark URL already exists');
     await page.screenshot({ path: '../docs/spec/evidence/TASK-051-duplicate-url-warning.png', fullPage: true });

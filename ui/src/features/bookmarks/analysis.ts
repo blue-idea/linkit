@@ -21,6 +21,8 @@ export interface BookmarkPreviewDraft {
   aiSummary: string;
   suggestedTags: string[];
   suggestedCategoryId: string | null;
+  faviconUrl: string | null;
+  faviconDataUrl: string | null;
 }
 
 export interface BookmarkAnalysisResult {
@@ -54,6 +56,8 @@ export function buildManualFallbackPreview(url: string, titleHint: string): Book
     aiSummary: '',
     suggestedTags: [],
     suggestedCategoryId: null,
+    faviconUrl: null,
+    faviconDataUrl: null,
   };
 }
 
@@ -78,6 +82,8 @@ export async function resolveBookmarkAnalysis(input: {
         aiSummary: '',
         suggestedTags: [],
         suggestedCategoryId: null,
+        faviconUrl: result.favicon ?? null,
+        faviconDataUrl: result.faviconDataUrl ?? null,
       },
     };
   }

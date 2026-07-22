@@ -1,7 +1,7 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：2.11.0
+> 版本：2.12.0
 > 日期：2026-07-22
 > 状态：已定稿
 
@@ -445,6 +445,21 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
     side_effects:
       - "Chinese and other multi-byte characters are not split into invalid text"
       - "No additional AI request is introduced"
+
+- id: REQ-006-AC-009
+  ears: >
+    While New Bookmark 输入步骤可见,
+    when 用户选择 Manual,
+    the Linkit shall 仅获取可用网页元数据并进入可编辑预览，且不得调用 AI 服务;
+    when 用户选择 Smart 或在 URL 输入框按 Enter,
+    the Linkit shall 继续执行现有元数据与 AI 智能分析流程.
+  test_type: Component + E2E
+  expected:
+    ui_state: "Manual and Smart actions are visible; either action opens an editable review before saving"
+    side_effects:
+      - "Manual performs zero AI requests"
+      - "Smart and URL Enter preserve the existing AI analysis path"
+      - "No bookmark is persisted before explicit Save confirmation"
 ```
 
 ---
@@ -2221,3 +2236,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.9.0 | 2026-07-22 | 已定稿 | 新增 REQ-006-AC-007：书签图标与背景色在本地信封与重载后一致持久化 |
 | 2.10.0 | 2026-07-22 | 已定稿 | 修订 REQ-006-AC-006：新建默认网站 favicon；无图时文字+随机色；桌面 faviconDataUrl |
 | 2.11.0 | 2026-07-22 | 已定稿 | 新增 REQ-006-AC-008：AI 书签摘要提示词与服务结果双重限制为最多 200 个 Unicode 字符 |
+| 2.12.0 | 2026-07-22 | 已定稿 | 新增 REQ-006-AC-009：New Bookmark 提供 Manual 零 AI 路径，Smart 与 Enter 保持智能分析 |

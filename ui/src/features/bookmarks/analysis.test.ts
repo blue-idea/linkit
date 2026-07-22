@@ -14,6 +14,8 @@ describe('书签入库分析', () => {
       title: 'Fetched Title',
       description: 'Fetched description',
       contentText: 'Body',
+      favicon: 'https://example.test/favicon.ico',
+      faviconDataUrl: 'data:image/png;base64,icon',
     });
     const result = await resolveBookmarkAnalysis({
       url: 'https://example.test/page',
@@ -22,6 +24,11 @@ describe('书签入库分析', () => {
     });
     expect(result.stage).toBe('review');
     expect(result.preview.title).toBe('Fetched Title');
+    // TASK-071 / REQ-006-AC-006：Manual 元数据预览不得丢失现有图标信息。
+    expect(result.preview).toMatchObject({
+      faviconUrl: 'https://example.test/favicon.ico',
+      faviconDataUrl: 'data:image/png;base64,icon',
+    });
     expect(result.fallbackMessage).toBeNull();
     expect(result.source).toBe('metadata');
   });
@@ -44,6 +51,7 @@ describe('书签入库分析', () => {
     expect(result.preview.title).toBe('My Title');
     expect(result.preview.aiSummary).toBe('');
     expect(result.preview.suggestedTags).toEqual([]);
+    expect(result.preview).toMatchObject({ faviconUrl: null, faviconDataUrl: null });
   });
 
   test('buildManualFallbackPreview 不注入伪 AI 摘要', () => {

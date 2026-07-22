@@ -38,7 +38,7 @@ test.describe('local MVP journeys', () => {
     await openNewBookmark(page);
     await page.getByRole('textbox', { name: 'Bookmark URL' }).fill('https://example.test/mvp-journey');
     await page.getByLabel('Bookmark title hint').fill('MVP Journey Bookmark');
-    await page.getByRole('button', { name: 'Analyze' }).click();
+    await page.getByRole('button', { name: 'Smart' }).click();
     await page.getByRole('button', { name: 'Save bookmark' }).click();
     await expect(page.getByRole('main', { name: 'Content Area' }).getByText('MVP Journey Bookmark')).toBeVisible();
 

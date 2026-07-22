@@ -303,6 +303,8 @@ const messages = {
   'bookmark.urlLabel': ['URL', 'URL'],
   'bookmark.titleOptional': ['Title (optional)', '标题（可选）'],
   'bookmark.analyze': ['Analyze', '分析'],
+  'bookmark.manual': ['Manual', '手动'],
+  'bookmark.smart': ['Smart', '智能'],
   'bookmark.analyzing': ['Analyzing bookmark', '正在分析书签'],
   'bookmark.fetchingMetadata': ['Fetching page metadata…', '正在获取页面元数据…'],
   'bookmark.aiReady': ['AI analysis ready. Review suggestions before saving.', 'AI 分析已完成，请在保存前检查建议。'],
