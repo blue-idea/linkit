@@ -47,7 +47,6 @@ bool linkitCreateStatusTray(const char *settingsTitle, const char *quitTitle, co
 			NSData *imageData = [NSData dataWithBytes:iconBytes length:(NSUInteger)iconLen];
 			NSImage *image = [[NSImage alloc] initWithData:imageData];
 			if (image != nil) {
-				image.size = NSMakeSize(20.0, 20.0);
 				image.template = YES;
 				linkitStatusItem.button.image = image;
 			}

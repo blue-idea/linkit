@@ -1,11 +1,11 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：2.9.0
+> 版本：3.1.0
 > 日期：2026-07-22
 > 状态：已定稿
 
-执行时须严格遵循 `docs/spec/requirements.md` 2.7.0、`docs/spec/design.md` 1.11.0 和 `docs/spec/test_strategy.md` 2.2.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
+执行时须严格遵循 `docs/spec/requirements.md` 2.8.0、`docs/spec/design.md` 1.11.0 和 `docs/spec/test_strategy.md` 2.2.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
 
 AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首尾均包含。
 
@@ -1544,6 +1544,30 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-067 · 新建书签图标（元数据图片与文字回退）**
+
+  > 依赖：TASK-009、TASK-033、TASK-011 · 预计：2–3 小时 · 状态：done · 2026-07-22
+
+  - [x] Red：`resolveBookmarkIcon`、Favicon 图片渲染、`buildInboundAnalysis.faviconUrl` 单元测试先失败。
+  - [x] Green：入库分析透传 `faviconUrl`；预览与保存统一图标策略；`Favicon` 支持 http(s) 图片与加载失败回退。
+  - [x] Refactor：图标逻辑集中于 `ui/src/features/bookmarks/icon.ts`。
+  - [x] QA：Vitest 与 typecheck 通过；E2E 回归 `bookmark-crud`（若环境可用）。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/features/bookmarks/icon.test.ts src/components/ui.test.tsx src/features/ai/bookmark-analysis/bookmark-analysis.test.ts
+  pnpm --dir ui typecheck
+  pnpm --dir ui exec playwright test tests/e2e/bookmark-crud.spec.ts --workers=1
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-067-AC.md`、`docs/spec/evidence/TASK-067-evidence.md`。
+
+  _需求: REQ-006
+  验收标准：REQ-006-AC-006
+  _测试类型: Unit + E2E
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1614,6 +1638,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-064 | 修复 Windows 托盘 Quit 无法退出 | Unit/Manual | done | REQ-030 |
 | TASK-065 | 托盘 Show 替换为 Settings | Unit/Manual | done | REQ-030 |
 | TASK-066 | 修复设置保存反馈与窗口大小重启恢复 | Unit/Component/Manual | done | REQ-031、023、030 |
+| TASK-067 | 新建书签图标（元数据图片与文字回退） | Unit/E2E | done | REQ-006 |
 
 ---
 
@@ -1643,3 +1668,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 2.8.0 | 2026-07-22 | 已定稿 | 新增 TASK-064，修复 Windows 托盘消息线程与 Wails 退出顺序导致的 Quit 无法退出 |
 | 2.9.0 | 2026-07-22 | 已定稿 | 新增 TASK-065，将托盘 Show 替换为 Settings 并保持 Quit 业务不变 |
 | 3.0.0 | 2026-07-22 | 已定稿 | 完成 TASK-066，修复设置保存无反馈与 uiSize 冷启动恢复回归 |
+| 3.1.0 | 2026-07-22 | 已定稿 | 完成 TASK-067，新建书签元数据 favicon 与文字图标稳定背景色 |

@@ -1,7 +1,7 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：2.7.0
+> 版本：2.8.0
 > 日期：2026-07-22
 > 状态：已定稿
 
@@ -402,6 +402,20 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
     side_effects:
       - "No duplicate bookmark is created"
       - "No analysis or review step is opened for the duplicate URL"
+
+- id: REQ-006-AC-006
+  ears: >
+    While 用户处于 New Bookmark 入库预览或确认保存,
+    when 页面元数据提供可用的 http 或 https favicon URL,
+    the Linkit shall 在预览与保存后的书签项中使用该图片作为图标;
+    when favicon 不可用,
+    the Linkit shall 使用标题或域名的首字母作为文字图标，并使用由域名确定的稳定背景色（非固定单色）.
+  test_type: Unit + E2E
+  expected:
+    ui_state: "Review preview and saved bookmark cards show favicon image or letter glyph with consistent background color"
+    side_effects:
+      - "Saved bookmark favicon field stores image URL or single-letter glyph"
+      - "No generative AI image is fabricated when metadata favicon is missing"
 ```
 
 ---
@@ -2174,3 +2188,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.5.0 | 2026-07-21 | 已定稿 | 新增原则 16 与 REQ-030：关闭隐藏到托盘、Show/Quit、全局显隐热键、Settings→Shortcuts 可配置；修订 REQ-023-AC-001 与 REQ-024 默认快捷键说明 |
 | 2.6.0 | 2026-07-21 | 已定稿 | 新增原则 17 与 REQ-031：Appearance 窗口大小四档（仅改宽高）、默认 Medium、立即生效与持久化、手动拖拽不单独记忆 |
 | 2.7.0 | 2026-07-22 | 已定稿 | 用户确认将托盘 Show 替换为 Settings；点击后显示主窗口并打开设置，Quit 业务保持不变 |
+| 2.8.0 | 2026-07-22 | 已定稿 | 新增 REQ-006-AC-006：新建书签优先元数据 favicon，缺省时文字图标与稳定背景色 |

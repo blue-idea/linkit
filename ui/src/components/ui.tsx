@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { TagColor } from '../types';
 import { tagColors, thumbnailGradients } from '../colors';
 import { iconComponents, type IconName } from '../config/icons';
@@ -153,13 +153,29 @@ export function Favicon({
 }) {
   // 本机恢复数据可能缺少颜色；回退 blue，避免整个主界面白屏。
   const c = tagColors[color ?? 'blue'] ?? tagColors.blue;
-  const label = (glyph && String(glyph).trim()) || '?';
+  const raw = (glyph && String(glyph).trim()) || '?';
+  const isImage = /^https?:\/\//i.test(raw);
+  const [imageFailed, setImageFailed] = useState(false);
+  useEffect(() => {
+    setImageFailed(false);
+  }, [raw]);
+  const label = isImage ? '?' : raw;
   return (
     <div
       className={`rounded-[7px] bg-gradient-to-br ${c.gradFrom} ${c.gradTo} flex items-center justify-center text-white hairline shrink-0 ${className}`}
       style={{ width: size, height: size, fontSize: size * 0.5 }}
     >
-      <span className="drop-shadow-sm">{label}</span>
+      {isImage && !imageFailed ? (
+        <img
+          src={raw}
+          alt=""
+          className="w-full h-full object-cover rounded-[7px]"
+          onError={() => setImageFailed(true)}
+          loading="lazy"
+        />
+      ) : (
+        <span className="drop-shadow-sm">{label}</span>
+      )}
     </div>
   );
 }
