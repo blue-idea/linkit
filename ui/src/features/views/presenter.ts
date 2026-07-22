@@ -28,7 +28,8 @@ export function presentBookmark(bookmark: Bookmark, tags: Tag[]): BookmarkPresen
     title: bookmark.title,
     domain: bookmark.domain,
     description: bookmark.description ?? '',
-    summary: bookmark.aiSummary ?? '',
+    // 列表摘要优先 AI；无摘要时回退站点描述，避免列表空白。
+    summary: (bookmark.aiSummary?.trim() || bookmark.description?.trim() || ''),
     tags: bookmark.tags
       .map((tagId) => tagById.get(tagId))
       .filter((tag): tag is Tag => Boolean(tag))
