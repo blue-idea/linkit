@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import type { TagColor } from '../types';
-import { tagColors, thumbnailGradients } from '../colors';
+import { tagColors } from '../colors';
+import { resolveThumbnailGradient } from '../config/thumbnail-gradients';
 import { iconComponents, type IconName } from '../config/icons';
 import { useI18n } from '../i18n/use-i18n';
 
@@ -226,7 +227,7 @@ export function MiniBrowser({
   className?: string;
   loading?: boolean;
 }) {
-  const grad = thumbnail ? thumbnailGradients[thumbnail] ?? thumbnailGradients.gray : thumbnailGradients.gray;
+  const grad = resolveThumbnailGradient(thumbnail);
   return (
     <div className={`rounded-mac-lg overflow-hidden bg-ink-900 hairline ${className}`}>
       <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-ink-800/80 border-b border-white/5">

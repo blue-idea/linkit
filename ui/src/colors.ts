@@ -1,5 +1,7 @@
 import type { TagColor } from './types';
 
+export { THUMBNAIL_GRADIENTS as thumbnailGradients } from './config/thumbnail-gradients';
+
 export const tagColors: Record<TagColor, { dot: string; text: string; bg: string; border: string; soft: string; gradFrom: string; gradTo: string }> = {
   blue: {
     dot: 'bg-accent-500',
@@ -55,13 +57,4 @@ export const tagColors: Record<TagColor, { dot: string; text: string; bg: string
     gradFrom: 'from-ink-400',
     gradTo: 'to-ink-600',
   },
-};
-
-export const thumbnailGradients: Record<string, string> = {
-  blue: 'from-accent-600 via-accent-500 to-mint-500',
-  green: 'from-mint-600 via-mint-500 to-accent-500',
-  amber: 'from-amber-500 via-coral-400 to-coral-500',
-  coral: 'from-coral-500 via-coral-400 to-amber-400',
-  violet: 'from-violet2-500 via-violet2-400 to-accent-500',
-  gray: 'from-ink-500 via-ink-400 to-ink-600',
 };

@@ -8,6 +8,7 @@ export type {
   MetadataFetchResult,
 } from './analysis';
 export { resolveBookmarkIcon, isBookmarkFaviconImage, isBookmarkImageSrc, buildBookmarkTextGlyph, defaultBookmarkIconColor, randomBookmarkIconColor, BOOKMARK_ICON_COLORS } from './icon';
+export { randomBookmarkThumbnail } from './thumbnail';
 export { bookmarkIconToDomain, bookmarkIconToUi } from './icon-persistence';
 export { BookmarkIconEditor } from './BookmarkIconEditor';
 export {
