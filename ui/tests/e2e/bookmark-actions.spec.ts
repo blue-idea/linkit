@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { additiveSelectionModifier } from '../../src/config/playwright-modifiers';
 import { enterLocalMode } from './helpers';
 
 const evidenceDirectory = resolve('../docs/spec/evidence');
@@ -33,8 +34,9 @@ test.describe('书签操作与批量操作', () => {
     await expect(main.getByRole('checkbox', { name: /Select bookmark/ })).toHaveCount(0);
     await main.getByRole('button', { name: 'Select bookmarks' }).click();
     await expect(main.getByRole('button', { name: 'Done selecting' })).toBeVisible();
+    const additiveModifier = additiveSelectionModifier(process.platform);
     await main.getByText('Figma — 协作式界面设计工具', { exact: true }).click();
-    await main.getByText('React 官方文档', { exact: true }).click({ modifiers: ['Control'] });
+    await main.getByText('React 官方文档', { exact: true }).click({ modifiers: [additiveModifier] });
     let toolbar = main.getByRole('toolbar', { name: 'Bulk bookmark actions' });
     await expect(toolbar.getByText('2 bookmarks selected')).toBeVisible();
     await toolbar.getByRole('button', { name: 'Clear selection' }).click();

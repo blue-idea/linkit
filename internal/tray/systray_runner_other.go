@@ -26,8 +26,12 @@ func (r *SystrayRunner) Stop() {
 	r.mu.Lock()
 	end := r.endLoop
 	r.endLoop = nil
+	wasStarted := r.started
 	r.started = false
 	r.mu.Unlock()
+	if !wasStarted && end == nil {
+		return
+	}
 	if end != nil {
 		end()
 		return

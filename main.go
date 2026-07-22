@@ -57,7 +57,7 @@ func main() {
 	}
 
 	windowRuntime := platform.NewWailsWindowRuntime(nil)
-	hotkeyManager := hotkey.NewManager(hotkey.NewDesignBackend())
+	hotkeyManager := hotkey.NewManager(hotkey.NewDefaultBackend())
 
 	// trayRunner 在 nativeFileService 之前创建，以便将原生资源清理接入退出前钩子。
 	trayRunner := tray.NewSystrayRunner(nil, config.AppTitle, selectTrayIcon())
