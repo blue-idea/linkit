@@ -1593,6 +1593,34 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-069 · 修复 AI 新建书签标签匹配与复用**
+
+  > 依赖：TASK-018、TASK-033 · 对齐：fix_task 1.11 · 预计：1–2 小时 · 状态：done · 2026-07-22
+
+  - [x] Red：复现 AI 建议标签因语言翻译或分隔符差异无法映射到现有 Tag，保存后书签标签为空。
+  - [x] Green：AI 提示词优先返回候选标签原始 label；前端以 Unicode、大小写和常见分隔符规范化进行保守匹配。
+  - [x] Green：仅复用唯一命中的现有标签；未命中建议不在新建书签流程自动创建，避免标签膨胀。
+  - [x] Refactor：将标签建议匹配从 `Dialogs.tsx` 抽取为纯函数，复用单次索引，禁止新增网络请求或数据库结构。
+  - [x] QA：Go 提示词契约测试、Vitest 关键路径与覆盖率、Playwright 新建书签 AI 成功旅程。
+
+  **验证方式：**
+  ```powershell
+  go test ./internal/ai -count=1 -cover
+  pnpm --dir ui exec vitest run src/features/tags/suggested-tag-matching.test.ts
+  pnpm --dir ui exec vitest run src/features/ai/bookmark-analysis src/features/tags
+  pnpm --dir ui exec playwright test tests/e2e/ai-bookmark-analysis.spec.ts --workers=1
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-069-AC.md`、`docs/spec/evidence/TASK-069-evidence.md`、`docs/spec/reports/TASK-069-report.md`。
+
+  _需求: REQ-006、REQ-014
+  验收标准：REQ-006-AC-002、REQ-006-AC-004、REQ-014-AC-003
+  _测试类型: Unit + API + E2E
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1665,6 +1693,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-066 | 修复设置保存反馈与窗口大小重启恢复 | Unit/Component/Manual | done | REQ-031、023、030 |
 | TASK-067 | 新建书签图标（元数据图片与文字回退） | Unit/E2E | done | REQ-006 |
 | TASK-068 | 书签图标领域持久化 | Unit/Integration | done | REQ-006 |
+| TASK-069 | AI 新建书签标签匹配与复用 | Unit/API/E2E | done | REQ-006、014 |
 
 ---
 
@@ -1696,3 +1725,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 3.0.0 | 2026-07-22 | 已定稿 | 完成 TASK-066，修复设置保存无反馈与 uiSize 冷启动恢复回归 |
 | 3.1.0 | 2026-07-22 | 已定稿 | 完成 TASK-067，新建书签元数据 favicon 与文字图标稳定背景色 |
 | 3.2.0 | 2026-07-22 | 已定稿 | 完成 TASK-068，书签图标与背景色在 library 信封中 round-trip 持久化 |
+| 3.3.0 | 2026-07-22 | 已定稿 | 完成 TASK-069，修复 AI 标签候选复用、保守匹配与新建流程标签膨胀风险 |
