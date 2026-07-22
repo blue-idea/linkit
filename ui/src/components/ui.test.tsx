@@ -19,4 +19,11 @@ describe('Favicon', () => {
     render(<Favicon glyph={null} color={null} />);
     expect(screen.getByText('?')).toBeInTheDocument();
   });
+
+  it('[组件] 传入 http 图片地址时 shall 渲染图片图标', () => {
+    const { container } = render(<Favicon glyph="https://example.test/favicon.png" color="blue" />);
+    const image = container.querySelector('img');
+    expect(image).not.toBeNull();
+    expect(image).toHaveAttribute('src', 'https://example.test/favicon.png');
+  });
 });

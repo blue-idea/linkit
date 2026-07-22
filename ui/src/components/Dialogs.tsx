@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Bookmark, Category, Collection, Tag, AIInsight } from '../types';
 import { fetchBookmarkMetadata, resolveNewBookmarkCategoryId, shouldApplyAiCategorySuggestion } from '../features/bookmarks';
+import { resolveBookmarkIcon } from '../features/bookmarks/icon';
 import {
   applyReanalyzeConfirmation,
   buildInboundAnalysis,
@@ -105,6 +106,7 @@ export function NewBookmarkDialog({
   const [aiSummary, setAiSummary] = useState('');
   const [pendingTagLabels, setPendingTagLabels] = useState<string[]>([]);
   const [urlWarning, setUrlWarning] = useState<string | null>(null);
+  const [faviconUrl, setFaviconUrl] = useState<string | null>(null);
   const categoryLocked = Boolean(activeCategoryId?.trim());
 
   useEffect(() => {
@@ -123,6 +125,7 @@ export function NewBookmarkDialog({
       setAiSummary('');
       setPendingTagLabels([]);
       setUrlWarning(null);
+      setFaviconUrl(null);
     }
   }, [open, initialUrl, activeCategoryId]);
 
@@ -172,19 +175,20 @@ export function NewBookmarkDialog({
         (label) => !tags.some((tag) => tag.label.trim().toLowerCase() === label.trim().toLowerCase())
       )
     );
+    setFaviconUrl(result.preview.faviconUrl);
     setStage('review');
   };
 
   const submit = () => {
     const domain = url.replace(/^https?:\/\//, '').split('/')[0] || 'unknown';
-    const glyph = domain[0]?.toUpperCase() ?? '?';
+    const icon = resolveBookmarkIcon({ url, title, faviconUrl });
     // REQ-006-AC-004：仅在用户确认保存时创建。
     onCreate({
       title: title.trim() || domain,
       url: url.trim(),
       domain,
-      favicon: glyph,
-      faviconColor: 'blue',
+      favicon: icon.favicon,
+      faviconColor: icon.faviconColor,
       description: description.trim(),
       notes,
       tags: chosenTags,
@@ -204,6 +208,7 @@ export function NewBookmarkDialog({
   };
 
   const cat = categories.find((c) => c.id === chosenCategory);
+  const previewIcon = resolveBookmarkIcon({ url, title, faviconUrl });
 
   return (
     <Modal open={open} onClose={onClose} width="max-w-[520px]" aria-label={i18n.t('bookmark.new.title')}>
@@ -297,7 +302,7 @@ export function NewBookmarkDialog({
             )}
 
             <div className="flex items-center gap-3 rounded-mac-lg bg-ink-800/60 hairline p-3">
-              <Favicon glyph={(url.replace(/^https?:\/\//, '')[0] ?? '?').toUpperCase()} color="blue" size={36} />
+              <Favicon glyph={previewIcon.favicon} color={previewIcon.faviconColor} size={36} />
               <div className="min-w-0 flex-1">
                 <input
                   aria-label={i18n.t('bookmark.titleInput')}

@@ -90,6 +90,30 @@ describe('AI 入库分析与降级', () => {
     expect(result.source).toBe('ai');
   });
 
+  // REQ-006-AC-006：元数据 favicon 透传到入库预览。
+  test('buildInboundAnalysis 在元数据成功时返回 faviconUrl', async () => {
+    const client: AnalyzeBookmarkClient = {
+      analyzeBookmark: async () => validResult,
+    };
+    const result = await buildInboundAnalysis({
+      url: 'https://example.test/page',
+      titleHint: '',
+      contentText: '',
+      categoryCandidates: [{ id: 'cat-1', name: 'Frontend' }],
+      tagCandidates: [],
+      context: { apiBase: 'https://api.example.test/v1', model: 'm', locale: 'en' },
+      client,
+      fetchMetadata: async () => ({
+        ok: true,
+        title: 'Meta Title',
+        description: 'Meta desc',
+        contentText: 'Page body',
+        favicon: 'https://cdn.example.test/icon.ico',
+      }),
+    });
+    expect(result.preview.faviconUrl).toBe('https://cdn.example.test/icon.ico');
+  });
+
   test('buildInboundAnalysis 在 AI description 为空时回退元数据描述', async () => {
     const client: AnalyzeBookmarkClient = {
       analyzeBookmark: async () => ({

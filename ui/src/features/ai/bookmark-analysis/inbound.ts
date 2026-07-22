@@ -16,6 +16,7 @@ export interface InboundAnalysisPreview {
   aiSummary: string;
   suggestedTags: string[];
   suggestedCategoryId: string | null;
+  faviconUrl: string | null;
 }
 
 export interface InboundAnalysisResult {
@@ -107,6 +108,7 @@ export async function buildInboundAnalysis(input: {
           aiSummary: '',
           suggestedTags: [],
           suggestedCategoryId: null,
+          faviconUrl: metadata.ok ? (metadata.favicon ?? null) : null,
         },
       };
     }
@@ -121,6 +123,7 @@ export async function buildInboundAnalysis(input: {
         aiSummary: validated.summary,
         suggestedTags: validated.suggestedTags,
         suggestedCategoryId: validated.suggestedCategoryId,
+        faviconUrl: metadata.ok ? (metadata.favicon ?? null) : null,
       },
     };
   } catch (error) {
@@ -134,6 +137,7 @@ export async function buildInboundAnalysis(input: {
         aiSummary: '',
         suggestedTags: [],
         suggestedCategoryId: null,
+        faviconUrl: metadata.ok ? (metadata.favicon ?? null) : null,
       },
     };
   }

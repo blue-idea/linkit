@@ -7,6 +7,7 @@ export type {
   BookmarkPreviewDraft,
   MetadataFetchResult,
 } from './analysis';
+export { resolveBookmarkIcon } from './icon';
 export { applyDeleteDecision, shouldConfirmBookmarkDelete } from './delete-confirm';
 export { fetchBookmarkMetadata } from './metadata-client';
 export {

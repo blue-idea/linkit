@@ -92,6 +92,7 @@
 | TASK-064 | 修复 Windows 托盘 Quit 无法退出 | REQ-030-AC-002~004、010 | done | `internal/tray/menu.go`、`internal/tray/systray_runner*.go`、`internal/platform/desktop.go`、`internal/platform/service.go`、`main.go` | `internal/tray/menu_test.go`、`internal/platform/desktop_test.go`、Windows Manual | `docs/spec/ac/TASK-064-AC.md` | 2026-07-22 |
 | TASK-065 | 托盘 Show 替换为 Settings | REQ-030-AC-002~004 | done | `config/events.go`、`internal/tray/menu.go`、`main.go`、`ui/src/config/events.ts`、`ui/src/services/wails-events.ts`、`ui/src/features/shell/tray-settings.ts`、`ui/src/App.tsx` | `internal/tray/menu_test.go`、`tray-settings.test.ts`、Windows native automation | `docs/spec/ac/TASK-065-AC.md` | 2026-07-22 |
 | TASK-066 | 修复设置保存反馈与窗口大小重启恢复 | REQ-031-AC-003~005；REQ-023-AC-001；REQ-030-AC-007 | done | `ui/src/features/auth/use-local-startup.ts`、`ui/src/features/shell/desktop-hotkey.ts`、`ui/src/components/SettingsDialog.tsx`、`ui/src/App.tsx`、`ui/src/i18n/catalogs.ts` | `persist-ui-settings.test.ts`、`desktop-hotkey.test.ts`、`SettingsDialog.test.tsx`、`settings-save-feedback.spec.ts`、Windows native automation | `docs/spec/ac/TASK-066-AC.md` | 2026-07-22 |
+| TASK-067 | 新建书签图标（元数据图片与文字回退） | REQ-006-AC-006 | done | `ui/src/features/bookmarks/icon.ts`、`ui/src/components/Dialogs.tsx`、`ui/src/components/ui.tsx`、`ui/src/features/ai/bookmark-analysis/inbound.ts` | `icon.test.ts`、`ui.test.tsx`、`bookmark-analysis.test.ts`、`tests/e2e/bookmark-crud.spec.ts` | `docs/spec/ac/TASK-067-AC.md` | 2026-07-22 |
 
 ---
 
@@ -163,3 +164,4 @@
 | 2026-07-22 | 新增并完成 TASK-065 | 用户确认托盘 Show 替换为 Settings；Windows 原生设置弹窗与未改动 Quit 回归通过 |
 | 2026-07-22 | 新增 TASK-066 | 用户反馈保存设置无响应且 uiSize 重启未恢复；进入 TDD 修复与回归验收 |
 | 2026-07-22 | TASK-066 更新为 done | UI/Domain 双向映射、热键变更检测、保存反馈、视觉回归与 Windows 1536×960 冷启动验收通过 |
+| 2026-07-22 | 新增 TASK-067 | REQ-006-AC-006 新建书签 favicon 图片优先与文字图标稳定背景色 |
