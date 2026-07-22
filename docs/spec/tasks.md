@@ -1,11 +1,11 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：3.6.0
+> 版本：3.7.0
 > 日期：2026-07-22
 > 状态：已定稿
 
-执行时须严格遵循 `docs/spec/requirements.md` 2.13.0、`docs/spec/design.md` 1.12.0 和 `docs/spec/test_strategy.md` 2.4.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
+执行时须严格遵循 `docs/spec/requirements.md` 2.14.0、`docs/spec/design.md` 1.13.0 和 `docs/spec/test_strategy.md` 2.5.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
 
 AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首尾均包含。
 
@@ -1700,6 +1700,32 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-073 · 新建书签随机渐变缩略图**
+
+  > 依赖：TASK-011、TASK-019 · 对齐：fix_task 1.15 · 预计：1 小时 · 状态：done · 2026-07-22
+
+  - [x] Red：纯函数测试证明随机渐变选择器不存在；组件测试证明保存 payload 仍固定为 `blue`；E2E 证明固定随机源后保存结果未呈现目标渐变。
+  - [x] Green：集中配置六种示例渐变键，新增可注入随机源的纯函数，并在 New Bookmark 显式 Save 时写入随机 thumbnail。
+  - [x] Refactor：现有 MiniBrowser/Masonry 复用同一集中渐变配置，不复制键列表或渐变类。
+  - [x] QA：全量 Vitest、覆盖率、Typecheck、Lint、Build、书签 CRUD/E2E、Playwright MCP 与 Baseline/Actual/Diff。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/features/bookmarks/thumbnail.test.ts src/components/NewBookmarkDialog.entry-modes.test.tsx
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui build
+  pnpm --dir ui exec playwright test tests/e2e/new-bookmark-random-thumbnail.spec.ts tests/e2e/bookmark-crud.spec.ts --workers=1
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-073-AC.md`、`docs/spec/evidence/TASK-073-evidence.md`、`docs/spec/reports/TASK-073-report.md`。
+
+  _需求: REQ-006
+  验收标准：REQ-006-AC-001、REQ-006-AC-004、REQ-006-AC-010
+  _测试类型: Unit + Component + E2E
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1776,6 +1802,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-070 | AI 书签摘要 200 字限制 | Unit/API | done | REQ-006 |
 | TASK-071 | 新建书签 Manual 与 Smart 双入口 | Component/E2E | done | REQ-006 |
 | TASK-072 | 分类名称双击展开与折叠 | Component/E2E | done | REQ-010、011 |
+| TASK-073 | 新建书签随机渐变缩略图 | Unit/Component/E2E | done | REQ-006 |
 
 ---
 
@@ -1811,3 +1838,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 3.4.0 | 2026-07-22 | 已定稿 | 完成 TASK-070，AI 书签摘要提示词与服务结果限制为最多 200 个 Unicode 字符 |
 | 3.5.0 | 2026-07-22 | 已定稿 | 完成 TASK-071，New Bookmark 提供 Manual 零 AI 与 Smart/Enter 智能分析双入口 |
 | 3.6.0 | 2026-07-22 | 已定稿 | 完成 TASK-072，分类名称双击切换子分类并修正默认展开状态切换语义 |
+| 3.7.0 | 2026-07-22 | 已定稿 | 完成 TASK-073，新建书签保存时随机选择既有渐变缩略图键且不改变数据库结构 |

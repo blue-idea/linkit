@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { BookmarkPresentation } from './presenter';
 import { assignMasonryColumns } from './layout';
 import { Icon, Favicon } from '../../components/ui';
-import { thumbnailGradients } from '../../colors';
+import { resolveThumbnailGradient } from '../../config/thumbnail-gradients';
 import { BookmarkItemActions, type BookmarkItemActionHandlers } from './BookmarkItemActions';
 import { useI18n } from '../../i18n/use-i18n';
 
@@ -110,9 +110,7 @@ function MasonryTile({
   onDelete: () => void;
   onRemoveFromCollection?: () => void;
 }) {
-  const grad = item.thumbnail
-    ? thumbnailGradients[item.thumbnail as keyof typeof thumbnailGradients]
-    : thumbnailGradients.gray;
+  const grad = resolveThumbnailGradient(item.thumbnail);
 
   return (
     <div

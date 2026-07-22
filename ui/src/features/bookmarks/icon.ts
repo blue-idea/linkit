@@ -1,4 +1,5 @@
 import type { TagColor } from '../../types';
+import { pickRandomItem } from '../../utils/random-item';
 
 export const BOOKMARK_ICON_COLORS: TagColor[] = ['blue', 'green', 'amber', 'coral', 'violet', 'gray'];
 
@@ -7,8 +8,7 @@ function isHttpUrl(value: string): boolean {
 }
 
 export function randomBookmarkIconColor(random: () => number = Math.random): TagColor {
-  const index = Math.floor(random() * BOOKMARK_ICON_COLORS.length);
-  return BOOKMARK_ICON_COLORS[Math.max(0, Math.min(index, BOOKMARK_ICON_COLORS.length - 1))] ?? 'blue';
+  return pickRandomItem(BOOKMARK_ICON_COLORS, random) ?? 'blue';
 }
 
 export function isBookmarkImageSrc(value: string): boolean {

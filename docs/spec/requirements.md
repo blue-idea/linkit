@@ -1,7 +1,7 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：2.13.0
+> 版本：2.14.0
 > 日期：2026-07-22
 > 状态：已定稿
 
@@ -460,6 +460,21 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
       - "Manual performs zero AI requests"
       - "Smart and URL Enter preserve the existing AI analysis path"
       - "No bookmark is persisted before explicit Save confirmation"
+
+- id: REQ-006-AC-010
+  ears: >
+    While New Bookmark 入库预览可见,
+    when 用户确认保存新书签,
+    the Linkit shall 从示例数据使用的预设渐变键中随机选择一个 thumbnail 并随书签持久化,
+    without 改变 Tag 或 Bookmark 数据库结构.
+  test_type: Unit + Component + E2E
+  expected:
+    return_value: "A configured thumbnail gradient key selected from blue, green, amber, coral, violet, or gray"
+    ui_state: "The saved bookmark detail preview renders the selected gradient"
+    side_effects:
+      - "The selected thumbnail key is written exactly once on explicit Save"
+      - "No thumbnail field is added to Tag"
+      - "No database migration or generative image request is introduced"
 ```
 
 ---
@@ -2253,3 +2268,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.11.0 | 2026-07-22 | 已定稿 | 新增 REQ-006-AC-008：AI 书签摘要提示词与服务结果双重限制为最多 200 个 Unicode 字符 |
 | 2.12.0 | 2026-07-22 | 已定稿 | 新增 REQ-006-AC-009：New Bookmark 提供 Manual 零 AI 路径，Smart 与 Enter 保持智能分析 |
 | 2.13.0 | 2026-07-22 | 已定稿 | 新增 REQ-010-AC-006：双击分类名称切换子分类展开/折叠，保留单击选择与箭头入口 |
+| 2.14.0 | 2026-07-22 | 已定稿 | 新增 REQ-006-AC-010：新建书签保存时从既有示例渐变键随机生成 thumbnail，不改变数据结构 |

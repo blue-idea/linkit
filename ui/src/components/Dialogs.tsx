@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Bookmark, Category, Collection, Tag, AIInsight } from '../types';
 import {
   fetchBookmarkMetadata,
+  randomBookmarkThumbnail,
   resolveBookmarkAnalysis,
   resolveNewBookmarkCategoryId,
   shouldApplyAiCategorySuggestion,
@@ -264,7 +265,7 @@ export function NewBookmarkDialog({
       collectionIds: chosenCollections,
       starred: false,
       pinned: false,
-      thumbnail: 'blue',
+      thumbnail: randomBookmarkThumbnail(),
       health: 'ok',
       aiSummary: aiSummary.trim(),
       aiSuggestedTags: [],

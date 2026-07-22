@@ -87,6 +87,7 @@ function installWailsSpies(metadata?: Partial<MetadataPayload>) {
 afterEach(() => {
   cleanup();
   delete (window as TestWindow).go;
+  vi.restoreAllMocks();
 });
 
 describe('NewBookmarkDialog Manual 与 Smart 入口', () => {
@@ -126,6 +127,27 @@ describe('NewBookmarkDialog Manual 与 Smart 入口', () => {
     expect(onCreate).toHaveBeenCalledOnce();
     expect(onCreate).toHaveBeenCalledWith(expect.objectContaining({ favicon: faviconUrl }));
     expect(analyzeBookmark).not.toHaveBeenCalled();
+  });
+
+  // TASK-073 / REQ-006-AC-010：显式保存时写入随机渐变键，不再固定为 blue。
+  test('Manual 确认保存时写入随机渐变缩略图', async () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.75);
+    installWailsSpies({ faviconUrl: 'https://example.test/favicon.png' });
+    const user = userEvent.setup();
+    const { onCreate } = renderDialog();
+
+    await user.type(screen.getByRole('textbox', { name: 'Bookmark URL' }), 'https://example.test/gradient');
+    await user.click(screen.getByRole('button', { name: 'Manual' }));
+    const saveButton = await screen.findByRole('button', { name: 'Save bookmark' });
+
+    expect(randomSpy).not.toHaveBeenCalled();
+    expect(onCreate).not.toHaveBeenCalled();
+
+    await user.click(saveButton);
+
+    expect(randomSpy).toHaveBeenCalledOnce();
+    expect(onCreate).toHaveBeenCalledOnce();
+    expect(onCreate).toHaveBeenCalledWith(expect.objectContaining({ thumbnail: 'violet' }));
   });
 
   // TASK-071 / REQ-006-AC-005：Manual 同样必须在请求前拦截重复 URL。
