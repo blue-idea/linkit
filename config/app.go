@@ -2,7 +2,7 @@ package config
 
 const (
 	// AppVersion 用于导出信封标识生成文件的应用版本。
-	AppVersion = "0.1.6"
+	AppVersion = "0.1.7"
 	// AppWidth 与 AppHeight 为三栏主界面提供默认可用空间。
 	AppWidth  = 1280
 	AppHeight = 800
