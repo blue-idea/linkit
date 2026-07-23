@@ -24,6 +24,7 @@ function eventToAccelerator(event: KeyboardEvent): string | null {
     return null;
   }
   if (event.key === ',') return 'CmdOrCtrl+,';
+  if (event.key === '/') return 'CmdOrCtrl+/';
   if (event.key === '\\') return 'CmdOrCtrl+\\';
   if (event.key.length === 1) return `CmdOrCtrl+${event.key.toUpperCase()}`;
   return null;

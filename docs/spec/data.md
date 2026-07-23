@@ -1,8 +1,8 @@
 # Linkit 数据设计（Data）
 
 > 文件路径：`docs/spec/data.md`  
-> 版本：1.5.0
-> 日期：2026-07-21  
+> 版本：1.6.0
+> 日期：2026-07-23  
 > 状态：已定稿
 
 ---
@@ -178,7 +178,8 @@
 | `viewCard` | `CmdOrCtrl+1` | Card 视图 |
 | `viewList` | `CmdOrCtrl+2` | List 视图 |
 | `viewMasonry` | `CmdOrCtrl+3` | Masonry 视图 |
-| `toggleSidebar` | `CmdOrCtrl+\\` | 切换侧栏 |
+| `toggleLeftSidebar` | `CmdOrCtrl+/` | 切换左侧 Sidebar |
+| `toggleRightSidebar` | `CmdOrCtrl+\\` | 切换右侧 Detail Panel |
 | `toggleWindow` | `CmdOrCtrl+L` | 窗口显隐（系统级全局热键） |
 
 `Esc` 不进入 `shortcuts`。旧 `settings.json` 无该字段时，读取合并默认值且不强制抬升破坏性 `settingsVersion`；写入时持久化完整映射。

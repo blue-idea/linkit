@@ -26,7 +26,7 @@ func TestReadSettingsMergesMissingUiSize(t *testing.T) {
 		"view":{"defaultMode":"card"},"lastCloudRevision":null,
 		"shortcuts":{"spotlight":"CmdOrCtrl+K","newBookmark":"CmdOrCtrl+N","insights":"CmdOrCtrl+I",
 			"settings":"CmdOrCtrl+,","viewCard":"CmdOrCtrl+1","viewList":"CmdOrCtrl+2",
-			"viewMasonry":"CmdOrCtrl+3","toggleSidebar":"CmdOrCtrl+\\","toggleWindow":"CmdOrCtrl+L"}
+			"viewMasonry":"CmdOrCtrl+3","toggleLeftSidebar":"CmdOrCtrl+/","toggleRightSidebar":"CmdOrCtrl+\\","toggleWindow":"CmdOrCtrl+L"}
 	}`
 	if err := os.WriteFile(filepath.Join(root, config.SettingsFileName), []byte(payload), 0o600); err != nil {
 		t.Fatalf("write settings: %v", err)

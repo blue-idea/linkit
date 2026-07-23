@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { THEME_IDS } from '../config/themes';
 import { DEFAULT_UI_SIZE, UI_SIZE_IDS } from '../config/window-size';
-import { DEFAULT_SHORTCUTS, SHORTCUT_ACTION_IDS } from '../features/shell/shortcuts';
+import { DEFAULT_SHORTCUTS, SHORTCUT_ACTION_IDS, normalizeShortcutMap } from '../features/shell/shortcuts';
 import { isGlyphFaviconValue, isHttpFaviconValue } from './bookmark-icon';
 
 const colorSchema = z.enum(['blue', 'green', 'amber', 'coral', 'violet', 'gray']);
@@ -15,7 +15,7 @@ const bookmarkFaviconSchema = z
 const idSchema = z.string().trim().min(1);
 const nullableDateTimeSchema = z.iso.datetime().nullable();
 const shortcutActionIdSchema = z.enum(SHORTCUT_ACTION_IDS);
-const shortcutMapSchema = z.record(shortcutActionIdSchema, z.string().trim().min(1)).transform((value) => {
+const shortcutMapSchema = z.preprocess((raw) => normalizeShortcutMap(raw as Record<string, string>), z.record(shortcutActionIdSchema, z.string().trim().min(1))).transform((value) => {
   const merged = { ...DEFAULT_SHORTCUTS };
   for (const id of SHORTCUT_ACTION_IDS) {
     if (typeof value[id] === 'string' && value[id].trim()) {

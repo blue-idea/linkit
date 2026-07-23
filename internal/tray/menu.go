@@ -17,6 +17,8 @@ type Callbacks struct {
 	OnSettings func()
 
 	OnQuit func()
+
+	OnDoubleClick func()
 }
 
 // Host 处理托盘菜单点击分发。
@@ -49,5 +51,11 @@ func (h *Host) HandleMenuClick(id string) {
 		// 第三方托盘会在原生消息回调中同步调用此方法。
 		// 异步派发可避免 Wails 窗口操作重入 Win32/AppKit 消息循环。
 		go callback()
+	}
+}
+
+func (h *Host) HandleDoubleClick() {
+	if h.callbacks.OnDoubleClick != nil {
+		go h.callbacks.OnDoubleClick()
 	}
 }

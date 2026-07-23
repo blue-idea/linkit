@@ -3,6 +3,10 @@
 #include <stdbool.h>
 
 extern void linkitDarwinTrayMenuSelected(int menuID);
+extern void linkitDarwinTrayDoubleClicked(void);
+
+static NSStatusItem *linkitStatusItem;
+static NSMenu *linkitStatusMenu;
 
 @interface LinkitTrayTarget : NSObject
 @end
@@ -11,10 +15,17 @@ extern void linkitDarwinTrayMenuSelected(int menuID);
 - (void)handleMenuItem:(NSMenuItem *)sender {
 	linkitDarwinTrayMenuSelected((int)sender.tag);
 }
+
+- (void)handleStatusItem:(NSStatusBarButton *)sender {
+	NSEvent *event = [NSApp currentEvent];
+	if (event.type == NSEventTypeLeftMouseUp && event.clickCount >= 2) {
+		linkitDarwinTrayDoubleClicked();
+		return;
+	}
+	[linkitStatusItem popUpStatusItemMenu:linkitStatusMenu];
+}
 @end
 
-static NSStatusItem *linkitStatusItem;
-static NSMenu *linkitStatusMenu;
 static LinkitTrayTarget *linkitTrayTarget;
 
 static void linkitRunOnMainSync(dispatch_block_t block) {
@@ -67,7 +78,11 @@ bool linkitCreateStatusTray(const char *settingsTitle, const char *quitTitle, co
 		quitItem.target = linkitTrayTarget;
 		[linkitStatusMenu addItem:quitItem];
 
-		linkitStatusItem.menu = linkitStatusMenu;
+		if (linkitStatusItem.button != nil) {
+			linkitStatusItem.button.target = linkitTrayTarget;
+			linkitStatusItem.button.action = @selector(handleStatusItem:);
+			[linkitStatusItem.button sendActionOn:(NSEventMaskLeftMouseUp | NSEventMaskRightMouseUp)];
+		}
 		created = true;
 	});
 	return created;

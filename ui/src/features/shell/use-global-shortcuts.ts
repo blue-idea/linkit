@@ -9,7 +9,8 @@ export type GlobalShortcutHandlers = {
   onInsights: () => void;
   onSettings: () => void;
   onDensity: (density: ViewDensity) => void;
-  onToggleSidebar: () => void;
+  onToggleLeftSidebar: () => void;
+  onToggleRightSidebar: () => void;
 };
 
 type UseGlobalShortcutsOptions = {
@@ -65,9 +66,12 @@ export function useGlobalShortcuts(
       } else if (matchesAccelerator(e, shortcuts.viewMasonry)) {
         e.preventDefault();
         handlers.onDensity('masonry');
-      } else if (matchesAccelerator(e, shortcuts.toggleSidebar)) {
+      } else if (matchesAccelerator(e, shortcuts.toggleLeftSidebar)) {
         e.preventDefault();
-        handlers.onToggleSidebar();
+        handlers.onToggleLeftSidebar();
+      } else if (matchesAccelerator(e, shortcuts.toggleRightSidebar)) {
+        e.preventDefault();
+        handlers.onToggleRightSidebar();
       } else if (!skipToggleWindow && matchesAccelerator(e, shortcuts.toggleWindow)) {
         e.preventDefault();
       }

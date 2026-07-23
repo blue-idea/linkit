@@ -37,6 +37,26 @@ test.describe('分类 CRUD', () => {
     });
   });
 
+  // REQ-010-AC-002 · fix_task 1.16
+  test('当前选中分类时，收藏分类标题加号 shall 仍创建一级分类', async ({ page }) => {
+    await page.getByText('技术', { exact: true }).first().click();
+    await page.getByRole('button', { name: 'New category' }).click();
+    await expect(page.getByRole('dialog', { name: 'New category' })).toBeVisible();
+    await page.getByLabel('Category name').fill('FIX116 Root Category');
+    await page.getByRole('button', { name: 'Create category' }).click();
+
+    const label = page.getByText('FIX116 Root Category', { exact: true }).first();
+    await expect(label).toBeVisible();
+    const row = label.locator('xpath=ancestor::div[contains(@data-category-drop,"FIX116 Root Category")][1]');
+    await expect(row).toHaveCSS('padding-left', '12px');
+
+    await mkdir(evidenceDirectory, { recursive: true });
+    await page.screenshot({
+      path: resolve(evidenceDirectory, 'TASK-074-root-category-create.png'),
+      fullPage: true,
+    });
+  });
+
   // REQ-010-AC-002 · fix_task 1.7
   test('分类改名 shall 在侧栏树中显示新名称', async ({ page }) => {
     await page.getByRole('button', { name: 'New category' }).click();

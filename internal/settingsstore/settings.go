@@ -92,8 +92,9 @@ func DefaultAppSettings() appSettings {
 			"viewCard":      "CmdOrCtrl+1",
 			"viewList":      "CmdOrCtrl+2",
 			"viewMasonry":   "CmdOrCtrl+3",
-			"toggleSidebar": "CmdOrCtrl+\\",
-			"toggleWindow":  "CmdOrCtrl+L",
+			"toggleLeftSidebar":  "CmdOrCtrl+/",
+			"toggleRightSidebar": "CmdOrCtrl+\\",
+			"toggleWindow":       "CmdOrCtrl+L",
 		},
 	}
 }

@@ -539,7 +539,7 @@ OpenExternalURL(url: string): Promise<void>
 ShowMainWindow(): Promise<void>
 ```
 
-显示并聚焦主窗口（托盘 Settings 与全局显隐热键复用）。
+显示并聚焦主窗口（托盘 Settings、托盘图标双击与全局显隐热键复用）。
 
 #### `HideMainWindow()`
 

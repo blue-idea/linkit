@@ -111,7 +111,8 @@ export function createAppSettings(overrides: Partial<AppSettings> = {}): AppSett
       viewCard: 'CmdOrCtrl+1',
       viewList: 'CmdOrCtrl+2',
       viewMasonry: 'CmdOrCtrl+3',
-      toggleSidebar: 'CmdOrCtrl+\\',
+      toggleLeftSidebar: 'CmdOrCtrl+/',
+      toggleRightSidebar: 'CmdOrCtrl+\\',
       toggleWindow: 'CmdOrCtrl+L',
     },
   };

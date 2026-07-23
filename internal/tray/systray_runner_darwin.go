@@ -106,3 +106,14 @@ func linkitDarwinTrayMenuSelected(menuID C.int) {
 		runner.host.HandleMenuClick(MenuQuit)
 	}
 }
+
+//export linkitDarwinTrayDoubleClicked
+func linkitDarwinTrayDoubleClicked() {
+	darwinRunnerMu.Lock()
+	runner := darwinRunner
+	darwinRunnerMu.Unlock()
+	if runner == nil || runner.host == nil {
+		return
+	}
+	runner.host.HandleDoubleClick()
+}

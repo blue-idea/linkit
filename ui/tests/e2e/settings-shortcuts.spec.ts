@@ -21,10 +21,12 @@ test.describe('Settings Shortcuts', () => {
     await expect(dialog.getByRole('tab', { name: 'Shortcuts' })).toBeVisible();
     await dialog.getByRole('tab', { name: 'Shortcuts' }).click();
     await expect(dialog.getByText('Spotlight search')).toBeVisible();
+    await expect(dialog.getByText('Toggle left sidebar')).toBeVisible();
+    await expect(dialog.getByText('Toggle right sidebar')).toBeVisible();
     await expect(dialog.getByText('Show / hide window')).toBeVisible();
     await expect(dialog.getByRole('button', { name: 'Restore Defaults' })).toBeVisible();
     await dialog.screenshot({
-      path: resolve(evidenceDirectory, 'TASK-059-shortcuts-panel.png'),
+      path: resolve(evidenceDirectory, 'TASK-074-shortcuts-panel.png'),
     });
   });
 });

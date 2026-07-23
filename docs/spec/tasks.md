@@ -1,11 +1,11 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：3.7.0
-> 日期：2026-07-22
+> 版本：3.9.0
+> 日期：2026-07-23
 > 状态：已定稿
 
-执行时须严格遵循 `docs/spec/requirements.md` 2.14.0、`docs/spec/design.md` 1.13.0 和 `docs/spec/test_strategy.md` 2.5.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
+执行时须严格遵循 `docs/spec/requirements.md` 2.15.0、`docs/spec/design.md` 1.14.0 和 `docs/spec/test_strategy.md` 2.6.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
 
 AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首尾均包含。
 
@@ -1726,6 +1726,34 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-074 · fix_task 1.16-1.18：分类入口、侧栏快捷键拆分与托盘双击显示**
+
+  > 依赖：TASK-014、TASK-022、TASK-059~061、TASK-072 · 对齐：fix_task 1.16-1.18 · 预计：3–4 小时 · 状态：done（Manual 部分 BLOCKED） · 2026-07-23
+
+  - [x] Red：E2E 证明当前选中分类后点击“收藏分类”标题 `+` 仍错误创建二级分类；Vitest/E2E 证明 Shortcuts 与快捷键行为仍是单一 `Toggle sidebar`；Go 单测证明托盘宿主缺少双击回调入口。
+  - [x] Green：仅修正“收藏分类”标题 `+` 的父级回退为一级分类；将动作拆分为 `toggleLeftSidebar` / `toggleRightSidebar`，默认分别为 `CmdOrCtrl+/` 与 `CmdOrCtrl+\\`；新增托盘双击显示窗口回调并接入 Windows/macOS 托盘实现。
+  - [x] Refactor：抽取旧 `toggleSidebar` 到新右侧栏动作的兼容迁移，统一默认值、Schema、settingsstore、factory 与展示层映射，避免平行逻辑。
+  - [x] QA：Vitest、Go 单测、Typecheck、Lint 与 3 个 Playwright 定向回归通过；真实 Windows/macOS 托盘双击 Manual 本回合保持 `BLOCKED`，未伪造 PASS。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/components/Sidebar.category-label.test.tsx src/features/shell/shortcuts.test.ts src/features/settings/ShortcutsPanel.test.tsx src/features/auth/persist-ui-settings.test.ts src/domain/library.test.ts
+  go test ./internal/tray ./internal/platform ./internal/settingsstore -count=1
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui exec playwright test ui/tests/e2e/category-crud.spec.ts -g "当前选中分类时，收藏分类标题加号" --workers=1
+  pnpm --dir ui exec playwright test ui/tests/e2e/app-shell.spec.ts -g "快捷键 shall 打开 New Bookmark、Insights、Settings 并切换视图与左右侧栏" --workers=1
+  pnpm --dir ui exec playwright test ui/tests/e2e/settings-shortcuts.spec.ts -g "设置中列出 Shortcuts 分区与全部快捷键" --workers=1
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-074-AC.md`、`docs/spec/evidence/TASK-074-evidence.md`、`docs/spec/reports/TASK-074-report.md`。
+
+  _需求: REQ-010、REQ-024、REQ-030
+  验收标准：REQ-010-AC-002、REQ-024-AC-003、REQ-030-AC-006~007、REQ-030-AC-011
+  _测试类型: Unit + E2E + Manual
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1803,6 +1831,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-071 | 新建书签 Manual 与 Smart 双入口 | Component/E2E | done | REQ-006 |
 | TASK-072 | 分类名称双击展开与折叠 | Component/E2E | done | REQ-010、011 |
 | TASK-073 | 新建书签随机渐变缩略图 | Unit/Component/E2E | done | REQ-006 |
+| TASK-074 | fix_task 1.16-1.18：分类入口、侧栏快捷键拆分与托盘双击显示 | Unit/E2E/Manual | done（Manual 部分 BLOCKED） | REQ-010、024、030 |
 
 ---
 
@@ -1839,3 +1868,5 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 3.5.0 | 2026-07-22 | 已定稿 | 完成 TASK-071，New Bookmark 提供 Manual 零 AI 与 Smart/Enter 智能分析双入口 |
 | 3.6.0 | 2026-07-22 | 已定稿 | 完成 TASK-072，分类名称双击切换子分类并修正默认展开状态切换语义 |
 | 3.7.0 | 2026-07-22 | 已定稿 | 完成 TASK-073，新建书签保存时随机选择既有渐变缩略图键且不改变数据库结构 |
+| 3.8.0 | 2026-07-23 | 已定稿 | 新增 TASK-074，覆盖 fix_task 1.16-1.18：一级分类入口修正、左/右侧栏快捷键拆分与托盘双击显示窗口 |
+| 3.9.0 | 2026-07-23 | 已定稿 | 完成 TASK-074；自动化验证通过，真实原生托盘双击 Manual 保持 BLOCKED |

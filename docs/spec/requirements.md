@@ -1,8 +1,8 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：2.14.0
-> 日期：2026-07-22
+> 版本：2.15.0
+> 日期：2026-07-23
 > 状态：已定稿
 
 ---
@@ -1607,8 +1607,8 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 
 - id: REQ-024-AC-003
   ears: >
-    When 用户按当前生效的视图或侧栏快捷键（默认分别为 Cmd/Ctrl+1、2、3 或 Cmd/Ctrl+反斜杠）,
-    the Linkit shall 分别切换 Card、List、Masonry 或 Sidebar 可见性.
+    When 用户按当前生效的视图或侧栏快捷键（默认分别为 Cmd/Ctrl+1、2、3、Cmd/Ctrl+正斜杠 或 Cmd/Ctrl+反斜杠）,
+    the Linkit shall 分别切换 Card、List、Masonry、左侧 Sidebar 或右侧 Detail Panel 可见性.
   test_type: E2E
   expected:
     ui_state: "The requested view or sidebar state is applied"
@@ -2061,7 +2061,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 - id: REQ-030-AC-006
   ears: >
     When 用户打开 Settings → Shortcuts,
-    the Linkit shall 列出全部可配置快捷键及其当前绑定，至少包含 Spotlight、New Bookmark、Insights、Settings、Card/List/Masonry 视图、Toggle Sidebar 与 Toggle Window Visibility.
+    the Linkit shall 列出全部可配置快捷键及其当前绑定，至少包含 Spotlight、New Bookmark、Insights、Settings、Card/List/Masonry 视图、Toggle Left Sidebar、Toggle Right Sidebar 与 Toggle Window Visibility.
   test_type: E2E
   expected:
     ui_state: "Shortcuts section lists every configurable action with its current binding"
@@ -2111,6 +2111,16 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
       - "Default modifiers follow Ctrl on Windows and Cmd on macOS"
       - "Tray and global hotkey behavior matches platform conventions where supported"
       - "Linux limitations are recorded as best-effort, never false PASS"
+    side_effects: []
+
+- id: REQ-030-AC-011
+  ears: >
+    While 主窗口已隐藏且宿主平台支持托盘或菜单栏托盘双击行为,
+    when 用户双击托盘图标,
+    the Linkit shall 显示并聚焦主窗口；不得错误打开 Quit，且不得阻断既有托盘菜单与全局热键行为.
+  test_type: Manual
+  expected:
+    ui_state: "Main window is visible and focused after tray icon double-click"
     side_effects: []
 ```
 
@@ -2269,3 +2279,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.12.0 | 2026-07-22 | 已定稿 | 新增 REQ-006-AC-009：New Bookmark 提供 Manual 零 AI 路径，Smart 与 Enter 保持智能分析 |
 | 2.13.0 | 2026-07-22 | 已定稿 | 新增 REQ-010-AC-006：双击分类名称切换子分类展开/折叠，保留单击选择与箭头入口 |
 | 2.14.0 | 2026-07-22 | 已定稿 | 新增 REQ-006-AC-010：新建书签保存时从既有示例渐变键随机生成 thumbnail，不改变数据结构 |
+| 2.15.0 | 2026-07-23 | 已定稿 | 修订 REQ-024-AC-003 与 REQ-030-AC-006：侧栏快捷键拆分为左侧 Sidebar 与右侧 Detail Panel；新增 REQ-030-AC-011：托盘图标双击显示主窗口 |

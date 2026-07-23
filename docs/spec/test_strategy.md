@@ -2,8 +2,8 @@
 
 > 文件路径：`docs/spec/test_strategy.md`  
 > 参考方法论：`phases/qa_engine.md` §第1阶段  
-> 版本：2.5.0
-> 日期：2026-07-22
+> 版本：2.6.0
+> 日期：2026-07-23
 > 状态：已定稿
 
 ---
@@ -51,7 +51,7 @@ test_scope:
     - "分类名称双击展开/折叠、单击选择、Chevron 与拖拽回归"
     - "新建书签随机渐变缩略图键选择、保存持久化与详情视觉回归"
     - "六种浏览视图、Spotlight、快捷键、拖拽和全界面 i18n（排除用户自定义内容）"
-    - "关闭隐藏到托盘、系统托盘 Settings/Quit、窗口显隐全局热键与 Settings→Shortcuts 可配置绑定"
+    - "关闭隐藏到托盘、系统托盘 Settings/Quit、托盘图标双击显示窗口、窗口显隐全局热键与 Settings→Shortcuts 可配置绑定"
     - "Settings→Appearance 窗口大小四档（uiSize）、立即套用与冷启动恢复"
     - "OpenAI-compatible AI、授权、降级、语义重排和建议确认"
     - "New Bookmark Manual 零 AI 与 Smart/Enter 智能分析双入口"
@@ -107,7 +107,7 @@ test_scope:
 | J-14 | Insights、手动健康扫描、取消和 Updated/Broken 筛选 |
 | J-15 | 全局快捷键、URL 拖入、Esc 和键盘无障碍 |
 | J-16 | 10,000 条性能、选定平台完整桌面旅程与另一平台构建门禁 |
-| J-17 | OS 关闭隐藏、托盘 Settings 打开设置、托盘 Quit、Ctrl/Cmd+L 全局显隐、Settings→Shortcuts 改绑/冲突/恢复默认 |
+| J-17 | OS 关闭隐藏、托盘 Settings 打开设置、托盘图标双击显示窗口、托盘 Quit、Ctrl/Cmd+L 全局显隐、左/右侧栏快捷键、Settings→Shortcuts 改绑/冲突/恢复默认 |
 | J-18 | Settings→Appearance 选择 Small/Medium/Large/Extra large；保存后窗口立即变为预设宽高；重启按档位恢复；手动拖拽后重启仍按档位 |
 
 ---
@@ -258,6 +258,7 @@ environments:
 | 2.0.0 | 2026-07-21 | 已定稿 | 合并 Vitest 与 Coverage 单次执行；PR/main 按影响运行浏览器测试；定时/手动保留全量回归 |
 | 2.1.0 | 2026-07-21 | 已定稿 | 新增 J-18 与原生窗口尺寸门禁；对齐 REQ-031 与 fix_task 1.9 |
 | 2.2.0 | 2026-07-22 | 已定稿 | J-17 托盘 Show 改为 Settings；增加设置事件 Unit 与 Windows 原生截图验收，Quit 保留回归门禁 |
+| 2.6.0 | 2026-07-23 | 已定稿 | J-17 新增托盘图标双击显示窗口与左/右侧栏快捷键拆分；对齐 fix_task 1.17 / 1.18 |
 | 2.3.0 | 2026-07-22 | 已定稿 | 将 New Bookmark Manual 零 AI、Smart/Enter 智能分析与按钮视觉回归纳入 Component/E2E 范围 |
 | 2.4.0 | 2026-07-22 | 已定稿 | J-05 增加分类名称双击展开/折叠，并回归单击选择、Chevron 与拖拽入口 |
 | 2.5.0 | 2026-07-22 | 已定稿 | J-03 增加新建书签随机渐变缩略图的 Unit、Component、E2E 与视觉回归 |

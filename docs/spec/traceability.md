@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.37.0
-> 日期：2026-07-22
-> 状态：已定稿（新增并完成 TASK-073 / 新建书签随机渐变缩略图）
+> 版本：1.38.0
+> 日期：2026-07-23
+> 状态：已定稿（新增并完成 TASK-074 / fix_task 1.16-1.18）
 
 ---
 
@@ -99,6 +99,7 @@
 | TASK-071 | 新建书签 Manual 与 Smart 双入口 | REQ-006-AC-001、004、009 | done | `ui/src/components/Dialogs.tsx`、`ui/src/features/bookmarks/analysis.ts`、`ui/src/i18n/catalogs.ts` | `NewBookmarkDialog.entry-modes.test.tsx`、`analysis.test.ts`、`new-bookmark-entry-modes.spec.ts`、相关书签 E2E | `docs/spec/ac/TASK-071-AC.md` | `docs/spec/evidence/TASK-071-evidence.md`、`docs/spec/reports/TASK-071-report.md`、`TASK-071-entry-modes-*.png` |
 | TASK-072 | 分类名称双击展开与折叠 | REQ-010-AC-001、006；REQ-011-AC-001 | done | `ui/src/components/Sidebar.tsx`、`ui/src/App.tsx` | `Sidebar.category-double-click.test.tsx`、`Sidebar.category-label.test.tsx`、`category-name-double-click.spec.ts`、分类 CRUD/拖拽 E2E | `docs/spec/ac/TASK-072-AC.md` | `docs/spec/evidence/TASK-072-evidence.md`、`docs/spec/reports/TASK-072-report.md`、`TASK-072-category-name-double-click-*.png` |
 | TASK-073 | 新建书签随机渐变缩略图 | REQ-006-AC-001、004、010 | done | `ui/src/config/thumbnail-gradients.ts`、`ui/src/features/bookmarks/thumbnail.ts`、`ui/src/components/Dialogs.tsx`、`ui/src/components/ui.tsx`、`ui/src/features/views/MasonryView.tsx` | `thumbnail.test.ts`、`NewBookmarkDialog.entry-modes.test.tsx`、`new-bookmark-random-thumbnail.spec.ts`、书签 CRUD/基础视图 E2E | `docs/spec/ac/TASK-073-AC.md` | `docs/spec/evidence/TASK-073-evidence.md`、`docs/spec/reports/TASK-073-report.md`、`TASK-073-random-thumbnail-*.png` |
+| TASK-074 | fix_task 1.16-1.18：分类入口、侧栏快捷键拆分与托盘双击显示 | REQ-010-AC-002；REQ-024-AC-003；REQ-030-AC-006~007、011 | done | `ui/src/App.tsx`、`ui/src/features/shell/shortcuts.ts`、`ui/src/features/shell/use-global-shortcuts.ts`、`ui/src/features/settings/ShortcutsPanel.tsx`、`ui/src/domain/schemas.ts`、`ui/src/i18n/catalogs.ts`、`internal/settingsstore/settings.go`、`internal/tray/*` | `ui/tests/e2e/category-crud.spec.ts`、`ui/tests/e2e/app-shell.spec.ts`、`ui/tests/e2e/settings-shortcuts.spec.ts`、`ui/src/features/shell/shortcuts.test.ts`、`ui/src/features/settings/ShortcutsPanel.test.tsx`、`ui/src/features/auth/persist-ui-settings.test.ts`、`ui/src/domain/library.test.ts`、`internal/tray/menu_test.go` | `docs/spec/ac/TASK-074-AC.md` | 2026-07-23 |
 
 ---
 
@@ -177,3 +178,4 @@
 | 2026-07-22 | 新增并完成 TASK-071 | 对齐 fix_task 1.13；Manual 仅获取元数据且零 AI，Smart 与 URL Enter 保持智能分析 |
 | 2026-07-22 | 新增并完成 TASK-072 | 对齐 fix_task 1.14；双击分类名称切换子分类，修正根分类默认展开的首次切换语义 |
 | 2026-07-22 | 新增并完成 TASK-073 | 对齐 fix_task 1.15；按现有 Bookmark.thumbnail 模型随机复用示例渐变键，不新增 Tag 字段或数据库迁移 |
+| 2026-07-23 | 新增并完成 TASK-074 | 对齐 fix_task 1.16-1.18；修正“收藏分类”标题 `+` 只创建一级分类，拆分快捷键为左/右侧栏，并为托盘双击显示窗口补齐代码路径与自动化验证 |
