@@ -2,7 +2,7 @@ import type { Bookmark, Category, Collection, Tag } from '../types';
 import type { Selection } from '../state';
 import { Icon, TagPill, AIBadge } from './ui';
 import { tagColors } from '../colors';
-import { CategoryDndContext, CategoryDndItem } from '../features/categories';
+import { CategoryDndContext, CategoryDndItem, CategoryDndRootDrop } from '../features/categories';
 import { useI18n } from '../i18n/use-i18n';
 
 function SectionLabel({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) {
@@ -193,7 +193,7 @@ export function Sidebar({
   onNewCategory: (parentId?: string) => void;
   onRenameCategory: (categoryId: string) => void;
   onDeleteCategory: (categoryId: string) => void;
-  onMoveCategory: (categoryId: string, newParentId: string) => void;
+  onMoveCategory: (categoryId: string, newParentId: string | null) => void;
   onRequestSetCategoryIcon: (categoryId: string) => void;
   onNewCollection: () => void;
   onEditCollection: (collectionId: string) => void;
@@ -392,26 +392,45 @@ export function Sidebar({
         />
 
         {/* Categories */}
-        <SectionLabel
-          right={
-            <button
-              type="button"
-              aria-label={i18n.t('sidebar.newCategory')}
-              className="text-ink-400 hover:text-ink-100 transition"
-              title={i18n.t('sidebar.newCategory')}
-              onClick={(e) => {
-                e.stopPropagation();
-                onNewCategory();
-              }}
-            >
-              <Icon name="Plus" size={12} />
-            </button>
-          }
-        >
-          {i18n.t('sidebar.categories')}
-        </SectionLabel>
         <CategoryDndContext onMoveCategory={onMoveCategory}>
-          {renderTree(null, 0)}
+          <CategoryDndRootDrop>
+            {({ setDropRef: setRootDropRef, isOver: isRootOver }) => (
+              <div
+                ref={setRootDropRef}
+                className={`transition-all rounded-lg ${
+                  isRootOver ? 'ring-1 ring-accent-400/60 bg-accent-500/10 p-1' : ''
+                }`}
+                data-category-root-drop="true"
+              >
+                <SectionLabel
+                  right={
+                    <span className="flex items-center gap-1">
+                      {isRootOver && (
+                        <span className="text-[10px] font-normal text-accent-300">
+                          {i18n.t('sidebar.moveToRoot')}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        aria-label={i18n.t('sidebar.newCategory')}
+                        className="text-ink-400 hover:text-ink-100 transition"
+                        title={i18n.t('sidebar.newCategory')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onNewCategory();
+                        }}
+                      >
+                        <Icon name="Plus" size={12} />
+                      </button>
+                    </span>
+                  }
+                >
+                  {i18n.t('sidebar.categories')}
+                </SectionLabel>
+                {renderTree(null, 0)}
+              </div>
+            )}
+          </CategoryDndRootDrop>
         </CategoryDndContext>
 
         {/* Collections */}

@@ -1,8 +1,9 @@
 export {
   CategoryDndContext,
   CategoryDndItem,
+  CategoryDndRootDrop,
 } from './drag/CategoryDnd';
-export { categoryDndId, parseCategoryDndId } from './drag/ids';
+export { CATEGORY_ROOT_DND_ID, categoryDndId, parseCategoryDndId } from './drag/ids';
 export { MoveCategoryDialog } from './drag/MoveCategoryDialog';
 export {
   InvalidCategoryMoveError,
