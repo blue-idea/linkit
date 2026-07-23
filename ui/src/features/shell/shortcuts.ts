@@ -118,9 +118,67 @@ export function applyShortcutChange(
   };
 }
 
-/** 将 accelerator 转为展示文案（Windows Ctrl / macOS ⌘）。 */
-export function formatAcceleratorForDisplay(accelerator: string, platform: 'windows' | 'darwin' | 'other' = 'windows'): string {
-  const normalized = normalizeAccelerator(accelerator);
-  const symbol = platform === 'darwin' ? '⌘' : 'Ctrl';
-  return normalized.replace(/^CmdOrCtrl\+/i, `${symbol}+`);
+export function detectPlatform(): 'windows' | 'darwin' | 'other' {
+  if (typeof navigator === 'undefined') return 'windows';
+  const uaData = (navigator as { userAgentData?: { platform?: string } }).userAgentData;
+  const platformStr = uaData?.platform || navigator.platform || navigator.userAgent || '';
+  const lower = platformStr.toLowerCase();
+  if (lower.includes('mac') || lower.includes('darwin')) {
+    return 'darwin';
+  }
+  if (lower.includes('win')) {
+    return 'windows';
+  }
+  return 'other';
 }
+
+/** 将 accelerator 转为展示文案（Windows/Linux 显示 Ctrl/Alt/Shift，macOS 显示 ⌘/⌥/⇧/⌃）。 */
+export function formatAcceleratorForDisplay(
+  accelerator: string,
+  platform?: 'windows' | 'darwin' | 'other',
+): string {
+  const targetPlatform = platform ?? detectPlatform();
+  const normalized = normalizeAccelerator(accelerator);
+  const parts = normalized.split('+').map((part) => part.trim()).filter(Boolean);
+
+  if (parts.length === 0) return normalized;
+
+  if (targetPlatform === 'darwin') {
+    const formattedParts = parts.map((part) => {
+      const lower = part.toLowerCase();
+      if (lower === 'cmdorctrl' || lower === 'cmd' || lower === 'command' || lower === 'meta') {
+        return '⌘';
+      }
+      if (lower === 'alt' || lower === 'option') {
+        return '⌥';
+      }
+      if (lower === 'shift') {
+        return '⇧';
+      }
+      if (lower === 'ctrl' || lower === 'control') {
+        return '⌃';
+      }
+      return part;
+    });
+    return formattedParts.join('+');
+  }
+
+  const formattedParts = parts.map((part) => {
+    const lower = part.toLowerCase();
+    if (lower === 'cmdorctrl' || lower === 'ctrl' || lower === 'control') {
+      return 'Ctrl';
+    }
+    if (lower === 'alt' || lower === 'option') {
+      return 'Alt';
+    }
+    if (lower === 'shift') {
+      return 'Shift';
+    }
+    if (lower === 'meta' || lower === 'cmd' || lower === 'command') {
+      return 'Win';
+    }
+    return part;
+  });
+  return formattedParts.join('+');
+}
+

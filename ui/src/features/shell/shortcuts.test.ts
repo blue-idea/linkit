@@ -3,6 +3,7 @@ import {
   DEFAULT_SHORTCUTS,
   SHORTCUT_ACTION_IDS,
   applyShortcutChange,
+  detectPlatform,
   findShortcutConflict,
   formatAcceleratorForDisplay,
   mergeShortcuts,
@@ -63,8 +64,25 @@ describe('可配置快捷键', () => {
     expect(reset).not.toBe(DEFAULT_SHORTCUTS);
   });
 
-  test('formatAcceleratorForDisplay 在 macOS 下显示 Cmd 符号', () => {
+  test('detectPlatform 正确识别平台', () => {
+    // 默认 jsdom 环境或 windows 环境下断言为字符串之一
+    const p = detectPlatform();
+    expect(['windows', 'darwin', 'other']).toContain(p);
+  });
+
+  test('formatAcceleratorForDisplay 在 macOS 下显示 Mac 标准按键符号 (⌘, ⌥, ⇧, ⌃)', () => {
     expect(formatAcceleratorForDisplay('CmdOrCtrl+/', 'darwin')).toBe('⌘+/');
     expect(formatAcceleratorForDisplay('CmdOrCtrl+\\', 'darwin')).toBe('⌘+\\');
+    expect(formatAcceleratorForDisplay('CmdOrCtrl+Shift+N', 'darwin')).toBe('⌘+⇧+N');
+    expect(formatAcceleratorForDisplay('Alt+Shift+I', 'darwin')).toBe('⌥+⇧+I');
+    expect(formatAcceleratorForDisplay('Ctrl+Alt+P', 'darwin')).toBe('⌃+⌥+P');
+    expect(formatAcceleratorForDisplay('Meta+L', 'darwin')).toBe('⌘+L');
+  });
+
+  test('formatAcceleratorForDisplay 在 Windows / Other 下显示标准键名', () => {
+    expect(formatAcceleratorForDisplay('CmdOrCtrl+/', 'windows')).toBe('Ctrl+/');
+    expect(formatAcceleratorForDisplay('CmdOrCtrl+Shift+N', 'windows')).toBe('Ctrl+Shift+N');
+    expect(formatAcceleratorForDisplay('Alt+Shift+I', 'windows')).toBe('Alt+Shift+I');
   });
 });
+

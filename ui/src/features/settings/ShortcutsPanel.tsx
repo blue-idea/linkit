@@ -5,6 +5,7 @@ import type { UiLocale } from '../../types';
 import {
   SHORTCUT_ACTION_IDS,
   applyShortcutChange,
+  detectPlatform,
   formatAcceleratorForDisplay,
   mergeShortcuts,
   resetShortcutsToDefaults,
@@ -39,7 +40,7 @@ export function ShortcutsPanel({ shortcuts, locale, onChange }: ShortcutsPanelPr
   const current = mergeShortcuts(shortcuts);
   const [listening, setListening] = useState<ShortcutActionId | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const platform = navigator.platform.toLowerCase().includes('mac') ? 'darwin' : 'windows';
+  const platform = detectPlatform();
 
   useEffect(() => {
     if (!listening) return;

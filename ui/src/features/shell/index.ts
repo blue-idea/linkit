@@ -9,6 +9,7 @@ export {
   DEFAULT_SHORTCUTS,
   SHORTCUT_ACTION_IDS,
   applyShortcutChange,
+  detectPlatform,
   formatAcceleratorForDisplay,
   mergeShortcuts,
   resetShortcutsToDefaults,
