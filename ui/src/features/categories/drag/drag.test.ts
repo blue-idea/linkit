@@ -118,4 +118,20 @@ describe('分类与书签拖拽规则', () => {
       })
     ).toEqual({ ok: false, reason: 'INVALID_CATEGORY_MOVE' });
   });
+
+  test('parseCategoryDndId 与 categoryDndId 支持根落点 ID 转换与解析', async () => {
+    const { categoryDndId, parseCategoryDndId, CATEGORY_ROOT_DND_ID } = await import('./ids');
+    expect(categoryDndId(null)).toBe(CATEGORY_ROOT_DND_ID);
+    expect(categoryDndId('__root__')).toBe(CATEGORY_ROOT_DND_ID);
+    expect(parseCategoryDndId(CATEGORY_ROOT_DND_ID)).toBe(null);
+    expect(parseCategoryDndId('category:cat-123')).toBe('cat-123');
+    expect(parseCategoryDndId('other:123')).toBe(undefined);
+  });
+
+  test('moveCategoryUnder 支持将子分类设为一级目录 (newParentId 为 null)', async () => {
+    const { moveCategoryUnder } = await import('./index');
+    const library = sampleLibrary();
+    const next = moveCategoryUnder(library, { categoryId: 'cat-a1', newParentId: null });
+    expect(next.categories.find((c) => c.id === 'cat-a1')?.parentId).toBe(null);
+  });
 });

@@ -88,6 +88,7 @@ const messages = {
   'sidebar.setCategoryIcon': ['Set category icon', '设置分类图标'],
   'sidebar.renameCategory': ['Rename category', '重命名分类'],
   'sidebar.deleteCategory': ['Delete category', '删除分类'],
+  'sidebar.moveToRoot': ['Move to top level', '移至一级目录'],
   'sidebar.dropZone': ['Create collection drop zone', '创建主题拖放区'],
   'sidebar.dropSelection': ['Drop selection to create collection', '拖入所选书签以创建主题'],
   'sidebar.tagsLabel': ['Sidebar tags', '侧边栏标签'],

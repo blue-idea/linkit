@@ -10,7 +10,7 @@ import {
 } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import type { ReactNode } from 'react';
-import { categoryDndId, parseCategoryDndId } from './ids';
+import { CATEGORY_ROOT_DND_ID, categoryDndId, parseCategoryDndId } from './ids';
 
 /**
  * 分类树 dnd-kit 上下文：指针 + 键盘传感器。
@@ -21,7 +21,7 @@ export function CategoryDndContext({
   onMoveCategory,
 }: {
   children: ReactNode;
-  onMoveCategory: (categoryId: string, newParentId: string) => void;
+  onMoveCategory: (categoryId: string, newParentId: string | null) => void;
 }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -34,7 +34,7 @@ export function CategoryDndContext({
     if (!overId) return;
     const categoryId = parseCategoryDndId(activeId);
     const newParentId = parseCategoryDndId(overId);
-    if (!categoryId || !newParentId || categoryId === newParentId) return;
+    if (typeof categoryId !== 'string' || newParentId === undefined || categoryId === newParentId) return;
     onMoveCategory(categoryId, newParentId);
   };
 
@@ -42,6 +42,29 @@ export function CategoryDndContext({
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       {children}
     </DndContext>
+  );
+}
+
+/**
+ * 可放置为一级目录的根落点。
+ */
+export function CategoryDndRootDrop({
+  children,
+}: {
+  children: (api: {
+    setDropRef: (node: HTMLElement | null) => void;
+    isOver: boolean;
+  }) => ReactNode;
+}) {
+  const { setNodeRef: setDropRef, isOver } = useDroppable({ id: CATEGORY_ROOT_DND_ID });
+
+  return (
+    <>
+      {children({
+        setDropRef,
+        isOver,
+      })}
+    </>
   );
 }
 
@@ -82,3 +105,4 @@ export function CategoryDndItem({
     </>
   );
 }
+
