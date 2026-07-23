@@ -4,6 +4,7 @@ import { tagColors } from '../colors';
 import { resolveThumbnailGradient } from '../config/thumbnail-gradients';
 import { iconComponents, type IconName } from '../config/icons';
 import { useI18n } from '../i18n/use-i18n';
+import { fetchFaviconDataUrl } from '../features/bookmarks/metadata-client';
 
 /* ---------- Icon helper ---------- */
 export function Icon({ name, size = 16, className = '', strokeWidth = 2, fill = 'none' }: { name: string; size?: number; className?: string; strokeWidth?: number; fill?: string }) {
@@ -167,7 +168,6 @@ export function Favicon({
   const handleImageError = () => {
     void (async () => {
       if (/^https?:\/\//i.test(displaySrc)) {
-        const { fetchFaviconDataUrl } = await import('../features/bookmarks/metadata-client');
         const dataUrl = await fetchFaviconDataUrl(displaySrc);
         if (dataUrl) {
           setDisplaySrc(dataUrl);
