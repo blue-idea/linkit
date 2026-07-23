@@ -4,7 +4,7 @@ import type { AppSettings as UiSettings, ThemeId } from '../../types';
 import { DEFAULT_UI_SIZE } from '../../config/window-size';
 import { getDefaultAppSettings, prepareSettingsForPersist } from '../../services/settings';
 import { bootstrapApp, createPreferredStorageAdapters, type BootstrapPhase } from '../../services/storage';
-import { loadSettings as loadLegacySettings } from '../../storage';
+import { loadSettings as loadLegacySettings, saveSettings } from '../../storage';
 import { applyTheme } from '../../themes';
 import { mergeShortcuts } from '../shell/shortcuts';
 import { resolveStartupView, type StartupView } from './startup-gate';
@@ -43,7 +43,6 @@ function toDomainSettings(settings: UiSettings): DomainSettings {
 }
 
 export async function persistUiSettings(settings: UiSettings): Promise<void> {
-  const { saveSettings } = await import('../../storage');
   saveSettings(settings);
   const adapters = createPreferredStorageAdapters();
   await adapters.saveSettings(toDomainSettings(settings));
