@@ -37,4 +37,25 @@ describe('ShortcutsPanel', () => {
     await user.click(screen.getByRole('button', { name: /Restore Defaults/i }));
     expect(next).toEqual(DEFAULT_SHORTCUTS);
   });
+
+  test('在 macOS 环境下正确显示 ⌘ 等 Mac 风格快捷键', () => {
+    const originalPlatform = navigator.platform;
+    Object.defineProperty(navigator, 'platform', {
+      value: 'MacIntel',
+      configurable: true,
+    });
+
+    render(
+      <ShortcutsPanel shortcuts={DEFAULT_SHORTCUTS} locale="en" onChange={() => undefined} />,
+    );
+
+    const button = screen.getByRole('button', { name: /Spotlight search shortcut/i });
+    expect(button.textContent).toContain('⌘');
+
+    Object.defineProperty(navigator, 'platform', {
+      value: originalPlatform,
+      configurable: true,
+    });
+  });
 });
+
