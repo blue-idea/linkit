@@ -282,6 +282,13 @@ body {
   --scrollbar-hover-alpha: 0.24;
 }
 
+/* 取消浅色主题下 List 视图列表的灰色背景 */
+[data-theme="daylight"] [data-view="list"] > div,
+[data-theme="paper"] [data-view="list"] > div {
+  background-color: transparent;
+  box-shadow: none;
+}
+
 /* 主题感知的磨砂玻璃层。 */
 .glass {
   background: rgb(var(--glass-bg) / var(--glass-alpha));
