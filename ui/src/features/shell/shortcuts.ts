@@ -8,13 +8,16 @@ export const SHORTCUT_ACTION_IDS = [
   'viewCard',
   'viewList',
   'viewMasonry',
-  'toggleSidebar',
+  'toggleLeftSidebar',
+  'toggleRightSidebar',
   'toggleWindow',
 ] as const;
 
 export type ShortcutActionId = (typeof SHORTCUT_ACTION_IDS)[number];
 
 export type ShortcutMap = Record<ShortcutActionId, string>;
+
+type LegacyShortcutMap = Partial<Record<ShortcutActionId | 'toggleSidebar', string>>;
 
 export const DEFAULT_SHORTCUTS: ShortcutMap = {
   spotlight: 'CmdOrCtrl+K',
@@ -24,7 +27,8 @@ export const DEFAULT_SHORTCUTS: ShortcutMap = {
   viewCard: 'CmdOrCtrl+1',
   viewList: 'CmdOrCtrl+2',
   viewMasonry: 'CmdOrCtrl+3',
-  toggleSidebar: 'CmdOrCtrl+\\',
+  toggleLeftSidebar: 'CmdOrCtrl+/',
+  toggleRightSidebar: 'CmdOrCtrl+\\',
   toggleWindow: 'CmdOrCtrl+L',
 };
 
@@ -54,8 +58,17 @@ function normalizeAccelerator(raw: string): string {
   return `${normalizedMod}+${normalizedKey}`;
 }
 
-export function mergeShortcuts(partial?: Partial<ShortcutMap> | null): ShortcutMap {
-  return { ...DEFAULT_SHORTCUTS, ...(partial ?? {}) };
+export function normalizeShortcutMap(partial?: LegacyShortcutMap | null): Partial<ShortcutMap> {
+  const next = { ...(partial ?? {}) } as LegacyShortcutMap;
+  if (typeof next.toggleSidebar === 'string' && !next.toggleRightSidebar) {
+    next.toggleRightSidebar = next.toggleSidebar;
+  }
+  delete next.toggleSidebar;
+  return next as Partial<ShortcutMap>;
+}
+
+export function mergeShortcuts(partial?: LegacyShortcutMap | null): ShortcutMap {
+  return { ...DEFAULT_SHORTCUTS, ...normalizeShortcutMap(partial) };
 }
 
 export function resetShortcutsToDefaults(): ShortcutMap {

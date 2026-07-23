@@ -258,7 +258,7 @@ describe('AppSettings Schema', () => {
       shortcuts: {
         spotlight: 'CmdOrCtrl+K', newBookmark: 'CmdOrCtrl+N', insights: 'CmdOrCtrl+I',
         settings: 'CmdOrCtrl+,', viewCard: 'CmdOrCtrl+1', viewList: 'CmdOrCtrl+2',
-        viewMasonry: 'CmdOrCtrl+3', toggleSidebar: 'CmdOrCtrl+\\', toggleWindow: 'CmdOrCtrl+L',
+        viewMasonry: 'CmdOrCtrl+3', toggleLeftSidebar: 'CmdOrCtrl+/', toggleRightSidebar: 'CmdOrCtrl+\\', toggleWindow: 'CmdOrCtrl+L',
       },
     } as const;
     expect(domain.AppSettingsSchema).toBeDefined();
@@ -275,7 +275,7 @@ describe('AppSettings Schema', () => {
       shortcuts: {
         spotlight: 'CmdOrCtrl+K', newBookmark: 'CmdOrCtrl+N', insights: 'CmdOrCtrl+I',
         settings: 'CmdOrCtrl+,', viewCard: 'CmdOrCtrl+1', viewList: 'CmdOrCtrl+2',
-        viewMasonry: 'CmdOrCtrl+3', toggleSidebar: 'CmdOrCtrl+\\', toggleWindow: 'CmdOrCtrl+L',
+        viewMasonry: 'CmdOrCtrl+3', toggleLeftSidebar: 'CmdOrCtrl+/', toggleRightSidebar: 'CmdOrCtrl+\\', toggleWindow: 'CmdOrCtrl+L',
       },
     });
     expect(result?.success).toBe(true);
@@ -294,7 +294,7 @@ describe('AppSettings Schema', () => {
       shortcuts: {
         spotlight: 'CmdOrCtrl+K', newBookmark: 'CmdOrCtrl+N', insights: 'CmdOrCtrl+I',
         settings: 'CmdOrCtrl+,', viewCard: 'CmdOrCtrl+1', viewList: 'CmdOrCtrl+2',
-        viewMasonry: 'CmdOrCtrl+3', toggleSidebar: 'CmdOrCtrl+\\', toggleWindow: 'CmdOrCtrl+L',
+        viewMasonry: 'CmdOrCtrl+3', toggleLeftSidebar: 'CmdOrCtrl+/', toggleRightSidebar: 'CmdOrCtrl+\\', toggleWindow: 'CmdOrCtrl+L',
       },
     });
     expect(result?.success).toBe(false);

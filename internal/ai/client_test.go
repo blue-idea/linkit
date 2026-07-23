@@ -300,6 +300,21 @@ func TestChatCompletionsMapsTimeout(t *testing.T) {
 	assertCodedError(t, err, config.ErrorCodeAITimeout, true)
 }
 
+func TestNewBoundedHTTPClientUsesFortySecondAITimeouts(t *testing.T) {
+	client := NewBoundedHTTPClient()
+	if client.Timeout != 40*time.Second {
+		t.Fatalf("Unexpected total timeout: got %s, want 40s", client.Timeout)
+	}
+
+	transport, ok := client.Transport.(*http.Transport)
+	if !ok {
+		t.Fatalf("Unexpected transport type: %T", client.Transport)
+	}
+	if transport.ResponseHeaderTimeout != 40*time.Second {
+		t.Fatalf("Unexpected response header timeout: got %s, want 40s", transport.ResponseHeaderTimeout)
+	}
+}
+
 func TestChatCompletionsRejectsInvalidJSONContent(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
 		writer.Header().Set("Content-Type", "application/json")

@@ -44,6 +44,11 @@ func (r *SystrayRunner) onReady() {
 			}
 		})
 	}
+	systray.SetOnDClick(func(menu systray.IMenu) {
+		if r.host != nil {
+			r.host.HandleDoubleClick()
+		}
+	})
 }
 
 // SafeStart 启动托盘；失败时记录日志但不崩溃（Linux best-effort）。

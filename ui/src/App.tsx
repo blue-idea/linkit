@@ -1103,7 +1103,8 @@ export default function App() {
       onInsights: () => setInsightsOpen(true),
       onSettings: () => setSettingsOpen(true),
       onDensity: (density: ViewDensity) => setState((s) => ({ ...s, density })),
-      onToggleSidebar: () => setSidebarOpen((v) => !v),
+      onToggleLeftSidebar: () => setSidebarOpen((v) => !v),
+      onToggleRightSidebar: () => setDetailOpen((v) => !v),
     }),
     []
   );
@@ -1390,7 +1391,7 @@ export default function App() {
             onNewCategory={(parentId) => {
               setCategoryForm({
                 mode: 'create',
-                parentId: parentId ?? (state.selection.kind === 'category' ? state.selection.id : null),
+                parentId: parentId ?? null,
               });
             }}
             onRenameCategory={(categoryId) => {

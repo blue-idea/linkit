@@ -75,7 +75,7 @@ test.describe('主窗口 快捷键 拖入 URL 键盘可访问', () => {
   });
 
   // REQ-024-AC-002 / REQ-024-AC-003
-  test('快捷键 shall 打开 New Bookmark、Insights、Settings 并切换视图与侧栏', async ({ page }) => {
+  test('快捷键 shall 打开 New Bookmark、Insights、Settings 并切换视图与左右侧栏', async ({ page }) => {
     await pressAppShortcut(page, 'n');
     await expect(page.getByRole('heading', { name: 'New Bookmark' })).toBeVisible();
     await page.keyboard.press('Escape');
@@ -96,10 +96,15 @@ test.describe('主窗口 快捷键 拖入 URL 键盘可访问', () => {
     await pressAppShortcut(page, '3');
     await expect(page.locator('[data-view="masonry"]')).toBeVisible();
 
-    await pressAppShortcut(page, '\\', { code: 'Backslash' });
+    await pressAppShortcut(page, '/', { code: 'Slash' });
     await expect(page.getByRole('navigation', { name: 'Sidebar' })).toHaveCount(0);
-    await pressAppShortcut(page, '\\', { code: 'Backslash' });
+    await pressAppShortcut(page, '/', { code: 'Slash' });
     await expect(page.getByRole('navigation', { name: 'Sidebar' })).toBeVisible();
+
+    await pressAppShortcut(page, '\\', { code: 'Backslash' });
+    await expect(page.getByRole('complementary', { name: 'Detail Panel' })).toHaveCount(0);
+    await pressAppShortcut(page, '\\', { code: 'Backslash' });
+    await expect(page.getByRole('complementary', { name: 'Detail Panel' })).toBeVisible();
 
     await mkdir(evidenceDirectory, { recursive: true });
     await writeFile(
@@ -110,7 +115,8 @@ test.describe('主窗口 快捷键 拖入 URL 键盘可访问', () => {
           'Ctrl+I': 'Insights',
           'Ctrl+,': 'Settings',
           'Ctrl+1/2/3': 'Card/List/Masonry',
-          'Ctrl+\\': 'Toggle Sidebar',
+          'Ctrl+/': 'Toggle left sidebar',
+          'Ctrl+\\': 'Toggle right sidebar',
         },
         null,
         2

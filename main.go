@@ -74,18 +74,17 @@ func main() {
 	_ = nativeFileService.WireHotkeyToggle()
 
 	var appContext context.Context
-	openSettings := func() {
-		_ = nativeFileService.ShowMainWindow()
-		if appContext != nil {
-			wailsruntime.EventsEmit(appContext, config.EventOpenSettings)
-		}
-	}
-	quitApplication := func() { _ = nativeFileService.QuitApplication() }
+	trayCallbacks := buildTrayCallbacks(
+		func() { _ = nativeFileService.ShowMainWindow() },
+		func() {
+			if appContext != nil {
+				wailsruntime.EventsEmit(appContext, config.EventOpenSettings)
+			}
+		},
+		func() { _ = nativeFileService.QuitApplication() },
+	)
 
-	trayHost := tray.NewHost(tray.Callbacks{
-		OnSettings: openSettings,
-		OnQuit:     quitApplication,
-	})
+	trayHost := tray.NewHost(trayCallbacks)
 	trayRunner.SetHost(trayHost)
 
 	metadataService := metadata.NewService()
@@ -112,8 +111,8 @@ func main() {
 			Assets: assets,
 		},
 		Menu: buildApplicationMenu(runtime.GOOS, appMenuCallbacks{
-			OnSettings: openSettings,
-			OnQuit:     quitApplication,
+			OnSettings: trayCallbacks.OnSettings,
+			OnQuit:     trayCallbacks.OnQuit,
 		}),
 		BackgroundColour: &options.RGBA{
 			R: config.BackgroundRed,

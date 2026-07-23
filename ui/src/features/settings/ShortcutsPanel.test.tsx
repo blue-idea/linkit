@@ -15,6 +15,8 @@ describe('ShortcutsPanel', () => {
       <ShortcutsPanel shortcuts={DEFAULT_SHORTCUTS} locale="en" onChange={() => undefined} />,
     );
     expect(screen.getByRole('button', { name: /Spotlight search shortcut/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Toggle left sidebar shortcut/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Toggle right sidebar shortcut/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Show \/ hide window shortcut/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Restore Defaults/i })).toBeInTheDocument();
   });

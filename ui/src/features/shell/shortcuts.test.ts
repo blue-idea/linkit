@@ -4,6 +4,7 @@ import {
   SHORTCUT_ACTION_IDS,
   applyShortcutChange,
   findShortcutConflict,
+  formatAcceleratorForDisplay,
   mergeShortcuts,
   resetShortcutsToDefaults,
 } from './shortcuts';
@@ -13,6 +14,8 @@ describe('可配置快捷键', () => {
   test('默认快捷键覆盖全部可配置 action', () => {
     expect(Object.keys(DEFAULT_SHORTCUTS).sort()).toEqual([...SHORTCUT_ACTION_IDS].sort());
     expect(DEFAULT_SHORTCUTS.toggleWindow).toBe('CmdOrCtrl+L');
+    expect(DEFAULT_SHORTCUTS.toggleLeftSidebar).toBe('CmdOrCtrl+/');
+    expect(DEFAULT_SHORTCUTS.toggleRightSidebar).toBe('CmdOrCtrl+\\');
     expect(DEFAULT_SHORTCUTS.spotlight).toBe('CmdOrCtrl+K');
   });
 
@@ -58,5 +61,10 @@ describe('可配置快捷键', () => {
     const reset = resetShortcutsToDefaults();
     expect(reset).toEqual(DEFAULT_SHORTCUTS);
     expect(reset).not.toBe(DEFAULT_SHORTCUTS);
+  });
+
+  test('formatAcceleratorForDisplay 在 macOS 下显示 Cmd 符号', () => {
+    expect(formatAcceleratorForDisplay('CmdOrCtrl+/', 'darwin')).toBe('⌘+/');
+    expect(formatAcceleratorForDisplay('CmdOrCtrl+\\', 'darwin')).toBe('⌘+\\');
   });
 });

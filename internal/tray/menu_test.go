@@ -22,13 +22,16 @@ func TestDefaultMenuItems(t *testing.T) {
 func TestHostDispatchesSettingsAndQuit(t *testing.T) {
 	settingsOpened := make(chan struct{}, 1)
 	quit := make(chan struct{}, 1)
+	doubleClick := make(chan struct{}, 1)
 	host := NewHost(Callbacks{
-		OnSettings: func() { settingsOpened <- struct{}{} },
-		OnQuit:     func() { quit <- struct{}{} },
+		OnSettings:    func() { settingsOpened <- struct{}{} },
+		OnQuit:        func() { quit <- struct{}{} },
+		OnDoubleClick: func() { doubleClick <- struct{}{} },
 	})
 
 	host.HandleMenuClick(MenuSettings)
 	host.HandleMenuClick(MenuQuit)
+	host.HandleDoubleClick()
 
 	select {
 	case <-settingsOpened:
@@ -39,6 +42,11 @@ func TestHostDispatchesSettingsAndQuit(t *testing.T) {
 	case <-quit:
 	case <-time.After(time.Second):
 		t.Fatal("Quit callback was not invoked")
+	}
+	select {
+	case <-doubleClick:
+	case <-time.After(time.Second):
+		t.Fatal("Double-click callback was not invoked")
 	}
 }
 
