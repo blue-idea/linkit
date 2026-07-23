@@ -13,6 +13,10 @@
 /frontend/dist/*
 !/frontend/dist/.gitkeep
 
+# 依赖包目录
+node_modules/
+**/node_modules/
+
 # Go 本地测试与覆盖率产物
 *.test
 coverage.out
