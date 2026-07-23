@@ -29,10 +29,6 @@ jobs:
             platform: linux/amd64
             os: linux
             deb_arch: amd64
-          - runner: ubuntu-24.04-arm
-            platform: linux/arm64
-            os: linux
-            deb_arch: arm64
           - runner: windows-latest
             platform: windows/amd64
             os: windows
