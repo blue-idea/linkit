@@ -15,7 +15,23 @@ env:
   PNPM_VERSION: '10.33.0'
 
 jobs:
+  check-paths:
+    runs-on: ubuntu-latest
+    outputs:
+      docs-only: ${{ steps.filter.outputs.code == 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            code:
+              - '!knowledge/**'
+              - '!docs/**'
+
   quality:
+    needs: check-paths
+    if: needs.check-paths.outputs.docs-only != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -86,3 +102,11 @@ jobs:
 
       - name: Playwright smoke tests
         run: pnpm --dir ui test:e2e
+
+  quality-skip:
+    needs: check-paths
+    if: needs.check-paths.outputs.docs-only == 'true'
+    runs-on: ubuntu-latest
+    name: quality
+    steps:
+      - run: echo "Docs-only change, skipping quality check"

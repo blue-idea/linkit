@@ -17,7 +17,23 @@ env:
   WAILS_VERSION: v2.13.0
 
 jobs:
+  check-paths:
+    runs-on: ubuntu-latest
+    outputs:
+      docs-only: ${{ steps.filter.outputs.code == 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            code:
+              - '!knowledge/**'
+              - '!docs/**'
+
   build:
+    needs: check-paths
+    if: needs.check-paths.outputs.docs-only != 'true'
     name: build (${{ matrix.platform }})
     strategy:
       fail-fast: false
@@ -79,3 +95,17 @@ jobs:
       - name: Verify build artifact
         shell: bash
         run: test -e "${{ matrix.artifact }}"
+
+  build-skip:
+    needs: check-paths
+    if: needs.check-paths.outputs.docs-only == 'true'
+    name: build (${{ matrix.platform }})
+    strategy:
+      matrix:
+        platform:
+          - linux/amd64
+          - windows/amd64
+          - darwin/universal
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Docs-only change, skipping build (${{ matrix.platform }})"
