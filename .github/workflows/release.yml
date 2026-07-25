@@ -48,8 +48,8 @@ jobs:
           if [ -z "$TAG" ]; then
             TAG="${GITHUB_REF_NAME}"
           fi
-          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Release tag must match vX.Y.Z" >&2
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "Release tag must match vX.Y.Z or vX.Y.Z.W" >&2
             exit 1
           fi
           echo "RELEASE_TAG=${TAG}" >> $GITHUB_ENV
@@ -243,8 +243,8 @@ jobs:
           if [ -z "$TAG" ]; then
             TAG="${GITHUB_REF_NAME}"
           fi
-          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Release tag must match vX.Y.Z" >&2
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "Release tag must match vX.Y.Z or vX.Y.Z.W" >&2
             exit 1
           fi
           echo "RELEASE_TAG=${TAG}" >> "$GITHUB_ENV"
