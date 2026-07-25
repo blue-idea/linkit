@@ -84,10 +84,7 @@ async function verifyWorkflows() {
   assert.match(releaseWorkflow, /gh release download/, 'Homebrew Tap update must download the published DMG');
   assert.match(releaseWorkflow, /update-homebrew-cask\.mjs/, 'Homebrew Tap update must use the tested updater');
   assert.match(releaseWorkflow, /git diff --quiet/, 'Homebrew Tap update must avoid empty commits');
-  assert.match(releaseWorkflow, /--add-file "Fix Gatekeeper\.command"/, 'Release workflow must embed Fix Gatekeeper script in DMG');
-
-  const gatekeeperScript = await readRepositoryFile('scripts/Fix Gatekeeper.command');
-  assert.match(gatekeeperScript, /xattr -dr com\.apple\.quarantine/, 'Gatekeeper script must execute xattr quarantine removal');
+  assert.match(releaseWorkflow, /--app-drop-link/, 'Release workflow must create clean DMG with Applications link');
 
   assert.match(nfpmConfig, /^name: linkit$/m, 'nFPM package name must be linkit');
   assert.match(nfpmConfig, /^arch: \$\{NFPM_ARCH\}$/m, 'nFPM architecture must come from NFPM_ARCH');
