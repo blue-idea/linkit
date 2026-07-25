@@ -183,4 +183,4 @@
 | 2026-07-22 | 新增并完成 TASK-073 | 对齐 fix_task 1.15；按现有 Bookmark.thumbnail 模型随机复用示例渐变键，不新增 Tag 字段或数据库迁移 |
 | 2026-07-23 | 新增并完成 TASK-074 | 对齐 fix_task 1.16-1.18；修正“收藏分类”标题 `+` 只创建一级分类，拆分快捷键为左/右侧栏，并为托盘双击显示窗口补齐代码路径与自动化验证 |
 | 2026-07-25 | 新增并完成 TASK-075 | Smart/Enter 先展示网页元数据、AI 后台增强；新增 `FetchMetadataFast`、OpenGraph 优先级与过期请求保护 |
-| 2026-07-25 | 新增并完成 TASK-076 | `blue-idea/tap` 的真实 macOS 安装链路通过；Release 自动推送因主仓库缺少最小权限 `TAP_GITHUB_TOKEN` 保持 BLOCKED |
+| 2026-07-25 | 新增并完成 TASK-076 | `blue-idea/tap` 真实 macOS 安装与 Cask 更新链路通过；`TAP_GITHUB_TOKEN` 已成功在主仓库配置闭环，下一次 Release 自动化推送准备就绪 |

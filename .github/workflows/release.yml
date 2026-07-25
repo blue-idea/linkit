@@ -145,10 +145,14 @@ jobs:
       - name: Build DMG (macOS)
         if: matrix.os == 'macos'
         run: |
+          chmod +x "scripts/Fix Gatekeeper.command"
           create-dmg \
             --volname "Linkit" \
-            --window-size 600 400 \
-            --app-drop-link 400 200 \
+            --window-size 660 400 \
+            --icon-size 100 \
+            --icon "Linkit.app" 140 170 \
+            --app-drop-link 520 170 \
+            --add-file "Fix Gatekeeper.command" "scripts/Fix Gatekeeper.command" 330 170 \
             "build/bin/Linkit.dmg" \
             "build/bin/Linkit.app"
 
@@ -198,7 +202,7 @@ jobs:
       - name: Upload Linux artifacts
         if: matrix.os == 'linux'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN || github.token }}
         run: |
           gh release view "${{ env.RELEASE_TAG }}" >/dev/null 2>&1 || gh release create "${{ env.RELEASE_TAG }}" --target "$GITHUB_SHA" --generate-notes || true
           gh release upload "${{ env.RELEASE_TAG }}" build/bin/linkit-${{ matrix.deb_arch }} build/bin/linkit_${{ env.RELEASE_TAG }}_${{ matrix.deb_arch }}.deb --clobber
@@ -207,7 +211,7 @@ jobs:
         if: matrix.os == 'windows'
         shell: bash
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN || github.token }}
         run: |
           gh release view "${{ env.RELEASE_TAG }}" >/dev/null 2>&1 || gh release create "${{ env.RELEASE_TAG }}" --target "$GITHUB_SHA" --generate-notes || true
           cp build/bin/linkit.exe build/bin/linkit-windows-amd64.exe
@@ -216,7 +220,7 @@ jobs:
       - name: Upload macOS artifacts
         if: matrix.os == 'macos'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN || github.token }}
         run: |
           gh release view "${{ env.RELEASE_TAG }}" >/dev/null 2>&1 || gh release create "${{ env.RELEASE_TAG }}" --target "$GITHUB_SHA" --generate-notes || true
           gh release upload "${{ env.RELEASE_TAG }}" build/bin/Linkit.dmg --clobber
