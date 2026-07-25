@@ -27,6 +27,14 @@ export interface InboundAnalysisResult {
   aiErrorMessage: string | null;
 }
 
+export interface InboundMetadataResult {
+  source: Exclude<InboundAnalysisSource, 'ai'>;
+  preview: InboundAnalysisPreview;
+  metadataErrorMessage: string | null;
+  /** 仅供后续 AI 增强使用，不直接展示或持久化。 */
+  contentText: string;
+}
+
 function extractError(error: unknown): { code?: string; message?: string } {
   if (error && typeof error === 'object') {
     const record = error as { code?: string; message?: string };
@@ -53,22 +61,13 @@ function validateAgainstCandidates(
   return parsed.data;
 }
 
-/**
- * 元数据 + AI 入库分析。AI 失败时英文降级，禁止伪造建议。
- * REQ-006-AC-002 / REQ-006-AC-003
- */
-export async function buildInboundAnalysis(input: {
+export async function buildInboundMetadataPreview(input: {
   url: string;
   titleHint: string;
   contentText: string;
-  categoryCandidates: Array<{ id: string; name: string }>;
-  tagCandidates: Array<{ id: string; label: string }>;
-  context: AIContext;
-  client: AnalyzeBookmarkClient;
   fetchMetadata: (url: string) => Promise<MetadataFetchResult>;
-}): Promise<InboundAnalysisResult> {
+}): Promise<InboundMetadataResult> {
   const metadata = await input.fetchMetadata(input.url.trim());
-  const categoryIds = new Set(input.categoryCandidates.map((item) => item.id));
 
   let baseTitle = input.titleHint.trim();
   let description = '';
@@ -87,62 +86,100 @@ export async function buildInboundAnalysis(input: {
     baseTitle = manual.title;
   }
 
+  return {
+    source,
+    metadataErrorMessage,
+    contentText,
+    preview: {
+      title: baseTitle,
+      description,
+      aiSummary: '',
+      suggestedTags: [],
+      suggestedCategoryId: null,
+      faviconUrl: metadata.ok ? (metadata.favicon ?? null) : null,
+      faviconDataUrl: metadata.ok ? (metadata.faviconDataUrl ?? null) : null,
+    },
+  };
+}
+
+/**
+ * 基于已完成的元数据预览执行 AI 增强。失败时保留元数据结果，禁止伪造建议。
+ */
+export async function enhanceInboundAnalysis(input: {
+  base: InboundMetadataResult;
+  url: string;
+  categoryCandidates: Array<{ id: string; name: string }>;
+  tagCandidates: Array<{ id: string; label: string }>;
+  context: AIContext;
+  client: AnalyzeBookmarkClient;
+}): Promise<InboundAnalysisResult> {
+  const categoryIds = new Set(input.categoryCandidates.map((item) => item.id));
+
   try {
     const raw = await input.client.analyzeBookmark({
       context: input.context,
       url: input.url.trim(),
-      title: baseTitle,
-      description,
-      contentText,
+      title: input.base.preview.title,
+      description: input.base.preview.description,
+      contentText: input.base.contentText,
       categoryCandidates: input.categoryCandidates,
       tagCandidates: input.tagCandidates,
     });
     const validated = validateAgainstCandidates(raw, categoryIds);
     if (!validated) {
       return {
-        source,
-        metadataErrorMessage,
+        source: input.base.source,
+        metadataErrorMessage: input.base.metadataErrorMessage,
         aiErrorMessage: mapAIFailureMessage({ code: 'AI_RESPONSE_INVALID' }),
-        preview: {
-          title: baseTitle,
-          description,
-          aiSummary: '',
-          suggestedTags: [],
-          suggestedCategoryId: null,
-          faviconUrl: metadata.ok ? (metadata.favicon ?? null) : null,
-          faviconDataUrl: metadata.ok ? (metadata.faviconDataUrl ?? null) : null,
-        },
+        preview: input.base.preview,
       };
     }
     return {
       source: 'ai',
-      metadataErrorMessage,
+      metadataErrorMessage: input.base.metadataErrorMessage,
       aiErrorMessage: null,
       preview: {
-        title: validated.title.trim() || baseTitle,
+        title: validated.title.trim() || input.base.preview.title,
         // AI 按 locale 重写 description；为空时回退元数据原文。
-        description: validated.description.trim() || description,
+        description: validated.description.trim() || input.base.preview.description,
         aiSummary: validated.summary,
         suggestedTags: validated.suggestedTags,
         suggestedCategoryId: validated.suggestedCategoryId,
-        faviconUrl: metadata.ok ? (metadata.favicon ?? null) : null,
-        faviconDataUrl: metadata.ok ? (metadata.faviconDataUrl ?? null) : null,
+        faviconUrl: input.base.preview.faviconUrl,
+        faviconDataUrl: input.base.preview.faviconDataUrl,
       },
     };
   } catch (error) {
     return {
-      source,
-      metadataErrorMessage,
+      source: input.base.source,
+      metadataErrorMessage: input.base.metadataErrorMessage,
       aiErrorMessage: mapAIFailureMessage(extractError(error)),
-      preview: {
-        title: baseTitle,
-        description,
-        aiSummary: '',
-        suggestedTags: [],
-        suggestedCategoryId: null,
-        faviconUrl: metadata.ok ? (metadata.favicon ?? null) : null,
-        faviconDataUrl: metadata.ok ? (metadata.faviconDataUrl ?? null) : null,
-      },
+      preview: input.base.preview,
     };
   }
+}
+
+/**
+ * 元数据 + AI 的兼容组合入口；渐进式 UI 可分别调用两个阶段。
+ * REQ-006-AC-002 / REQ-006-AC-003
+ */
+export async function buildInboundAnalysis(input: {
+  url: string;
+  titleHint: string;
+  contentText: string;
+  categoryCandidates: Array<{ id: string; name: string }>;
+  tagCandidates: Array<{ id: string; label: string }>;
+  context: AIContext;
+  client: AnalyzeBookmarkClient;
+  fetchMetadata: (url: string) => Promise<MetadataFetchResult>;
+}): Promise<InboundAnalysisResult> {
+  const base = await buildInboundMetadataPreview(input);
+  return enhanceInboundAnalysis({
+    base,
+    url: input.url,
+    categoryCandidates: input.categoryCandidates,
+    tagCandidates: input.tagCandidates,
+    context: input.context,
+    client: input.client,
+  });
 }

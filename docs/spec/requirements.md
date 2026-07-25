@@ -1,8 +1,8 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：2.15.0
-> 日期：2026-07-23
+> 版本：2.16.0
+> 日期：2026-07-25
 > 状态：已定稿
 
 ---
@@ -475,6 +475,21 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
       - "The selected thumbnail key is written exactly once on explicit Save"
       - "No thumbnail field is added to Tag"
       - "No database migration or generative image request is introduced"
+
+- id: REQ-006-AC-011
+  ears: >
+    While 用户选择 Smart 或在 URL 输入框按 Enter 且网页元数据请求成功,
+    when 元数据结果返回而 AI 增强尚未完成,
+    the Linkit shall 立即展示可编辑预览和 Save 操作，并在后台继续 AI 增强;
+    when AI 增强结果返回,
+    the Linkit shall 仅更新用户尚未编辑的字段，且不得覆盖用户已确认保存的书签.
+  test_type: Component + E2E
+  expected:
+    ui_state: "Metadata title, description and favicon are visible before AI resolves; an accessible AI enhancement status is shown while the background request is pending"
+    side_effects:
+      - "FetchMetadataFast is preferred when the binding is available; FetchMetadata remains a compatible fallback"
+      - "Save creates the bookmark from the current metadata preview without waiting for AI"
+      - "A late AI response cannot reopen or mutate a closed, returned, or saved preview"
 ```
 
 ---
@@ -2280,3 +2295,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.13.0 | 2026-07-22 | 已定稿 | 新增 REQ-010-AC-006：双击分类名称切换子分类展开/折叠，保留单击选择与箭头入口 |
 | 2.14.0 | 2026-07-22 | 已定稿 | 新增 REQ-006-AC-010：新建书签保存时从既有示例渐变键随机生成 thumbnail，不改变数据结构 |
 | 2.15.0 | 2026-07-23 | 已定稿 | 修订 REQ-024-AC-003 与 REQ-030-AC-006：侧栏快捷键拆分为左侧 Sidebar 与右侧 Detail Panel；新增 REQ-030-AC-011：托盘图标双击显示主窗口 |
+| 2.16.0 | 2026-07-25 | 已定稿 | 新增 REQ-006-AC-011：Smart/Enter 先展示网页元数据，AI 后台增强；新增 FetchMetadataFast 快速接口并保留旧接口兼容性 |

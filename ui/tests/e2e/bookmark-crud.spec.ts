@@ -24,10 +24,10 @@ test.describe('书签 CRUD', () => {
     await page.getByRole('button', { name: 'Smart', exact: true }).click();
 
     await expect(page.getByRole('alert')).toContainText(/Could not fetch|manual|AI analysis is unavailable/i);
-    await expect(page.getByRole('button', { name: 'Save bookmark' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Save now' })).toBeVisible();
     await expect(page.getByText('Manual Entry Bookmark').first()).toHaveCount(0);
 
-    await page.getByRole('button', { name: 'Save bookmark' }).click();
+    await page.getByRole('button', { name: 'Save now' }).click();
     await expect(page.getByText('Manual Entry Bookmark').first()).toBeVisible();
   });
 

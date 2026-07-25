@@ -14,14 +14,9 @@ type MetadataResultPayload = {
 
 type GoMetadataService = {
   FetchMetadata?: (request: MetadataRequest) => Promise<MetadataResultPayload>;
+  FetchMetadataFast?: (request: MetadataRequest) => Promise<MetadataResultPayload>;
   FetchFaviconDataURL?: (request: { url: string }) => Promise<string>;
 };
-
-function getGoFetchMetadata(): GoMetadataService['FetchMetadata'] | null {
-  const go = (window as unknown as { go?: { metadata?: { Service?: GoMetadataService } } }).go
-    ?.metadata?.Service?.FetchMetadata;
-  return typeof go === 'function' ? go : null;
-}
 
 /**
  * 浏览器/Wails 元数据抓取入口。
@@ -30,7 +25,9 @@ function getGoFetchMetadata(): GoMetadataService['FetchMetadata'] | null {
  */
 export async function fetchBookmarkMetadata(url: string): Promise<MetadataFetchResult> {
   try {
-    const fetchMetadata = getGoFetchMetadata();
+    const service = (window as unknown as { go?: { metadata?: { Service?: GoMetadataService } } }).go
+      ?.metadata?.Service;
+    const fetchMetadata = service?.FetchMetadataFast ?? service?.FetchMetadata ?? null;
     if (!fetchMetadata) {
       return {
         ok: false,

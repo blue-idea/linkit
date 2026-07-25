@@ -20,10 +20,10 @@ test.describe('AI 入库分析', () => {
     await page.getByRole('button', { name: 'Smart', exact: true }).click();
 
     await expect(page.getByRole('alert')).toContainText(/AI analysis is unavailable|manual|Could not fetch/i);
-    await expect(page.getByRole('button', { name: 'Save bookmark' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Save now' })).toBeVisible();
     await expect(page.getByText('AI Inbound Bookmark').first()).toHaveCount(0);
 
-    await page.getByRole('button', { name: 'Save bookmark' }).click();
+    await page.getByRole('button', { name: 'Save now' }).click();
     await expect(page.getByText('AI Inbound Bookmark').first()).toBeVisible();
   });
 
@@ -58,7 +58,7 @@ test.describe('AI 入库分析', () => {
     await page.getByRole('button', { name: 'New', exact: true }).click();
     await page.getByRole('textbox', { name: 'Bookmark URL' }).fill('https://react.dev/reference');
     await page.getByRole('button', { name: 'Smart', exact: true }).click();
-    await page.getByRole('button', { name: 'Save bookmark' }).click();
+    await page.getByRole('button', { name: 'Save with AI' }).click();
 
     const savedTag = page.getByRole('button', { name: 'Remove tag React' });
     await expect(savedTag).toBeVisible();

@@ -11,6 +11,7 @@ const evidenceDirectory = resolve(
 type EntryModeWindow = Window &
   typeof globalThis & {
     __entryModeCalls: { metadata: number; ai: number };
+    __resolveEntryModeAI: (() => void) | null;
     go: {
       metadata: {
         Service: {
@@ -41,6 +42,7 @@ async function installEntryModeServices(page: import('@playwright/test').Page) {
   await page.addInitScript(() => {
     const browserWindow = window as EntryModeWindow;
     browserWindow.__entryModeCalls = { metadata: 0, ai: 0 };
+    browserWindow.__resolveEntryModeAI = null;
     browserWindow.go = {
       metadata: {
         Service: {
@@ -60,17 +62,32 @@ async function installEntryModeServices(page: import('@playwright/test').Page) {
         Service: {
           AnalyzeBookmark: async () => {
             browserWindow.__entryModeCalls.ai += 1;
-            return {
-              title: 'Smart preview title',
-              description: 'Smart preview description',
-              summary: 'Smart preview summary',
-              suggestedCategoryId: null,
-              suggestedTags: [],
-            };
+            return new Promise((resolve) => {
+              browserWindow.__resolveEntryModeAI = () => {
+                browserWindow.__resolveEntryModeAI = null;
+                resolve({
+                  title: 'Smart preview title',
+                  description: 'Smart preview description',
+                  summary: 'Smart preview summary',
+                  suggestedCategoryId: null,
+                  suggestedTags: [],
+                });
+              };
+            });
           },
         },
       },
     };
+  });
+}
+
+async function resolveEntryModeAI(page: import('@playwright/test').Page) {
+  await page.evaluate(() => {
+    const browserWindow = window as EntryModeWindow;
+    if (!browserWindow.__resolveEntryModeAI) {
+      throw new Error('AI analysis has not started');
+    }
+    browserWindow.__resolveEntryModeAI();
   });
 }
 
@@ -97,10 +114,6 @@ test.describe('TASK-071 New Bookmark Manual 与 Smart', () => {
     await expect(dialog.getByRole('button', { name: 'Smart' })).toBeVisible();
     await expect(dialog.getByRole('button', { name: 'Analyze' })).toHaveCount(0);
 
-    await dialog.screenshot({
-      path: resolve(evidenceDirectory, 'TASK-071-entry-modes-actual.png'),
-      animations: 'disabled',
-    });
     await expect(dialog).toHaveScreenshot('TASK-071-entry-modes-baseline.png', {
       animations: 'disabled',
       maxDiffPixelRatio: 0.08,
@@ -115,11 +128,28 @@ test.describe('TASK-071 New Bookmark Manual 与 Smart', () => {
 
     await dialog.getByRole('button', { name: 'Back', exact: true }).click();
     await dialog.getByRole('button', { name: 'Smart' }).click();
+    // REQ-006-AC-011：元数据先进入可保存预览，AI 在后台增强。
+    await expect(dialog.getByRole('textbox', { name: 'Bookmark title' })).toHaveValue('Metadata preview title');
+    await expect(dialog.getByRole('status', { name: 'AI enhancement in progress' })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Save now' })).toBeEnabled();
+    await expect(dialog.getByRole('button', { name: 'Save with AI' })).toBeDisabled();
+    await dialog.screenshot({
+      path: resolve(evidenceDirectory, 'TASK-075-metadata-first-actual.png'),
+      animations: 'disabled',
+    });
+    await expect(dialog).toHaveScreenshot('TASK-075-metadata-first-baseline.png', {
+      animations: 'disabled',
+      maxDiffPixelRatio: 0.08,
+    });
+    await resolveEntryModeAI(page);
     await expect(dialog.getByRole('textbox', { name: 'Bookmark title' })).toHaveValue('Smart preview title');
+    await expect(dialog.getByRole('button', { name: 'Save with AI' })).toBeEnabled();
     expect(await page.evaluate(() => (window as EntryModeWindow).__entryModeCalls)).toEqual({ metadata: 2, ai: 1 });
 
     await dialog.getByRole('button', { name: 'Back', exact: true }).click();
     await urlInput.press('Enter');
+    await expect(dialog.getByRole('textbox', { name: 'Bookmark title' })).toHaveValue('Metadata preview title');
+    await resolveEntryModeAI(page);
     await expect(dialog.getByRole('textbox', { name: 'Bookmark title' })).toHaveValue('Smart preview title');
     expect(await page.evaluate(() => (window as EntryModeWindow).__entryModeCalls)).toEqual({ metadata: 3, ai: 2 });
   });

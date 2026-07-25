@@ -40,8 +40,8 @@ test.describe('local MVP core paths', () => {
     await page.getByRole('textbox', { name: 'Bookmark URL' }).fill('https://example.test/mvp-new');
     await page.getByLabel('Bookmark title hint').fill('MVP New Bookmark');
     await actions.click(page.getByRole('button', { name: 'Smart' }));
-    await expect(page.getByRole('button', { name: 'Save bookmark' })).toBeVisible();
-    await actions.click(page.getByRole('button', { name: 'Save bookmark' }));
+    await expect(page.getByRole('button', { name: 'Save now' })).toBeVisible();
+    await actions.click(page.getByRole('button', { name: 'Save now' }));
 
     await expect(page.getByRole('main', { name: 'Content Area' }).getByText('MVP New Bookmark')).toBeVisible();
     expect(actions.count).toBeLessThanOrEqual(3);

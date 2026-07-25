@@ -1,0 +1,14 @@
+diff --git a/dist/commonjs/index.js b/dist/commonjs/index.js
+index be9df86be09c7655787a65c55ae6da01858894c3..90e715f85216b8e2e1d5415bc0eba8632a8011cc 100644
+--- a/dist/commonjs/index.js
++++ b/dist/commonjs/index.js
+@@ -261,3 +261,9 @@ function expand_(str, max, maxLength, isTop) {
+     return acc;
+ }
+ //# sourceMappingURL=index.js.map
++
++// 保持 brace-expansion 1.x/2.x 的 CommonJS 调用约定，兼容旧版 minimatch。
++module.exports = exports.expand;
++module.exports.expand = exports.expand;
++module.exports.EXPANSION_MAX = exports.EXPANSION_MAX;
++module.exports.EXPANSION_MAX_LENGTH = exports.EXPANSION_MAX_LENGTH;

@@ -2,8 +2,8 @@
 
 > 文件路径：`docs/spec/test_strategy.md`  
 > 参考方法论：`phases/qa_engine.md` §第1阶段  
-> 版本：2.6.0
-> 日期：2026-07-23
+> 版本：2.7.0
+> 日期：2026-07-25
 > 状态：已定稿
 
 ---
@@ -55,6 +55,7 @@ test_scope:
     - "Settings→Appearance 窗口大小四档（uiSize）、立即套用与冷启动恢复"
     - "OpenAI-compatible AI、授权、降级、语义重排和建议确认"
     - "New Bookmark Manual 零 AI 与 Smart/Enter 智能分析双入口"
+    - "New Bookmark Smart/Enter 元数据优先、AI 后台增强与过期请求竞态保护"
     - "洞察、手动链接健康和静态知识网络"
     - "10,000 条性能预算、安全、无障碍和视觉回归"
   out_of_scope:
@@ -147,6 +148,7 @@ E2E/视觉/人工测试：10%
 | 视图切换 P95 | 10,000 个书签 | ≤150ms |
 | 本地保存 P95 | 10,000 个书签 | ≤500ms |
 | 网络操作进度提示 | AI、抓取、同步、健康 | ≤300ms |
+| 新建书签元数据预览 | Smart/Enter 元数据响应 | 不等待 AI；AI 未完成时 Save 可用 |
 
 性能测试必须记录参考硬件、操作系统、构建模式、样本数和原始数据；开发服务器结果不能替代正式构建结果。
 
@@ -262,3 +264,4 @@ environments:
 | 2.3.0 | 2026-07-22 | 已定稿 | 将 New Bookmark Manual 零 AI、Smart/Enter 智能分析与按钮视觉回归纳入 Component/E2E 范围 |
 | 2.4.0 | 2026-07-22 | 已定稿 | J-05 增加分类名称双击展开/折叠，并回归单击选择、Chevron 与拖拽入口 |
 | 2.5.0 | 2026-07-22 | 已定稿 | J-03 增加新建书签随机渐变缩略图的 Unit、Component、E2E 与视觉回归 |
+| 2.7.0 | 2026-07-25 | 已定稿 | 新增 New Bookmark 元数据优先与 AI 后台增强的 Component/E2E/Visual 验收范围和“不等待 AI 即可保存”预算 |

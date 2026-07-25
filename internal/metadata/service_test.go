@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -18,11 +19,13 @@ type codedError interface {
 }
 
 func TestFetchMetadataExtractsStaticHTML(t *testing.T) {
+	var faviconRequests atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if request.Header.Get("User-Agent") != config.HTTPUserAgent {
 			t.Errorf("Unexpected User-Agent: %s", request.Header.Get("User-Agent"))
 		}
 		if request.URL.Path == "/favicon.ico" {
+			faviconRequests.Add(1)
 			writer.Header().Set("Content-Type", "image/png")
 			_, _ = writer.Write([]byte{0x89, 0x50, 0x4e, 0x47})
 			return
@@ -54,6 +57,30 @@ func TestFetchMetadataExtractsStaticHTML(t *testing.T) {
 	}
 	if result.FaviconDataURL == nil || !strings.HasPrefix(*result.FaviconDataURL, "data:image/png;base64,") {
 		t.Fatalf("Unexpected favicon data url: %+v", result.FaviconDataURL)
+	}
+	if faviconRequests.Load() != 1 {
+		t.Fatalf("FetchMetadata fetched favicon %d time(s), want 1", faviconRequests.Load())
+	}
+
+	fastResult, err := service.FetchMetadataFast(MetadataRequest{URL: server.URL + "/page"})
+	if err != nil {
+		t.Fatalf("FetchMetadataFast returned error: %v", err)
+	}
+	if fastResult.FaviconDataURL != nil {
+		t.Fatalf("FetchMetadataFast must not wait for favicon bytes: %+v", fastResult.FaviconDataURL)
+	}
+	if faviconRequests.Load() != 1 {
+		t.Fatalf("FetchMetadataFast unexpectedly fetched favicon; count=%d", faviconRequests.Load())
+	}
+	dataURL, err := service.FetchFaviconDataURL(FaviconDataURLRequest{URL: *fastResult.FaviconURL})
+	if err != nil {
+		t.Fatalf("FetchFaviconDataURL returned error: %v", err)
+	}
+	if !strings.HasPrefix(dataURL, "data:image/png;base64,") {
+		t.Fatalf("Unexpected on-demand favicon data URL: %q", dataURL)
+	}
+	if faviconRequests.Load() != 2 {
+		t.Fatalf("FetchFaviconDataURL fetched favicon %d time(s), want 2 total", faviconRequests.Load())
 	}
 	if strings.Contains(result.ContentText, "should-not-appear") || strings.Contains(result.ContentText, ".x{") {
 		t.Fatalf("Script/style content leaked into contentText: %q", result.ContentText)
@@ -144,6 +171,27 @@ func TestFetchMetadataFollowsSafeRedirect(t *testing.T) {
 	}
 	if result.Title != "Final" || !strings.HasSuffix(result.FinalURL, "/done") {
 		t.Fatalf("Unexpected redirect result: %+v", result)
+	}
+}
+
+func TestFetchMetadataPrefersOpenGraphMetadata(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+		writer.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_, _ = io.WriteString(writer, `<!doctype html><html><head>
+<title>Document title</title>
+<meta name="description" content="Document description">
+<meta property="og:title" content="OpenGraph title">
+<meta property="og:description" content="OpenGraph description">
+</head><body>content</body></html>`)
+	}))
+	t.Cleanup(server.Close)
+
+	result, err := NewService(WithHTTPClient(server.Client())).FetchMetadataFast(MetadataRequest{URL: server.URL})
+	if err != nil {
+		t.Fatalf("FetchMetadataFast returned error: %v", err)
+	}
+	if result.Title != "OpenGraph title" || result.Description != "OpenGraph description" {
+		t.Fatalf("OpenGraph metadata was not preferred: %+v", result)
 	}
 }
 

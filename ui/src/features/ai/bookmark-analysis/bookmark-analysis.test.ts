@@ -3,6 +3,8 @@ import {
   analyzeBookmarkResultSchema,
   applyReanalyzeConfirmation,
   buildInboundAnalysis,
+  buildInboundMetadataPreview,
+  enhanceInboundAnalysis,
   mapAIFailureMessage,
   type AnalyzeBookmarkClient,
   type AnalyzeBookmarkResult,
@@ -61,6 +63,62 @@ describe('AI 入库分析 DTO', () => {
 });
 
 describe('AI 入库分析与降级', () => {
+  // REQ-006-AC-011：元数据阶段应独立完成，不依赖 AI 客户端。
+  test('buildInboundMetadataPreview 先返回可编辑网页元数据', async () => {
+    const result = await buildInboundMetadataPreview({
+      url: 'https://example.test/metadata-first',
+      titleHint: 'Hint',
+      contentText: '',
+      fetchMetadata: async () => ({
+        ok: true,
+        title: 'Metadata title',
+        description: 'Metadata description',
+        contentText: 'Metadata content',
+        favicon: 'https://example.test/favicon.ico',
+      }),
+    });
+
+    expect(result.source).toBe('metadata');
+    expect(result.preview).toMatchObject({
+      title: 'Metadata title',
+      description: 'Metadata description',
+      aiSummary: '',
+      faviconUrl: 'https://example.test/favicon.ico',
+    });
+    expect(result.contentText).toBe('Metadata content');
+  });
+
+  test('enhanceInboundAnalysis 在 AI 失败时保留元数据预览', async () => {
+    const base = await buildInboundMetadataPreview({
+      url: 'https://example.test/metadata-fallback',
+      titleHint: '',
+      contentText: '',
+      fetchMetadata: async () => ({
+        ok: true,
+        title: 'Metadata title',
+        description: 'Metadata description',
+        contentText: 'Metadata content',
+      }),
+    });
+    const result = await enhanceInboundAnalysis({
+      base,
+      url: 'https://example.test/metadata-fallback',
+      categoryCandidates: [],
+      tagCandidates: [],
+      context: { apiBase: 'https://api.example.test/v1', model: 'm', locale: 'en' },
+      client: {
+        analyzeBookmark: async () => {
+          throw { code: 'AI_TIMEOUT', message: 'AI request timed out' };
+        },
+      },
+    });
+
+    expect(result.source).toBe('metadata');
+    expect(result.preview.title).toBe('Metadata title');
+    expect(result.preview.aiSummary).toBe('');
+    expect(result.aiErrorMessage).toMatch(/unavailable|timed out/i);
+  });
+
   // REQ-006-AC-002：有效 AI 时合并可编辑预览，确认前不产生入库副作用。
   test('buildInboundAnalysis 成功时合并 AI 建议且不伪造失败结果', async () => {
     const client: AnalyzeBookmarkClient = {

@@ -3,6 +3,8 @@ export {
   aiContextSchema,
   mapAIFailureMessage,
   buildInboundAnalysis,
+  buildInboundMetadataPreview,
+  enhanceInboundAnalysis,
   applyReanalyzeConfirmation,
   wailsAnalyzeClient,
 } from './bookmark-analysis/index';
@@ -22,4 +24,5 @@ export type {
   InboundAnalysisResult,
   InboundAnalysisPreview,
   InboundAnalysisSource,
+  InboundMetadataResult,
 } from './bookmark-analysis/index';
