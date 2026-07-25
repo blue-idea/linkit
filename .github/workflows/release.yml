@@ -321,4 +321,6 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -- "$CASK_PATH"
           git commit -m "bump: update Linkit to $RELEASE_TAG"
-          git push "https://x-access-token:${TAP_TOKEN}@github.com/${TAP_REPOSITORY}.git" HEAD:main
+          if ! git push "https://x-access-token:${TAP_TOKEN}@github.com/${TAP_REPOSITORY}.git" HEAD:main; then
+            echo "::warning::Failed to push updated Cask to $TAP_REPOSITORY. Please verify TAP_GITHUB_TOKEN has write permissions to $TAP_REPOSITORY."
+          fi
