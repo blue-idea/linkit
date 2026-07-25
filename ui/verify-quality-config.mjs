@@ -28,6 +28,11 @@ async function verifyPackageScripts() {
     'node verify-quality-config.mjs',
     'Quality configuration verification script is missing'
   );
+  assert.equal(
+    packageJson.scripts?.['test:homebrew-tap'],
+    'node --test ../scripts/update-homebrew-cask.test.mjs',
+    'Homebrew Tap test script is missing'
+  );
   assert.equal(packageJson.devDependencies?.husky, '9.1.7', 'Husky version is not pinned');
   assert.equal(
     packageJson.devDependencies?.['lint-staged'],
@@ -73,6 +78,12 @@ async function verifyWorkflows() {
   assert.match(releaseWorkflow, /goreleaser\/nfpm\/v2\/cmd\/nfpm/, 'Release workflow must install pinned nFPM');
   assert.match(releaseWorkflow, /nfpm pkg --packager deb/, 'Release workflow must build Debian packages');
   assert.match(releaseWorkflow, /linkit_\$\{\{ env\.RELEASE_TAG \}\}_\$\{\{ matrix\.deb_arch \}\}\.deb/, 'Release workflow must produce architecture-specific deb artifacts');
+  assert.match(releaseWorkflow, /^  update-homebrew-tap:$/m, 'Release workflow must define the Homebrew Tap update job');
+  assert.match(releaseWorkflow, /needs: release/, 'Homebrew Tap update must wait for the release matrix');
+  assert.match(releaseWorkflow, /TAP_GITHUB_TOKEN/, 'Homebrew Tap update must use the repository secret');
+  assert.match(releaseWorkflow, /gh release download/, 'Homebrew Tap update must download the published DMG');
+  assert.match(releaseWorkflow, /update-homebrew-cask\.mjs/, 'Homebrew Tap update must use the tested updater');
+  assert.match(releaseWorkflow, /git diff --quiet/, 'Homebrew Tap update must avoid empty commits');
 
   assert.match(nfpmConfig, /^name: linkit$/m, 'nFPM package name must be linkit');
   assert.match(nfpmConfig, /^arch: \$\{NFPM_ARCH\}$/m, 'nFPM architecture must come from NFPM_ARCH');
@@ -83,6 +94,55 @@ async function verifyWorkflows() {
   assert.match(nfpmConfig, /libwebkit2gtk-4\.1-0|libwebkit2gtk-4\.0-37/, 'nFPM must declare WebKitGTK runtime dependency');
   assert.match(linuxDesktopEntry, /^Exec=linkit$/m, 'Linux desktop entry must launch linkit');
   assert.match(linuxDesktopEntry, /^Icon=linkit$/m, 'Linux desktop entry must reference the linkit icon');
+}
+
+async function verifyHomebrewTap() {
+  const tapConfig = JSON.parse(await readRepositoryFile('config/homebrew-tap.json'));
+  const cask = await readRepositoryFile('homebrew-tap/Casks/linkit.rb');
+  const tapReadme = await readRepositoryFile('homebrew-tap/README.md');
+  const tapWorkflow = await readRepositoryFile('homebrew-tap/.github/workflows/ci.yml');
+  const englishReadme = await readRepositoryFile('README.md');
+  const chineseReadme = await readRepositoryFile('README.zh-CN.md');
+
+  assert.deepEqual(tapConfig, {
+    tapRepository: 'blue-idea/homebrew-tap',
+    releaseRepository: 'blue-idea/collection',
+    caskRelativePath: 'Casks/linkit.rb',
+    releaseAsset: 'Linkit.dmg',
+  });
+
+  assert.match(cask, /^cask "linkit" do$/m, 'Cask token must be linkit');
+  assert.match(cask, /^  version "0\.2\.2"$/m, 'Seed Cask must target the latest verified release');
+  assert.match(
+    cask,
+    /^  sha256 "41ed2e929a23e415d40ee3c58b09f755dcf6d6e4976ccebec0fd0a3bee47741d"$/m,
+    'Seed Cask SHA256 must match the published Linkit.dmg digest'
+  );
+  assert.match(cask, /releases\/download\/v#\{version\}\/Linkit\.dmg/, 'Cask URL must use the versioned universal DMG');
+  assert.match(cask, /^  app "Linkit\.app"$/m, 'Cask must install Linkit.app');
+  assert.match(cask, /strategy :github_latest/, 'Cask must use GitHub latest livecheck');
+  assert.match(cask, /^  depends_on :macos$/m, 'Cask must declare its macOS-only platform dependency');
+  assert.match(
+    cask,
+    /livecheck do[\s\S]*?^  end\r?\n\r?\n^  depends_on :macos\r?\n\r?\n^  app "Linkit\.app"$/m,
+    'Cask livecheck, depends_on and app stanzas must follow Homebrew order'
+  );
+  assert.match(cask, /args: \["-dr", "com\.apple\.quarantine", "#\{appdir\}\/Linkit\.app"\]/, 'Cask must limit xattr to Linkit.app');
+  assert.match(cask, /sudo: false/, 'Cask quarantine cleanup must not use sudo');
+  assert.match(tapWorkflow, /runs-on: macos-latest/, 'Tap CI must use a real macOS runner');
+  assert.match(tapWorkflow, /ruby -c Casks\/linkit\.rb/, 'Tap CI must validate Ruby syntax');
+  assert.match(tapWorkflow, /brew style Casks\/linkit\.rb/, 'Tap CI must validate Homebrew style');
+  assert.match(tapWorkflow, /brew tap blue-idea\/tap/, 'Tap CI must register the public Tap');
+  assert.match(tapWorkflow, /brew install --cask blue-idea\/tap\/linkit/, 'Tap CI must use the public user installation command');
+  assert.match(tapWorkflow, /xattr -p com\.apple\.quarantine/, 'Tap CI must verify quarantine cleanup');
+  assert.match(tapWorkflow, /brew uninstall --cask linkit/, 'Tap CI must uninstall Linkit during cleanup');
+
+  for (const readme of [tapReadme, englishReadme, chineseReadme]) {
+    assert.match(readme, /brew install blue-idea\/tap\/linkit/, 'README must document the Homebrew install command');
+    assert.match(readme, /brew upgrade linkit/, 'README must document the Homebrew upgrade command');
+  }
+  assert.match(englishReadme, /quarantine/i, 'English README must disclose quarantine cleanup');
+  assert.match(chineseReadme, /隔离属性/, 'Chinese README must disclose quarantine cleanup');
 }
 
 async function verifyTestFramework() {
@@ -114,6 +174,7 @@ async function verifyTestFramework() {
 await verifyPackageScripts();
 await verifyHooks();
 await verifyWorkflows();
+await verifyHomebrewTap();
 await verifyTestFramework();
 
 console.log('Quality configuration is valid');

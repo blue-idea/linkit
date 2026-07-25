@@ -2,7 +2,7 @@
 
 > 文件路径：`docs/spec/test_strategy.md`  
 > 参考方法论：`phases/qa_engine.md` §第1阶段  
-> 版本：2.7.0
+> 版本：2.8.0
 > 日期：2026-07-25
 > 状态：已定稿
 
@@ -56,6 +56,7 @@ test_scope:
     - "OpenAI-compatible AI、授权、降级、语义重排和建议确认"
     - "New Bookmark Manual 零 AI 与 Smart/Enter 智能分析双入口"
     - "New Bookmark Smart/Enter 元数据优先、AI 后台增强与过期请求竞态保护"
+    - "macOS universal DMG 的 Homebrew Cask、Cask 更新器、Release→Tap 自动化与中英文安装文档"
     - "洞察、手动链接健康和静态知识网络"
     - "10,000 条性能预算、安全、无障碍和视觉回归"
   out_of_scope:
@@ -65,6 +66,7 @@ test_scope:
     - "公网新 URL 推荐：探索仅限库内"
     - "全库可编辑力导向知识图：MVP 仅静态图"
     - "生产环境写入测试：禁止影响真实用户数据"
+    - "Homebrew 官方 Cask 提交、Apple codesign/notary、公证证书采购与双架构独立 DMG"
 ```
 
 ---
@@ -76,6 +78,7 @@ test_scope:
 | Go 单元测试 | ✅ | Go Service、文件原子性、URL/错误映射；关键安全路径 100% | `go test` |
 | React 单元测试 | ✅ | 领域命令、Zod Schema、迁移、selector、排序筛选；关键路径 100% | Vitest |
 | React 组件测试 | ✅ | 主要交互、键盘焦点、错误与降级状态 | React Testing Library + Vitest |
+| 发布配置单元测试 | ✅ | Homebrew Cask 更新器、workflow/Cask/README 契约、非法 tag/SHA256 失败路径 | Node.js `node:test` + `assert` |
 | 集成 / API 测试 | ✅ | Wails DTO、Supabase Auth/RLS/revision、OpenAI-compatible 契约及异常路径 | Go Integration Test、Supabase CLI、实际 HTTP 调用 |
 | 桌面 E2E | ✅ | 16 条关键用户旅程在选定目标平台完整执行；另一平台执行 Wails 构建门禁 | Playwright |
 | 视觉回归 | ✅ | 登录、主窗口、六视图、详情、设置、冲突与 AI 对话框 | Playwright Screenshot |
@@ -110,6 +113,7 @@ test_scope:
 | J-16 | 10,000 条性能、选定平台完整桌面旅程与另一平台构建门禁 |
 | J-17 | OS 关闭隐藏、托盘 Settings 打开设置、托盘图标双击显示窗口、托盘 Quit、Ctrl/Cmd+L 全局显隐、左/右侧栏快捷键、Settings→Shortcuts 改绑/冲突/恢复默认 |
 | J-18 | Settings→Appearance 选择 Small/Medium/Large/Extra large；保存后窗口立即变为预设宽高；重启按档位恢复；手动拖拽后重启仍按档位 |
+| J-19 | 发布 tag → universal `Linkit.dmg` → 自动计算 SHA256 → 更新 `blue-idea/homebrew-tap` → `brew install` / `brew upgrade` → Linkit.app 无 quarantine |
 
 ---
 
@@ -238,6 +242,8 @@ environments:
 | Release 身份门禁 | `go test ./config` 正式身份断言 + Release 产物扫描不得包含 `Linkit-Dev` |
 | 托盘 / 全局热键 | 在真实 Windows 或 macOS 桌面进程验证；Linux 无能力时记 best-effort / BLOCKED，不得伪造 PASS |
 | 原生窗口尺寸 | 在真实桌面进程验证 `WindowSetSize` 与冷启动 Width/Height；浏览器 Playwright 仅覆盖 Appearance UI，不得冒充原生尺寸 PASS |
+| Homebrew Tap 自动更新 | `blue-idea/homebrew-tap` 已创建，主仓库配置仅限 Tap 写权限的 `TAP_GITHUB_TOKEN`，并由一次真实 Release 运行验证提交 |
+| Homebrew 安装与 quarantine | 在 macOS 安装 Homebrew 后执行真实 `brew install blue-idea/tap/linkit`、`xattr` 与 `brew uninstall`；Windows 静态测试不得冒充 Manual PASS |
 
 ---
 
@@ -265,3 +271,4 @@ environments:
 | 2.4.0 | 2026-07-22 | 已定稿 | J-05 增加分类名称双击展开/折叠，并回归单击选择、Chevron 与拖拽入口 |
 | 2.5.0 | 2026-07-22 | 已定稿 | J-03 增加新建书签随机渐变缩略图的 Unit、Component、E2E 与视觉回归 |
 | 2.7.0 | 2026-07-25 | 已定稿 | 新增 New Bookmark 元数据优先与 AI 后台增强的 Component/E2E/Visual 验收范围和“不等待 AI 即可保存”预算 |
+| 2.8.0 | 2026-07-25 | 已定稿 | 新增 J-19、Homebrew Cask/Release 配置单元测试，以及远程 Tap、最小权限 Token 和 macOS 真实安装门禁 |

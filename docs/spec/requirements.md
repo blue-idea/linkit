@@ -1,7 +1,7 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：2.16.0
+> 版本：2.17.0
 > 日期：2026-07-25
 > 状态：已定稿
 
@@ -39,6 +39,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 15. 开发构建与正式构建使用隔离的本机身份槽：正式身份 AppData/Keychain 为 `Linkit`；开发身份（`-tags dev`）为 `Linkit-Dev`。发布产物不得嵌入开发身份字符串或携带开发者本机测试数据/密钥。
 16. OS 窗口关闭将应用隐藏到系统托盘/菜单栏且不退出进程；托盘菜单至少提供 Show 与 Quit；默认窗口显隐热键为 Windows `Ctrl+L` / macOS `Cmd+L`，且必须注册为系统级全局热键；Settings → Shortcuts 列出全部可配置快捷键，支持修改、冲突检测与本地持久化；Linux 对托盘与全局热键为 best-effort。
 17. Settings → Appearance 提供界面窗口大小四档：Small / Medium / Large / Extra large（中文界面对应小 / 中 / 大 / 超大）；默认 Medium；仅缩放主窗口宽高（不缩放 UI 字号/控件密度）；档位尺寸为 Small 1152×720（相对 Medium 0.9）、Medium 1280×800、Large 1536×960、Extra large 1792×1120；保存后立即生效并写入 AppSettings；重启按档位恢复；用户手动拖拽窗口不单独持久化，下次启动仍按档位重置。
+18. macOS 免费分发使用第三方 Homebrew Tap `blue-idea/tap`；当前 Release 产物为 universal `Linkit.dmg`，Cask 使用单一 SHA256，不拆分 Apple Silicon / Intel 资产；安装后仅对 `/Applications/Linkit.app` 递归清理 `com.apple.quarantine`，不使用 `sudo`。
 
 ---
 
@@ -2214,6 +2215,81 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 
 ---
 
+### 需求 REQ-032 · macOS Homebrew Tap 分发
+
+**来源：** `knowledge/Homebrew-Tap分发指南.md`
+**用户故事：** 作为 macOS 用户，我希望通过第三方 Homebrew Tap 安装和升级 Linkit，以便在没有 Apple Developer 证书与公证的当前阶段完成一条命令安装。
+
+#### 验收标准
+
+```yaml
+- id: REQ-032-AC-001
+  ears: >
+    While GitHub Release 已发布 universal Linkit.dmg,
+    when Homebrew 解析 blue-idea/tap 中的 linkit Cask,
+    the distribution config shall 使用去除 v 前缀的版本号、该 DMG 的真实 SHA256、
+    GitHub Release URL 与 Linkit.app artifact.
+  test_type: Unit
+  expected:
+    return_value: "Cask version, sha256, release URL and app artifact match the published universal DMG"
+    side_effects: []
+
+- id: REQ-032-AC-002
+  ears: >
+    When macOS 用户执行 brew install blue-idea/tap/linkit,
+    the Homebrew Tap shall 安装 Linkit.app 到 Homebrew Cask 的应用目录并允许后续使用 brew upgrade linkit 升级.
+  test_type: Manual
+  expected:
+    return_value: "Homebrew reports a successful Linkit installation and upgrade path"
+    side_effects:
+      - "Linkit.app is installed under the configured appdir"
+
+- id: REQ-032-AC-003
+  ears: >
+    When Homebrew 完成 Linkit.app 安装,
+    the linkit Cask shall 在不使用 sudo 的情况下仅对已安装的 Linkit.app 递归删除 com.apple.quarantine 属性.
+  test_type: Manual
+  expected:
+    return_value: "xattr reports no com.apple.quarantine attribute on the installed Linkit.app"
+    side_effects:
+      - "No unrelated application path is modified"
+
+- id: REQ-032-AC-004
+  ears: >
+    While Release 矩阵全部成功且 Linkit.dmg 已上传,
+    when Release 工作流进入 Homebrew Tap 更新阶段,
+    the release workflow shall 下载该发布资产、计算 SHA256、更新 Cask version/sha256，
+    并仅在文件发生变化时提交和推送到 blue-idea/homebrew-tap.
+  test_type: Unit
+  expected:
+    return_value: "Updater writes the normalized version and 64-character lowercase SHA256 exactly once"
+    side_effects:
+      - "Tap repository receives one commit only when Cask content changes"
+
+- id: REQ-032-AC-005
+  ears: >
+    While 跨仓库写凭据未配置或输入 tag/SHA256 非法,
+    when Homebrew Tap 更新流程启动,
+    the release workflow shall 以英文错误终止且不得写入占位哈希、明文 Token 或错误版本.
+  test_type: Unit
+  expected:
+    return_value: "Workflow or updater exits non-zero with an English validation error"
+    side_effects:
+      - "Cask file and remote Tap remain unchanged"
+
+- id: REQ-032-AC-006
+  ears: >
+    When 用户查阅 English 或中文 README,
+    the documentation shall 展示 brew install blue-idea/tap/linkit 与 brew upgrade linkit，
+    并说明该第三方 Tap 会在安装后清理 Linkit.app 的隔离属性.
+  test_type: Unit
+  expected:
+    return_value: "Both README files contain the install, upgrade and quarantine-disclosure guidance"
+    side_effects: []
+```
+
+---
+
 ## 非目标
 
 以下能力不属于 Linkit MVP，不得在未更新需求规格的情况下加入当前任务范围：
@@ -2223,6 +2299,8 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 - 多设备实时协同编辑与冲突三方合并界面。
 - 从公网搜索或爬取新 URL 的探索推荐。
 - 全库可编辑力导向知识大图及社区检测级优化。
+- Apple Developer 证书购买、codesign、公证或提交 Homebrew 官方 Cask 仓库。
+- 为 macOS 分别发布 Apple Silicon 与 Intel DMG；当前继续使用 universal DMG。
 
 ---
 
@@ -2261,6 +2339,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | float_task 1.3、F-STORE-01、F-SET-01 | REQ-029 |
 | fix_task 1.8、关闭隐藏/托盘/可配置快捷键 | REQ-030 |
 | fix_task 1.9、Appearance 界面窗口大小 | REQ-031 |
+| `knowledge/Homebrew-Tap分发指南.md` | REQ-032 |
 
 ---
 
@@ -2296,3 +2375,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.14.0 | 2026-07-22 | 已定稿 | 新增 REQ-006-AC-010：新建书签保存时从既有示例渐变键随机生成 thumbnail，不改变数据结构 |
 | 2.15.0 | 2026-07-23 | 已定稿 | 修订 REQ-024-AC-003 与 REQ-030-AC-006：侧栏快捷键拆分为左侧 Sidebar 与右侧 Detail Panel；新增 REQ-030-AC-011：托盘图标双击显示主窗口 |
 | 2.16.0 | 2026-07-25 | 已定稿 | 新增 REQ-006-AC-011：Smart/Enter 先展示网页元数据，AI 后台增强；新增 FetchMetadataFast 快速接口并保留旧接口兼容性 |
+| 2.17.0 | 2026-07-25 | 已定稿 | 新增 REQ-032：以 universal DMG 通过 `blue-idea/tap` 分发，Release 自动更新 Cask，并显式约束隔离属性清理与凭据失败路径 |

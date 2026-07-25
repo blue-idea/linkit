@@ -48,6 +48,10 @@ jobs:
           if [ -z "$TAG" ]; then
             TAG="${GITHUB_REF_NAME}"
           fi
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Release tag must match vX.Y.Z" >&2
+            exit 1
+          fi
           echo "RELEASE_TAG=${TAG}" >> $GITHUB_ENV
 
       - name: Install Linux build dependencies
@@ -216,3 +220,99 @@ jobs:
         run: |
           gh release view "${{ env.RELEASE_TAG }}" >/dev/null 2>&1 || gh release create "${{ env.RELEASE_TAG }}" --target "$GITHUB_SHA" --generate-notes || true
           gh release upload "${{ env.RELEASE_TAG }}" build/bin/Linkit.dmg --clobber
+
+  update-homebrew-tap:
+    name: Update Homebrew Tap
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    concurrency:
+      group: linkit-homebrew-tap
+      cancel-in-progress: false
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Determine Release Tag
+        shell: bash
+        run: |
+          TAG="${{ inputs.tag }}"
+          if [ -z "$TAG" ]; then
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Release tag must match vX.Y.Z" >&2
+            exit 1
+          fi
+          echo "RELEASE_TAG=${TAG}" >> "$GITHUB_ENV"
+
+      - name: Load Homebrew Tap config
+        id: tap-config
+        shell: bash
+        run: |
+          echo "tap_repository=$(jq -r '.tapRepository' config/homebrew-tap.json)" >> "$GITHUB_OUTPUT"
+          echo "release_repository=$(jq -r '.releaseRepository' config/homebrew-tap.json)" >> "$GITHUB_OUTPUT"
+          echo "cask_path=$(jq -r '.caskRelativePath' config/homebrew-tap.json)" >> "$GITHUB_OUTPUT"
+          echo "release_asset=$(jq -r '.releaseAsset' config/homebrew-tap.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Validate Homebrew Tap token
+        shell: bash
+        env:
+          TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+        run: |
+          if [ -z "$TAP_GITHUB_TOKEN" ]; then
+            echo "TAP_GITHUB_TOKEN is required" >&2
+            exit 1
+          fi
+
+      - name: Checkout Homebrew Tap
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.tap-config.outputs.tap_repository }}
+          token: ${{ secrets.TAP_GITHUB_TOKEN }}
+          path: homebrew-tap-repository
+
+      - name: Download published DMG and calculate SHA256
+        id: release-asset
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_REPOSITORY: ${{ steps.tap-config.outputs.release_repository }}
+          RELEASE_ASSET: ${{ steps.tap-config.outputs.release_asset }}
+        run: |
+          mkdir -p release-assets
+          gh release download "$RELEASE_TAG" \
+            --repo "$RELEASE_REPOSITORY" \
+            --pattern "$RELEASE_ASSET" \
+            --dir release-assets
+          test -s "release-assets/$RELEASE_ASSET"
+          SHA256="$(sha256sum "release-assets/$RELEASE_ASSET" | awk '{print $1}')"
+          echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
+
+      - name: Update Homebrew Cask
+        shell: bash
+        env:
+          CASK_PATH: ${{ steps.tap-config.outputs.cask_path }}
+          DMG_SHA256: ${{ steps.release-asset.outputs.sha256 }}
+        run: |
+          node scripts/update-homebrew-cask.mjs \
+            --cask "homebrew-tap-repository/$CASK_PATH" \
+            --tag "$RELEASE_TAG" \
+            --sha256 "$DMG_SHA256"
+
+      - name: Commit and push Homebrew Cask
+        shell: bash
+        env:
+          CASK_PATH: ${{ steps.tap-config.outputs.cask_path }}
+        run: |
+          cd homebrew-tap-repository
+          if git diff --quiet -- "$CASK_PATH"; then
+            echo "Homebrew Cask is already up to date"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -- "$CASK_PATH"
+          git commit -m "bump: update Linkit to $RELEASE_TAG"
+          git push
