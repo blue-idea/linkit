@@ -17,7 +17,7 @@ async function selectTwoBookmarks(page: import('@playwright/test').Page) {
   // TASK-045：多选需先进入选择模式，再勾选书签。
   await page.getByRole('button', { name: 'Select bookmarks' }).click();
   await page.getByRole('checkbox', { name: /Select bookmark Coolors/i }).check();
-  await page.getByRole('checkbox', { name: /Select bookmark Font Pair/i }).check();
+  await page.getByRole('checkbox', { name: /Select bookmark Figma/i }).check();
   await expect(page.getByRole('button', { name: 'Create collection from selection' })).toBeVisible();
 }
 

@@ -12,7 +12,7 @@ test.describe('AI 创建主题与去重整理', () => {
       (go as { ai?: unknown }).ai = { Service: {
         GenerateCollection: async () => ({
           name: 'AI Frontend Research', description: 'Curated from the current library',
-          suggestedTags: ['frontend', 'research'], bookmarkIds: ['b-coolors', 'b-fontpair'],
+          suggestedTags: ['frontend', 'research'], bookmarkIds: ['b-coolors', 'b-figma'],
         }),
         AnalyzeBookmark: async () => ({
           title: 'Coolors Duplicate',
@@ -45,7 +45,7 @@ test.describe('AI 创建主题与去重整理', () => {
       (go as { ai?: unknown }).ai = { Service: {
         GenerateCollection: async () => ({
           name: 'AI Frontend Research', description: 'Curated from the current library',
-          suggestedTags: ['frontend', 'research'], bookmarkIds: ['b-coolors', 'b-fontpair'],
+          suggestedTags: ['frontend', 'research'], bookmarkIds: ['b-coolors', 'b-figma'],
         }),
         AnalyzeBookmark: async () => ({
           title: 'Coolors Duplicate',
@@ -76,7 +76,7 @@ test.describe('AI 创建主题与去重整理', () => {
       const go = ((window as unknown as { go?: Record<string, unknown> }).go ??= {});
       (go as { ai?: unknown }).ai = { Service: { GenerateCollection: async () => ({
         name: 'AI Frontend Research', description: 'Curated from the current library',
-        suggestedTags: ['frontend', 'research'], bookmarkIds: ['b-coolors', 'b-fontpair'],
+        suggestedTags: ['frontend', 'research'], bookmarkIds: ['b-coolors', 'b-figma'],
       }) } };
     });
     await page.getByRole('button', { name: 'AI create collection' }).click();

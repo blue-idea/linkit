@@ -49,7 +49,7 @@ test.describe('AI 入库分析', () => {
             description: 'Official React documentation.',
             summary: 'React API reference and guides.',
             suggestedCategoryId: null,
-            suggestedTags: ['# React'],
+            suggestedTags: ['# Documentation'],
           }),
         },
       };
@@ -60,9 +60,9 @@ test.describe('AI 入库分析', () => {
     await page.getByRole('button', { name: 'Smart', exact: true }).click();
     await page.getByRole('button', { name: 'Save with AI' }).click();
 
-    const savedTag = page.getByRole('button', { name: 'Remove tag React' });
+    const savedTag = page.getByRole('button', { name: 'Remove tag Documentation', exact: true });
     await expect(savedTag).toBeVisible();
-    await expect(page.getByText('# React', { exact: true })).toHaveCount(0);
+    await expect(page.getByText('# Documentation', { exact: true })).toHaveCount(0);
     await savedTag.scrollIntoViewIfNeeded();
     await page.screenshot({
       path: '../docs/spec/evidence/TASK-069-ai-tag-match.png',

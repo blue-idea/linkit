@@ -32,7 +32,7 @@ test.describe('全界面语言与设置对齐', () => {
     await expect(page.getByPlaceholder('搜索或使用语义查找…')).toBeVisible();
     await expect(page.getByLabel('按阅读状态筛选').locator('option').first()).toHaveText('所有状态');
     await expect(page.getByLabel('书签排序').locator('option').first()).toHaveText('最近访问');
-    await expect(page.getByText('Coolors — 超快配色方案生成器', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Coolors — Super Fast Color Schemes Generator', { exact: true }).first()).toBeVisible();
 
     await page.getByRole('button', { name: '新增', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: '新建书签' });

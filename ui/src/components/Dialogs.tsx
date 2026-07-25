@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { Bookmark, Category, Collection, Tag, AIInsight } from '../types';
+import type { Bookmark, Category, Collection, Tag, TagColor, AIInsight } from '../types';
 import {
   fetchBookmarkMetadata,
   randomBookmarkThumbnail,
@@ -851,6 +851,106 @@ export function ReanalyzeBookmarkDialog({
           </div>
         </div>
       )}
+    </Modal>
+  );
+}
+
+/* ============ TagFormDialog：新建标签 ============ */
+export function TagFormDialog({
+  onCancel,
+  onSubmit,
+}: {
+  onCancel: () => void;
+  onSubmit: (values: { label: string; color: TagColor }) => void;
+}) {
+  const i18n = useI18n();
+  const [label, setLabel] = useState('');
+  const [color, setColor] = useState<TagColor>('blue');
+  const availableColors: TagColor[] = ['blue', 'green', 'amber', 'coral', 'violet', 'gray'];
+
+  return (
+    <Modal open onClose={onCancel} width="max-w-md" aria-label={i18n.t('sidebar.newTag')}>
+      <ModalHeader icon="Tag" title={i18n.t('sidebar.newTag')} onClose={onCancel} />
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!label.trim()) return;
+          onSubmit({ label: label.trim(), color });
+        }}
+        className="p-5 space-y-4"
+      >
+        <div>
+          <label className="block text-[11px] font-medium text-ink-300 mb-1.5">{i18n.t('sidebar.tagName')}</label>
+          <input
+            type="text"
+            autoFocus
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            placeholder={i18n.t('sidebar.tagNamePlaceholder')}
+            className="w-full h-9 rounded-lg bg-ink-800/80 border border-white/10 px-3 text-sm text-ink-100 placeholder:text-ink-500 focus-ring"
+          />
+        </div>
+        <div>
+          <label className="block text-[11px] font-medium text-ink-300 mb-1.5">{i18n.t('sidebar.tagColor')}</label>
+          <div className="flex items-center gap-2 flex-wrap">
+            {availableColors.map((c) => {
+              const info = tagColors[c];
+              return (
+                <button
+                  key={c}
+                  type="button"
+                  aria-label={i18n.t('sidebar.tagColorChoice', { color: c })}
+                  onClick={() => setColor(c)}
+                  className={`w-7 h-7 rounded-full flex items-center justify-center transition ${info.bg} ${
+                    color === c ? 'ring-2 ring-accent-400 ring-offset-2 ring-offset-ink-900 scale-110' : 'hover:scale-105'
+                  }`}
+                >
+                  <span className={`w-3 h-3 rounded-full ${info.dot}`} />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 pt-2">
+          <Button variant="ghost" onClick={onCancel}>
+            {i18n.t('import.cancel')}
+          </Button>
+          <Button variant="primary" type="submit" disabled={!label.trim()}>
+            {i18n.t('sidebar.newTag')}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+/* ============ DeleteTagDialog：删除标签确认 ============ */
+export function DeleteTagDialog({
+  name,
+  onCancel,
+  onConfirm,
+}: {
+  name: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const i18n = useI18n();
+  return (
+    <Modal open onClose={onCancel} width="max-w-sm" aria-label={i18n.t('sidebar.deleteTag')}>
+      <ModalHeader icon="Trash2" title={i18n.t('sidebar.deleteTag')} onClose={onCancel} />
+      <div className="p-5 space-y-4">
+        <p className="text-[13px] text-ink-200 leading-relaxed">
+          {i18n.t('sidebar.deleteTagConfirm', { name })}
+        </p>
+        <div className="flex justify-end gap-2 pt-2">
+          <Button variant="ghost" onClick={onCancel}>
+            {i18n.t('import.cancel')}
+          </Button>
+          <Button variant="danger" onClick={onConfirm}>
+            {i18n.t('sidebar.deleteTag')}
+          </Button>
+        </div>
+      </div>
     </Modal>
   );
 }

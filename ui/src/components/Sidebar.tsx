@@ -175,6 +175,8 @@ export function Sidebar({
   onNewCollection,
   onEditCollection,
   onDeleteCollection,
+  onNewTag,
+  onDeleteTag,
   onDropToCompose,
   insightCount,
 }: {
@@ -198,6 +200,8 @@ export function Sidebar({
   onNewCollection: () => void;
   onEditCollection: (collectionId: string) => void;
   onDeleteCollection: (collectionId: string) => void;
+  onNewTag?: () => void;
+  onDeleteTag?: (tagId: string) => void;
   onDropToCompose: (rawPayload: string) => void;
   insightCount: number;
 }) {
@@ -526,7 +530,24 @@ export function Sidebar({
         })}
 
         {/* Tags */}
-        <SectionLabel>{i18n.t('sidebar.tags')}</SectionLabel>
+        <SectionLabel
+          right={
+            <button
+              type="button"
+              aria-label={i18n.t('sidebar.newTag')}
+              className="text-ink-400 hover:text-ink-100 transition"
+              title={i18n.t('sidebar.newTag')}
+              onClick={(e) => {
+                e.stopPropagation();
+                onNewTag?.();
+              }}
+            >
+              <Icon name="Plus" size={12} />
+            </button>
+          }
+        >
+          {i18n.t('sidebar.tags')}
+        </SectionLabel>
         <div className="px-3 pt-1 pb-2 flex flex-wrap gap-1.5" aria-label={i18n.t('sidebar.tagsLabel')} onClick={(e) => e.stopPropagation()}>
           {tags.map((t) => {
             const active = selection.kind === 'tag' && selection.id === t.id;
@@ -538,6 +559,7 @@ export function Sidebar({
                 color={t.color}
                 active={active}
                 onClick={() => onSelect({ kind: 'tag', id: t.id })}
+                onRemove={onDeleteTag ? () => onDeleteTag(t.id) : undefined}
               />
             );
           })}

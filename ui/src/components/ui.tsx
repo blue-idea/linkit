@@ -40,7 +40,7 @@ export function TagPill({
   return (
     <span
       onClick={onClick}
-      className={`inline-flex items-center rounded-full border ${c.border} ${c.bg} ${c.text} ${sizes[size]} font-medium ${
+      className={`group inline-flex items-center rounded-full border ${c.border} ${c.bg} ${c.text} ${sizes[size]} font-medium ${
         onClick ? 'cursor-pointer hover:brightness-125 transition' : ''
       } ${active ? 'ring-1 ring-white/20' : ''} ${className}`}
     >
@@ -54,7 +54,7 @@ export function TagPill({
             e.stopPropagation();
             onRemove();
           }}
-          className="ml-0.5 opacity-60 hover:opacity-100 focus-ring rounded-sm"
+          className="ml-0.5 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity focus-ring rounded-sm"
         >
           <Icon name="X" size={10} />
         </button>
