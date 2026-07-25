@@ -15,7 +15,8 @@ import {
 import { BookmarkIconEditor } from '../features/bookmarks/BookmarkIconEditor';
 import {
   applyReanalyzeConfirmation,
-  buildInboundAnalysis,
+  buildInboundMetadataPreview,
+  enhanceInboundAnalysis,
   mapAIFailureMessage,
   wailsAnalyzeClient,
   type AIContext,
@@ -100,6 +101,7 @@ export function NewBookmarkDialog({
   const [stage, setStage] = useState<'input' | 'analyzing' | 'review'>('input');
   const [fallbackMessage, setFallbackMessage] = useState<string | null>(null);
   const [analysisSource, setAnalysisSource] = useState<'ai' | 'metadata' | 'manual' | null>(null);
+  const [aiEnhancementState, setAiEnhancementState] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
   const [chosenTags, setChosenTags] = useState<string[]>([]);
   const [chosenCategory, setChosenCategory] = useState<string>('');
   const [chosenCollections, setChosenCollections] = useState<string[]>([]);
@@ -117,17 +119,36 @@ export function NewBookmarkDialog({
     faviconColor: 'blue',
   });
   const previewRequestIdRef = useRef(0);
+  const dirtyFieldsRef = useRef({
+    title: false,
+    description: false,
+    aiSummary: false,
+    category: false,
+    tags: false,
+  });
   const categoryLocked = Boolean(activeCategoryId?.trim());
+
+  const resetDirtyFields = () => {
+    dirtyFieldsRef.current = {
+      title: false,
+      description: false,
+      aiSummary: false,
+      category: false,
+      tags: false,
+    };
+  };
 
   useEffect(() => {
     // 对话框关闭、重开或入口上下文变化时，使旧异步预览结果失效。
     previewRequestIdRef.current += 1;
     if (open) {
+      resetDirtyFields();
       setUrl(initialUrl);
       setTitle('');
       setStage('input');
       setFallbackMessage(null);
       setAnalysisSource(null);
+      setAiEnhancementState('idle');
       setChosenTags([]);
       // 分类视图下预填并锁定当前分类。
       setChosenCategory(activeCategoryId?.trim() ?? '');
@@ -157,9 +178,18 @@ export function NewBookmarkDialog({
     onClose();
   };
 
+  const returnToInput = () => {
+    // 返回输入步骤后，后台 AI 结果不得重新打开旧预览。
+    previewRequestIdRef.current += 1;
+    resetDirtyFields();
+    setAiEnhancementState('idle');
+    setStage('input');
+  };
+
   const beginPreview = () => {
     const requestId = previewRequestIdRef.current + 1;
     previewRequestIdRef.current = requestId;
+    resetDirtyFields();
     const normalized = normalizeBookmarkUrl(url);
     // REQ-006-AC-005：重复 URL 在输入阶段弹出 warning，并阻止进入分析/确认步骤。
     if (normalized.ok && isBookmarkUrlDuplicate(bookmarks, normalized.url)) {
@@ -169,6 +199,7 @@ export function NewBookmarkDialog({
     }
     setStage('analyzing');
     setFallbackMessage(null);
+    setAiEnhancementState('idle');
     setUrlWarning(null);
     return requestId;
   };
@@ -200,6 +231,40 @@ export function NewBookmarkDialog({
     setStage('review');
   };
 
+  const applyAIEnhancement = (result: Awaited<ReturnType<typeof enhanceInboundAnalysis>>) => {
+    const alerts = [result.metadataErrorMessage, result.aiErrorMessage].filter(
+      (message): message is string => Boolean(message)
+    );
+    setFallbackMessage(alerts.length > 0 ? alerts.join(' ') : null);
+
+    if (result.source !== 'ai') {
+      setAiEnhancementState('error');
+      return;
+    }
+
+    // AI 仅覆盖用户尚未编辑的字段，显式 dirty 标记也能保护“改回原值”的输入。
+    const dirtyFields = dirtyFieldsRef.current;
+    if (!dirtyFields.title) {
+      setTitle(result.preview.title);
+    }
+    if (!dirtyFields.description) {
+      setDescription(result.preview.description);
+    }
+    if (!dirtyFields.aiSummary) {
+      setAiSummary(result.preview.aiSummary);
+    }
+    if (!dirtyFields.category && shouldApplyAiCategorySuggestion(activeCategoryId)) {
+      setChosenCategory(result.preview.suggestedCategoryId ?? '');
+    }
+    const tagMatches = matchSuggestedTags(result.preview.suggestedTags, tags);
+    if (!dirtyFields.tags) {
+      setChosenTags(tagMatches.tagIds);
+      setPendingTagLabels(tagMatches.unmatchedLabels);
+    }
+    setAnalysisSource('ai');
+    setAiEnhancementState('ready');
+  };
+
   const runSmartAnalysis = async () => {
     const requestId = beginPreview();
     if (requestId === null) return;
@@ -209,23 +274,32 @@ export function NewBookmarkDialog({
       model: 'unavailable',
       locale: 'en',
     };
-    const result = await buildInboundAnalysis({
+    const categoryCandidates = categories.map((category) => ({ id: category.id, name: category.name }));
+    const tagCandidates = tags.map((tag) => ({ id: tag.id, label: tag.label }));
+    const base = await buildInboundMetadataPreview({
       url,
       titleHint: title,
       contentText: '',
-      categoryCandidates: categories.map((category) => ({ id: category.id, name: category.name })),
-      tagCandidates: tags.map((tag) => ({ id: tag.id, label: tag.label })),
-      context,
-      client: wailsAnalyzeClient,
       fetchMetadata: fetchBookmarkMetadata,
     });
     if (requestId !== previewRequestIdRef.current) return;
-    const alerts = [result.metadataErrorMessage, result.aiErrorMessage].filter(Boolean);
     applyReviewPreview({
-      source: result.source,
-      preview: result.preview,
-      fallbackMessage: alerts.length > 0 ? alerts.join(' ') : null,
+      source: base.source,
+      preview: base.preview,
+      fallbackMessage: base.metadataErrorMessage,
     });
+    setAiEnhancementState('loading');
+
+    const result = await enhanceInboundAnalysis({
+      base,
+      url,
+      categoryCandidates,
+      tagCandidates,
+      context,
+      client: wailsAnalyzeClient,
+    });
+    if (requestId !== previewRequestIdRef.current) return;
+    applyAIEnhancement(result);
   };
 
   const runManualEntry = async () => {
@@ -274,6 +348,8 @@ export function NewBookmarkDialog({
   };
 
   const cat = categories.find((c) => c.id === chosenCategory);
+  // Smart 预览允许先保存元数据，只有 AI 完成后才开放带增强结果的保存。
+  const isSmartReview = aiEnhancementState !== 'idle';
 
   return (
     <Modal open={open} onClose={closeDialog} width="max-w-[520px]" aria-label={i18n.t('bookmark.new.title')}>
@@ -368,6 +444,16 @@ export function NewBookmarkDialog({
             {analysisSource === 'metadata' && (
               <div className="text-[11px] text-mint-400">{i18n.t('bookmark.metadataReady')}</div>
             )}
+            {aiEnhancementState === 'loading' && (
+              <div
+                role="status"
+                aria-label={i18n.t('bookmark.aiEnhancingStatus')}
+                className="flex items-center gap-2 rounded-lg border border-violet2-400/20 bg-violet2-500/10 px-3 py-2 text-[11px] text-violet2-200"
+              >
+                <span className="h-3 w-3 rounded-full border border-violet2-300/40 border-t-violet2-200 animate-spin" />
+                {i18n.t('bookmark.aiEnhancing')}
+              </div>
+            )}
 
             <BookmarkIconEditor
               url={url}
@@ -388,7 +474,10 @@ export function NewBookmarkDialog({
                 <input
                   aria-label={i18n.t('bookmark.titleInput')}
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  onChange={(e) => {
+                    dirtyFieldsRef.current.title = true;
+                    setTitle(e.target.value);
+                  }}
                   className="w-full bg-transparent text-[13px] font-semibold text-ink-100 outline-none"
                 />
                 <div className="text-[11px] text-ink-400 truncate">{url}</div>
@@ -400,7 +489,10 @@ export function NewBookmarkDialog({
               <textarea
                 aria-label={i18n.t('bookmark.descriptionInput')}
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => {
+                  dirtyFieldsRef.current.description = true;
+                  setDescription(e.target.value);
+                }}
                 placeholder={i18n.t('bookmark.descriptionPlaceholder')}
                 rows={2}
                 className="w-full rounded-lg bg-ink-800/60 hairline text-[12px] text-ink-100 placeholder:text-ink-500 px-3 py-2.5 outline-none focus-ring resize-none"
@@ -412,7 +504,10 @@ export function NewBookmarkDialog({
               <textarea
                 aria-label={i18n.t('bookmark.aiSummary')}
                 value={aiSummary}
-                onChange={(e) => setAiSummary(e.target.value)}
+                onChange={(e) => {
+                  dirtyFieldsRef.current.aiSummary = true;
+                  setAiSummary(e.target.value);
+                }}
                 placeholder={i18n.t('bookmark.summaryPlaceholder')}
                 rows={2}
                 className="w-full rounded-lg bg-ink-800/60 hairline text-[12px] text-ink-100 placeholder:text-ink-500 px-3 py-2.5 outline-none focus-ring resize-none"
@@ -435,7 +530,10 @@ export function NewBookmarkDialog({
                       <button
                         key={c.id}
                         type="button"
-                        onClick={() => setChosenCategory(c.id)}
+                        onClick={() => {
+                          dirtyFieldsRef.current.category = true;
+                          setChosenCategory(c.id);
+                        }}
                         className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] transition ${
                           on ? 'border-accent-400/40 bg-accent-500/15 text-ink-100' : 'border-ink-600/50 text-ink-400'
                         }`}
@@ -458,7 +556,15 @@ export function NewBookmarkDialog({
                 {tags.map((t) => {
                   const on = chosenTags.includes(t.id);
                   return (
-                    <button key={t.id} type="button" onClick={() => setChosenTags((p) => (on ? p.filter((x) => x !== t.id) : [...p, t.id]))}>
+                    <button
+                      key={t.id}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => {
+                        dirtyFieldsRef.current.tags = true;
+                        setChosenTags((p) => (on ? p.filter((x) => x !== t.id) : [...p, t.id]));
+                      }}
+                    >
                       <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition ${on ? `${tagColors[t.color].border} ${tagColors[t.color].bg} ${tagColors[t.color].text}` : 'border-ink-600/50 text-ink-400'}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${tagColors[t.color].dot}`} />
                         {t.label}
@@ -506,10 +612,26 @@ export function NewBookmarkDialog({
             </div>
           </div>
           <div className="px-5 py-4 border-t border-white/5 flex items-center justify-end gap-2">
-            <Button variant="ghost" onClick={() => setStage('input')}>{i18n.t('common.back')}</Button>
-            <Button variant="primary" icon="Check" onClick={submit}>
-              {i18n.t('bookmark.save')}
-            </Button>
+            <Button variant="ghost" onClick={returnToInput}>{i18n.t('common.back')}</Button>
+            {isSmartReview ? (
+              <>
+                <Button variant="subtle" icon="Check" onClick={submit}>
+                  {i18n.t('bookmark.saveNow')}
+                </Button>
+                <Button
+                  variant="primary"
+                  icon="Sparkles"
+                  onClick={submit}
+                  disabled={aiEnhancementState !== 'ready'}
+                >
+                  {i18n.t('bookmark.saveWithAI')}
+                </Button>
+              </>
+            ) : (
+              <Button variant="primary" icon="Check" onClick={submit}>
+                {i18n.t('bookmark.save')}
+              </Button>
+            )}
           </div>
         </div>
       )}

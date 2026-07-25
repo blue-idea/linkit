@@ -70,6 +70,16 @@ func (service *Service) HTTPClient() *http.Client {
 }
 
 func (service *Service) FetchMetadata(request MetadataRequest) (MetadataResult, error) {
+	return service.fetchMetadata(request, true)
+}
+
+// FetchMetadataFast 返回网页元数据但不等待 favicon 二进制，供新建书签的快速预览使用。
+// favicon URL 仍会返回，展示层需要时可调用 FetchFaviconDataURL 惰性补齐。
+func (service *Service) FetchMetadataFast(request MetadataRequest) (MetadataResult, error) {
+	return service.fetchMetadata(request, false)
+}
+
+func (service *Service) fetchMetadata(request MetadataRequest, includeFaviconData bool) (MetadataResult, error) {
 	if err := validateHTTPURL(request.URL); err != nil {
 		return MetadataResult{}, err
 	}
@@ -122,8 +132,10 @@ func (service *Service) FetchMetadata(request MetadataRequest) (MetadataResult, 
 	if page.faviconURL != "" {
 		value := page.faviconURL
 		favicon = &value
-		if dataURL, err := service.fetchFaviconDataURL(value); err == nil && dataURL != "" {
-			faviconData = &dataURL
+		if includeFaviconData {
+			if dataURL, err := service.fetchFaviconDataURL(value); err == nil && dataURL != "" {
+				faviconData = &dataURL
+			}
 		}
 	}
 

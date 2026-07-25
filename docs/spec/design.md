@@ -1,15 +1,15 @@
 # Linkit 技术设计（Design）
 
 > 文件路径：`docs/spec/design.md`  
-> 版本：1.14.0
-> 日期：2026-07-23
+> 版本：1.15.0
+> 日期：2026-07-25
 > 状态：已定稿
 
 ---
 
 ## 1. 设计目标与边界
 
-本设计用于实现 `docs/spec/requirements.md` 2.14.0 定义的 Linkit MVP。总体目标如下：
+本设计用于实现 `docs/spec/requirements.md` 2.16.0 定义的 Linkit MVP。总体目标如下：
 
 - 将现有 Vite + React 演示原型迁移为可交付的 Wails v2 桌面应用。
 - 保留现有三栏布局与主要视觉资产，但拆分巨型组件和直接状态修改逻辑。
@@ -226,14 +226,25 @@ sequenceDiagram
     participant Keychain as OS Keychain
     participant Web as Web or AI API
 
-    UI->>Go: validated request DTO
-    Go->>Keychain: load AI key when required
-    Go->>Web: bounded HTTP request
-    Web-->>Go: response
-    Go->>Go: size limit, timeout, parse and normalize
-    Go-->>UI: Result DTO or AppError
-    UI->>UI: Zod validate response before state update
+    UI->>Go: FetchMetadataFast(url)
+    Go->>Web: bounded HTML request
+    Web-->>Go: HTML response
+    Go->>Go: parse title/description/OG metadata and content
+    Go-->>UI: metadata preview DTO
+    UI->>UI: show editable preview and Save immediately
+    par AI enhancement in background
+        UI->>Go: AnalyzeBookmark(metadata context)
+        Go->>Keychain: load AI key when required
+        Go->>Web: bounded AI request
+        Web-->>Go: AI response
+        Go->>Go: size limit, timeout, parse and normalize
+        Go-->>UI: AI enhancement DTO or AppError
+        UI->>UI: merge only fields untouched since metadata preview
+    end
+    UI->>UI: invalidate request when returning, closing, or saving
 ```
+
+新建书签的 Smart/Enter 入口采用两阶段编排：`FetchMetadataFast` 优先返回网页标题、描述、正文片段和 favicon URL；AI 请求不再阻塞预览或保存。`FetchMetadata` 保留完整 favicon data URL 行为，供旧调用方兼容；展示层在图片加载失败时按需调用 `FetchFaviconDataURL`。
 
 ---
 
@@ -722,3 +733,4 @@ Go 端按能力提供独立方法，但共用一个 OpenAI-compatible 客户端�
 | 1.12.0 | 2026-07-22 | 已定稿 | 分类树切换改用当前实际展开值；增加分类名称双击入口并保持单击、Chevron 与拖拽行为 |
 | 1.13.0 | 2026-07-22 | 已定稿 | 新建书签保存时复用现有 thumbnail 字段随机选择示例渐变键，配置集中管理且不做数据库迁移 |
 | 1.14.0 | 2026-07-23 | 已定稿 | 托盘新增双击显示主窗口；Shortcuts action 拆分为左侧 Sidebar 与右侧 Detail Panel，对齐 fix_task 1.17 / 1.18 |
+| 1.15.0 | 2026-07-25 | 已定稿 | 新增 New Bookmark 两阶段元数据/AI 编排、FetchMetadataFast 快速接口、后台增强竞态保护与 OpenGraph 元数据优先级 |

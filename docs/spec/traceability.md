@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.38.0
-> 日期：2026-07-23
-> 状态：已定稿（新增并完成 TASK-074 / fix_task 1.16-1.18）
+> 版本：1.39.0
+> 日期：2026-07-25
+> 状态：已定稿（新增并完成 TASK-075 / 新建书签元数据优先与 AI 后台增强）
 
 ---
 
@@ -100,6 +100,7 @@
 | TASK-072 | 分类名称双击展开与折叠 | REQ-010-AC-001、006；REQ-011-AC-001 | done | `ui/src/components/Sidebar.tsx`、`ui/src/App.tsx` | `Sidebar.category-double-click.test.tsx`、`Sidebar.category-label.test.tsx`、`category-name-double-click.spec.ts`、分类 CRUD/拖拽 E2E | `docs/spec/ac/TASK-072-AC.md` | `docs/spec/evidence/TASK-072-evidence.md`、`docs/spec/reports/TASK-072-report.md`、`TASK-072-category-name-double-click-*.png` |
 | TASK-073 | 新建书签随机渐变缩略图 | REQ-006-AC-001、004、010 | done | `ui/src/config/thumbnail-gradients.ts`、`ui/src/features/bookmarks/thumbnail.ts`、`ui/src/components/Dialogs.tsx`、`ui/src/components/ui.tsx`、`ui/src/features/views/MasonryView.tsx` | `thumbnail.test.ts`、`NewBookmarkDialog.entry-modes.test.tsx`、`new-bookmark-random-thumbnail.spec.ts`、书签 CRUD/基础视图 E2E | `docs/spec/ac/TASK-073-AC.md` | `docs/spec/evidence/TASK-073-evidence.md`、`docs/spec/reports/TASK-073-report.md`、`TASK-073-random-thumbnail-*.png` |
 | TASK-074 | fix_task 1.16-1.18：分类入口、侧栏快捷键拆分与托盘双击显示 | REQ-010-AC-002；REQ-024-AC-003；REQ-030-AC-006~007、011 | done | `ui/src/App.tsx`、`ui/src/features/shell/shortcuts.ts`、`ui/src/features/shell/use-global-shortcuts.ts`、`ui/src/features/settings/ShortcutsPanel.tsx`、`ui/src/domain/schemas.ts`、`ui/src/i18n/catalogs.ts`、`internal/settingsstore/settings.go`、`internal/tray/*` | `ui/tests/e2e/category-crud.spec.ts`、`ui/tests/e2e/app-shell.spec.ts`、`ui/tests/e2e/settings-shortcuts.spec.ts`、`ui/src/features/shell/shortcuts.test.ts`、`ui/src/features/settings/ShortcutsPanel.test.tsx`、`ui/src/features/auth/persist-ui-settings.test.ts`、`ui/src/domain/library.test.ts`、`internal/tray/menu_test.go` | `docs/spec/ac/TASK-074-AC.md` | 2026-07-23 |
+| TASK-075 | 新建书签元数据优先与 AI 后台增强 | REQ-006-AC-001、003、006、009、011 | done | `internal/metadata/service.go`、`internal/metadata/parse.go`、`ui/src/features/bookmarks/metadata-client.ts`、`ui/src/features/ai/bookmark-analysis/inbound.ts`、`ui/src/components/Dialogs.tsx`、`ui/src/i18n/catalogs.ts`、Wails generated metadata bindings | `internal/metadata/service_test.go`、`ui/src/features/bookmarks/metadata-client.test.ts`、`ui/src/features/ai/bookmark-analysis/bookmark-analysis.test.ts`、`ui/src/components/NewBookmarkDialog.entry-modes.test.tsx`、`ui/tests/e2e/new-bookmark-entry-modes.spec.ts` | `docs/spec/ac/TASK-075-AC.md`、`docs/spec/evidence/TASK-075-evidence.md` | 2026-07-25 |
 
 ---
 
@@ -108,7 +109,7 @@
 | REQ 范围 | 主要 TASK |
 |----------|-----------|
 | REQ-001~005 | TASK-006、008、010、024、026~030、040、042、044 |
-| REQ-006~009 | TASK-009、011~013、025、033、037、044、048、051、069~071、073 |
+| REQ-006~009 | TASK-009、011~013、025、033、037、044、048、051、069~071、073、075 |
 | REQ-010~014 | TASK-014~018、025、035、044、050、052~054、069、072 |
 | REQ-015~018 | TASK-019~021、025、034、037、041、044 |
 | REQ-019~022 | TASK-007、031~040、044 |
@@ -179,3 +180,4 @@
 | 2026-07-22 | 新增并完成 TASK-072 | 对齐 fix_task 1.14；双击分类名称切换子分类，修正根分类默认展开的首次切换语义 |
 | 2026-07-22 | 新增并完成 TASK-073 | 对齐 fix_task 1.15；按现有 Bookmark.thumbnail 模型随机复用示例渐变键，不新增 Tag 字段或数据库迁移 |
 | 2026-07-23 | 新增并完成 TASK-074 | 对齐 fix_task 1.16-1.18；修正“收藏分类”标题 `+` 只创建一级分类，拆分快捷键为左/右侧栏，并为托盘双击显示窗口补齐代码路径与自动化验证 |
+| 2026-07-25 | 新增并完成 TASK-075 | Smart/Enter 先展示网页元数据、AI 后台增强；新增 `FetchMetadataFast`、OpenGraph 优先级与过期请求保护 |

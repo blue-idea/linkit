@@ -1,8 +1,8 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：3.9.0
-> 日期：2026-07-23
+> 版本：4.0.0
+> 日期：2026-07-25
 > 状态：已定稿
 
 执行时须严格遵循 `docs/spec/requirements.md` 2.15.0、`docs/spec/design.md` 1.14.0 和 `docs/spec/test_strategy.md` 2.6.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
@@ -1754,6 +1754,33 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-075 · 新建书签元数据优先与 AI 后台增强**
+
+  > 依赖：TASK-009、TASK-033、TASK-071 · 对齐：用户“优先从元数据抓取网页数据”要求 · 预计：2–3 小时 · 状态：done · 2026-07-25
+
+  - [x] Red：组件测试证明 Smart 在 AI Promise 未完成时仍停留在分析页；Go 元数据测试证明快速路径尚不存在；E2E 骨架覆盖延迟 AI 与可保存预览。
+  - [x] Green：拆分 `buildInboundMetadataPreview` / `enhanceInboundAnalysis`；元数据完成后立即进入 review，AI 后台合并；新增 `FetchMetadataFast` 并让前端优先调用。
+  - [x] Refactor：以元数据基线保护用户编辑，统一请求 ID 失效规则；OpenGraph/Twitter 元数据按优先级解析；旧 `FetchMetadata` 保持完整 favicon 行为。
+  - [x] QA：Vitest、Go 元数据单测、Typecheck、Lint、Build、Playwright E2E 与视觉 Baseline/Actual/Diff；Playwright MCP 因本机浏览器缓存路径错误保持 BLOCKED。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/components/NewBookmarkDialog.entry-modes.test.tsx src/features/ai/bookmark-analysis/bookmark-analysis.test.ts src/features/bookmarks/metadata-client.test.ts
+  go test ./internal/metadata -count=1
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui build
+  pnpm --dir ui exec playwright test tests/e2e/new-bookmark-entry-modes.spec.ts --workers=1
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-075-AC.md`、`docs/spec/evidence/TASK-075-evidence.md`、`docs/spec/reports/TASK-075-report.md`。
+
+  _需求: REQ-006
+  验收标准：REQ-006-AC-001、REQ-006-AC-003、REQ-006-AC-006、REQ-006-AC-009、REQ-006-AC-011
+  _测试类型: Unit + Component + E2E + Visual
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1832,6 +1859,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-072 | 分类名称双击展开与折叠 | Component/E2E | done | REQ-010、011 |
 | TASK-073 | 新建书签随机渐变缩略图 | Unit/Component/E2E | done | REQ-006 |
 | TASK-074 | fix_task 1.16-1.18：分类入口、侧栏快捷键拆分与托盘双击显示 | Unit/E2E/Manual | done（Manual 部分 BLOCKED） | REQ-010、024、030 |
+| TASK-075 | 新建书签元数据优先与 AI 后台增强 | Unit/Component/E2E/Visual | done | REQ-006 |
 
 ---
 
@@ -1870,3 +1898,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 3.7.0 | 2026-07-22 | 已定稿 | 完成 TASK-073，新建书签保存时随机选择既有渐变缩略图键且不改变数据库结构 |
 | 3.8.0 | 2026-07-23 | 已定稿 | 新增 TASK-074，覆盖 fix_task 1.16-1.18：一级分类入口修正、左/右侧栏快捷键拆分与托盘双击显示窗口 |
 | 3.9.0 | 2026-07-23 | 已定稿 | 完成 TASK-074；自动化验证通过，真实原生托盘双击 Manual 保持 BLOCKED |
+| 4.0.0 | 2026-07-25 | 已定稿 | 新增并完成 TASK-075：元数据先展示、AI 后台增强、快速 favicon 路径与元数据优先级解析 |

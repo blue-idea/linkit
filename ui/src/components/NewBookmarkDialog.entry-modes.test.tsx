@@ -2,6 +2,7 @@ import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { NewBookmarkDialog } from './Dialogs';
+import type { Category, Tag } from '../types';
 
 type MetadataPayload = {
   title: string;
@@ -38,6 +39,8 @@ function dialogElement(input: {
   open?: boolean;
   initialUrl?: string;
   bookmarks?: Array<{ url: string }>;
+  categories?: Category[];
+  tags?: Tag[];
   onCreate: ReturnType<typeof vi.fn>;
 }) {
   return (
@@ -45,8 +48,8 @@ function dialogElement(input: {
       open={input.open ?? true}
       initialUrl={input.initialUrl ?? ''}
       bookmarks={input.bookmarks ?? []}
-      categories={[]}
-      tags={[]}
+      categories={input.categories ?? []}
+      tags={input.tags ?? []}
       collections={[]}
       aiContext={{ apiBase: 'https://api.example.test/v1', model: 'test-model', locale: 'en' }}
       onClose={() => undefined}
@@ -61,7 +64,16 @@ function renderDialog() {
   return { onCreate };
 }
 
-function installWailsSpies(metadata?: Partial<MetadataPayload>) {
+function installWailsSpies(
+  metadata?: Partial<MetadataPayload>,
+  analyze: () => Promise<AIResult> = async () => ({
+    title: 'AI title',
+    description: 'AI description',
+    summary: 'AI summary',
+    suggestedCategoryId: null,
+    suggestedTags: [],
+  })
+) {
   const fetchMetadata = vi.fn(async (): Promise<MetadataPayload> => ({
     title: 'Metadata title',
     description: 'Metadata description',
@@ -70,18 +82,39 @@ function installWailsSpies(metadata?: Partial<MetadataPayload>) {
     faviconDataUrl: null,
     ...metadata,
   }));
-  const analyzeBookmark = vi.fn(async (): Promise<AIResult> => ({
-    title: 'AI title',
-    description: 'AI description',
-    summary: 'AI summary',
-    suggestedCategoryId: null,
-    suggestedTags: [],
-  }));
+  const analyzeBookmark = vi.fn(analyze);
   (window as TestWindow).go = {
     metadata: { Service: { FetchMetadata: fetchMetadata } },
     ai: { Service: { AnalyzeBookmark: analyzeBookmark } },
   };
   return { fetchMetadata, analyzeBookmark };
+}
+
+function installDeferredAI(metadata?: Partial<MetadataPayload>) {
+  let resolver: ((value: AIResult) => void) | null = null;
+  const fetchMetadata = vi.fn(async (): Promise<MetadataPayload> => ({
+    title: 'Metadata title',
+    description: 'Metadata description',
+    contentText: 'Metadata content',
+    faviconUrl: null,
+    faviconDataUrl: null,
+    ...metadata,
+  }));
+  const analyzeBookmark = vi.fn(
+    () => new Promise<AIResult>((resolve) => { resolver = resolve; })
+  );
+  (window as TestWindow).go = {
+    metadata: { Service: { FetchMetadata: fetchMetadata } },
+    ai: { Service: { AnalyzeBookmark: analyzeBookmark } },
+  };
+  return {
+    fetchMetadata,
+    analyzeBookmark,
+    resolveAI(value: AIResult) {
+      if (!resolver) throw new Error('AI analysis has not started');
+      resolver(value);
+    },
+  };
 }
 
 afterEach(() => {
@@ -178,11 +211,229 @@ describe('NewBookmarkDialog Manual 与 Smart 入口', () => {
     await user.type(screen.getByRole('textbox', { name: 'Bookmark URL' }), 'https://example.test/smart');
     await user.click(screen.getByRole('button', { name: 'Smart' }));
 
-    expect(await screen.findByRole('button', { name: 'Save bookmark' })).toBeVisible();
+    expect(await screen.findByRole('button', { name: 'Save with AI' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Save now' })).toBeEnabled();
     expect(screen.getByRole('textbox', { name: 'Bookmark title' })).toHaveValue('AI title');
     expect(fetchMetadata).toHaveBeenCalledOnce();
     expect(analyzeBookmark).toHaveBeenCalledOnce();
     expect(onCreate).not.toHaveBeenCalled();
+  });
+
+  // REQ-006-AC-011：元数据是 Smart 的快速路径；AI 尚未返回时也必须允许检查与保存。
+  test('Smart 在 AI 延迟时先显示元数据预览并允许保存', async () => {
+    const { analyzeBookmark, resolveAI } = installDeferredAI({
+      title: 'Fast metadata title',
+      description: 'Fast metadata description',
+      contentText: 'Fast metadata content',
+    });
+
+    const user = userEvent.setup();
+    const { onCreate } = renderDialog();
+    await user.type(screen.getByRole('textbox', { name: 'Bookmark URL' }), 'https://example.test/fast');
+    await user.click(screen.getByRole('button', { name: 'Smart' }));
+
+    const saveNowButton = await screen.findByRole('button', { name: 'Save now' });
+    const saveWithAIButton = screen.getByRole('button', { name: 'Save with AI' });
+    expect(saveNowButton).toBeEnabled();
+    expect(saveWithAIButton).toBeDisabled();
+    expect(screen.getByRole('textbox', { name: 'Bookmark title' })).toHaveValue('Fast metadata title');
+    expect(screen.getByRole('status', { name: 'AI enhancement in progress' })).toBeVisible();
+    expect(analyzeBookmark).toHaveBeenCalledOnce();
+    expect(onCreate).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveAI({
+        title: 'Enhanced AI title',
+        description: 'Enhanced AI description',
+        summary: 'Enhanced AI summary',
+        suggestedCategoryId: null,
+        suggestedTags: [],
+      });
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole('textbox', { name: 'Bookmark title' })).toHaveValue('Enhanced AI title');
+    });
+    expect(saveWithAIButton).toBeEnabled();
+    expect(screen.queryByRole('status', { name: 'AI enhancement in progress' })).not.toBeInTheDocument();
+  });
+
+  test('Smart 使用 AI 结果保存需等待增强完成', async () => {
+    const { resolveAI } = installDeferredAI();
+    const user = userEvent.setup();
+    const { onCreate } = renderDialog();
+
+    await user.type(screen.getByRole('textbox', { name: 'Bookmark URL' }), 'https://example.test/save-with-ai');
+    await user.click(screen.getByRole('button', { name: 'Smart' }));
+
+    const saveWithAIButton = await screen.findByRole('button', { name: 'Save with AI' });
+    expect(saveWithAIButton).toBeDisabled();
+    expect(onCreate).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveAI({
+        title: 'AI completed title',
+        description: 'AI completed description',
+        summary: 'AI completed summary',
+        suggestedCategoryId: null,
+        suggestedTags: [],
+      });
+      await Promise.resolve();
+    });
+
+    await waitFor(() => expect(saveWithAIButton).toBeEnabled());
+    await user.click(saveWithAIButton);
+
+    expect(onCreate).toHaveBeenCalledOnce();
+    expect(onCreate).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'AI completed title',
+      description: 'AI completed description',
+      aiSummary: 'AI completed summary',
+    }));
+  });
+
+  test('Smart AI 失败后仅允许立即保存元数据', async () => {
+    installWailsSpies(undefined, async () => {
+      throw { code: 'AI_TIMEOUT', message: 'AI request timed out' };
+    });
+    const user = userEvent.setup();
+    const { onCreate } = renderDialog();
+
+    await user.type(screen.getByRole('textbox', { name: 'Bookmark URL' }), 'https://example.test/ai-error');
+    await user.click(screen.getByRole('button', { name: 'Smart' }));
+
+    const saveNowButton = await screen.findByRole('button', { name: 'Save now' });
+    const saveWithAIButton = screen.getByRole('button', { name: 'Save with AI' });
+    expect(await screen.findByRole('alert')).toBeVisible();
+    expect(saveNowButton).toBeEnabled();
+    expect(saveWithAIButton).toBeDisabled();
+
+    await user.click(saveNowButton);
+
+    expect(onCreate).toHaveBeenCalledOnce();
+    expect(onCreate).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Metadata title',
+      description: 'Metadata description',
+      aiSummary: '',
+    }));
+  });
+
+  // REQ-006-AC-011：后台增强不得覆盖用户在元数据预览中的编辑。
+  test('Smart 后台 AI 不覆盖用户已编辑的元数据字段', async () => {
+    const { resolveAI } = installDeferredAI();
+
+    const user = userEvent.setup();
+    renderDialog();
+    await user.type(screen.getByRole('textbox', { name: 'Bookmark URL' }), 'https://example.test/edit');
+    await user.click(screen.getByRole('button', { name: 'Smart' }));
+
+    const titleInput = await screen.findByRole('textbox', { name: 'Bookmark title' });
+    await user.clear(titleInput);
+    await user.type(titleInput, 'User title');
+
+    await act(async () => {
+      resolveAI({
+        title: 'AI title must not overwrite',
+        description: 'AI description',
+        summary: 'AI summary',
+        suggestedCategoryId: null,
+        suggestedTags: [],
+      });
+      await Promise.resolve();
+    });
+
+    await waitFor(() => expect(screen.getByRole('textbox', { name: 'Bookmark title' })).toHaveValue('User title'));
+    expect(screen.getByRole('textbox', { name: 'AI summary' })).toHaveValue('AI summary');
+  });
+
+  // REQ-006-AC-011：即使用户将字段改回元数据原值，也应视为已编辑并保留。
+  test('Smart 后台 AI 不覆盖改回原值的标题', async () => {
+    const { resolveAI } = installDeferredAI();
+
+    const user = userEvent.setup();
+    renderDialog();
+    await user.type(screen.getByRole('textbox', { name: 'Bookmark URL' }), 'https://example.test/same-value');
+    await user.click(screen.getByRole('button', { name: 'Smart' }));
+
+    const titleInput = await screen.findByRole('textbox', { name: 'Bookmark title' });
+    await user.clear(titleInput);
+    await user.type(titleInput, 'Metadata title');
+
+    await act(async () => {
+      resolveAI({
+        title: 'AI title must not overwrite',
+        description: 'AI description',
+        summary: 'AI summary',
+        suggestedCategoryId: null,
+        suggestedTags: [],
+      });
+      await Promise.resolve();
+    });
+
+    expect(screen.getByRole('textbox', { name: 'Bookmark title' })).toHaveValue('Metadata title');
+  });
+
+  // REQ-006-AC-011：用户改动标签字段后，后台 AI 不得追加新的建议标签。
+  test('Smart 后台 AI 不追加用户已编辑的标签字段', async () => {
+    const { resolveAI } = installDeferredAI();
+    const tags: Tag[] = [
+      { id: 'user-tag', label: 'User tag', color: 'blue' },
+      { id: 'ai-tag', label: 'AI tag', color: 'green' },
+    ];
+
+    const user = userEvent.setup();
+    render(dialogElement({ onCreate: vi.fn(), tags }));
+    await user.type(screen.getByRole('textbox', { name: 'Bookmark URL' }), 'https://example.test/tag-edit');
+    await user.click(screen.getByRole('button', { name: 'Smart' }));
+
+    await screen.findByRole('button', { name: 'Save now' });
+    await user.click(screen.getByRole('button', { name: 'User tag' }));
+
+    await act(async () => {
+      resolveAI({
+        title: 'AI title',
+        description: 'AI description',
+        summary: 'AI summary',
+        suggestedCategoryId: null,
+        suggestedTags: ['AI tag'],
+      });
+      await Promise.resolve();
+    });
+
+    expect(screen.getByRole('button', { name: 'User tag' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'AI tag' })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  test('Smart 可在 AI 返回前保存元数据且忽略过期增强结果', async () => {
+    const { resolveAI } = installDeferredAI();
+    const user = userEvent.setup();
+    const { onCreate } = renderDialog();
+
+    await user.type(screen.getByRole('textbox', { name: 'Bookmark URL' }), 'https://example.test/save-fast');
+    await user.click(screen.getByRole('button', { name: 'Smart' }));
+    await user.click(await screen.findByRole('button', { name: 'Save now' }));
+
+    expect(onCreate).toHaveBeenCalledOnce();
+    expect(onCreate).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Metadata title',
+      description: 'Metadata description',
+      aiSummary: '',
+    }));
+
+    await act(async () => {
+      resolveAI({
+        title: 'Late AI title',
+        description: 'Late AI description',
+        summary: 'Late AI summary',
+        suggestedCategoryId: null,
+        suggestedTags: [],
+      });
+      await Promise.resolve();
+    });
+
+    expect(onCreate).toHaveBeenCalledOnce();
+    expect(screen.queryByDisplayValue('Late AI title')).not.toBeInTheDocument();
   });
 
   // TASK-071 / REQ-006-AC-009：URL 输入框 Enter 继续触发 Smart，而不是 Manual。
@@ -194,7 +445,8 @@ describe('NewBookmarkDialog Manual 与 Smart 入口', () => {
     const urlInput = screen.getByRole('textbox', { name: 'Bookmark URL' });
     await user.type(urlInput, 'https://example.test/enter{Enter}');
 
-    expect(await screen.findByRole('button', { name: 'Save bookmark' })).toBeVisible();
+    expect(await screen.findByRole('button', { name: 'Save with AI' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Save now' })).toBeEnabled();
     expect(analyzeBookmark).toHaveBeenCalledOnce();
     expect(onCreate).not.toHaveBeenCalled();
   });
@@ -239,7 +491,8 @@ describe('NewBookmarkDialog Manual 与 Smart 入口', () => {
     });
 
     expect(screen.getByRole('textbox', { name: 'Bookmark URL' })).toHaveValue('https://example.test/new');
-    expect(screen.queryByRole('button', { name: 'Save bookmark' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Save now' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Save with AI' })).not.toBeInTheDocument();
     expect(screen.queryByDisplayValue('Stale metadata title')).not.toBeInTheDocument();
     expect(analyzeBookmark).not.toHaveBeenCalled();
   });
@@ -284,7 +537,8 @@ describe('NewBookmarkDialog Manual 与 Smart 入口', () => {
     });
 
     expect(screen.getByRole('textbox', { name: 'Bookmark URL' })).toHaveValue('https://example.test/new-smart');
-    expect(screen.queryByRole('button', { name: 'Save bookmark' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Save now' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Save with AI' })).not.toBeInTheDocument();
     expect(screen.queryByDisplayValue('Stale AI title')).not.toBeInTheDocument();
   });
 });

@@ -28,6 +28,9 @@ func parseHTMLMetadata(body io.Reader, base *url.URL) (parsedPage, error) {
 	var titleBuilder strings.Builder
 	var textBuilder strings.Builder
 	description := ""
+	descriptionPriority := 0
+	metaTitle := ""
+	metaTitlePriority := 0
 	favicon := ""
 	inTitle := false
 	skipDepth := 0
@@ -48,8 +51,13 @@ func parseHTMLMetadata(body io.Reader, base *url.URL) (parsedPage, error) {
 				inTitle = true
 			}
 			if name == "meta" {
-				if metaDescription(node) != "" {
-					description = metaDescription(node)
+				if value, priority := metaDescription(node); value != "" && priority > descriptionPriority {
+					description = value
+					descriptionPriority = priority
+				}
+				if value, priority := metaTitleValue(node); value != "" && priority > metaTitlePriority {
+					metaTitle = value
+					metaTitlePriority = priority
 				}
 			}
 			if name == "link" {
@@ -90,8 +98,12 @@ func parseHTMLMetadata(body io.Reader, base *url.URL) (parsedPage, error) {
 
 	content := truncateRunes(textBuilder.String(), config.MetadataMaxContentRunes)
 	sum := sha256.Sum256([]byte(content))
+	title := strings.TrimSpace(titleBuilder.String())
+	if metaTitle != "" {
+		title = metaTitle
+	}
 	return parsedPage{
-		title:       strings.TrimSpace(titleBuilder.String()),
+		title:       title,
 		description: strings.TrimSpace(description),
 		faviconURL:  favicon,
 		contentText: content,
@@ -99,7 +111,7 @@ func parseHTMLMetadata(body io.Reader, base *url.URL) (parsedPage, error) {
 	}, nil
 }
 
-func metaDescription(node *html.Node) string {
+func metaDescription(node *html.Node) (string, int) {
 	name := ""
 	content := ""
 	for _, attr := range node.Attr {
@@ -111,10 +123,38 @@ func metaDescription(node *html.Node) string {
 			content = attr.Val
 		}
 	}
-	if name == "description" || name == "og:description" {
-		return content
+	switch name {
+	case "description":
+		return content, 1
+	case "twitter:description":
+		return content, 2
+	case "og:description":
+		return content, 3
 	}
-	return ""
+	return "", 0
+}
+
+func metaTitleValue(node *html.Node) (string, int) {
+	name := ""
+	content := ""
+	for _, attr := range node.Attr {
+		key := strings.ToLower(attr.Key)
+		if key == "name" || key == "property" {
+			name = strings.ToLower(strings.TrimSpace(attr.Val))
+		}
+		if key == "content" {
+			content = attr.Val
+		}
+	}
+	switch name {
+	case "title":
+		return content, 1
+	case "twitter:title":
+		return content, 2
+	case "og:title":
+		return content, 3
+	}
+	return "", 0
 }
 
 func faviconHref(node *html.Node) string {

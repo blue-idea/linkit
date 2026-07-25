@@ -1,8 +1,8 @@
 # Linkit 接口设计（API）
 
 > 文件路径：`docs/spec/api.md`  
-> 版本：1.5.0
-> 日期：2026-07-22
+> 版本：1.6.0
+> 日期：2026-07-25
 > 状态：已定稿
 
 ---
@@ -339,6 +339,14 @@ interface MetadataResult {
 FetchMetadata(request: MetadataRequest): Promise<MetadataResult>
 ```
 
+#### `FetchMetadataFast(request)`
+
+返回与 `FetchMetadata` 相同的网页标题、描述、正文片段和 favicon URL，但不在本次请求中抓取 favicon 二进制；新建书签 Smart/Enter 入口优先使用此方法，以便先展示可编辑元数据预览。
+
+```typescript
+FetchMetadataFast(request: MetadataRequest): Promise<MetadataResult>
+```
+
 #### `FetchFaviconDataURL(request)`
 
 桌面端抓取 favicon 二进制并返回 `data:image/...;base64,...`，供 WebView 展示外链图标（避免防盗链导致 `<img>` 失败）。
@@ -362,6 +370,11 @@ FetchFaviconDataURL(request: FaviconDataURLRequest): Promise<string>
 - 重定向、响应时间、响应体大小由 `config/network.go` 限制。
 - `contentText` 是清洗和截断后的纯文本，不包含脚本。
 - 不生成真实网页截图。
+
+`FetchMetadataFast` 额外约束：
+
+- `faviconDataUrl` 可以为 `null`，不得因 favicon 二进制抓取阻塞元数据响应。
+- 调用方需要图片数据时可单独调用 `FetchFaviconDataURL`；旧调用方继续使用 `FetchMetadata` 获取完整 favicon data URL。
 
 ### 3.6 AIService
 
@@ -846,3 +859,4 @@ interface LibrarySnapshot {
 | 1.3.0 | 2026-07-21 | 已定稿 | SystemService 增加窗口显隐、退出、全局热键与桌面能力探测；对齐 REQ-030 |
 | 1.4.0 | 2026-07-21 | 已定稿 | SystemService 增加 `SetMainWindowSize`；对齐 REQ-031 |
 | 1.5.0 | 2026-07-22 | 已定稿 | 托盘 Show 替换为 Settings，新增 `linkit:open-settings` 无 payload 事件；Quit 接口不变 |
+| 1.6.0 | 2026-07-25 | 已定稿 | 新增 `FetchMetadataFast`，支持新建书签优先元数据并将 favicon 二进制抓取移出关键路径；保留 `FetchMetadata` 兼容行为 |

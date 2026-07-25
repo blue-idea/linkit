@@ -32,6 +32,34 @@ describe('fetchBookmarkMetadata', () => {
     });
   });
 
+  // REQ-006-AC-011：新建书签优先使用不等待 favicon 二进制的快速绑定。
+  test('存在 FetchMetadataFast 时优先调用快速元数据绑定', async () => {
+    const fetchMetadataFast = vi.fn(async () => ({
+      title: 'Fast Example',
+      description: 'Fast description',
+      contentText: 'Fast body',
+      faviconUrl: 'https://example.com/favicon.ico',
+      faviconDataUrl: null,
+    }));
+    const fetchMetadata = vi.fn(async () => ({
+      title: 'Slow Example',
+      description: 'Slow description',
+      contentText: 'Slow body',
+      faviconUrl: null,
+      faviconDataUrl: 'data:image/png;base64,slow',
+    }));
+
+    (window as unknown as { go: unknown }).go = {
+      metadata: { Service: { FetchMetadataFast: fetchMetadataFast, FetchMetadata: fetchMetadata } },
+    };
+
+    const result = await fetchBookmarkMetadata('https://example.com/fast');
+
+    expect(fetchMetadataFast).toHaveBeenCalledWith({ url: 'https://example.com/fast' });
+    expect(fetchMetadata).not.toHaveBeenCalled();
+    expect(result.ok && result.title).toBe('Fast Example');
+  });
+
   test('无 Wails 绑定时返回 METADATA_UNAVAILABLE', async () => {
     const result = await fetchBookmarkMetadata('https://example.com');
     expect(result).toEqual({
