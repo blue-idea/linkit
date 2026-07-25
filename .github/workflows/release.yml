@@ -145,14 +145,12 @@ jobs:
       - name: Build DMG (macOS)
         if: matrix.os == 'macos'
         run: |
-          chmod +x "scripts/Fix Gatekeeper.command"
           create-dmg \
             --volname "Linkit" \
-            --window-size 660 400 \
+            --window-size 540 380 \
             --icon-size 100 \
             --icon "Linkit.app" 140 170 \
-            --app-drop-link 520 170 \
-            --add-file "Fix Gatekeeper.command" "scripts/Fix Gatekeeper.command" 330 170 \
+            --app-drop-link 400 170 \
             "build/bin/Linkit.dmg" \
             "build/bin/Linkit.app"
 
