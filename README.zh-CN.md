@@ -108,6 +108,22 @@ wails build
 ```
 输出的可执行文件将会保存在 `build/bin/` 目录下。
 
+#### 5. 使用 Homebrew 安装 macOS 版本
+
+从第三方 Homebrew Tap 安装 universal macOS 构建：
+
+```bash
+brew install blue-idea/tap/linkit
+```
+
+升级到最新版本：
+
+```bash
+brew upgrade linkit
+```
+
+Linkit 当前尚未进行 Apple 公证。该第三方 Cask 会在安装完成后移除已安装 `Linkit.app` 的 `com.apple.quarantine` 隔离属性，不使用 `sudo`，也不会修改其他应用。
+
 ---
 
 ### 🔑 隐私安全与数据保护

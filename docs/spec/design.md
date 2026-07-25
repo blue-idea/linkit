@@ -1,7 +1,7 @@
 # Linkit 技术设计（Design）
 
 > 文件路径：`docs/spec/design.md`  
-> 版本：1.15.0
+> 版本：1.16.0
 > 日期：2026-07-25
 > 状态：已定稿
 
@@ -9,7 +9,7 @@
 
 ## 1. 设计目标与边界
 
-本设计用于实现 `docs/spec/requirements.md` 2.16.0 定义的 Linkit MVP。总体目标如下：
+本设计用于实现 `docs/spec/requirements.md` 2.17.0 定义的 Linkit MVP。总体目标如下：
 
 - 将现有 Vite + React 演示原型迁移为可交付的 Wails v2 桌面应用。
 - 保留现有三栏布局与主要视觉资产，但拆分巨型组件和直接状态修改逻辑。
@@ -33,8 +33,14 @@ collection/
 ├── go.sum
 ├── config/                         # Go 端集中配置与默认值
 │   ├── app.go
+│   ├── homebrew-tap.json           # Tap 仓库、Cask 路径与 Release 资产配置
 │   ├── network.go
 │   └── storage.go
+├── scripts/
+│   └── update-homebrew-cask.mjs    # 校验 tag/SHA256 并幂等更新 Cask
+├── homebrew-tap/
+│   ├── Casks/linkit.rb             # 第三方 Tap 的 Linkit Cask 种子
+│   └── README.md                    # Tap 仓库安装与维护说明
 ├── internal/
 │   ├── app/                        # Wails 生命周期与服务装配
 │   ├── contract/                   # 暴露给前端的 DTO 与错误结构
@@ -677,6 +683,32 @@ Go 端按能力提供独立方法，但共用一个 OpenAI-compatible 客户端�
 - 发布产物不得包含 `.env`、AI Key、测试账号、真实用户数据，或开发身份字符串 `Linkit-Dev`。
 - Release 流水线须校验正式身份常量，并扫描产物不包含 `Linkit-Dev`。
 
+### 11.1 Homebrew Tap 分发
+
+```mermaid
+flowchart LR
+    Tag[Release tag vX.Y.Z] --> Matrix[Windows / Linux / macOS Release matrix]
+    Matrix --> Asset[GitHub Release: Linkit.dmg]
+    Asset --> TapJob[update-homebrew-tap job]
+    Config[config/homebrew-tap.json] --> TapJob
+    TapJob --> Download[Download published DMG]
+    Download --> Hash[Calculate SHA256]
+    Hash --> Updater[update-homebrew-cask.mjs]
+    Updater --> TapRepo[blue-idea/homebrew-tap]
+    TapRepo --> Brew[brew install blue-idea/tap/linkit]
+    Brew --> App[Linkit.app]
+    App --> Xattr[Remove com.apple.quarantine on Linkit.app only]
+```
+
+- 继续复用 `darwin/universal` 生成的单一 `Linkit.dmg`；Cask 不声明架构分支，避免与实际 Release 资产不一致。
+- `config/homebrew-tap.json` 是仓库名、Cask 相对路径与资产名的唯一配置源；更新器不内置环境相关仓库地址。
+- `scripts/update-homebrew-cask.mjs` 将 tag 规范化为版本号，严格校验 64 位小写十六进制 SHA256，并要求 `version` / `sha256` 各只匹配一次后再写入。
+- `update-homebrew-tap` Job 必须 `needs: release`，确保全部 Release 矩阵完成且 DMG 已上传后才运行；下载已发布资产计算哈希，不信任模板占位值。
+- 跨仓库写入使用仓库 Secret `TAP_GITHUB_TOKEN`；Token 不得进入日志或版本控制，缺失时用英文错误立即失败。
+- Cask `postflight` 仅执行 `xattr -dr com.apple.quarantine "#{appdir}/Linkit.app"` 且 `sudo: false`；不得扩大到 `/Applications` 或其他应用。
+- 本仓库 `homebrew-tap/` 保存可测试的 Tap 种子；正式分发目标为独立公开仓库 `blue-idea/homebrew-tap`。
+- 独立 Tap 仓库的 `.github/workflows/ci.yml` 必须在 `macos-latest` 执行 Ruby 语法、Homebrew style、公开 Tap 安装、`Linkit.app` 路径、quarantine 清理与卸载验证，避免仅验证本地种子而遗漏真实分发链路。
+
 ---
 
 ## 12. 已知风险与缓解
@@ -693,6 +725,9 @@ Go 端按能力提供独立方法，但共用一个 OpenAI-compatible 客户端�
 | 原型组件过大 | 修改风险与测试困难 | 按 feature 渐进拆分，所有迁移遵循 TDD，不一次性重写 |
 | 自定义数据根迁移中断或目标冲突 | 资料库不可用或静默覆盖 | 引导根指针原子切换；冲突阻止；失败清理目标残留并保持原根 |
 | 开发与正式构建共用本机身份槽 | 本机验证 Release 误读开发测试数据/AI 配置 | 用 build tag `dev` 隔离 `Linkit-Dev`；Release CI 断言正式身份且扫描产物不含开发身份字符串 |
+| 未签名/未公证 DMG 被 Gatekeeper 隔离 | 用户无法直接启动应用 | 第三方 Cask 安装后仅对 Linkit.app 清理 quarantine；README 明示该行为，后续取得证书后回退 STEP 2/3 评估移除 |
+| Tap 仓库或跨仓库 Token 缺失 | Release 成功但 Homebrew 版本未更新 | 独立 Job 显式失败；使用细粒度、仅限 Tap 内容写权限的 Token；无变化不提交 |
+| Release 资产命名或 Cask 模板漂移 | 哈希更新错误或下载 404 | 资产名集中配置；更新器严格验证单一 version/sha256；契约测试覆盖 workflow、Cask 与 README |
 
 ---
 
@@ -710,6 +745,7 @@ Go 端按能力提供独立方法，但共用一个 OpenAI-compatible 客户端�
 | Settings + i18n + Theme Tokens | REQ-019、REQ-023、REQ-028、REQ-029、REQ-031 |
 | Tray + Global Hotkey + Shortcuts | REQ-030、REQ-023、REQ-024、REQ-027 |
 | Appearance Window Size | REQ-031 |
+| Release + Homebrew Tap | REQ-032 |
 
 ---
 
@@ -734,3 +770,4 @@ Go 端按能力提供独立方法，但共用一个 OpenAI-compatible 客户端�
 | 1.13.0 | 2026-07-22 | 已定稿 | 新建书签保存时复用现有 thumbnail 字段随机选择示例渐变键，配置集中管理且不做数据库迁移 |
 | 1.14.0 | 2026-07-23 | 已定稿 | 托盘新增双击显示主窗口；Shortcuts action 拆分为左侧 Sidebar 与右侧 Detail Panel，对齐 fix_task 1.17 / 1.18 |
 | 1.15.0 | 2026-07-25 | 已定稿 | 新增 New Bookmark 两阶段元数据/AI 编排、FetchMetadataFast 快速接口、后台增强竞态保护与 OpenGraph 元数据优先级 |
+| 1.16.0 | 2026-07-25 | 已定稿 | 新增 universal DMG → 第三方 Homebrew Tap 自动更新设计、集中配置、Cask 更新器、macOS Tap CI、凭据门禁与 quarantine 最小作用域 |

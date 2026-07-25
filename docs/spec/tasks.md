@@ -1781,6 +1781,42 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-076 · macOS Homebrew Tap 分发与 Release 自动更新**
+
+  > 依赖：TASK-002、TASK-055 · 对齐：`knowledge/Homebrew-Tap分发指南.md` · 预计：2–3 小时 · 状态：done（真实 Release 自动推送 BLOCKED） · 2026-07-25
+
+  - [x] Red：先新增 Cask 更新器单元测试和质量配置契约，真实运行并确认因更新器、Cask、workflow Job 与 README 安装文档尚不存在而失败。
+  - [x] Green：新增集中配置、universal DMG Cask、更新脚本和 `update-homebrew-tap` Release Job；README 提供安装/升级与 quarantine 披露。
+  - [x] Refactor：让 workflow 与更新器复用 `config/homebrew-tap.json`，严格限制单一 version/sha256 替换和 Linkit.app 的 xattr 作用域。
+  - [x] QA：Node/质量契约、Workflow lint、Typecheck/Lint/Build、Go 检查和远程 Tap macOS 安装链路通过；主仓库尚未配置仅限 Tap Contents Write 的 `TAP_GITHUB_TOKEN`，真实 Release→Tap 自动提交保持 BLOCKED。
+
+  **验证方式：**
+  ```powershell
+  node --test scripts/update-homebrew-cask.test.mjs
+  pnpm --dir ui verify:quality-config
+  docker run --rm -v "${PWD}/homebrew-tap:/tap:ro" ruby:3.4-alpine ruby -c /tap/Casks/linkit.rb
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui build
+  gh release view v0.2.2 --repo blue-idea/collection --json assets
+  ```
+
+  **Manual（macOS）：**
+  ```bash
+  brew install blue-idea/tap/linkit
+  xattr -p com.apple.quarantine /Applications/Linkit.app
+  brew upgrade linkit
+  brew uninstall --cask linkit
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-076-AC.md`、`docs/spec/reports/TASK-076-report.md`。
+
+  _需求: REQ-032
+  验收标准：REQ-032-AC-001~006
+  _测试类型: Unit + Integration + Manual
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1860,6 +1896,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-073 | 新建书签随机渐变缩略图 | Unit/Component/E2E | done | REQ-006 |
 | TASK-074 | fix_task 1.16-1.18：分类入口、侧栏快捷键拆分与托盘双击显示 | Unit/E2E/Manual | done（Manual 部分 BLOCKED） | REQ-010、024、030 |
 | TASK-075 | 新建书签元数据优先与 AI 后台增强 | Unit/Component/E2E/Visual | done | REQ-006 |
+| TASK-076 | macOS Homebrew Tap 分发与 Release 自动更新 | Unit/Integration/Manual | done（Release 自动推送 BLOCKED） | REQ-032 |
 
 ---
 
@@ -1899,3 +1936,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 3.8.0 | 2026-07-23 | 已定稿 | 新增 TASK-074，覆盖 fix_task 1.16-1.18：一级分类入口修正、左/右侧栏快捷键拆分与托盘双击显示窗口 |
 | 3.9.0 | 2026-07-23 | 已定稿 | 完成 TASK-074；自动化验证通过，真实原生托盘双击 Manual 保持 BLOCKED |
 | 4.0.0 | 2026-07-25 | 已定稿 | 新增并完成 TASK-075：元数据先展示、AI 后台增强、快速 favicon 路径与元数据优先级解析 |
+| 4.1.0 | 2026-07-25 | 已定稿 | 新增并完成 TASK-076：第三方 Homebrew Tap 与真实 macOS 安装验收通过；缺少最小权限 Token 的 Release 自动推送保持 BLOCKED |

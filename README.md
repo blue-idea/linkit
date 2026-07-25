@@ -107,6 +107,22 @@ Compile without the `dev` tag so the app uses the clean `Linkit` identity slot:
 wails build
 ```
 
+#### 5. Install on macOS with Homebrew
+
+Install the universal macOS build from the third-party Homebrew Tap:
+
+```bash
+brew install blue-idea/tap/linkit
+```
+
+Upgrade to the latest release:
+
+```bash
+brew upgrade linkit
+```
+
+Linkit is currently distributed without Apple notarization. The third-party Cask removes the `com.apple.quarantine` attribute from the installed `Linkit.app` after installation, without `sudo` and without modifying other applications.
+
 ---
 
 ### 🔑 Security & Configuration
