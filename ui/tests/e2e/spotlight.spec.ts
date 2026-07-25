@@ -69,8 +69,8 @@ test.describe('Spotlight 关键词与 URL', () => {
     await openSpotlightWithShortcut(page);
     const spotlight = page.getByRole('dialog', { name: 'Spotlight' });
     const search = page.getByLabel('Spotlight search');
-    await search.fill('React');
-    await expect(spotlight.getByRole('option', { name: /React 官方文档/i })).toBeVisible();
+    await search.fill('Figma');
+    await expect(spotlight.getByRole('option', { name: /Figma — Collaborative Interface Design Tool/i })).toBeVisible();
 
     await mkdir(evidenceDirectory, { recursive: true });
     await spotlight.screenshot({
@@ -82,7 +82,7 @@ test.describe('Spotlight 关键词与 URL', () => {
     await expect(page.getByRole('dialog', { name: 'Spotlight' })).toHaveCount(0);
     await expect
       .poll(() => page.evaluate(() => window.localStorage.getItem('spotlight-opened-url')))
-      .toBe('https://react.dev');
+      .toBe('https://www.figma.com');
     await expect(page.getByLabel('Edit bookmark title')).toContainText(/Coolors/i);
   });
 

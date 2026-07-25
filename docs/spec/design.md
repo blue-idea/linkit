@@ -771,3 +771,5 @@ flowchart LR
 | 1.14.0 | 2026-07-23 | 已定稿 | 托盘新增双击显示主窗口；Shortcuts action 拆分为左侧 Sidebar 与右侧 Detail Panel，对齐 fix_task 1.17 / 1.18 |
 | 1.15.0 | 2026-07-25 | 已定稿 | 新增 New Bookmark 两阶段元数据/AI 编排、FetchMetadataFast 快速接口、后台增强竞态保护与 OpenGraph 元数据优先级 |
 | 1.16.0 | 2026-07-25 | 已定稿 | 新增 universal DMG → 第三方 Homebrew Tap 自动更新设计、集中配置、Cask 更新器、macOS Tap CI、凭据门禁与 quarantine 最小作用域 |
+| 1.17.0 | 2026-07-25 | 已定稿 | 新增侧边栏标签新建与删除组件交互、悬停显隐删除 `X` 按钮与状态管理设计，对齐 REQ-014-AC-004/005 |
+

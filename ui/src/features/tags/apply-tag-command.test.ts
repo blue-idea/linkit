@@ -21,7 +21,7 @@ describe('标签功能适配层', () => {
 
   // REQ-014-AC-002
   test('runAddTagToBookmark / runRemoveTagFromBookmark 更新书签标签且唯一', () => {
-    const target = bookmarks.find((b) => !b.tags.includes('t-ai'));
+    const target = bookmarks.find((b) => !b.tags.includes('t-doc'));
     expect(target).toBeTruthy();
     if (!target) return;
 
@@ -31,14 +31,14 @@ describe('标签功能适配层', () => {
       collections,
       tags,
       bookmarkId: target.id,
-      tagId: 't-ai',
+      tagId: 't-doc',
     });
     expect(added.ok).toBe(true);
     if (!added.ok) return;
 
     const applied = applyTagLibraryResult(added.value, bookmarks);
     const next = applied.bookmarks.find((b) => b.id === target.id);
-    expect(next?.tags.filter((id) => id === 't-ai')).toHaveLength(1);
+    expect(next?.tags.filter((id) => id === 't-doc')).toHaveLength(1);
 
     const removed = runRemoveTagFromBookmark({
       bookmarks: applied.bookmarks,
@@ -46,12 +46,12 @@ describe('标签功能适配层', () => {
       collections,
       tags: applied.tags,
       bookmarkId: target.id,
-      tagId: 't-ai',
+      tagId: 't-doc',
     });
     expect(removed.ok).toBe(true);
     if (!removed.ok) return;
     const after = applyTagLibraryResult(removed.value, applied.bookmarks);
-    expect(after.bookmarks.find((b) => b.id === target.id)?.tags.includes('t-ai')).toBe(false);
+    expect(after.bookmarks.find((b) => b.id === target.id)?.tags.includes('t-doc')).toBe(false);
   });
 
   // REQ-014-AC-003

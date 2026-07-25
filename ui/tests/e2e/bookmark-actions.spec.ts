@@ -35,14 +35,14 @@ test.describe('书签操作与批量操作', () => {
     await main.getByRole('button', { name: 'Select bookmarks' }).click();
     await expect(main.getByRole('button', { name: 'Done selecting' })).toBeVisible();
     const additiveModifier = additiveSelectionModifier(process.platform);
-    await main.getByText('Figma — 协作式界面设计工具', { exact: true }).click();
-    await main.getByText('React 官方文档', { exact: true }).click({ modifiers: [additiveModifier] });
+    await main.getByText('Coolors — Super Fast Color Schemes Generator', { exact: true }).click();
+    await main.getByText('Dribbble — Discover the World’s Top Designers', { exact: true }).click({ modifiers: [additiveModifier] });
     let toolbar = main.getByRole('toolbar', { name: 'Bulk bookmark actions' });
     await expect(toolbar.getByText('2 bookmarks selected')).toBeVisible();
     await toolbar.getByRole('button', { name: 'Clear selection' }).click();
 
-    await main.getByText('Figma — 协作式界面设计工具', { exact: true }).click();
-    await main.getByText('Coolors — 超快配色方案生成器', { exact: true }).click({ modifiers: ['Shift'] });
+    await main.getByText('Figma — Collaborative Interface Design Tool', { exact: true }).click();
+    await main.getByText('Tailwind CSS — Utility-First CSS Framework', { exact: true }).click({ modifiers: ['Shift'] });
     toolbar = main.getByRole('toolbar', { name: 'Bulk bookmark actions' });
     await expect(toolbar.getByText('3 bookmarks selected')).toBeVisible();
     await toolbar.getByRole('button', { name: 'Clear selection' }).click();

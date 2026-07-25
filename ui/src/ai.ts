@@ -54,14 +54,14 @@ export function aiAnalyzeUrl(url: string, title: string): {
   const tagPool = TAG_VOCAB[key] ?? TAG_VOCAB.tool;
   const tags = tagPool.slice(0, 2 + (h % 2));
   const catMap: Record<string, string> = {
-    color: 'c-color',
-    font: 'c-type',
-    react: 'c-react',
+    color: 'c-ui',
+    font: 'c-ui',
+    react: 'c-fe',
     css: 'c-css',
     ai: 'c-ai',
-    perf: 'c-perf',
+    perf: 'c-fe',
     design: 'c-ui',
-    read: 'c-read',
+    read: 'c-fe',
     tool: 'c-fe',
   };
   return {

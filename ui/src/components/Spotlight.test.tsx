@@ -36,11 +36,11 @@ describe('Spotlight', () => {
     const user = userEvent.setup();
     const props = renderSpotlight();
 
-    await user.type(screen.getByLabelText('Spotlight search'), 'React');
-    await screen.findByRole('option', { name: /React 官方文档/i });
+    await user.type(screen.getByLabelText('Spotlight search'), 'Tailwind');
+    await screen.findByRole('option', { name: /Tailwind CSS/i });
     fireEvent.keyDown(window, { key: 'Enter' });
 
-    expect(props.onOpenDirectly).toHaveBeenCalledWith('b-react');
+    expect(props.onOpenDirectly).toHaveBeenCalledWith('b-tailwind');
     expect(props.onSelect).not.toHaveBeenCalled();
     expect(props.onClose).toHaveBeenCalledTimes(1);
   });
@@ -50,10 +50,10 @@ describe('Spotlight', () => {
     const user = userEvent.setup();
     const props = renderSpotlight();
 
-    await user.type(screen.getByLabelText('Spotlight search'), 'React');
-    await user.click(await screen.findByRole('option', { name: /React 官方文档/i }));
+    await user.type(screen.getByLabelText('Spotlight search'), 'Tailwind');
+    await user.click(await screen.findByRole('option', { name: /Tailwind CSS/i }));
 
-    expect(props.onSelect).toHaveBeenCalledWith('b-react');
+    expect(props.onSelect).toHaveBeenCalledWith('b-tailwind');
     expect(props.onOpenDirectly).not.toHaveBeenCalled();
     expect(props.onClose).toHaveBeenCalledTimes(1);
   });

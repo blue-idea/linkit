@@ -100,9 +100,9 @@ test.describe('主题 CRUD', () => {
 
   // REQ-012-AC-004
   test('打开主题 shall 仅显示成员且计数准确', async ({ page }) => {
-    await page.getByText('设计灵感', { exact: true }).first().click();
-    await expect(page.getByText('设计灵感', { exact: true }).first()).toBeVisible();
-    await expect(page.getByRole('main', { name: 'Content Area' })).toContainText(/5 bookmarks/);
+    await page.getByText('Design Inspiration', { exact: true }).first().click();
+    await expect(page.getByText('Design Inspiration', { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole('main', { name: 'Content Area' })).toContainText(/4 bookmarks/);
     await expect(page.getByText('Coolors', { exact: false }).first()).toBeVisible();
 
     await mkdir(evidenceDirectory, { recursive: true });

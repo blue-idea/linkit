@@ -39,7 +39,7 @@ test.describe('分类 CRUD', () => {
 
   // REQ-010-AC-002 · fix_task 1.16
   test('当前选中分类时，收藏分类标题加号 shall 仍创建一级分类', async ({ page }) => {
-    await page.getByText('技术', { exact: true }).first().click();
+    await page.getByText('Engineering', { exact: true }).first().click();
     await page.getByRole('button', { name: 'New category' }).click();
     await expect(page.getByRole('dialog', { name: 'New category' })).toBeVisible();
     await page.getByLabel('Category name').fill('FIX116 Root Category');
@@ -84,7 +84,7 @@ test.describe('分类 CRUD', () => {
 
   test('在已有分类下创建子分类 shall 成功并展示在层级中', async ({ page }) => {
     // 悬停首个分类行后点击“新建子分类”
-    const firstCategory = page.getByText('技术', { exact: true }).first();
+    const firstCategory = page.getByText('Engineering', { exact: true }).first();
     const row = firstCategory.locator('xpath=ancestor::div[contains(@class,"group")][1]');
     await row.hover();
     await row.getByRole('button', { name: 'New subcategory' }).click();

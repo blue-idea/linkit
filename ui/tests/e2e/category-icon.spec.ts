@@ -24,7 +24,7 @@ test.describe('分类图标设置', () => {
 
   // fix_task 1.2：悬停操作打开候选图标与颜色并更新分类。
   test('分类图标设置 shall 提供更多候选图标与颜色并更新侧栏', async ({ page }) => {
-    const leafRow = page.locator('[data-category-drop="配色"]').first();
+    const leafRow = page.locator('[data-category-drop="Backend"]').first();
     await expect(leafRow).toBeVisible();
     await leafRow.hover();
     await leafRow.getByRole('button', { name: 'Set category icon' }).click();

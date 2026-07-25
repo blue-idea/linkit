@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { AppSettings, Bookmark, Category, Collection, LibraryData, Tag, ViewDensity } from './types';
+import type { AppSettings, Bookmark, Category, Collection, LibraryData, Tag, TagColor, ViewDensity } from './types';
 import type { AppState, Filters, Selection } from './state';
 import { emptyFilters } from './state';
 import { bookmarks as seedBookmarks, categories as seedCategories, collections as seedCollections, tags as seedTags } from './data';
@@ -8,7 +8,7 @@ import { Sidebar } from './components/Sidebar';
 import { ContentArea } from './components/ContentArea';
 import { DetailPanel } from './components/DetailPanel';
 import { Spotlight } from './components/Spotlight';
-import { NewBookmarkDialog, ReanalyzeBookmarkDialog } from './components/Dialogs';
+import { NewBookmarkDialog, ReanalyzeBookmarkDialog, TagFormDialog, DeleteTagDialog } from './components/Dialogs';
 import { LoginScreen } from './components/LoginScreen';
 import { SettingsDialog } from './components/SettingsDialog';
 import {
@@ -94,6 +94,7 @@ import {
   runAcceptSuggestedTag,
   runAddTagToBookmark,
   runCreateTag,
+  runDeleteTag,
   runRemoveTagFromBookmark,
 } from './features/tags';
 import { createPreferredStorageAdapters } from './services/storage';
@@ -227,6 +228,8 @@ export default function App() {
     null | { mode: 'create' } | { mode: 'edit'; id: string }
   >(null);
   const [collectionDeleteId, setCollectionDeleteId] = useState<string | null>(null);
+  const [tagFormOpen, setTagFormOpen] = useState(false);
+  const [tagDeleteId, setTagDeleteId] = useState<string | null>(null);
   const [addBookmarksCollectionId, setAddBookmarksCollectionId] = useState<string | null>(null);
   const [bulkRemoveFromCollectionIds, setBulkRemoveFromCollectionIds] = useState<string[] | null>(null);
   const [composeSelectedIds, setComposeSelectedIds] = useState<string[]>([]);
@@ -968,6 +971,41 @@ export default function App() {
     }
   }, [applyTagResult, bookmarks, cats, cols, entities, flashToast, handleAddTag, i18n, selectedBookmark, tagList]);
 
+  const handleCreateTagFromSidebar = useCallback(
+    ({ label, color }: { label: string; color: TagColor }) => {
+      const created = runCreateTag({ ...entities(), label, color });
+      if (!created.ok) {
+        flashToast(localizeCommandError(i18n, created.error));
+        return;
+      }
+      const withTag = applyTagLibraryResult(created.value, bookmarks);
+      setTagList(withTag.tags);
+      setBookmarks(withTag.bookmarks);
+      setTagFormOpen(false);
+      flashToast(i18n.t('toast.tagCreated'));
+    },
+    [bookmarks, entities, flashToast, i18n]
+  );
+
+  const handleDeleteTagFromSidebar = useCallback(
+    (tagId: string) => {
+      const result = runDeleteTag({ ...entities(), id: tagId });
+      if (!result.ok) {
+        flashToast(localizeCommandError(i18n, result.error));
+        return;
+      }
+      const withTag = applyTagLibraryResult(result.value, bookmarks);
+      setTagList(withTag.tags);
+      setBookmarks(withTag.bookmarks);
+      if (state.selection.kind === 'tag' && state.selection.id === tagId) {
+        setState((s) => ({ ...s, selection: { kind: 'all' }, filters: emptyFilters }));
+      }
+      setTagDeleteId(null);
+      flashToast(i18n.t('toast.tagDeleted'));
+    },
+    [bookmarks, entities, flashToast, i18n, state.selection]
+  );
+
   const requestDeleteCategory = useCallback((categoryId: string) => {
     const childCount = cats.filter((c) => c.parentId === categoryId).length;
     const bookmarkCount = bookmarks.filter((b) => b.categoryId === categoryId).length;
@@ -1405,6 +1443,8 @@ export default function App() {
             onNewCollection={() => setCollectionForm({ mode: 'create' })}
             onEditCollection={(id) => setCollectionForm({ mode: 'edit', id })}
             onDeleteCollection={(id) => setCollectionDeleteId(id)}
+            onNewTag={() => setTagFormOpen(true)}
+            onDeleteTag={(id) => setTagDeleteId(id)}
             onDropToCompose={handleComposeDrop}
             insightCount={insights.length}
           />
@@ -1760,6 +1800,19 @@ export default function App() {
           memberCount={cols.find((c) => c.id === collectionDeleteId)?.bookmarkIds.length ?? 0}
           onCancel={() => setCollectionDeleteId(null)}
           onConfirm={confirmDeleteCollection}
+        />
+      )}
+      {tagFormOpen && (
+        <TagFormDialog
+          onCancel={() => setTagFormOpen(false)}
+          onSubmit={handleCreateTagFromSidebar}
+        />
+      )}
+      {tagDeleteId && (
+        <DeleteTagDialog
+          name={tagList.find((t) => t.id === tagDeleteId)?.label ?? ''}
+          onCancel={() => setTagDeleteId(null)}
+          onConfirm={() => handleDeleteTagFromSidebar(tagDeleteId)}
         />
       )}
       {addBookmarksCollectionId && (

@@ -43,7 +43,7 @@ test.describe('分类拖拽与书签归类', () => {
 
   // REQ-024-AC-006：分类操作（图标设置）具备可识别名称且键盘可达；移动改由拖拽完成。
   test('分类操作 shall 提供可识别的图标设置控件', async ({ page }) => {
-    const leafRow = page.locator('[data-category-drop="配色"]').first();
+    const leafRow = page.locator('[data-category-drop="Backend"]').first();
     await expect(leafRow).toBeVisible();
     await leafRow.hover();
     const setIcon = leafRow.getByRole('button', { name: 'Set category icon' });
@@ -65,7 +65,7 @@ test.describe('分类拖拽与书签归类', () => {
     const bookmarkId = await card.getAttribute('data-bookmark-id');
     expect(bookmarkId).toBeTruthy();
 
-    await dropBookmarkOnCategory(page, bookmarkId!, '配色');
+    await dropBookmarkOnCategory(page, bookmarkId!, 'Backend');
     await expect(page.getByText(/Moved to category/i)).toBeVisible();
 
     await mkdir(evidenceDirectory, { recursive: true });
