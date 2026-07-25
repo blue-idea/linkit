@@ -64,7 +64,32 @@ Support for multiple elegant themes (*Midnight*, *Ocean*, *Graphite*, *Sunset*) 
 
 ---
 
-### 🚀 Quick Start
+### 🚀 Installation & Quick Start
+
+#### 🍺 Recommended Installation (macOS Homebrew)
+
+Install the universal macOS app directly via the third-party Homebrew Tap:
+
+```bash
+brew install blue-idea/tap/linkit
+```
+
+Upgrade to the latest release at any time:
+
+```bash
+brew upgrade linkit
+```
+
+> **Note**: Linkit is currently distributed without Apple notarization. The third-party Cask automatically clears the Gatekeeper `com.apple.quarantine` attribute from `Linkit.app` upon installation without using `sudo` or affecting other apps.
+
+#### 📦 Direct Downloads
+Pre-compiled binaries for Windows, macOS (DMG), and Linux (AppImage / DEB) are available on the [GitHub Releases](https://github.com/blue-idea/collection/releases) page.
+
+> **macOS DMG Note**: The DMG package includes an interactive helper script (`Fix Gatekeeper.command`). If macOS Gatekeeper prevents opening Linkit, drag `Linkit.app` to `/Applications` first, then double-click `Fix Gatekeeper.command` inside the DMG to automatically clear the quarantine attribute.
+
+---
+
+### 🛠️ Building from Source (Developers)
 
 #### Prerequisites
 - [Go](https://go.dev/) (v1.26.0+ recommended)
@@ -73,7 +98,7 @@ Support for multiple elegant themes (*Midnight*, *Ocean*, *Graphite*, *Sunset*) 
 
 #### 1. Clone & Install Dependencies
 ```bash
-git clone <repository-url>
+git clone https://github.com/blue-idea/collection.git
 cd collection
 pnpm --prefix ui install --frozen-lockfile
 ```
@@ -106,22 +131,6 @@ Compile without the `dev` tag so the app uses the clean `Linkit` identity slot:
 ```bash
 wails build
 ```
-
-#### 5. Install on macOS with Homebrew
-
-Install the universal macOS build from the third-party Homebrew Tap:
-
-```bash
-brew install blue-idea/tap/linkit
-```
-
-Upgrade to the latest release:
-
-```bash
-brew upgrade linkit
-```
-
-Linkit is currently distributed without Apple notarization. The third-party Cask removes the `com.apple.quarantine` attribute from the installed `Linkit.app` after installation, without `sudo` and without modifying other applications.
 
 ---
 

@@ -64,7 +64,32 @@
 
 ---
 
-### 🚀 快速开始
+### 🚀 安装与快速开始
+
+#### 🍺 推荐方式：macOS Homebrew 安装
+
+通过第三方 Homebrew Tap 一键安装通用 (Universal) macOS 应用：
+
+```bash
+brew install blue-idea/tap/linkit
+```
+
+随时升级至最新版本：
+
+```bash
+brew upgrade linkit
+```
+
+> **注意**：Linkit 当前尚未进行 Apple 官方签名公证。第三方 Cask 会在安装完成后自动移除 `Linkit.app` 的 Gatekeeper `com.apple.quarantine` 隔离属性，无需 `sudo` 权限，也不会修改系统其他应用。
+
+#### 📦 预编译二进制下载
+包含 Windows、macOS (DMG) 和 Linux (AppImage / DEB) 的最新预编译版本均可在 [GitHub Releases](https://github.com/blue-idea/collection/releases) 页面直接下载。
+
+> **macOS DMG 用户提示**：DMG 安装包内置了一键修复脚本 `Fix Gatekeeper.command`。如果在 macOS 上提示“无法验证开发者”或无法打开，只需先将 `Linkit.app` 拖入 `Applications` 文件夹，再双击运行 DMG 内的 `Fix Gatekeeper.command` 脚本，即可自动清除 Gatekeeper 隔离属性。
+
+---
+
+### 🛠️ 源码构建 (开发者指南)
 
 #### 开发前置要求
 - [Go 语言](https://go.dev/) (推荐 v1.26.0+)
@@ -73,7 +98,7 @@
 
 #### 1. 克隆项目并安装依赖
 ```bash
-git clone <repository-url>
+git clone https://github.com/blue-idea/collection.git
 cd collection
 pnpm --prefix ui install --frozen-lockfile
 ```
@@ -107,22 +132,6 @@ cd ui && pnpm dev
 wails build
 ```
 输出的可执行文件将会保存在 `build/bin/` 目录下。
-
-#### 5. 使用 Homebrew 安装 macOS 版本
-
-从第三方 Homebrew Tap 安装 universal macOS 构建：
-
-```bash
-brew install blue-idea/tap/linkit
-```
-
-升级到最新版本：
-
-```bash
-brew upgrade linkit
-```
-
-Linkit 当前尚未进行 Apple 公证。该第三方 Cask 会在安装完成后移除已安装 `Linkit.app` 的 `com.apple.quarantine` 隔离属性，不使用 `sudo`，也不会修改其他应用。
 
 ---
 

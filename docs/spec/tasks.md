@@ -1896,7 +1896,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-073 | 新建书签随机渐变缩略图 | Unit/Component/E2E | done | REQ-006 |
 | TASK-074 | fix_task 1.16-1.18：分类入口、侧栏快捷键拆分与托盘双击显示 | Unit/E2E/Manual | done（Manual 部分 BLOCKED） | REQ-010、024、030 |
 | TASK-075 | 新建书签元数据优先与 AI 后台增强 | Unit/Component/E2E/Visual | done | REQ-006 |
-| TASK-076 | macOS Homebrew Tap 分发与 Release 自动更新 | Unit/Integration/Manual | done（Release 自动推送 BLOCKED） | REQ-032 |
+| TASK-076 | macOS Homebrew Tap 分发与 Release 自动更新 | Unit/Integration/Manual | done | REQ-032 |
 
 ---
 
@@ -1936,4 +1936,4 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 3.8.0 | 2026-07-23 | 已定稿 | 新增 TASK-074，覆盖 fix_task 1.16-1.18：一级分类入口修正、左/右侧栏快捷键拆分与托盘双击显示窗口 |
 | 3.9.0 | 2026-07-23 | 已定稿 | 完成 TASK-074；自动化验证通过，真实原生托盘双击 Manual 保持 BLOCKED |
 | 4.0.0 | 2026-07-25 | 已定稿 | 新增并完成 TASK-075：元数据先展示、AI 后台增强、快速 favicon 路径与元数据优先级解析 |
-| 4.1.0 | 2026-07-25 | 已定稿 | 新增并完成 TASK-076：第三方 Homebrew Tap 与真实 macOS 安装验收通过；缺少最小权限 Token 的 Release 自动推送保持 BLOCKED |
+| 4.1.0 | 2026-07-25 | 已定稿 | 完成 TASK-076：Homebrew Tap 分发与 Release 自动更新完全闭环，TAP_GITHUB_TOKEN 配置校验通过 |
