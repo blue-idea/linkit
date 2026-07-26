@@ -8,6 +8,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -30,6 +34,11 @@ jobs:
             code:
               - '!knowledge/**'
               - '!docs/**'
+              - '!*.md'
+              - '!**/*.md'
+              - '!.gitignore'
+              - '!.gitattributes'
+              - '!LICENSE'
 
   build:
     needs: check-paths
