@@ -9,6 +9,7 @@ import {
   wailsSemanticClient,
   type SemanticHit,
 } from '../features/search';
+import { DialogFrame } from './DialogFrame';
 import { Icon, Favicon, AIBadge, Kbd } from './ui';
 import { useI18n } from '../i18n/use-i18n';
 
@@ -172,18 +173,13 @@ export function Spotlight({
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-[14vh] px-4 animate-fade-in"
-      onClick={onClose}
+    <DialogFrame
+      containerClassName="fixed inset-0 z-50 flex items-start justify-center px-4 pt-[14vh] animate-fade-in"
+      backdropClassName="bg-black/40 backdrop-blur-[2px]"
+      ariaLabel={i18n.t('spotlight.title')}
+      dialogClassName="w-full max-w-[640px] rounded-mac-xl glass-strong ring-glow overflow-hidden animate-spotlight-in"
     >
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
-      <div
-        role="dialog"
-        aria-label={i18n.t('spotlight.title')}
-        aria-modal="true"
-        className="relative w-full max-w-[640px] rounded-mac-xl glass-strong ring-glow overflow-hidden animate-spotlight-in"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="contents">
         <div className="flex items-center gap-3 px-4 py-3.5 border-b border-white/5">
           <Icon
             name={mode === 'semantic' ? 'Sparkles' : 'Search'}
@@ -358,6 +354,6 @@ export function Spotlight({
           </div>
         </div>
       </div>
-    </div>
+    </DialogFrame>
   );
 }

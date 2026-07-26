@@ -53,6 +53,52 @@ test.describe('Settings theme locale', () => {
     });
   });
 
+  test('settings shall stay open after backdrop click', async ({ page }) => {
+    await enterLocalMode(page);
+    await page.getByRole('button', { name: 'Settings' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Settings' });
+    await expect(dialog).toBeVisible();
+
+    await page.mouse.click(16, 16);
+    await expect(dialog).toBeVisible();
+
+    await mkdir(evidenceDirectory, { recursive: true });
+    await page.screenshot({
+      path: resolve(evidenceDirectory, 'TASK-023-settings-backdrop-click.png'),
+      fullPage: true,
+    });
+  });
+
+  test('settings shall stay open after dragging text selection to backdrop', async ({ page }) => {
+    await enterLocalMode(page);
+    await page.getByRole('button', { name: 'Settings' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Settings' });
+    await expect(dialog).toBeVisible();
+
+    await dialog.getByRole('tab', { name: 'Storage' }).click();
+    const dragSource = dialog.getByText('Library capacity');
+    await expect(dragSource).toBeVisible();
+
+    const box = await dragSource.boundingBox();
+    expect(box).not.toBeNull();
+    if (!box) {
+      throw new Error('Library capacity bounding box unavailable');
+    }
+
+    await page.mouse.move(box.x + box.width * 0.35, box.y + box.height * 0.5);
+    await page.mouse.down();
+    await page.mouse.move(12, 12, { steps: 12 });
+    await page.mouse.up();
+
+    await expect(dialog).toBeVisible();
+
+    await mkdir(evidenceDirectory, { recursive: true });
+    await page.screenshot({
+      path: resolve(evidenceDirectory, 'TASK-023-settings-drag-selection.png'),
+      fullPage: true,
+    });
+  });
+
   // REQ-023-AC-003
   test('selected theme applies and persists after reload', async ({ page }) => {
     await enterLocalMode(page);

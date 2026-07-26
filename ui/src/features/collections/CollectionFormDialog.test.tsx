@@ -65,4 +65,25 @@ describe('CollectionFormDialog', () => {
       })
     );
   });
+
+  test('[组件] 点击 backdrop shall 不关闭弹窗', async () => {
+    const user = userEvent.setup();
+    const onCancel = vi.fn();
+
+    const { container } = render(
+      <CollectionFormDialog
+        mode="create"
+        onCancel={onCancel}
+        onSubmit={() => {}}
+      />
+    );
+
+    const backdrop = container.firstElementChild;
+    expect(backdrop).not.toBeNull();
+
+    await user.click(backdrop as Element);
+
+    expect(onCancel).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'New collection' })).toBeInTheDocument();
+  });
 });

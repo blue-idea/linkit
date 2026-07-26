@@ -12,6 +12,7 @@ import {
   resolveIconEditorIcon,
   type BookmarkIconEditorValue,
 } from '../features/bookmarks/bookmark-icon-editor-model';
+import { DialogFrame } from './DialogFrame';
 import { BookmarkIconEditor } from '../features/bookmarks/BookmarkIconEditor';
 import {
   applyReanalyzeConfirmation,
@@ -38,18 +39,14 @@ function Modal({ open, onClose, children, width = 'max-w-lg', 'aria-label': aria
   }, [open, onClose]);
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-[3px]" />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={ariaLabel}
-        className={`relative w-full ${width} rounded-mac-xl glass-strong ring-glow overflow-hidden animate-scale-in`}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <DialogFrame
+      ariaLabel={ariaLabel}
+      dialogClassName={`w-full ${width} rounded-mac-xl glass-strong ring-glow overflow-hidden animate-scale-in`}
+    >
+      <div className="contents">
         {children}
       </div>
-    </div>
+    </DialogFrame>
   );
 }
 

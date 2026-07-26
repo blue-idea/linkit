@@ -1,4 +1,5 @@
 import { Icon, Button } from '../../components/ui';
+import { DialogFrame } from '../../components/DialogFrame';
 import { useI18n } from '../../i18n/use-i18n';
 
 /**
@@ -18,18 +19,13 @@ export function RemoveFromCollectionDialog({
 }) {
   const i18n = useI18n();
   return (
-    <div
-      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/55 p-4"
-      role="presentation"
-      onClick={onCancel}
+    <DialogFrame
+      containerClassName="fixed inset-0 z-[80] flex items-center justify-center p-4"
+      backdropClassName="bg-black/55"
+      ariaLabel={i18n.t('collection.remove.title')}
+      dialogClassName="w-full max-w-md rounded-mac-xl glass-strong shadow-win border border-white/10 p-5"
     >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={i18n.t('collection.remove.title')}
-        className="w-full max-w-md rounded-mac-xl glass-strong shadow-win border border-white/10 p-5"
-        onClick={(event) => event.stopPropagation()}
-      >
+      <div className="contents">
         <div className="flex items-start gap-3">
           <span className="w-9 h-9 rounded-lg bg-coral-500/15 flex items-center justify-center shrink-0">
             <Icon name="LogOut" size={16} className="text-coral-400" />
@@ -53,6 +49,6 @@ export function RemoveFromCollectionDialog({
           </Button>
         </div>
       </div>
-    </div>
+    </DialogFrame>
   );
 }
