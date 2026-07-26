@@ -82,6 +82,7 @@ export function NewBookmarkDialog({
   aiContext,
   onClose,
   onCreate,
+  onCreateTag,
 }: {
   open: boolean;
   initialUrl: string;
@@ -94,6 +95,8 @@ export function NewBookmarkDialog({
   aiContext: AIContext | null;
   onClose: () => void;
   onCreate: (b: Omit<Bookmark, 'id' | 'createdAt' | 'lastVisitedAt' | 'visitCount' | 'spark'>) => void;
+  /** 创建标签后返回完整实体，确保新书签保存时使用已持久化的标签 ID。 */
+  onCreateTag?: (values: { label: string; color: TagColor }) => Tag | null;
 }) {
   const i18n = useI18n();
   const [url, setUrl] = useState(initialUrl);
@@ -105,6 +108,8 @@ export function NewBookmarkDialog({
   const [chosenTags, setChosenTags] = useState<string[]>([]);
   const [chosenCategory, setChosenCategory] = useState<string>('');
   const [chosenCollections, setChosenCollections] = useState<string[]>([]);
+  const [createdTags, setCreatedTags] = useState<Tag[]>([]);
+  const [tagFormOpen, setTagFormOpen] = useState(false);
   const [notes, setNotes] = useState('');
   const [description, setDescription] = useState('');
   const [aiSummary, setAiSummary] = useState('');
@@ -127,6 +132,10 @@ export function NewBookmarkDialog({
     tags: false,
   });
   const categoryLocked = Boolean(activeCategoryId?.trim());
+  const availableTags = [
+    ...tags,
+    ...createdTags.filter((created) => !tags.some((tag) => tag.id === created.id)),
+  ];
 
   const resetDirtyFields = () => {
     dirtyFieldsRef.current = {
@@ -141,32 +150,36 @@ export function NewBookmarkDialog({
   useEffect(() => {
     // 对话框关闭、重开或入口上下文变化时，使旧异步预览结果失效。
     previewRequestIdRef.current += 1;
-    if (open) {
-      resetDirtyFields();
-      setUrl(initialUrl);
-      setTitle('');
-      setStage('input');
-      setFallbackMessage(null);
-      setAnalysisSource(null);
-      setAiEnhancementState('idle');
-      setChosenTags([]);
-      // 分类视图下预填并锁定当前分类。
-      setChosenCategory(activeCategoryId?.trim() ?? '');
-      setChosenCollections([]);
-      setNotes('');
-      setDescription('');
-      setAiSummary('');
-      setPendingTagLabels([]);
-      setUrlWarning(null);
-      setFaviconUrl(null);
-      setIconEditor({
-        mode: 'text',
-        siteFaviconUrl: null,
-        siteFaviconPreview: null,
-        glyphOverride: '',
-        faviconColor: 'blue',
-      });
+    if (!open) {
+      setTagFormOpen(false);
+      return;
     }
+    resetDirtyFields();
+    setUrl(initialUrl);
+    setTitle('');
+    setStage('input');
+    setFallbackMessage(null);
+    setAnalysisSource(null);
+    setAiEnhancementState('idle');
+    setChosenTags([]);
+    setCreatedTags([]);
+    setTagFormOpen(false);
+    // 分类视图下预填并锁定当前分类。
+    setChosenCategory(activeCategoryId?.trim() ?? '');
+    setChosenCollections([]);
+    setNotes('');
+    setDescription('');
+    setAiSummary('');
+    setPendingTagLabels([]);
+    setUrlWarning(null);
+    setFaviconUrl(null);
+    setIconEditor({
+      mode: 'text',
+      siteFaviconUrl: null,
+      siteFaviconPreview: null,
+      glyphOverride: '',
+      faviconColor: 'blue',
+    });
   }, [open, initialUrl, activeCategoryId]);
 
   useEffect(() => () => {
@@ -175,6 +188,7 @@ export function NewBookmarkDialog({
 
   const closeDialog = () => {
     previewRequestIdRef.current += 1;
+    setTagFormOpen(false);
     onClose();
   };
 
@@ -183,7 +197,21 @@ export function NewBookmarkDialog({
     previewRequestIdRef.current += 1;
     resetDirtyFields();
     setAiEnhancementState('idle');
+    setTagFormOpen(false);
     setStage('input');
+  };
+
+  const handleCreateTag = (values: { label: string; color: TagColor }) => {
+    if (!onCreateTag) return;
+    const created = onCreateTag(values);
+    if (!created) return;
+
+    setCreatedTags((current) =>
+      current.some((tag) => tag.id === created.id) ? current : [...current, created]
+    );
+    dirtyFieldsRef.current.tags = true;
+    setChosenTags((current) => (current.includes(created.id) ? current : [...current, created.id]));
+    setTagFormOpen(false);
   };
 
   const beginPreview = () => {
@@ -217,7 +245,7 @@ export function NewBookmarkDialog({
     if (shouldApplyAiCategorySuggestion(activeCategoryId)) {
       setChosenCategory(input.preview.suggestedCategoryId ?? '');
     }
-    const tagMatches = matchSuggestedTags(input.preview.suggestedTags, tags);
+    const tagMatches = matchSuggestedTags(input.preview.suggestedTags, availableTags);
     setChosenTags(tagMatches.tagIds);
     setPendingTagLabels(tagMatches.unmatchedLabels);
     setFaviconUrl(input.preview.faviconUrl);
@@ -256,7 +284,7 @@ export function NewBookmarkDialog({
     if (!dirtyFields.category && shouldApplyAiCategorySuggestion(activeCategoryId)) {
       setChosenCategory(result.preview.suggestedCategoryId ?? '');
     }
-    const tagMatches = matchSuggestedTags(result.preview.suggestedTags, tags);
+    const tagMatches = matchSuggestedTags(result.preview.suggestedTags, availableTags);
     if (!dirtyFields.tags) {
       setChosenTags(tagMatches.tagIds);
       setPendingTagLabels(tagMatches.unmatchedLabels);
@@ -275,7 +303,7 @@ export function NewBookmarkDialog({
       locale: 'en',
     };
     const categoryCandidates = categories.map((category) => ({ id: category.id, name: category.name }));
-    const tagCandidates = tags.map((tag) => ({ id: tag.id, label: tag.label }));
+    const tagCandidates = availableTags.map((tag) => ({ id: tag.id, label: tag.label }));
     const base = await buildInboundMetadataPreview({
       url,
       titleHint: title,
@@ -352,7 +380,8 @@ export function NewBookmarkDialog({
   const isSmartReview = aiEnhancementState !== 'idle';
 
   return (
-    <Modal open={open} onClose={closeDialog} width="max-w-[520px]" aria-label={i18n.t('bookmark.new.title')}>
+    <>
+      <Modal open={open} onClose={closeDialog} width="max-w-[520px]" aria-label={i18n.t('bookmark.new.title')}>
       <ModalHeader
         icon="Plus"
         title={i18n.t('bookmark.new.title')}
@@ -550,10 +579,23 @@ export function NewBookmarkDialog({
               )}
             </div>
 
-            <div>
-              <label className="text-[11px] font-medium text-ink-300 mb-1.5 block">{i18n.t('bookmark.tags')}</label>
+            <div role="group" aria-label={i18n.t('bookmark.tags')}>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[11px] font-medium text-ink-300">{i18n.t('bookmark.tags')}</label>
+                {onCreateTag && (
+                  <button
+                    type="button"
+                    aria-label={i18n.t('bookmark.addTag')}
+                    title={i18n.t('bookmark.addTag')}
+                    onClick={() => setTagFormOpen(true)}
+                    className="inline-flex h-6 w-6 items-center justify-center rounded-md text-ink-400 hover:bg-ink-700/60 hover:text-ink-100 transition focus-ring"
+                  >
+                    <Icon name="Plus" size={13} />
+                  </button>
+                )}
+              </div>
               <div className="flex flex-wrap gap-1.5">
-                {tags.map((t) => {
+                {availableTags.map((t) => {
                   const on = chosenTags.includes(t.id);
                   return (
                     <button
@@ -636,6 +678,13 @@ export function NewBookmarkDialog({
         </div>
       )}
     </Modal>
+    {tagFormOpen && (
+      <TagFormDialog
+        onCancel={() => setTagFormOpen(false)}
+        onSubmit={handleCreateTag}
+      />
+    )}
+  </>
   );
 }
 

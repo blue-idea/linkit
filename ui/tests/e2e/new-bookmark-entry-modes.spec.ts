@@ -153,4 +153,63 @@ test.describe('TASK-071 New Bookmark Manual 与 Smart', () => {
     await expect(dialog.getByRole('textbox', { name: 'Bookmark title' })).toHaveValue('Smart preview title');
     expect(await page.evaluate(() => (window as EntryModeWindow).__entryModeCalls)).toEqual({ metadata: 3, ai: 2 });
   });
+
+  test('Manual and Smart review shall support creating a tag from the plus action', async ({ page }) => {
+    await page.getByRole('button', { name: 'New', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'New Bookmark' });
+    await dialog.getByRole('textbox', { name: 'Bookmark URL' }).fill('https://example.test/tag-plus-manual');
+    await dialog.getByRole('button', { name: 'Manual' }).click();
+    await expect(dialog.getByRole('button', { name: 'Save bookmark' })).toBeVisible();
+
+    const tagsSection = dialog.getByRole('group', { name: 'Tags' });
+    const addTagButton = tagsSection.getByRole('button', { name: 'Add tag' });
+    await expect(addTagButton).toBeVisible();
+    await mkdir(evidenceDirectory, { recursive: true });
+    await tagsSection.screenshot({
+      path: resolve(evidenceDirectory, 'new-bookmark-tag-plus-before.png'),
+      animations: 'disabled',
+    });
+
+    await addTagButton.click();
+    const tagDialog = page.getByRole('dialog', { name: 'New tag' });
+    await expect(tagDialog).toBeVisible();
+    await tagDialog.getByPlaceholder('Enter tag name…').fill('TASK018 Tag');
+    await tagDialog.getByRole('button', { name: 'Color green' }).click();
+    await tagDialog.getByRole('button', { name: 'New tag' }).click();
+
+    const newTag = dialog.getByRole('button', { name: 'TASK018 Tag' });
+    await expect(newTag).toHaveAttribute('aria-pressed', 'true');
+    await tagsSection.screenshot({
+      path: resolve(evidenceDirectory, 'new-bookmark-tag-plus-actual.png'),
+      animations: 'disabled',
+    });
+    await dialog.getByRole('button', { name: 'Save bookmark' }).click();
+
+    await expect(page.getByLabel('Bookmark tags').getByText('TASK018 Tag', { exact: true })).toBeVisible();
+    await expect(page.getByLabel('Sidebar tags').getByText(/TASK018 Tag \(1\)/)).toBeVisible();
+    await expect.poll(
+      () => page.evaluate(() => {
+        const raw = localStorage.getItem('lattice.library');
+        if (!raw) return false;
+        try {
+          return (JSON.parse(raw) as { tags?: Array<{ label?: string }> }).tags?.some(
+            (tag) => tag.label === 'TASK018 Tag'
+          ) ?? false;
+        } catch {
+          return false;
+        }
+      }),
+      { timeout: 5_000 }
+    ).toBe(true);
+
+    // Smart 与 Manual 共用同一 review，AI 后台增强期间也必须保留标签新增入口。
+    await page.getByRole('button', { name: 'New', exact: true }).click();
+    const smartDialog = page.getByRole('dialog', { name: 'New Bookmark' });
+    await smartDialog.getByRole('textbox', { name: 'Bookmark URL' }).fill('https://example.test/tag-plus-smart');
+    await smartDialog.getByRole('button', { name: 'Smart' }).click();
+    await expect(smartDialog.getByRole('status', { name: 'AI enhancement in progress' })).toBeVisible();
+    await expect(smartDialog.getByRole('button', { name: 'Add tag' })).toBeVisible();
+    await resolveEntryModeAI(page);
+    await expect(smartDialog.getByRole('button', { name: 'Save with AI' })).toBeEnabled();
+  });
 });

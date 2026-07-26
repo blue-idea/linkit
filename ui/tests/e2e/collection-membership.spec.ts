@@ -24,7 +24,7 @@ test.describe('主题视图手动添加书签', () => {
 
   // REQ-012-AC-006 / AC-007 / AC-008 / AC-009
   test('主题视图添加书签 shall 支持搜索多选且确认前零副作用', async ({ page }) => {
-    await page.getByText('Web Development', { exact: true }).first().click();
+    await page.getByText('Web', { exact: true }).first().click();
     const contentArea = page.getByRole('main', { name: 'Content Area' });
     await expect(contentArea).toContainText(/5 bookmarks/);
     await expect(page.getByRole('button', { name: 'Add bookmarks' })).toBeVisible();
@@ -78,7 +78,7 @@ test.describe('主题视图手动添加书签', () => {
 
   // REQ-012-AC-011
   test('主题视图移出 shall 单条即时生效且多选确认前零副作用', async ({ page }) => {
-    await page.getByText('Web Development', { exact: true }).first().click();
+    await page.getByText('Web', { exact: true }).first().click();
     const contentArea = page.getByRole('main', { name: 'Content Area' });
     await expect(contentArea).toContainText(/5 bookmarks/);
 
