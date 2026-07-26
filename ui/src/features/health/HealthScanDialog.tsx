@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Bookmark } from '../../types';
+import { DialogFrame } from '../../components/DialogFrame';
 import { Button, Icon } from '../../components/ui';
 import { scanBookmark, type HealthResult } from './index';
 import { subscribeWailsEvent } from './wails-runtime';
@@ -82,8 +83,13 @@ export function HealthScanDialog({ open, bookmarks, onClose, onResult }: {
   const changed = bookmarks.filter(({ health }) => health === 'changed').length;
   const broken = bookmarks.filter(({ health }) => health === 'broken').length;
   const ok = bookmarks.filter(({ health }) => health === 'ok').length;
-  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4" onClick={onClose}>
-    <div role="dialog" aria-modal="true" aria-label={i18n.t('health.dialogLabel')} className="w-full max-w-[520px] rounded-mac-xl glass-strong ring-glow p-5 space-y-4" onClick={(event) => event.stopPropagation()}>
+  return <DialogFrame
+    containerClassName="fixed inset-0 z-50 flex items-center justify-center px-4"
+    backdropClassName="bg-black/50"
+    ariaLabel={i18n.t('health.dialogLabel')}
+    dialogClassName="w-full max-w-[520px] rounded-mac-xl glass-strong ring-glow p-5"
+  >
+    <div className="space-y-4">
       <div className="flex items-center justify-between"><div><h2 className="text-lg font-semibold text-ink-100">{i18n.t('health.title')}</h2><p className="text-xs text-ink-400">{i18n.t('health.manualHint')}</p></div><Button variant="ghost" size="sm" onClick={onClose}>{i18n.t('common.close')}</Button></div>
       <div className="rounded-mac-lg bg-ink-800/50 hairline p-4 flex items-center justify-between">
         <div><div className="text-sm text-ink-100">{status === 'completed' ? i18n.t('health.completed') : status === 'cancelled' ? i18n.t('health.cancelled') : status === 'scanning' ? i18n.t('health.scanning', { completed, total: bookmarks.length }) : i18n.t('health.ready', { count: bookmarks.length })}</div><div className="text-xs text-ink-400">{i18n.t('health.savedHint')}</div></div>
@@ -98,5 +104,5 @@ export function HealthScanDialog({ open, bookmarks, onClose, onResult }: {
       </div>
       <div className="flex items-center gap-2 text-xs text-ink-400"><Icon name="ShieldCheck" size={13} /> {i18n.t('health.privacy')}</div>
     </div>
-  </div>;
+  </DialogFrame>;
 }

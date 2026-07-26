@@ -5,6 +5,7 @@ import {
 } from '../../domain/categories';
 import { tagColors } from '../../colors';
 import type { TagColor } from '../../types';
+import { DialogFrame } from '../../components/DialogFrame';
 import { Icon, Button } from '../../components/ui';
 import { useI18n } from '../../i18n/use-i18n';
 
@@ -38,18 +39,13 @@ export function SetCategoryIconDialog({
   const previewColor = tagColors[color]?.text ?? 'text-ink-300';
 
   return (
-    <div
-      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/55 p-4"
-      role="presentation"
-      onClick={onCancel}
+    <DialogFrame
+      containerClassName="fixed inset-0 z-[80] flex items-center justify-center p-4"
+      backdropClassName="bg-black/55"
+      ariaLabelledby="set-category-icon-title"
+      dialogClassName="w-full max-w-lg rounded-mac-xl glass-strong shadow-win border border-white/10 p-5"
     >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="set-category-icon-title"
-        className="w-full max-w-lg rounded-mac-xl glass-strong shadow-win border border-white/10 p-5"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="contents">
         <div className="flex items-start gap-3">
           <span className="w-9 h-9 rounded-lg bg-accent-500/15 flex items-center justify-center shrink-0">
             <Icon name={icon} size={16} className={previewColor} />
@@ -129,6 +125,6 @@ export function SetCategoryIconDialog({
           </Button>
         </div>
       </div>
-    </div>
+    </DialogFrame>
   );
 }

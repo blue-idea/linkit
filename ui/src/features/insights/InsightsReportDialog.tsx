@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { LibraryInsight, InsightAction } from './index';
 import { buildInsightsReportSummary, type InsightsReportBookmark, type InsightsReportCategory, type InsightsReportCollection } from './report-summary';
+import { DialogFrame } from '../../components/DialogFrame';
 import { useI18n } from '../../i18n/use-i18n';
 import type { I18nApi } from '../../i18n';
 import { tagColors } from '../../colors';
@@ -72,15 +73,11 @@ export function InsightsReportDialog({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-[3px]" />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={i18n.t('insights.title')}
-        className="relative w-full max-w-[600px] rounded-mac-xl glass-strong ring-glow overflow-hidden animate-scale-in"
-        onClick={(event) => event.stopPropagation()}
-      >
+    <DialogFrame
+      ariaLabel={i18n.t('insights.title')}
+      dialogClassName="w-full max-w-[600px] rounded-mac-xl glass-strong ring-glow overflow-hidden animate-scale-in"
+    >
+      <div className="contents">
         <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5">
           <span className="w-9 h-9 rounded-lg bg-ink-700/60 hairline flex items-center justify-center">
             <Icon name="Sparkles" size={17} className="text-ink-100" />
@@ -192,6 +189,6 @@ export function InsightsReportDialog({
           </div>
         </div>
       </div>
-    </div>
+    </DialogFrame>
   );
 }

@@ -1,4 +1,5 @@
 import type { LibraryRecommendation, ThemeGapSuggestion } from './index';
+import { DialogFrame } from '../../components/DialogFrame';
 import { useI18n } from '../../i18n/use-i18n';
 import { Icon, Button, Kbd } from '../../components/ui';
 
@@ -26,17 +27,13 @@ export function ExploreDialog({
   const i18n = useI18n();
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px] px-4 animate-fade-in"
-      onClick={onClose}
+    <DialogFrame
+      containerClassName="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in"
+      backdropClassName="bg-black/50 backdrop-blur-[2px]"
+      ariaLabel={i18n.t('explore.title')}
+      dialogClassName="glass-strong w-full max-w-xl rounded-mac-xl p-5 ring-glow flex flex-col max-h-[80vh] overflow-hidden animate-spotlight-in gap-4"
     >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={i18n.t('explore.title')}
-        className="glass-strong w-full max-w-xl rounded-mac-xl p-5 ring-glow flex flex-col max-h-[80vh] overflow-hidden animate-spotlight-in gap-4"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="contents">
         {/* Header */}
         <div className="flex justify-between items-start gap-3 pb-1">
           <div>
@@ -155,6 +152,6 @@ export function ExploreDialog({
           </Button>
         </div>
       </div>
-    </div>
+    </DialogFrame>
   );
 }

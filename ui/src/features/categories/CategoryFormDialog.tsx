@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Icon, Button } from '../../components/ui';
+import { DialogFrame } from '../../components/DialogFrame';
 import { useI18n } from '../../i18n/use-i18n';
 
 /**
@@ -23,18 +24,13 @@ export function CategoryFormDialog({
   const submitLabel = mode === 'create' ? i18n.t('category.create') : i18n.t('category.saveName');
 
   return (
-    <div
-      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/55 p-4"
-      role="presentation"
-      onClick={onCancel}
+    <DialogFrame
+      containerClassName="fixed inset-0 z-[80] flex items-center justify-center p-4"
+      backdropClassName="bg-black/55"
+      ariaLabelledby="category-form-title"
+      dialogClassName="w-full max-w-md rounded-mac-xl glass-strong shadow-win border border-white/10 p-5"
     >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="category-form-title"
-        className="w-full max-w-md rounded-mac-xl glass-strong shadow-win border border-white/10 p-5"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="contents">
         <div className="flex items-start gap-3">
           <span className="w-9 h-9 rounded-lg bg-accent-500/15 flex items-center justify-center shrink-0">
             <Icon name="Folder" size={16} className="text-accent-300" />
@@ -73,6 +69,6 @@ export function CategoryFormDialog({
           </Button>
         </div>
       </div>
-    </div>
+    </DialogFrame>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { buildCategoryTree } from '../categories/utils';
 import type { Bookmark, Category, Collection, Tag, TagColor } from '../../types';
+import { DialogFrame } from '../../components/DialogFrame';
 import { Button } from '../../components/ui';
 import { useI18n } from '../../i18n/use-i18n';
 import {
@@ -10,10 +11,13 @@ import {
 } from './bookmark-icon-editor-model';
 import { BookmarkIconEditor } from './BookmarkIconEditor';
 
-function DialogShell({ label, children, onClose }: { label: string; children: React.ReactNode; onClose: () => void }) {
-  return <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/55 px-4" onClick={onClose}>
-    <div role="dialog" aria-modal="true" aria-label={label} className="w-full max-w-xl rounded-mac-xl glass-strong ring-glow p-5" onClick={(event) => event.stopPropagation()}>{children}</div>
-  </div>;
+function DialogShell({ label, children }: { label: string; children: React.ReactNode }) {
+  return <DialogFrame
+    containerClassName="fixed inset-0 z-[70] flex items-center justify-center px-4"
+    backdropClassName="bg-black/55"
+    ariaLabel={label}
+    dialogClassName="w-full max-w-xl rounded-mac-xl glass-strong ring-glow p-5"
+  ><div className="contents">{children}</div></DialogFrame>;
 }
 
 const inputClass = 'w-full rounded-lg bg-ink-800/60 hairline px-3 py-2 text-sm text-ink-100 focus-ring';
@@ -88,7 +92,7 @@ export function BookmarkEditorDialog({ bookmark, categories, tags, collections, 
     });
   };
 
-  return <DialogShell label={i18n.t('bookmark.edit')} onClose={onClose}>
+  return <DialogShell label={i18n.t('bookmark.edit')}>
     <h2 className="text-lg font-semibold text-ink-100">{i18n.t('bookmark.edit')}</h2>
     <div className="mt-4 max-h-[70vh] overflow-y-auto scroll-thin space-y-4 pr-1">
     <BookmarkIconEditor
@@ -116,10 +120,10 @@ export function BookmarkMoveDialog({ open, count, categories, onClose, onMove }:
   const i18n = useI18n();
   const [categoryId, setCategoryId] = useState('');
   if (!open) return null;
-  return <DialogShell label={i18n.t('bookmark.move.confirm')} onClose={onClose}><h2 className="text-lg font-semibold text-ink-100">{i18n.t('bookmark.move.title', { count })}</h2><label className="mt-4 block text-xs text-ink-300">{i18n.t('bookmark.move.target')}<select aria-label={i18n.t('bookmark.move.target')} value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={inputClass}><option value="" className="bg-ink-900 text-ink-100">{i18n.t('bookmark.uncategorized')}</option>{buildCategoryTree(categories).map((category) => <option key={category.id} value={category.id} className="bg-ink-900 text-ink-100">{'\u00A0\u00A0'.repeat(category.level) + (category.level > 0 ? '└─ ' : '') + category.name}</option>)}</select></label><div className="mt-5 flex justify-end gap-2"><Button onClick={onClose}>{i18n.t('common.cancel')}</Button><Button variant="primary" onClick={() => onMove(categoryId || null)}>{i18n.t('bookmark.move.confirm')}</Button></div></DialogShell>;
+  return <DialogShell label={i18n.t('bookmark.move.confirm')}><h2 className="text-lg font-semibold text-ink-100">{i18n.t('bookmark.move.title', { count })}</h2><label className="mt-4 block text-xs text-ink-300">{i18n.t('bookmark.move.target')}<select aria-label={i18n.t('bookmark.move.target')} value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={inputClass}><option value="" className="bg-ink-900 text-ink-100">{i18n.t('bookmark.uncategorized')}</option>{buildCategoryTree(categories).map((category) => <option key={category.id} value={category.id} className="bg-ink-900 text-ink-100">{'\u00A0\u00A0'.repeat(category.level) + (category.level > 0 ? '└─ ' : '') + category.name}</option>)}</select></label><div className="mt-5 flex justify-end gap-2"><Button onClick={onClose}>{i18n.t('common.cancel')}</Button><Button variant="primary" onClick={() => onMove(categoryId || null)}>{i18n.t('bookmark.move.confirm')}</Button></div></DialogShell>;
 }
 
 export function BulkDeleteDialog({ count, onClose, onConfirm }: { count: number; onClose: () => void; onConfirm: () => void }) {
   const i18n = useI18n();
-  return <DialogShell label={i18n.t('bookmark.deleteMany.confirm')} onClose={onClose}><h2 className="text-lg font-semibold text-ink-100">{i18n.t('bookmark.deleteMany.title', { count })}</h2><p className="mt-2 text-sm text-ink-300">{i18n.t('bookmark.deleteMany.body')}</p><div className="mt-5 flex justify-end gap-2"><Button onClick={onClose}>{i18n.t('common.cancel')}</Button><Button variant="danger" onClick={onConfirm}>{i18n.t('bookmark.deleteMany.confirm')}</Button></div></DialogShell>;
+  return <DialogShell label={i18n.t('bookmark.deleteMany.confirm')}><h2 className="text-lg font-semibold text-ink-100">{i18n.t('bookmark.deleteMany.title', { count })}</h2><p className="mt-2 text-sm text-ink-300">{i18n.t('bookmark.deleteMany.body')}</p><div className="mt-5 flex justify-end gap-2"><Button onClick={onClose}>{i18n.t('common.cancel')}</Button><Button variant="danger" onClick={onConfirm}>{i18n.t('bookmark.deleteMany.confirm')}</Button></div></DialogShell>;
 }

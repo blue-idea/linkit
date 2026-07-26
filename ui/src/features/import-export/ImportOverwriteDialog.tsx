@@ -1,4 +1,5 @@
 import { Icon, Button } from '../../components/ui';
+import { DialogFrame } from '../../components/DialogFrame';
 import type { ImportSummary } from './document';
 import type { I18nApi } from '../../i18n';
 
@@ -22,18 +23,13 @@ export function ImportOverwriteDialog({
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-[90] flex items-center justify-center bg-black/55 p-4"
-      role="presentation"
-      onClick={onCancel}
+    <DialogFrame
+      containerClassName="fixed inset-0 z-[90] flex items-center justify-center p-4"
+      backdropClassName="bg-black/55"
+      ariaLabelledby="import-overwrite-title"
+      dialogClassName="w-full max-w-md rounded-mac-xl glass-strong shadow-win border border-white/10 p-5"
     >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="import-overwrite-title"
-        className="w-full max-w-md rounded-mac-xl glass-strong shadow-win border border-white/10 p-5"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="contents">
         <div className="flex items-start gap-3">
           <span className="w-9 h-9 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0">
             <Icon name="Upload" size={16} className="text-amber-400" />
@@ -64,6 +60,6 @@ export function ImportOverwriteDialog({
           </Button>
         </div>
       </div>
-    </div>
+    </DialogFrame>
   );
 }

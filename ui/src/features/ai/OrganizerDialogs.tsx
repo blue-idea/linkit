@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { DialogFrame } from '../../components/DialogFrame';
 import { Button, Icon } from '../../components/ui';
 import type { CollectionSuggestion } from './collections';
 import type { DuplicatePreview } from './duplicates';
@@ -7,30 +8,23 @@ import { useI18n } from '../../i18n/use-i18n';
 function Shell({
   label,
   children,
-  onClose,
   width = 'max-w-xl',
 }: {
   label: string;
   children: React.ReactNode;
-  onClose?: () => void;
   width?: string;
 }) {
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4"
-      role="presentation"
-      onClick={onClose}
+    <DialogFrame
+      containerClassName="fixed inset-0 z-50 flex items-center justify-center px-4"
+      backdropClassName="bg-black/55"
+      ariaLabel={label}
+      dialogClassName={`glass-strong w-full ${width} rounded-mac-xl border border-white/10 p-5 ring-glow shadow-win`}
     >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={label}
-        className={`glass-strong w-full ${width} rounded-mac-xl border border-white/10 p-5 ring-glow space-y-4 shadow-win`}
-        onClick={(event) => event.stopPropagation()}
-      >
+      <div className="space-y-4">
         {children}
       </div>
-    </div>
+    </DialogFrame>
   );
 }
 
@@ -58,7 +52,7 @@ export function AICollectionGoalDialog({
   };
 
   return (
-    <Shell label={i18n.t('ai.collection.title')} onClose={onCancel} width="max-w-md">
+    <Shell label={i18n.t('ai.collection.title')} width="max-w-md">
       <div className="flex items-start gap-3">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-500/15">
           <Icon name="Sparkles" size={16} className="text-accent-300" />
@@ -112,7 +106,7 @@ export function AICollectionPreviewDialog({ preview, bookmarks, onCancel, onConf
   const [description, setDescription] = useState(preview.description);
   const [accepted, setAccepted] = useState(preview.bookmarkIds);
   return (
-    <Shell label={i18n.t('ai.collection.previewTitle')} onClose={onCancel}>
+    <Shell label={i18n.t('ai.collection.previewTitle')}>
       <div>
         <h2 className="text-[16px] font-semibold text-ink-100">{i18n.t('ai.collection.previewTitle')}</h2>
         <p className="text-[11px] text-ink-400">
@@ -191,7 +185,7 @@ export function DuplicatePreviewDialog({ preview, onDecision }: {
 }) {
   const i18n = useI18n();
   return (
-    <Shell label={i18n.t('ai.duplicate.title')} onClose={() => onDecision('cancel')}>
+    <Shell label={i18n.t('ai.duplicate.title')}>
       <div>
         <h2 className="text-[16px] font-semibold text-ink-100">{i18n.t('ai.duplicate.title')}</h2>
         <p className="text-[12px] text-amber-300">{preview.reason}</p>

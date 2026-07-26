@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { DialogFrame } from '../../../components/DialogFrame';
 import { Icon, Button } from '../../../components/ui';
 import type { Category } from '../../../types';
 import { buildCategoryTree } from '../utils';
@@ -52,18 +53,13 @@ export function MoveCategoryDialog({
   const treeOptions = buildCategoryTree(allowedCategories);
 
   return (
-    <div
-      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/55 p-4"
-      role="presentation"
-      onClick={onCancel}
+    <DialogFrame
+      containerClassName="fixed inset-0 z-[80] flex items-center justify-center p-4"
+      backdropClassName="bg-black/55"
+      ariaLabelledby="move-category-title"
+      dialogClassName="w-full max-w-md rounded-mac-xl glass-strong shadow-win border border-white/10 p-5"
     >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="move-category-title"
-        className="w-full max-w-md rounded-mac-xl glass-strong shadow-win border border-white/10 p-5"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="contents">
         <div className="flex items-start gap-3">
           <span className="w-9 h-9 rounded-lg bg-accent-500/15 flex items-center justify-center shrink-0">
             <Icon name="Folder" size={16} className="text-accent-300" />
@@ -112,6 +108,6 @@ export function MoveCategoryDialog({
           </Button>
         </div>
       </div>
-    </div>
+    </DialogFrame>
   );
 }

@@ -33,6 +33,7 @@ import {
   type DataRootInfo,
 } from '../services/storage/data-root';
 import { getDefaultAppSettings, normalizeApiBase } from '../services/settings';
+import { DialogFrame } from './DialogFrame';
 
 const dataRootBindings = createDataRootBindings();
 
@@ -82,18 +83,14 @@ function Modal({
   }, [open, onClose]);
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-[3px]" />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={ariaLabel}
-        className={`relative w-full ${width} rounded-mac-xl glass-strong ring-glow overflow-hidden animate-scale-in max-h-[88vh] flex flex-col`}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <DialogFrame
+      ariaLabel={ariaLabel}
+      dialogClassName={`w-full ${width} rounded-mac-xl glass-strong ring-glow overflow-hidden animate-scale-in max-h-[88vh] flex flex-col`}
+    >
+      <div className="contents">
         {children}
       </div>
-    </div>
+    </DialogFrame>
   );
 }
 
