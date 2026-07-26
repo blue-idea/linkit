@@ -1,2 +1,12 @@
+branch="$(git rev-parse --abbrev-ref HEAD)"
+if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+  echo "==============================================================="
+  echo "❌ [Husky Hook 拦截] 禁止直接在 $branch 分支上直接 Commit！"
+  echo "💡 请先创建并切换到 Feature/Fix 分支："
+  echo "   git checkout -b feat/your-feature-name"
+  echo "==============================================================="
+  exit 1
+fi
+
 pnpm --dir ui lint:staged
 pnpm --dir ui typecheck
