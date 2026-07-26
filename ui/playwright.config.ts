@@ -2,12 +2,14 @@ import { defineConfig, devices } from '@playwright/test';
 
 const port = 5173;
 const baseURL = `http://127.0.0.1:${port}`;
+const isCI = Boolean(process.env.CI);
 
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
-  forbidOnly: Boolean(process.env.CI),
-  retries: process.env.CI ? 1 : 0,
+  forbidOnly: isCI,
+  retries: isCI ? 2 : 0,
+  workers: isCI ? 2 : undefined,
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
   use: {
     baseURL,
@@ -21,9 +23,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'pnpm dev --host 127.0.0.1 --port 5173',
+    command: isCI ? 'pnpm preview --host 127.0.0.1 --port 5173' : 'pnpm dev --host 127.0.0.1 --port 5173',
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !isCI,
     timeout: 120_000,
     env: {
       ...process.env,

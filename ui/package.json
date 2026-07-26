@@ -15,6 +15,7 @@
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test tests/e2e",
+    "test:smoke": "playwright test tests/e2e/smoke.spec.ts tests/e2e/local-mvp/core-paths.spec.ts",
     "test:visual": "playwright test tests/visual",
     "test:visual:update": "playwright test tests/visual --update-snapshots",
     "supabase:start": "supabase start --workdir ..",
