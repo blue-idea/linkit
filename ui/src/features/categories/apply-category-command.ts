@@ -8,6 +8,7 @@ import {
 import type { LibraryData } from '../../domain/library';
 import type { Bookmark, Category, Collection, Tag } from '../../types';
 import { bookmarkIconToDomain } from '../bookmarks/icon-persistence';
+import { randomCategoryAppearance } from './appearance';
 
 /**
  * 将 UI 实体投影为领域 LibraryData，供分类命令使用。
@@ -124,11 +125,14 @@ export function runCreateCategory(
     tags: Tag[];
     name: string;
     parentId?: string | null;
+    random?: () => number;
   }
 ) {
+  const appearance = randomCategoryAppearance(input.random);
   return createCategoryCommand(toCategoryLibrary(input), {
     name: input.name,
     parentId: input.parentId ?? null,
+    ...appearance,
   });
 }
 

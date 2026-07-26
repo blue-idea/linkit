@@ -19,6 +19,8 @@ export type { CategoryDeleteChoice, CategoryDeleteDecision } from './delete-conf
 export { DeleteCategoryDialog } from './DeleteCategoryDialog';
 export { CategoryFormDialog } from './CategoryFormDialog';
 export { SetCategoryIconDialog } from './SetCategoryIconDialog';
+export { randomCategoryAppearance } from './appearance';
+export type { CategoryAppearance } from './appearance';
 export {
   applyCategoryLibraryResult,
   runCreateCategory,
