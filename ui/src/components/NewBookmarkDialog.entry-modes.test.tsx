@@ -42,6 +42,7 @@ function dialogElement(input: {
   categories?: Category[];
   tags?: Tag[];
   onCreate: ReturnType<typeof vi.fn>;
+  onCreateTag?: ReturnType<typeof vi.fn>;
 }) {
   return (
     <NewBookmarkDialog
@@ -54,6 +55,7 @@ function dialogElement(input: {
       aiContext={{ apiBase: 'https://api.example.test/v1', model: 'test-model', locale: 'en' }}
       onClose={() => undefined}
       onCreate={input.onCreate}
+      onCreateTag={input.onCreateTag}
     />
   );
 }
@@ -160,6 +162,32 @@ describe('NewBookmarkDialog Manual 与 Smart 入口', () => {
     expect(onCreate).toHaveBeenCalledOnce();
     expect(onCreate).toHaveBeenCalledWith(expect.objectContaining({ favicon: faviconUrl }));
     expect(analyzeBookmark).not.toHaveBeenCalled();
+  });
+
+  test('标签加号创建标签后立即选中并在保存时写入新标签 ID', async () => {
+    const { fetchMetadata } = installWailsSpies();
+    const onCreateTag = vi.fn();
+    onCreateTag.mockReturnValue({ id: 'tag-new', label: 'Reading', color: 'green' });
+    const user = userEvent.setup();
+    const onCreate = vi.fn();
+    render(dialogElement({ onCreate, onCreateTag }));
+
+    await user.type(screen.getByRole('textbox', { name: 'Bookmark URL' }), 'https://example.test/tag-plus');
+    await user.click(screen.getByRole('button', { name: 'Manual' }));
+    await screen.findByRole('button', { name: 'Save bookmark' });
+
+    await user.click(screen.getByRole('button', { name: 'Add tag' }));
+    expect(screen.getByRole('dialog', { name: 'New tag' })).toBeVisible();
+    await user.type(screen.getByPlaceholderText('Enter tag name…'), 'Reading');
+    await user.click(screen.getByRole('button', { name: 'Color green' }));
+    await user.click(screen.getByRole('button', { name: 'New tag' }));
+
+    expect(onCreateTag).toHaveBeenCalledWith({ label: 'Reading', color: 'green' });
+    expect(screen.getByRole('button', { name: 'Reading' })).toHaveAttribute('aria-pressed', 'true');
+    expect(fetchMetadata).toHaveBeenCalledOnce();
+
+    await user.click(screen.getByRole('button', { name: 'Save bookmark' }));
+    expect(onCreate).toHaveBeenCalledWith(expect.objectContaining({ tags: ['tag-new'] }));
   });
 
   // TASK-073 / REQ-006-AC-010：显式保存时写入随机渐变键，不再固定为 blue。

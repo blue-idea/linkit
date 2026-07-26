@@ -25,7 +25,7 @@ export const categories: Category[] = [
 export const collections: Collection[] = [
   {
     id: 'col-inspiration',
-    name: 'Design Inspiration',
+    name: 'Design',
     emoji: '🎨',
     color: 'violet',
     description: 'Curated showcases, design systems, and visual inspiration',
@@ -33,7 +33,7 @@ export const collections: Collection[] = [
   },
   {
     id: 'col-build',
-    name: 'Web Development',
+    name: 'Web',
     emoji: '🛠️',
     color: 'blue',
     description: 'Frameworks, documentation, and tools for modern web applications',

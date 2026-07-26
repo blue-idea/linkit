@@ -987,6 +987,30 @@ export default function App() {
     [bookmarks, entities, flashToast, i18n]
   );
 
+  const handleCreateTagFromNewBookmark = useCallback(
+    (values: { label: string; color: TagColor }): Tag | null => {
+      // 新建书签中的标签必须先写入资料库，再把返回的 ID 交给预览状态。
+      const normalizedLabel = values.label.trim().toLocaleLowerCase();
+      const existing = tagList.find(
+        (tag) => tag.label.trim().toLocaleLowerCase() === normalizedLabel
+      );
+      if (existing) return existing;
+
+      const created = runCreateTag({ ...entities(), ...values });
+      if (!created.ok) {
+        flashToast(localizeCommandError(i18n, created.error));
+        return null;
+      }
+      const applied = applyTagLibraryResult(created.value, bookmarks);
+      setTagList(applied.tags);
+      setBookmarks(applied.bookmarks);
+      return applied.tags.find(
+        (tag) => tag.label.trim().toLocaleLowerCase() === normalizedLabel
+      ) ?? null;
+    },
+    [bookmarks, entities, flashToast, i18n, tagList]
+  );
+
   const handleDeleteTagFromSidebar = useCallback(
     (tagId: string) => {
       const result = runDeleteTag({ ...entities(), id: tagId });
@@ -1623,6 +1647,7 @@ export default function App() {
           setNewUrl('');
         }}
         onCreate={createBookmark}
+        onCreateTag={handleCreateTagFromNewBookmark}
       />
       <ReanalyzeBookmarkDialog
         open={reanalyzeOpen}
