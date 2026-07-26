@@ -29,7 +29,7 @@ const validLibraryEnvelope = {
     ],
     collections: [{ id: 'col-build', name: 'Build a website', emoji: '🛠️', color: 'blue',
       description: 'Project references', bookmarkIds: ['b-react'], createdAt: timestamp, updatedAt: timestamp }],
-    tags: [{ id: 't-doc', label: 'Documentation', color: 'gray' }],
+    tags: [{ id: 't-doc', label: 'Doc', color: 'gray' }],
   },
 };
 
@@ -222,7 +222,7 @@ describe('Library V1 迁移', () => {
       categories: [{ id: 'c-react', name: 'React', icon: 'Atom', parentId: null, color: 'blue' }],
       collections: [{ id: 'col-build', name: 'Build a website', emoji: '🛠️', color: 'blue',
         description: 'Project references', bookmarkIds: ['b-react'] }],
-      tags: [{ id: 't-doc', label: 'Documentation', color: 'gray' }],
+      tags: [{ id: 't-doc', label: 'Doc', color: 'gray' }],
     };
     expect(domain.migrateLibraryDocument).toBeTypeOf('function');
     expect(domain.migrateLibraryDocument?.(legacyDocument, { now: timestamp })).toMatchObject({
