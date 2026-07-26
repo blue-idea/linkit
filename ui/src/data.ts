@@ -8,7 +8,7 @@ export const tags: Tag[] = [
   { id: 't-css', label: 'CSS', color: 'blue' },
   { id: 't-design', label: 'Design', color: 'violet' },
   { id: 't-tool', label: 'Tools', color: 'green' },
-  { id: 't-doc', label: 'Documentation', color: 'gray' },
+  { id: 't-doc', label: 'Doc', color: 'gray' },
 ];
 
 export const categories: Category[] = [
