@@ -62,7 +62,7 @@ describe('导入导出文档', () => {
     const backup = module.buildBackupEnvelopeFromUi?.(
       toUiLibraryFromEnvelope(libraryEnvelope),
       createUiSettings(),
-      { now: '2026-07-27T08:00:00.000Z', revision: 4, appVersion: '0.2.7' },
+      { now: '2026-07-27T08:00:00.000Z', revision: 4, appVersion: '0.2.8' },
     );
 
     expect(backup).toMatchObject({
@@ -101,7 +101,7 @@ describe('导入导出文档', () => {
     const backup = module.buildBackupEnvelopeFromUi?.(
       toUiLibraryFromEnvelope(createLibraryEnvelope()),
       settings,
-      { now: '2026-07-27T08:00:00.000Z', appVersion: '0.2.7' },
+      { now: '2026-07-27T08:00:00.000Z', appVersion: '0.2.8' },
     );
     const serialized = JSON.stringify(backup);
 
@@ -119,7 +119,7 @@ describe('导入导出文档', () => {
     const backup = module.buildBackupEnvelopeFromUi?.(
       toUiLibraryFromEnvelope(createLibraryEnvelope()),
       createUiSettings(),
-      { now: '2026-07-27T08:00:00.000Z', appVersion: '0.2.7' },
+      { now: '2026-07-27T08:00:00.000Z', appVersion: '0.2.8' },
     );
     const result = parseImportText(JSON.stringify(backup), '2026-07-27T08:00:00.000Z');
 
