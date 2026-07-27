@@ -300,7 +300,7 @@ func validPortableBackupJSON() string {
   "revision": 4,
   "updatedAt": "2026-07-18T09:30:00Z",
   "exportedAt": "2026-07-18T09:30:00Z",
-  "appVersion": "0.2.7",
+  "appVersion": "0.2.8",
   "data": {
     "bookmarks": [],
     "categories": [],

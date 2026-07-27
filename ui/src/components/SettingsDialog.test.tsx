@@ -107,7 +107,7 @@ describe('SettingsDialog 完整备份导入', () => {
       ...envelope,
       format: 'linkit-backup',
       exportedAt: envelope.updatedAt,
-      appVersion: '0.2.7',
+      appVersion: '0.2.8',
       settings: {
         settingsVersion: 1,
         storageMode: 'local',
