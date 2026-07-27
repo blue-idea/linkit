@@ -87,7 +87,7 @@ describe('SettingsDialog AI 接口测试', () => {
     expect(invoke).not.toHaveBeenCalled();
   });
 
-  test('REQ-033-AC-001 成功时显示耗时和测试时间', async () => {
+  test('REQ-033-AC-001 成功时显示耗时', async () => {
     installGo({ configured: true });
     render(
       <SettingsDialog
@@ -109,7 +109,7 @@ describe('SettingsDialog AI 接口测试', () => {
     await user.click(button);
 
     expect(await screen.findByText('Connected in 42 ms')).toBeVisible();
-    expect(screen.getByText('Tested at 2026-07-27T09:00:00.000Z')).toBeVisible();
+    expect(screen.queryByText(/Tested at/)).not.toBeInTheDocument();
   });
 
   test('REQ-033-AC-003 未授权时显示错误且不保存设置或资料库', async () => {
