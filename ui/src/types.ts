@@ -1,15 +1,10 @@
 import { THEME_IDS } from './config/themes';
 import type { UiSize } from './config/window-size';
+import type { ViewMode } from './config/view';
 
 export type { UiSize };
 
-export type ViewDensity =
-  | 'card'
-  | 'list'
-  | 'masonry'
-  | 'timeline'
-  | 'tag-aggregation'
-  | 'theme-space';
+export type ViewDensity = ViewMode;
 
 export type TagColor = 'blue' | 'green' | 'amber' | 'coral' | 'violet' | 'gray';
 
@@ -110,6 +105,8 @@ export interface AppSettings {
   aiConsent?: AIConsentRecord | null;
   /** 可配置快捷键；缺省使用平台默认。REQ-030 */
   shortcuts?: Partial<Record<string, string>>;
+  /** 默认资料库视图；旧 UI 设置缺省时按 card。 */
+  view?: { defaultMode: ViewDensity };
   /** 主窗口大小档位；缺省 medium。REQ-031 */
   uiSize?: UiSize;
 }

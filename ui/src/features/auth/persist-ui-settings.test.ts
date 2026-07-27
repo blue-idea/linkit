@@ -54,6 +54,7 @@ describe('persistUiSettings', () => {
         apiBase: 'https://api.example.test/v1',
         grantedAt: '2026-07-19T00:00:00.000Z',
       },
+      view: { defaultMode: 'masonry' },
       uiSize: 'large',
       shortcuts: { ...DEFAULT_SHORTCUTS, toggleWindow: 'CmdOrCtrl+H' },
     });
@@ -72,6 +73,7 @@ describe('persistUiSettings', () => {
       aiConsent: { apiBase: string; grantedAt: string } | null;
       ai: { apiBase: string; model: string };
       uiSize: string;
+      view: { defaultMode: string };
       shortcuts: Record<string, string>;
     };
     expect(payload.ai).toEqual({
@@ -84,6 +86,7 @@ describe('persistUiSettings', () => {
     });
     // REQ-031-AC-004 / REQ-030-AC-007：桌面设置文档必须保留 UI 档位与快捷键。
     expect(payload.uiSize).toBe('large');
+    expect(payload.view.defaultMode).toBe('masonry');
     expect(payload.shortcuts.toggleWindow).toBe('CmdOrCtrl+H');
   });
 
@@ -96,7 +99,7 @@ describe('persistUiSettings', () => {
       locale: 'en',
       ai: { apiBase: '', model: '' },
       aiConsent: null,
-      view: { defaultMode: 'card' },
+      view: { defaultMode: 'timeline' },
       lastCloudRevision: null,
       uiSize: 'xlarge',
       shortcuts: { ...DEFAULT_SHORTCUTS, toggleWindow: 'CmdOrCtrl+H' },
@@ -106,6 +109,7 @@ describe('persistUiSettings', () => {
 
     await waitFor(() => expect(result.current.settings).not.toBeNull());
     expect(result.current.settings?.uiSize).toBe('xlarge');
+    expect(result.current.settings?.view?.defaultMode).toBe('timeline');
     expect(result.current.settings?.shortcuts?.toggleWindow).toBe('CmdOrCtrl+H');
   });
 });

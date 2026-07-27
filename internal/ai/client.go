@@ -43,6 +43,12 @@ type ChatResult struct {
 	ContentJSON json.RawMessage
 }
 
+type ConnectionTestResult struct {
+	Status    string `json:"status"`
+	LatencyMs int64  `json:"latencyMs"`
+	TestedAt  string `json:"testedAt"`
+}
+
 type Client struct {
 	httpClient       *http.Client
 	keyLoader        KeyLoader
@@ -107,6 +113,71 @@ func WithMaxResponseBytes(limit int64) Option {
 	return func(client *Client) {
 		client.maxResponseBytes = limit
 	}
+}
+
+func WithClock(now func() time.Time) Option {
+	return func(client *Client) {
+		client.now = now
+	}
+}
+
+// TestConnection 使用固定最小提示验证 OpenAI-compatible 端点，不发送收藏内容。
+func (client *Client) TestConnection(aiContext AIContext) (ConnectionTestResult, error) {
+	if client.keyLoader == nil || strings.TrimSpace(aiContext.Model) == "" {
+		return ConnectionTestResult{}, newServiceError(config.ErrorCodeInvalidArgument, config.ErrorMessageAIInvalidArgument, false, nil)
+	}
+	endpoint, err := ChatCompletionsURL(aiContext.APIBase)
+	if err != nil {
+		return ConnectionTestResult{}, err
+	}
+	apiKey, err := client.keyLoader.LoadAIKey()
+	if err != nil {
+		return ConnectionTestResult{}, err
+	}
+	apiKey = strings.TrimSpace(apiKey)
+	if apiKey == "" {
+		return ConnectionTestResult{}, newServiceError(config.ErrorCodeSecretNotConfigured, config.ErrorMessageSecretNotConfigured, false, nil)
+	}
+
+	body, err := json.Marshal(map[string]any{
+		"model": aiContext.Model,
+		"messages": []map[string]string{
+			{"role": "system", "content": config.AIConnectionTestSystemPrompt},
+			{"role": "user", "content": config.AIConnectionTestUserPrompt},
+		},
+		"temperature": 0,
+		"max_tokens":  1,
+	})
+	if err != nil {
+		return ConnectionTestResult{}, newServiceError(config.ErrorCodeInvalidArgument, config.ErrorMessageAIInvalidArgument, false, err)
+	}
+
+	startedAt := client.now()
+	var lastErr error
+	attempts := 1 + client.maxRetries
+	for attempt := 0; attempt < attempts; attempt++ {
+		if attempt > 0 {
+			client.sleep(client.backoffDelay(attempt))
+		}
+		_, retryable, callErr := client.doRequestOnce(endpoint, apiKey, body)
+		if callErr == nil {
+			testedAt := client.now().UTC()
+			latencyMs := testedAt.Sub(startedAt).Milliseconds()
+			if latencyMs < 0 {
+				latencyMs = 0
+			}
+			return ConnectionTestResult{
+				Status:    "ok",
+				LatencyMs: latencyMs,
+				TestedAt:  testedAt.Format(time.RFC3339Nano),
+			}, nil
+		}
+		lastErr = callErr
+		if !retryable || attempt == attempts-1 {
+			return ConnectionTestResult{}, callErr
+		}
+	}
+	return ConnectionTestResult{}, lastErr
 }
 
 // ChatCompletions 调用 OpenAI-compatible Chat Completions，并返回严格 JSON content。
@@ -181,39 +252,9 @@ func (client *Client) ChatCompletions(request ChatRequest) (ChatResult, error) {
 }
 
 func (client *Client) doChatOnce(endpoint string, apiKey string, body []byte) (ChatResult, bool, error) {
-	httpRequest, err := http.NewRequestWithContext(context.Background(), http.MethodPost, endpoint, bytes.NewReader(body))
+	raw, retryable, err := client.doRequestOnce(endpoint, apiKey, body)
 	if err != nil {
-		return ChatResult{}, true, newServiceError(config.ErrorCodeAIRequestFailed, config.ErrorMessageAIRequestFailed, true, err)
-	}
-	httpRequest.Header.Set("Authorization", "Bearer "+apiKey)
-	httpRequest.Header.Set("Content-Type", "application/json")
-	httpRequest.Header.Set("User-Agent", client.userAgent)
-
-	response, err := client.httpClient.Do(httpRequest)
-	if err != nil {
-		return ChatResult{}, true, mapTransportError(err)
-	}
-	defer response.Body.Close()
-
-	limited := io.LimitReader(response.Body, client.maxResponseBytes+1)
-	raw, err := io.ReadAll(limited)
-	if err != nil {
-		return ChatResult{}, true, mapTransportError(err)
-	}
-	if int64(len(raw)) > client.maxResponseBytes {
-		return ChatResult{}, false, newServiceError(config.ErrorCodeAIResponseInvalid, config.ErrorMessageAIResponseInvalid, true, nil)
-	}
-
-	switch {
-	case response.StatusCode == http.StatusUnauthorized || response.StatusCode == http.StatusForbidden:
-		return ChatResult{}, false, newServiceError(config.ErrorCodeAIUnauthorized, config.ErrorMessageAIUnauthorized, false, nil)
-	case response.StatusCode == http.StatusTooManyRequests:
-		return ChatResult{}, true, newServiceError(config.ErrorCodeAIRateLimited, config.ErrorMessageAIRateLimited, true, nil)
-	case response.StatusCode >= 500:
-		return ChatResult{}, true, newServiceError(config.ErrorCodeAIRequestFailed, config.ErrorMessageAIRequestFailed, true, nil)
-	case response.StatusCode < 200 || response.StatusCode >= 300:
-		// 其他 4xx 不重试；retryable=false 表示前端不应自动重试。
-		return ChatResult{}, false, newServiceError(config.ErrorCodeAIRequestFailed, config.ErrorMessageAIRequestFailed, false, nil)
+		return ChatResult{}, retryable, err
 	}
 
 	content, err := extractMessageContent(raw)
@@ -225,6 +266,45 @@ func (client *Client) doChatOnce(endpoint string, apiKey string, body []byte) (C
 		return ChatResult{}, false, err
 	}
 	return ChatResult{ContentJSON: normalized}, false, nil
+}
+
+// doRequestOnce 集中处理认证头、响应大小、HTTP 状态和传输错误。
+func (client *Client) doRequestOnce(endpoint string, apiKey string, body []byte) ([]byte, bool, error) {
+	httpRequest, err := http.NewRequestWithContext(context.Background(), http.MethodPost, endpoint, bytes.NewReader(body))
+	if err != nil {
+		return nil, true, newServiceError(config.ErrorCodeAIRequestFailed, config.ErrorMessageAIRequestFailed, true, err)
+	}
+	httpRequest.Header.Set("Authorization", "Bearer "+apiKey)
+	httpRequest.Header.Set("Content-Type", "application/json")
+	httpRequest.Header.Set("User-Agent", client.userAgent)
+
+	response, err := client.httpClient.Do(httpRequest)
+	if err != nil {
+		return nil, true, mapTransportError(err)
+	}
+	defer response.Body.Close()
+
+	limited := io.LimitReader(response.Body, client.maxResponseBytes+1)
+	raw, err := io.ReadAll(limited)
+	if err != nil {
+		return nil, true, mapTransportError(err)
+	}
+	if int64(len(raw)) > client.maxResponseBytes {
+		return nil, false, newServiceError(config.ErrorCodeAIResponseInvalid, config.ErrorMessageAIResponseInvalid, true, nil)
+	}
+
+	switch {
+	case response.StatusCode == http.StatusUnauthorized || response.StatusCode == http.StatusForbidden:
+		return nil, false, newServiceError(config.ErrorCodeAIUnauthorized, config.ErrorMessageAIUnauthorized, false, nil)
+	case response.StatusCode == http.StatusTooManyRequests:
+		return nil, true, newServiceError(config.ErrorCodeAIRateLimited, config.ErrorMessageAIRateLimited, true, nil)
+	case response.StatusCode >= 500:
+		return nil, true, newServiceError(config.ErrorCodeAIRequestFailed, config.ErrorMessageAIRequestFailed, true, nil)
+	case response.StatusCode < 200 || response.StatusCode >= 300:
+		// 其他 4xx 不重试；retryable=false 表示前端不应自动重试。
+		return nil, false, newServiceError(config.ErrorCodeAIRequestFailed, config.ErrorMessageAIRequestFailed, false, nil)
+	}
+	return raw, false, nil
 }
 
 func extractMessageContent(raw []byte) (string, error) {

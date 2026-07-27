@@ -11,12 +11,14 @@ export function ImportOverwriteDialog({
   open,
   summary,
   i18n,
+  busy = false,
   onCancel,
   onConfirm,
 }: {
   open: boolean;
   summary: ImportSummary;
   i18n: I18nApi;
+  busy?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
@@ -49,14 +51,27 @@ export function ImportOverwriteDialog({
                 tags: summary.tags,
               })}
             </p>
+            <p className="text-[12px] text-ink-200 mt-2" data-testid="import-settings-summary">
+              {i18n.t(summary.settingsIncluded ? 'import.settingsIncluded' : 'import.settingsKept')}
+            </p>
+            {summary.settingsIncluded && (
+              <p className="text-[11px] text-ink-400 mt-1" data-testid="import-settings-details">
+                {i18n.t('import.settingsDetails', {
+                  theme: summary.theme ?? '',
+                  locale: summary.locale ?? '',
+                  storageMode: summary.storageMode ?? '',
+                  uiSize: summary.uiSize ?? '',
+                })}
+              </p>
+            )}
           </div>
         </div>
         <div className="mt-5 flex justify-end gap-2">
-          <Button variant="ghost" onClick={onCancel}>
+          <Button variant="ghost" onClick={onCancel} disabled={busy}>
             {i18n.t('import.cancel')}
           </Button>
-          <Button variant="danger" icon="Upload" onClick={onConfirm}>
-            {i18n.t('import.confirm')}
+          <Button variant="danger" icon="Upload" onClick={onConfirm} disabled={busy}>
+            {i18n.t(busy ? 'import.importing' : 'import.confirm')}
           </Button>
         </div>
       </div>

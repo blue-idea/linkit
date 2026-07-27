@@ -33,6 +33,42 @@ const validLibraryEnvelope = {
   },
 };
 
+const validPortableSettings = {
+  settingsVersion: 1,
+  storageMode: 'local',
+  theme: 'midnight',
+  locale: 'en',
+  ai: { apiBase: 'https://api.example.com/v1', model: 'gpt-compatible' },
+  view: { defaultMode: 'card' },
+  shortcuts: {
+    spotlight: 'CmdOrCtrl+K', newBookmark: 'CmdOrCtrl+N', insights: 'CmdOrCtrl+I',
+    settings: 'CmdOrCtrl+,', viewCard: 'CmdOrCtrl+1', viewList: 'CmdOrCtrl+2',
+    viewMasonry: 'CmdOrCtrl+3', toggleLeftSidebar: 'CmdOrCtrl+/',
+    toggleRightSidebar: 'CmdOrCtrl+\\', toggleWindow: 'CmdOrCtrl+L',
+  },
+  uiSize: 'medium',
+};
+
+const validBackupEnvelope = {
+  format: 'linkit-backup',
+  schemaVersion: 1,
+  revision: 12,
+  updatedAt: timestamp,
+  exportedAt: timestamp,
+  appVersion: '0.2.7',
+  data: validLibraryEnvelope.data,
+  settings: validPortableSettings,
+};
+
+type BackupSchemaLike = {
+  safeParse: (input: unknown) => { success: boolean; data?: unknown; error?: unknown };
+};
+
+async function loadBackupSchema(): Promise<BackupSchemaLike | undefined> {
+  const domain = await loadDomainModule();
+  return (domain as unknown as { BackupEnvelopeSchema?: BackupSchemaLike }).BackupEnvelopeSchema;
+}
+
 describe('Library Schema 与引用完整性', () => {
   // REQ-026-AC-001：结构有效的集合应返回已校验数据。
   test('LibraryEnvelope 在完整数据有效时返回规范化资料库', async () => {
@@ -245,6 +281,70 @@ describe('Library V1 迁移', () => {
       success: false,
       errors: [{ code: 'UNSUPPORTED_SCHEMA_VERSION', message: 'Unsupported library schema version: 2', path: ['schemaVersion'] }],
     });
+  });
+});
+
+describe('BackupEnvelope Schema', () => {
+  test('REQ-034-AC-001 完整备份接受四类实体与可移植设置', async () => {
+    const schema = await loadBackupSchema();
+    expect(schema).toBeDefined();
+    expect(schema?.safeParse(validBackupEnvelope)).toMatchObject({ success: true });
+  });
+
+  test.each(['bookmarks', 'categories', 'collections', 'tags'] as const)(
+    'REQ-034-AC-001 完整备份缺少 %s 时拒绝',
+    async (entityKey) => {
+      const schema = await loadBackupSchema();
+      const invalid = structuredClone(validBackupEnvelope);
+      delete (invalid.data as unknown as Record<string, unknown>)[entityKey];
+      expect(schema).toBeDefined();
+      expect(schema?.safeParse(invalid)).toMatchObject({ success: false });
+    },
+  );
+
+  test.each([
+    ['apiKey', (settings: Record<string, unknown>) => {
+      (settings.ai as Record<string, unknown>).apiKey = 'credential-placeholder';
+    }],
+    ['aiConsent', (settings: Record<string, unknown>) => {
+      settings.aiConsent = { apiBase: 'https://api.example.com/v1', grantedAt: timestamp };
+    }],
+    ['lastCloudRevision', (settings: Record<string, unknown>) => {
+      settings.lastCloudRevision = 9;
+    }],
+    ['accessToken', (settings: Record<string, unknown>) => {
+      settings.accessToken = 'token-placeholder';
+    }],
+    ['logs', (settings: Record<string, unknown>) => {
+      settings.logs = ['private'];
+    }],
+  ] as const)('REQ-034-AC-002 备份设置包含 %s 时拒绝', async (_field, mutate) => {
+    const schema = await loadBackupSchema();
+    const invalid = structuredClone(validBackupEnvelope);
+    mutate(invalid.settings as unknown as Record<string, unknown>);
+    expect(schema).toBeDefined();
+    expect(schema?.safeParse(invalid)).toMatchObject({ success: false });
+  });
+
+  test.each([
+    ['storageMode', 'device'],
+    ['theme', 'unknown'],
+    ['locale', 'fr'],
+    ['uiSize', 'giant'],
+  ] as const)('REQ-034-AC-003 可移植设置枚举 %s 无效时拒绝', async (field, value) => {
+    const schema = await loadBackupSchema();
+    const invalid = structuredClone(validBackupEnvelope);
+    (invalid.settings as unknown as Record<string, unknown>)[field] = value;
+    expect(schema).toBeDefined();
+    expect(schema?.safeParse(invalid)).toMatchObject({ success: false });
+  });
+
+  test('REQ-034-AC-003 快捷键 accelerator 无效时拒绝', async () => {
+    const schema = await loadBackupSchema();
+    const invalid = structuredClone(validBackupEnvelope);
+    invalid.settings.shortcuts.spotlight = 'not-a-shortcut';
+    expect(schema).toBeDefined();
+    expect(schema?.safeParse(invalid)).toMatchObject({ success: false });
   });
 });
 

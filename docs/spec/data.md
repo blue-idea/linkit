@@ -1,15 +1,15 @@
 # Linkit 数据设计（Data）
 
 > 文件路径：`docs/spec/data.md`  
-> 版本：1.6.0
-> 日期：2026-07-23  
+> 版本：1.7.0
+> 日期：2026-07-27
 > 状态：已定稿
 
 ---
 
 ## 1. 设计原则
 
-- 本地、云端和导入导出共用同一份版本化 `LibraryDocument`。
+- 本地持久化与云端同步共用版本化 `LibraryDocument`；完整备份使用独立的版本化 `BackupEnvelope`，其 `data` 继续复用 `LibraryData`。
 - 云端保持“一名用户一行 JSONB”的 MVP 模型，不拆分关系表。
 - AI API Key 永不进入资料库文档、云端、导出文件或日志。
 - 所有未知 JSON 必须通过 Zod 4 Schema 校验后才能进入 Zustand Store。
@@ -192,7 +192,24 @@ AI Key 使用逻辑键保存到 OS Keychain：
 |----|----|------------|
 | `linkit.ai.api-key` | 用户 AI API Key | 仅返回是否已配置，不返回明文 |
 
-### 4.3 UIState
+### 4.3 PortableAppSettings
+
+`linkit-backup` 中的 `settings` 是 AppSettings 的可移植投影，仅包含用户可迁移偏好：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `settingsVersion` | integer | 设置结构版本 |
+| `storageMode` | enum | `local` 或 `cloud` |
+| `theme` | enum | 当前主题 |
+| `locale` | enum | `en` 或 `zh` |
+| `ai.apiBase` / `ai.model` | string | AI 服务地址与模型，不含 Key |
+| `view.defaultMode` | enum | 默认视图 |
+| `shortcuts` | object | 可配置快捷键映射 |
+| `uiSize` | enum | 主窗口预设档位 |
+
+`aiConsent` 与 `lastCloudRevision` 属于设备安全/运行时状态，不进入投影；导入时分别重置为 `null`。
+
+### 4.4 UIState
 
 选择项、筛选器、展开节点、对话框、同步进度和临时草稿属于运行时 UIState，默认不进入 LibraryDocument。确需跨重启保留的非敏感偏好必须提升到 AppSettings，而不是直接持久化整个 Zustand Store。
 
@@ -369,24 +386,35 @@ Supabase JS 等价调用应使用 `.update({ data, schema_version: schemaVersion
 
 ### 7.1 导出
 
-导出文件使用完整 LibraryEnvelope，并额外包含：
+Settings → General 的导出使用 `linkit-backup` 信封：
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `exportedAt` | ISO-8601 string | 导出时间 |
-| `appVersion` | string | 生成文件的 Linkit 版本 |
+```json
+{
+  "format": "linkit-backup",
+  "schemaVersion": 1,
+  "revision": 0,
+  "updatedAt": "ISO-8601 string",
+  "exportedAt": "ISO-8601 string",
+  "appVersion": "string",
+  "data": "LibraryData",
+  "settings": "PortableAppSettings"
+}
+```
 
-导出不得包含 AppSettings、AI API Key、Supabase session 或日志。
+`data` 必须包含全部 Bookmark、Category、Collection 和 Tag；`settings` 必须包含全部可移植用户偏好。备份永不包含 AI API Key、Supabase session/token、日志、`aiConsent` 或 `lastCloudRevision`。
+
+旧版 `linkit-library` 仍是合法的资料库导出格式，可被导入但不携带设置。
 
 ### 7.2 导入
 
 1. 读取文件为未知 JSON。
-2. 检查 `format` 与 `schemaVersion`。
-3. 使用对应版本 Zod Schema `safeParse`。
+2. 检查 `format` 与 `schemaVersion`，接受 `linkit-library` 与 `linkit-backup`。
+3. 使用对应版本 Zod Schema `safeParse`，拒绝未知敏感字段。
 4. 旧版本按顺序执行纯迁移函数，禁止跳版本。
-5. 对最终文档执行引用完整性和分类无环校验。
-6. 显示导入摘要与覆盖确认。
-7. 用户确认后调用活动 Repository 保存。
+5. 对最终 LibraryData 执行引用完整性和分类无环校验。
+6. 对 `linkit-backup.settings` 执行 PortableAppSettings 校验并移除设备状态。
+7. 显示数据与设置摘要及覆盖确认。
+8. 用户确认后一次性替换活动 Repository 并持久化设置；任一步失败不得改变最后一次有效状态。
 
 ---
 
@@ -429,6 +457,7 @@ Supabase JS 等价调用应使用 `.update({ data, schema_version: schemaVersion
 | DATA-INV-012 | 有效数据根由引导根 `data-root.json` 解析；指针文件不得随资料库迁移离开默认 AppData |
 | DATA-INV-013 | 更改数据根必须先确认；目标已占用或迁移失败时不得更新指针、不得破坏源数据 |
 | DATA-INV-014 | 正式身份与开发身份的引导根目录名、Keychain 服务名必须隔离：正式为 `Linkit`，开发（`-tags dev`）为 `Linkit-Dev` |
+| DATA-INV-015 | `linkit-backup.settings` 不得包含凭据、session、日志、`aiConsent` 或 `lastCloudRevision`；导入不得授予 AI 数据发送授权 |
 
 ---
 
@@ -458,3 +487,4 @@ MVP 不预先拆分 JSONB。若真实测量出现以下任一情况，必须回�
 | 1.3.1 | 2026-07-20 | 已定稿 | 补充开发身份 `Linkit-Dev` 与正式身份 `Linkit` 的本地数据/密钥槽隔离说明；新增 DATA-INV-014 |
 | 1.4.0 | 2026-07-21 | 已定稿 | AppSettings 增加 `shortcuts` 映射与默认 accelerator 表；对齐 REQ-030 |
 | 1.5.0 | 2026-07-21 | 已定稿 | AppSettings 增加 `uiSize` 枚举与四档宽高预设表；对齐 REQ-031 |
+| 1.7.0 | 2026-07-27 | 已确认待实现 | 新增 `PortableAppSettings` 与 `linkit-backup` 格式，保留旧 `linkit-library` 导入兼容并明确设备状态排除边界 |

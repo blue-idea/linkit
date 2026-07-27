@@ -1,51 +1,15 @@
-import type { AppSettings as DomainSettings } from '../../domain/library';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { AppSettings as UiSettings, ThemeId } from '../../types';
-import { DEFAULT_UI_SIZE } from '../../config/window-size';
-import { getDefaultAppSettings, prepareSettingsForPersist } from '../../services/settings';
+import type { AppSettings as UiSettings } from '../../types';
+import { toDomainAppSettings, toUiAppSettings } from '../../services/settings';
 import { bootstrapApp, createPreferredStorageAdapters, type BootstrapPhase } from '../../services/storage';
 import { loadSettings as loadLegacySettings, saveSettings } from '../../storage';
 import { applyTheme } from '../../themes';
-import { mergeShortcuts } from '../shell/shortcuts';
 import { resolveStartupView, type StartupView } from './startup-gate';
-
-function toUiSettings(domain: DomainSettings, legacy: UiSettings): UiSettings {
-  return {
-    storageMode: domain.storageMode,
-    theme: (domain.theme as ThemeId) || legacy.theme,
-    locale: domain.locale === 'zh' || domain.locale === 'en' ? domain.locale : legacy.locale ?? 'en',
-    // 优先本机设置文档中的 AI 配置，legacy 仅作迁移回退。
-    ai: {
-      apiBase: domain.ai.apiBase || legacy.ai.apiBase,
-      model: domain.ai.model || legacy.ai.model,
-    },
-    aiConsent: domain.aiConsent,
-    shortcuts: domain.shortcuts,
-    uiSize: domain.uiSize,
-  };
-}
-
-function toDomainSettings(settings: UiSettings): DomainSettings {
-  const defaults = getDefaultAppSettings();
-  return prepareSettingsForPersist({
-    ...defaults,
-    storageMode: settings.storageMode,
-    theme: settings.theme,
-    locale: settings.locale ?? 'en',
-    ai: {
-      apiBase: settings.ai.apiBase || '',
-      model: settings.ai.model || '',
-    },
-    aiConsent: settings.aiConsent ?? null,
-    shortcuts: mergeShortcuts(settings.shortcuts),
-    uiSize: settings.uiSize ?? DEFAULT_UI_SIZE,
-  });
-}
 
 export async function persistUiSettings(settings: UiSettings): Promise<void> {
   saveSettings(settings);
   const adapters = createPreferredStorageAdapters();
-  await adapters.saveSettings(toDomainSettings(settings));
+  await adapters.saveSettings(toDomainAppSettings(settings));
 }
 
 /**
@@ -69,7 +33,7 @@ export function useLocalStartup(authLoading: boolean) {
         });
         if (cancelled) return;
 
-        const nextSettings = toUiSettings(result.settings, legacy);
+        const nextSettings = toUiAppSettings(result.settings, legacy);
         setSettings(nextSettings);
         applyTheme(nextSettings.theme);
         document.documentElement.lang = nextSettings.locale ?? 'en';

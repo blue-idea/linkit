@@ -1,4 +1,7 @@
 import { AppSettingsSchema, type AppSettings } from '../../domain/library';
+import type { AppSettings as UiAppSettings, ThemeId } from '../../types';
+import { mergeShortcuts } from '../../features/shell/shortcuts';
+import { DEFAULT_UI_SIZE } from '../../config/window-size';
 import {
   DEFAULT_APP_SETTINGS,
   SETTINGS_ERROR_MESSAGES,
@@ -11,6 +14,44 @@ export type SettingsParseResult =
 
 export function getDefaultAppSettings(): AppSettings {
   return structuredClone(DEFAULT_APP_SETTINGS);
+}
+
+/** 将领域设置投影到 UI，保留默认视图等可移植字段。 */
+export function toUiAppSettings(domain: AppSettings, legacy: UiAppSettings): UiAppSettings {
+  return {
+    storageMode: domain.storageMode,
+    theme: (domain.theme as ThemeId) || legacy.theme,
+    locale: domain.locale === 'zh' || domain.locale === 'en'
+      ? domain.locale
+      : legacy.locale ?? 'en',
+    ai: {
+      apiBase: domain.ai.apiBase || legacy.ai.apiBase,
+      model: domain.ai.model || legacy.ai.model,
+    },
+    aiConsent: domain.aiConsent,
+    view: { ...domain.view },
+    shortcuts: domain.shortcuts,
+    uiSize: domain.uiSize,
+  };
+}
+
+/** 将 UI 设置补全为可由 settingsstore 严格校验的领域文档。 */
+export function toDomainAppSettings(settings: UiAppSettings): AppSettings {
+  const defaults = getDefaultAppSettings();
+  return prepareSettingsForPersist({
+    ...defaults,
+    storageMode: settings.storageMode,
+    theme: settings.theme,
+    locale: settings.locale ?? 'en',
+    ai: {
+      apiBase: settings.ai.apiBase || '',
+      model: settings.ai.model || '',
+    },
+    aiConsent: settings.aiConsent ?? null,
+    view: settings.view ? { ...settings.view } : defaults.view,
+    shortcuts: mergeShortcuts(settings.shortcuts),
+    uiSize: settings.uiSize ?? DEFAULT_UI_SIZE,
+  });
 }
 
 export function parseSettingsJson(raw: string): SettingsParseResult {

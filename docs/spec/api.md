@@ -1,8 +1,8 @@
 # Linkit 接口设计（API）
 
 > 文件路径：`docs/spec/api.md`  
-> 版本：1.6.0
-> 日期：2026-07-25
+> 版本：1.7.0
+> 日期：2026-07-27
 > 状态：已定稿
 
 ---
@@ -230,7 +230,7 @@ interface ExportResult {
 ExportLibrary(request: ExportRequest): Promise<ExportResult>
 ```
 
-使用原生保存对话框。日志不得记录完整资料库内容。
+`documentJson` 可为旧版 `linkit-library` 或新版 `linkit-backup`。使用原生保存对话框；日志不得记录完整资料库、设置或凭据内容。
 
 #### `SelectImportFile()`
 
@@ -247,7 +247,8 @@ SelectImportFile(): Promise<ImportFileResult>
 
 - 仅允许选择 JSON 文件。
 - Go 执行大小上限与 UTF-8/JSON 语法检查。
-- TypeScript 使用 Zod 验证 Schema 并生成导入摘要。
+- Go 不得放行 API Key、session/token、日志或授权头字段。
+- TypeScript 使用 Zod 验证 `linkit-library` / `linkit-backup` Schema 并生成数据与设置摘要。
 
 ### 3.3 SettingsService
 
@@ -387,6 +388,29 @@ interface AIContext {
   locale: 'en' | 'zh';
 }
 ```
+
+#### `TestConnection(request)`
+
+```typescript
+interface TestConnectionRequest {
+  context: AIContext;
+}
+
+interface TestConnectionResult {
+  status: 'ok';
+  latencyMs: number;
+  testedAt: string;
+}
+
+TestConnection(request: TestConnectionRequest): Promise<TestConnectionResult>
+```
+
+约束：
+
+- `context.apiBase`、`context.model` 和 Go 侧 Keychain Key 均必须已配置，否则返回 `INVALID_ARGUMENT` 或 `SECRET_NOT_CONFIGURED`，不得建立外部请求。
+- 测试请求不得包含书签或其他用户内容，不要求 `AI_CONSENT_REQUIRED`。
+- `latencyMs` 为非负整数，`testedAt` 为 UTC ISO-8601；响应不得包含 API Key、授权头或原始服务正文。
+- 失败复用 `AI_UNAUTHORIZED`、`AI_TIMEOUT`、`AI_RATE_LIMITED`、`AI_REQUEST_FAILED` 等稳定错误码。
 
 API Key 由 Go 从 Keychain 获取，前端请求中不传 Key。
 
@@ -860,3 +884,4 @@ interface LibrarySnapshot {
 | 1.4.0 | 2026-07-21 | 已定稿 | SystemService 增加 `SetMainWindowSize`；对齐 REQ-031 |
 | 1.5.0 | 2026-07-22 | 已定稿 | 托盘 Show 替换为 Settings，新增 `linkit:open-settings` 无 payload 事件；Quit 接口不变 |
 | 1.6.0 | 2026-07-25 | 已定稿 | 新增 `FetchMetadataFast`，支持新建书签优先元数据并将 favicon 二进制抓取移出关键路径；保留 `FetchMetadata` 兼容行为 |
+| 1.7.0 | 2026-07-27 | 已确认待实现 | 新增 `TestConnection` 与 `linkit-backup` 导入导出契约，明确可移植设置及敏感字段排除边界 |

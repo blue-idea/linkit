@@ -102,6 +102,111 @@ func TestExportLibraryCancelledAndRejectedSecrets(t *testing.T) {
 	assertCodedError(t, err, config.ErrorCodeExportInvalid, false)
 }
 
+func TestExportLibraryAcceptsPortableBackup(t *testing.T) {
+	root := t.TempDir()
+	target := filepath.Join(root, "portable-backup.json")
+	service := NewService(
+		WithDialogs(&scriptedDialogs{savePath: target}),
+		WithClock(func() time.Time { return fixedTime }),
+	)
+
+	// REQ-034-AC-001/002：合法 settingsVersion 必须保留，且完整备份可由原生服务保存。
+	result, err := service.ExportLibrary(ExportRequest{
+		SuggestedFileName: "linkit-backup.json",
+		DocumentJSON:      validPortableBackupJSON(),
+	})
+	if err != nil {
+		t.Fatalf("ExportLibrary portable backup returned error: %v", err)
+	}
+	if result.State != "saved" || result.Path != target {
+		t.Fatalf("Unexpected portable backup result: %+v", result)
+	}
+
+	content, err := os.ReadFile(target)
+	if err != nil {
+		t.Fatalf("Unable to read portable backup: %v", err)
+	}
+	var envelope map[string]any
+	if err := json.Unmarshal(content, &envelope); err != nil {
+		t.Fatalf("Portable backup is not JSON: %v", err)
+	}
+	if envelope["format"] != "linkit-backup" || envelope["exportedAt"] != fixedTimeText || envelope["appVersion"] != config.AppVersion {
+		t.Fatalf("Unexpected portable backup envelope: %+v", envelope)
+	}
+	settings, ok := envelope["settings"].(map[string]any)
+	if !ok || settings["settingsVersion"] != float64(1) {
+		t.Fatalf("Portable settings were not preserved: %+v", envelope["settings"])
+	}
+}
+
+func TestSelectImportFileAcceptsPortableBackup(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "portable-backup.json")
+	payload := validPortableBackupJSON()
+	if err := os.WriteFile(path, []byte(payload), 0o600); err != nil {
+		t.Fatalf("Unable to write portable backup fixture: %v", err)
+	}
+
+	// REQ-034-AC-003：原生选择器只做安全门禁，不得拒绝合法完整备份。
+	service := NewService(WithDialogs(&scriptedDialogs{openPath: path}))
+	result, err := service.SelectImportFile()
+	if err != nil {
+		t.Fatalf("SelectImportFile portable backup returned error: %v", err)
+	}
+	if result.State != "selected" || result.DocumentJSON != payload {
+		t.Fatalf("Unexpected portable import result: %+v", result)
+	}
+}
+
+func TestBackupRejectsNestedCredentialAndRuntimeFields(t *testing.T) {
+	service := NewService(
+		WithDialogs(&scriptedDialogs{savePath: filepath.Join(t.TempDir(), "backup.json")}),
+		WithClock(func() time.Time { return fixedTime }),
+	)
+	forbidden := []struct {
+		name  string
+		field string
+	}{
+		{name: "API Key", field: `"nested":{"apiKey":"secret-value"}`},
+		{name: "access token", field: `"nested":{"access_token":"secret-value"}`},
+		{name: "refresh token", field: `"nested":{"refreshToken":"secret-value"}`},
+		{name: "session", field: `"nested":{"session":{"id":"secret-value"}}`},
+		{name: "Authorization", field: `"nested":{"Authorization":"secret-value"}`},
+		{name: "logs", field: `"nested":{"logs":["secret-value"]}`},
+		{name: "AI consent", field: `"nested":{"aiConsent":{"apiBase":"secret-value"}}`},
+		{name: "cloud revision", field: `"nested":{"lastCloudRevision":9}`},
+	}
+
+	for _, testCase := range forbidden {
+		t.Run(testCase.name, func(t *testing.T) {
+			payload := strings.Replace(
+				validPortableBackupJSON(),
+				`"settingsVersion": 1,`,
+				`"settingsVersion": 1, `+testCase.field+`,`,
+				1,
+			)
+			_, err := service.ExportLibrary(ExportRequest{DocumentJSON: payload})
+			assertCodedError(t, err, config.ErrorCodeExportInvalid, false)
+			if strings.Contains(err.Error(), "secret-value") {
+				t.Fatalf("Sensitive value leaked through error: %v", err)
+			}
+		})
+	}
+}
+
+func TestSensitiveScannerDoesNotRejectBenignBookmarkText(t *testing.T) {
+	payload := strings.Replace(
+		validPortableBackupJSON(),
+		`"bookmarks": []`,
+		`"bookmarks": [{"notes":"apiKey","description":"Authorization and access_token documentation"}]`,
+		1,
+	)
+
+	// REQ-034-AC-002：敏感门禁按结构化字段名判断，不扫描用户书签正文内容。
+	if err := rejectSensitivePayload([]byte(payload)); err != nil {
+		t.Fatalf("Benign bookmark text must be accepted: %v", err)
+	}
+}
+
 func TestSelectImportFileHappyPathAndCancel(t *testing.T) {
 	root := t.TempDir()
 	source := filepath.Join(root, "import.json")
@@ -184,6 +289,44 @@ func validLibraryDocumentJSON() string {
     "categories": [],
     "collections": [],
     "tags": []
+  }
+}`
+}
+
+func validPortableBackupJSON() string {
+	return `{
+  "format": "linkit-backup",
+  "schemaVersion": 1,
+  "revision": 4,
+  "updatedAt": "2026-07-18T09:30:00Z",
+  "exportedAt": "2026-07-18T09:30:00Z",
+  "appVersion": "0.2.7",
+  "data": {
+    "bookmarks": [],
+    "categories": [],
+    "collections": [],
+    "tags": []
+  },
+  "settings": {
+    "settingsVersion": 1,
+    "storageMode": "local",
+    "theme": "midnight",
+    "locale": "en",
+    "ai": {"apiBase": "https://api.example.test/v1", "model": "test-model"},
+    "view": {"defaultMode": "card"},
+    "shortcuts": {
+      "spotlight": "CmdOrCtrl+K",
+      "newBookmark": "CmdOrCtrl+N",
+      "insights": "CmdOrCtrl+I",
+      "settings": "CmdOrCtrl+,",
+      "viewCard": "CmdOrCtrl+1",
+      "viewList": "CmdOrCtrl+2",
+      "viewMasonry": "CmdOrCtrl+3",
+      "toggleLeftSidebar": "CmdOrCtrl+/",
+      "toggleRightSidebar": "CmdOrCtrl+\\",
+      "toggleWindow": "CmdOrCtrl+L"
+    },
+    "uiSize": "medium"
   }
 }`
 }

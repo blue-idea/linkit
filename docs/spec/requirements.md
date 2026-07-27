@@ -1,8 +1,8 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：2.17.0
-> 日期：2026-07-25
+> 版本：2.18.0
+> 日期：2026-07-27
 > 状态：已定稿
 
 ---
@@ -40,6 +40,8 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 16. OS 窗口关闭将应用隐藏到系统托盘/菜单栏且不退出进程；托盘菜单至少提供 Show 与 Quit；默认窗口显隐热键为 Windows `Ctrl+L` / macOS `Cmd+L`，且必须注册为系统级全局热键；Settings → Shortcuts 列出全部可配置快捷键，支持修改、冲突检测与本地持久化；Linux 对托盘与全局热键为 best-effort。
 17. Settings → Appearance 提供界面窗口大小四档：Small / Medium / Large / Extra large（中文界面对应小 / 中 / 大 / 超大）；默认 Medium；仅缩放主窗口宽高（不缩放 UI 字号/控件密度）；档位尺寸为 Small 1152×720（相对 Medium 0.9）、Medium 1280×800、Large 1536×960、Extra large 1792×1120；保存后立即生效并写入 AppSettings；重启按档位恢复；用户手动拖拽窗口不单独持久化，下次启动仍按档位重置。
 18. macOS 免费分发使用第三方 Homebrew Tap `blue-idea/tap`；当前 Release 产物为 universal `Linkit.dmg`，Cask 使用单一 SHA256，不拆分 Apple Silicon / Intel 资产；安装后仅对 `/Applications/Linkit.app` 递归清理 `com.apple.quarantine`，不使用 `sudo`。
+19. Settings → AI 提供当前 API Base、Model 与 Key 的连通性测试；缺失任一配置时不发请求；测试不包含收藏内容并显示实际往返耗时。
+20. Settings → General 导出完整 `linkit-backup`，包含全部 LibraryData 与可移植设置；API Key、session/token、日志、AI consent 与云 revision 不进入备份；旧 `linkit-library` 继续兼容导入。
 
 ---
 
@@ -2290,6 +2292,112 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 
 ---
 
+### 需求 REQ-033 · AI 接口连通性测试
+
+**来源：** fix_task 1.20、F-SET-03、NF-03
+**用户故事：** 作为用户，我希望在保存 AI 配置前验证接口是否可用并看到响应耗时，以便及时发现地址、模型或密钥问题。
+
+#### 验收标准
+
+```yaml
+- id: REQ-033-AC-001
+  ears: >
+    While 用户已配置 API Base、Model 和 API Key,
+    when 用户在 Settings → AI 点击 Test connection,
+    the Linkit shall 向当前配置的 OpenAI-compatible 接口发送不含收藏内容的测试请求，
+    并显示成功状态、非负往返耗时和测试时间.
+  test_type: API
+  expected:
+    http_status: 200
+    body_schema:
+      status: "ok"
+      latencyMs: "integer >= 0"
+      testedAt: "UTC ISO-8601 string"
+    side_effects:
+      - "请求不得包含书签、用户内容或 API Key 明文返回值"
+
+- id: REQ-033-AC-002
+  ears: >
+    While API Base、Model 或 API Key 任一未配置,
+    when 用户查看 Settings → AI,
+    the Linkit shall 禁用 Test connection 或明确提示先完成配置，且不得建立外部请求.
+  test_type: Component
+  expected:
+    ui_state: "The connection test action is unavailable and an English configuration hint is visible"
+    side_effects: []
+
+- id: REQ-033-AC-003
+  ears: >
+    While AI 接口返回未授权、超时、限流或网络错误,
+    when 用户执行 Test connection,
+    the Linkit shall 显示稳定英文错误并保留当前设置与非 AI 功能可用.
+  test_type: E2E
+  expected:
+    ui_state: "A visible English error identifies the failed connection test"
+    side_effects:
+      - "No settings or library data are partially changed"
+```
+
+---
+
+### 需求 REQ-034 · 完整资料库与可移植设置备份
+
+**来源：** fix_task 1.21、F-STORE-04、F-SET-01、NF-01
+**用户故事：** 作为用户，我希望一次导出和恢复全部收藏数据及可移植设置，以便完整备份或迁移到另一台设备。
+
+#### 验收标准
+
+```yaml
+- id: REQ-034-AC-001
+  ears: >
+    When 用户在 Settings → General 执行 Export,
+    the Linkit shall 生成版本化 linkit-backup JSON，包含全部书签、分类、主题、标签和可移植用户设置.
+  test_type: E2E
+  expected:
+    ui_state: "A backup JSON file is saved and contains library data plus portable settings"
+    side_effects: []
+
+- id: REQ-034-AC-002
+  ears: >
+    When Linkit 生成或保存 linkit-backup,
+    the Linkit shall 排除 AI API Key、Supabase session/token、日志、aiConsent 和 lastCloudRevision.
+  test_type: Unit
+  expected:
+    return_value: "Serialized backup contains no credential, session, log or runtime authorization fields"
+    side_effects: []
+
+- id: REQ-034-AC-003
+  ears: >
+    While 用户选择结构有效的 linkit-backup,
+    when 用户查看摘要并明确确认覆盖,
+    the Linkit shall 原子替换全部 LibraryData 并持久化备份中的可移植设置.
+  test_type: E2E
+  expected:
+    ui_state: "Imported library and settings are visible after one explicit confirmation"
+    side_effects:
+      - "Library and settings are not changed before confirmation"
+
+- id: REQ-034-AC-004
+  ears: >
+    When 用户导入旧版 linkit-library JSON,
+    the Linkit shall 保持旧资料库导入兼容且不覆盖当前设置.
+  test_type: Unit
+  expected:
+    return_value: "Legacy library envelope is accepted and current settings remain unchanged"
+    side_effects: []
+
+- id: REQ-034-AC-005
+  ears: >
+    When 用户取消导入、选择无效备份或导入/持久化失败,
+    the Linkit shall 显示英文错误或取消状态并保持最后一次有效资料库与设置不变.
+  test_type: E2E
+  expected:
+    ui_state: "No partial replacement is visible"
+    side_effects: []
+```
+
+---
+
 ## 非目标
 
 以下能力不属于 Linkit MVP，不得在未更新需求规格的情况下加入当前任务范围：
@@ -2340,6 +2448,8 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | fix_task 1.8、关闭隐藏/托盘/可配置快捷键 | REQ-030 |
 | fix_task 1.9、Appearance 界面窗口大小 | REQ-031 |
 | `knowledge/Homebrew-Tap分发指南.md` | REQ-032 |
+| fix_task 1.20、Settings → AI 接口测试 | REQ-033 |
+| fix_task 1.21、完整资料库与设置备份 | REQ-034 |
 
 ---
 
@@ -2376,3 +2486,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.15.0 | 2026-07-23 | 已定稿 | 修订 REQ-024-AC-003 与 REQ-030-AC-006：侧栏快捷键拆分为左侧 Sidebar 与右侧 Detail Panel；新增 REQ-030-AC-011：托盘图标双击显示主窗口 |
 | 2.16.0 | 2026-07-25 | 已定稿 | 新增 REQ-006-AC-011：Smart/Enter 先展示网页元数据，AI 后台增强；新增 FetchMetadataFast 快速接口并保留旧接口兼容性 |
 | 2.17.0 | 2026-07-25 | 已定稿 | 新增 REQ-032：以 universal DMG 通过 `blue-idea/tap` 分发，Release 自动更新 Cask，并显式约束隔离属性清理与凭据失败路径 |
+| 2.18.0 | 2026-07-27 | 已确认待实现 | 新增 REQ-033 AI 接口连通性测试与 REQ-034 完整资料库/可移植设置备份，对齐 fix_task 1.20/1.21 |

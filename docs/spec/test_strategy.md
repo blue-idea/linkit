@@ -2,8 +2,8 @@
 
 > 文件路径：`docs/spec/test_strategy.md`  
 > 参考方法论：`phases/qa_engine.md` §第1阶段  
-> 版本：2.8.0
-> 日期：2026-07-25
+> 版本：2.9.0
+> 日期：2026-07-27
 > 状态：已定稿
 
 ---
@@ -54,6 +54,8 @@ test_scope:
     - "关闭隐藏到托盘、系统托盘 Settings/Quit、托盘图标双击显示窗口、窗口显隐全局热键与 Settings→Shortcuts 可配置绑定"
     - "Settings→Appearance 窗口大小四档（uiSize）、立即套用与冷启动恢复"
     - "OpenAI-compatible AI、授权、降级、语义重排和建议确认"
+    - "Settings → AI 连通性测试的缺失配置、成功耗时、未授权、超时和网络失败路径"
+    - "linkit-backup 完整资料库与可移植设置 round-trip、旧 linkit-library 兼容和敏感字段排除"
     - "New Bookmark Manual 零 AI 与 Smart/Enter 智能分析双入口"
     - "New Bookmark Smart/Enter 元数据优先、AI 后台增强与过期请求竞态保护"
     - "macOS universal DMG 的 Homebrew Cask、Cask 更新器、Release→Tap 自动化与中英文安装文档"
@@ -104,7 +106,7 @@ test_scope:
 | J-07 | 标签添加、移除、筛选和采纳 AI 建议 |
 | J-08 | Card、List、Masonry、Timeline、Tag Aggregation、Theme Space |
 | J-09 | Spotlight 关键词、语义降级、结果定位和 URL 快捷入库 |
-| J-10 | JSON 导出、有效导入、无效导入和覆盖确认 |
+| J-10 | 完整 `linkit-backup` 导出、资料库与设置恢复、旧 `linkit-library` 兼容、无效导入和覆盖确认 |
 | J-11 | Local/Cloud 摘要、切换选择、revision 冲突和云草稿恢复 |
 | J-12 | Settings、六主题（含 Daylight/Paper 浅色主题）、English/中文全界面切换、用户自定义内容保持原样和英文安全回退 |
 | J-13 | AI consent、重新分析、去重建议、库内推荐和静态知识图 |
@@ -114,6 +116,7 @@ test_scope:
 | J-17 | OS 关闭隐藏、托盘 Settings 打开设置、托盘图标双击显示窗口、托盘 Quit、Ctrl/Cmd+L 全局显隐、左/右侧栏快捷键、Settings→Shortcuts 改绑/冲突/恢复默认 |
 | J-18 | Settings→Appearance 选择 Small/Medium/Large/Extra large；保存后窗口立即变为预设宽高；重启按档位恢复；手动拖拽后重启仍按档位 |
 | J-19 | 发布 tag → universal `Linkit.dmg` → 自动计算 SHA256 → 更新 `blue-idea/homebrew-tap` → `brew install` / `brew upgrade` → Linkit.app 无 quarantine |
+| J-20 | Settings → AI 缺失配置不发请求；完整配置后测试成功显示耗时；未授权/超时显示英文错误且设置不变 |
 
 ---
 
@@ -272,3 +275,4 @@ environments:
 | 2.5.0 | 2026-07-22 | 已定稿 | J-03 增加新建书签随机渐变缩略图的 Unit、Component、E2E 与视觉回归 |
 | 2.7.0 | 2026-07-25 | 已定稿 | 新增 New Bookmark 元数据优先与 AI 后台增强的 Component/E2E/Visual 验收范围和“不等待 AI 即可保存”预算 |
 | 2.8.0 | 2026-07-25 | 已定稿 | 新增 J-19、Homebrew Cask/Release 配置单元测试，以及远程 Tap、最小权限 Token 和 macOS 真实安装门禁 |
+| 2.9.0 | 2026-07-27 | 已确认待实现 | 新增 J-20 AI 接口连通性旅程，并将 J-10 扩展为完整资料库/可移植设置备份、旧格式兼容和安全 round-trip |

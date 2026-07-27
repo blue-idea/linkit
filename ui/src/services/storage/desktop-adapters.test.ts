@@ -1,6 +1,26 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { createPreferredStorageAdapters, isDesktopGoStorageAvailable } from './desktop-adapters';
 import { createLibraryEnvelope } from '../../testing/factories';
+import { toUiLibraryFromEnvelope } from '../../features/import-export';
+
+type BackupPersistenceModule = {
+  createBackupPersistenceAdapters?: (storage?: Storage, now?: () => string) => {
+    persistLibrary: (library: ReturnType<typeof toUiLibraryFromEnvelope>) => Promise<void>;
+    persistSettings: (settings: {
+      storageMode: 'local';
+      theme: 'midnight';
+      locale: 'en';
+      ai: { apiBase: string; model: string };
+      view: { defaultMode: 'card' };
+      shortcuts: Record<string, string>;
+      uiSize: 'medium';
+    }) => Promise<void>;
+  };
+};
+
+async function loadBackupPersistenceModule(): Promise<BackupPersistenceModule> {
+  return import('./desktop-adapters') as Promise<BackupPersistenceModule>;
+}
 
 describe('桌面优先存储适配器', () => {
   beforeEach(() => {
@@ -52,5 +72,63 @@ describe('桌面优先存储适配器', () => {
     }
     const settings = await adapters.loadSettings();
     expect(settings.settings.theme).toBe('ocean');
+  });
+
+  test('REQ-034-AC-003 严格桌面适配器分别写入资料库与可移植设置', async () => {
+    const module = await loadBackupPersistenceModule();
+    expect(module.createBackupPersistenceAdapters).toBeTypeOf('function');
+    if (!module.createBackupPersistenceAdapters) return;
+    const replaceLibrary = vi.fn(async () => ({ revision: 1, updatedAt: '2026-07-27T08:00:00.000Z' }));
+    const writeSettings = vi.fn(async () => undefined);
+    (window as unknown as { go: unknown }).go = {
+      localstore: { Service: { ReadLibrary: vi.fn(), ReplaceLibrary: replaceLibrary } },
+      settingsstore: { Service: { ReadSettings: vi.fn(), WriteSettings: writeSettings } },
+    };
+    const adapters = module.createBackupPersistenceAdapters(
+      localStorage,
+      () => '2026-07-27T08:00:00.000Z',
+    );
+
+    await adapters.persistLibrary(toUiLibraryFromEnvelope(createLibraryEnvelope()));
+    await adapters.persistSettings({
+      storageMode: 'local',
+      theme: 'midnight',
+      locale: 'en',
+      ai: { apiBase: '', model: '' },
+      view: { defaultMode: 'card' },
+      shortcuts: {},
+      uiSize: 'medium',
+    });
+
+    expect(replaceLibrary).toHaveBeenCalledWith(expect.objectContaining({
+      confirmed: true,
+      documentJson: expect.stringContaining('"format":"linkit-library"'),
+    }));
+    expect(writeSettings).toHaveBeenCalledWith(expect.objectContaining({
+      settingsJson: expect.stringContaining('"lastCloudRevision":null'),
+    }));
+  });
+
+  test('REQ-034-AC-005 严格桌面适配器不吞掉原生写入失败', async () => {
+    const module = await loadBackupPersistenceModule();
+    expect(module.createBackupPersistenceAdapters).toBeTypeOf('function');
+    if (!module.createBackupPersistenceAdapters) return;
+    const failure = new Error('disk full');
+    (window as unknown as { go: unknown }).go = {
+      localstore: {
+        Service: {
+          ReadLibrary: vi.fn(),
+          ReplaceLibrary: vi.fn(async () => { throw failure; }),
+        },
+      },
+      settingsstore: {
+        Service: { ReadSettings: vi.fn(), WriteSettings: vi.fn(async () => undefined) },
+      },
+    };
+    const adapters = module.createBackupPersistenceAdapters();
+
+    await expect(
+      adapters.persistLibrary(toUiLibraryFromEnvelope(createLibraryEnvelope())),
+    ).rejects.toBe(failure);
   });
 });

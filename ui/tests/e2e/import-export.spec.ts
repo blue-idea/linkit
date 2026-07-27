@@ -31,8 +31,8 @@ test.describe('JSON import export', () => {
     await enterLocalMode(page);
   });
 
-  // REQ-005-AC-001
-  test('JSON export downloads versioned library envelope', async ({ page }) => {
+  // REQ-034-AC-001/002
+  test('JSON export downloads complete portable backup without sensitive fields', async ({ page }) => {
     const dialog = await openSettingsGeneral(page);
     const downloadPromise = page.waitForEvent('download');
     await dialog.getByRole('button', { name: 'Export', exact: true }).click();
@@ -44,14 +44,40 @@ test.describe('JSON import export', () => {
       format: string;
       schemaVersion: number;
       data: { bookmarks: unknown[]; categories: unknown[]; collections: unknown[]; tags: unknown[] };
+      settings: {
+        settingsVersion: number;
+        storageMode: string;
+        theme: string;
+        locale: string;
+        ai: { apiBase: string; model: string };
+        view: { defaultMode: string };
+        shortcuts: Record<string, string>;
+        uiSize: string;
+      };
     };
-    expect(parsed.format).toBe('linkit-library');
+    expect(download.suggestedFilename()).toMatch(/^linkit-backup-\d{4}-\d{2}-\d{2}\.json$/);
+    expect(parsed.format).toBe('linkit-backup');
     expect(parsed.schemaVersion).toBe(1);
     expect(Array.isArray(parsed.data.bookmarks)).toBe(true);
     expect(Array.isArray(parsed.data.categories)).toBe(true);
     expect(Array.isArray(parsed.data.collections)).toBe(true);
     expect(Array.isArray(parsed.data.tags)).toBe(true);
+    expect(parsed.settings).toMatchObject({
+      settingsVersion: 1,
+      storageMode: 'local',
+      theme: 'midnight',
+      locale: 'en',
+      ai: { apiBase: '', model: '' },
+      view: { defaultMode: 'card' },
+      uiSize: 'medium',
+    });
     expect(raw).not.toContain('apiKey');
+    expect(raw).not.toContain('accessToken');
+    expect(raw).not.toContain('refreshToken');
+    expect(raw).not.toContain('Authorization');
+    expect(raw).not.toContain('aiConsent');
+    expect(raw).not.toContain('lastCloudRevision');
+    expect(raw).not.toContain('logs');
 
     await mkdir(evidenceDirectory, { recursive: true });
     await page.screenshot({
@@ -60,14 +86,15 @@ test.describe('JSON import export', () => {
     });
   });
 
-  // REQ-005-AC-002
-  test('JSON import shows summary and applies only after overwrite confirm', async ({ page }) => {
+  // REQ-034-AC-003/005
+  test('complete backup applies library and settings only after overwrite confirm', async ({ page }) => {
     const dialog = await openSettingsGeneral(page);
 
-    await dialog.locator('[data-testid="import-file-input"]').setInputFiles(resolve(fixtures, 'valid-library.json'));
+    await dialog.locator('[data-testid="import-file-input"]').setInputFiles(resolve(fixtures, 'valid-backup.json'));
     const confirm = page.getByRole('dialog', { name: 'Overwrite current library?' });
     await expect(confirm).toBeVisible();
     await expect(confirm.getByTestId('import-summary')).toContainText('1 bookmarks');
+    await expect(confirm.getByTestId('import-settings-summary')).toHaveText('Settings included');
 
     await mkdir(evidenceDirectory, { recursive: true });
     await page.screenshot({
@@ -79,14 +106,65 @@ test.describe('JSON import export', () => {
     await confirm.getByRole('button', { name: 'Cancel' }).click();
     await expect(page.getByRole('dialog', { name: 'Overwrite current library?' })).toHaveCount(0);
 
-    await dialog.locator('[data-testid="import-file-input"]').setInputFiles(resolve(fixtures, 'valid-library.json'));
+    await dialog.locator('[data-testid="import-file-input"]').setInputFiles(resolve(fixtures, 'valid-backup.json'));
     await expect(page.getByRole('dialog', { name: 'Overwrite current library?' })).toBeVisible();
     await page.getByRole('button', { name: 'Overwrite and import' }).click();
     await expect(dialog.getByText('Imported 1 bookmarks', { exact: true })).toBeVisible();
-    await dialog.getByRole('button', { name: 'Cancel' }).click();
-    await expect(page.getByRole('dialog', { name: 'Settings' })).toHaveCount(0);
-
     await expect(page.getByRole('main', { name: 'Content Area' }).getByText('Imported Alpha')).toBeVisible();
+    await expect.poll(() => page.evaluate(() => document.documentElement.getAttribute('data-theme'))).toBe('ocean');
+    const restoredSettings = await page.evaluate(() => {
+      const raw = localStorage.getItem('linkit.settings.v1');
+      return raw ? JSON.parse(raw) : null;
+    });
+    expect(restoredSettings).toMatchObject({
+      storageMode: 'local',
+      theme: 'ocean',
+      locale: 'en',
+      ai: { apiBase: 'https://api.example.test/v1', model: 'restored-model' },
+      aiConsent: null,
+      view: { defaultMode: 'masonry' },
+      lastCloudRevision: null,
+      uiSize: 'large',
+    });
+  });
+
+  // REQ-034-AC-004
+  test('legacy library import keeps current settings', async ({ page }) => {
+    const dialog = await openSettingsGeneral(page);
+    const settingsBefore = await page.evaluate(() => localStorage.getItem('linkit.settings.v1'));
+
+    await dialog.locator('[data-testid="import-file-input"]').setInputFiles(resolve(fixtures, 'valid-library.json'));
+    const confirm = page.getByRole('dialog', { name: 'Overwrite current library?' });
+    await expect(confirm.getByTestId('import-settings-summary')).toHaveText('Current settings will be kept');
+    await confirm.getByRole('button', { name: 'Overwrite and import' }).click();
+
+    expect(await page.evaluate(() => localStorage.getItem('linkit.settings.v1'))).toBe(settingsBefore);
+    await expect(page.getByRole('main', { name: 'Content Area' }).getByText('Imported Alpha')).toBeVisible();
+  });
+
+  // REQ-034-AC-005
+  test('backup persistence failure keeps library and settings unchanged', async ({ page }) => {
+    const themeBefore = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
+    const dialog = await openSettingsGeneral(page);
+    await dialog.locator('[data-testid="import-file-input"]').setInputFiles(resolve(fixtures, 'valid-backup.json'));
+    const confirm = page.getByRole('dialog', { name: 'Overwrite current library?' });
+    await expect(confirm).toBeVisible();
+    await page.evaluate(() => {
+      const originalSetItem = Storage.prototype.setItem;
+      Storage.prototype.setItem = function setItem(key: string, value: string) {
+        if (key === 'linkit.settings.v1') {
+          throw new Error('simulated settings write failure');
+        }
+        return originalSetItem.call(this, key, value);
+      };
+    });
+
+    await confirm.getByRole('button', { name: 'Overwrite and import' }).click();
+
+    await expect(confirm).toBeVisible();
+    await expect(dialog.getByTestId('import-error')).toHaveText('Unable to import backup');
+    await expect(page.getByRole('main', { name: 'Content Area' }).getByText('Imported Alpha')).toHaveCount(0);
+    expect(await page.evaluate(() => document.documentElement.getAttribute('data-theme'))).toBe(themeBefore);
   });
 
   // REQ-005-AC-003
@@ -95,6 +173,7 @@ test.describe('JSON import export', () => {
     // 避开 App 900ms debounce 自动保存窗口，避免 before=-1 / after=seed 的假失败。
     await waitForPersistedLocalLibrary(page);
     const bookmarkCountBefore = await readPersistedBookmarkCount(page);
+    const settingsBefore = await page.evaluate(() => localStorage.getItem('linkit.settings.v1'));
     expect(bookmarkCountBefore).toBeGreaterThan(0);
 
     const dialog = await openSettingsGeneral(page);
@@ -104,6 +183,7 @@ test.describe('JSON import export', () => {
 
     const bookmarkCountAfter = await readPersistedBookmarkCount(page);
     expect(bookmarkCountAfter).toBe(bookmarkCountBefore);
+    expect(await page.evaluate(() => localStorage.getItem('linkit.settings.v1'))).toBe(settingsBefore);
 
     await mkdir(evidenceDirectory, { recursive: true });
     await page.screenshot({

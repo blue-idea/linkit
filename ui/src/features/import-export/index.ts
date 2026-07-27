@@ -11,6 +11,19 @@ export {
   type ExportDocument,
   type ImportErrorKey,
   type ImportSummary,
+  type PendingImport,
   type ParseImportResult,
 } from './document';
-export { buildExportEnvelopeFromUi } from './from-ui';
+export {
+  buildBackupEnvelopeFromUi,
+  buildExportEnvelopeFromUi,
+  buildLibraryEnvelopeFromUi,
+  buildPortableSettings,
+} from './from-ui';
+export {
+  BackupRestoreError,
+  resolveImportedSettings,
+  restoreBackupAtomically,
+  type RestoreSnapshot,
+  type ImportRestoreRequest,
+} from './restore';
