@@ -1,13 +1,21 @@
 /** Wails 桌面优先的本机存储适配器；无 Go 绑定时回退浏览器。 */
 
-import { getDefaultAppSettings, parseSettingsJson } from '../settings';
+import {
+  getDefaultAppSettings,
+  parseSettingsJson,
+  toDomainAppSettings,
+} from '../settings';
 import type { AppSettings as DomainSettings } from '../../domain/library';
 import { validateLibraryEnvelope } from '../../domain/library';
 import type { RepositoryLoadResult } from '../../repositories';
 import type { SettingsLoadResult } from './bootstrap';
 import { createBrowserStorageAdapters, type BrowserStorageAdapters } from './browser-adapters';
-import { buildExportEnvelopeFromUi } from '../../features/import-export';
-import type { LibraryData as UiLibrary } from '../../types';
+import {
+  buildExportEnvelopeFromUi,
+  buildLibraryEnvelopeFromUi,
+} from '../../features/import-export';
+import type { AppSettings as UiAppSettings, LibraryData as UiLibrary } from '../../types';
+import { BROWSER_STORAGE_KEYS } from '../../config/storage';
 
 type WailsLocalstore = {
   ReadLibrary: () => Promise<{
@@ -43,6 +51,44 @@ function readGo(): {
 export function isDesktopGoStorageAvailable(): boolean {
   const { localstore, settingsstore } = readGo();
   return Boolean(localstore?.ReadLibrary && settingsstore?.ReadSettings);
+}
+
+export interface BackupPersistenceAdapters {
+  persistLibrary: (library: UiLibrary) => Promise<void>;
+  persistSettings: (settings: UiAppSettings) => Promise<void>;
+}
+
+/**
+ * 完整备份恢复使用的严格适配器：任何写入错误直接上抛，由恢复协调器执行补偿。
+ * REQ-034-AC-003/005
+ */
+export function createBackupPersistenceAdapters(
+  storage: Storage = localStorage,
+  now: () => string = () => new Date().toISOString(),
+): BackupPersistenceAdapters {
+  const { localstore, settingsstore } = readGo();
+  const useDesktop = Boolean(localstore?.ReplaceLibrary && settingsstore?.WriteSettings);
+
+  return {
+    async persistLibrary(library) {
+      const envelope = buildLibraryEnvelopeFromUi(library, { now: now() });
+      const documentJson = JSON.stringify(envelope);
+      if (useDesktop && localstore) {
+        await localstore.ReplaceLibrary({ documentJson, confirmed: true });
+        return;
+      }
+      storage.setItem(BROWSER_STORAGE_KEYS.library, documentJson);
+    },
+
+    async persistSettings(settings) {
+      const settingsJson = JSON.stringify(toDomainAppSettings(settings));
+      if (useDesktop && settingsstore) {
+        await settingsstore.WriteSettings({ settingsJson });
+        return;
+      }
+      storage.setItem(BROWSER_STORAGE_KEYS.settings, settingsJson);
+    },
+  };
 }
 
 /**

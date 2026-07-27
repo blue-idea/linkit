@@ -13,6 +13,15 @@ type Completer interface {
 	ChatCompletions(request ChatRequest) (ChatResult, error)
 }
 
+// ConnectionTester 只验证配置端点，不读取或发送资料库内容。
+type ConnectionTester interface {
+	TestConnection(context AIContext) (ConnectionTestResult, error)
+}
+
+type TestConnectionRequest struct {
+	Context AIContext `json:"context"`
+}
+
 type IDName struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
@@ -63,7 +72,8 @@ type GenerateCollectionResult struct {
 }
 
 type Service struct {
-	completer Completer
+	completer        Completer
+	connectionTester ConnectionTester
 }
 
 type ServiceOption func(*Service)
@@ -82,14 +92,33 @@ func WithCompleter(completer Completer) ServiceOption {
 	}
 }
 
+func WithConnectionTester(tester ConnectionTester) ServiceOption {
+	return func(service *Service) {
+		service.connectionTester = tester
+	}
+}
+
 // NewDefaultService 组装生产用 SecretStore + Settings consent 检查的客户端。
 func NewDefaultService(keyLoader KeyLoader, consentChecker ConsentChecker) *Service {
-	return NewService(
-		WithCompleter(NewClient(
-			WithKeyLoader(keyLoader),
-			WithConsentChecker(consentChecker),
-		)),
+	client := NewClient(
+		WithKeyLoader(keyLoader),
+		WithConsentChecker(consentChecker),
 	)
+	return NewService(
+		WithCompleter(client),
+		WithConnectionTester(client),
+	)
+}
+
+// TestConnection 对齐 REQ-033：校验必要上下文后委派无内容探针。
+func (service *Service) TestConnection(request TestConnectionRequest) (ConnectionTestResult, error) {
+	if service.connectionTester == nil {
+		return ConnectionTestResult{}, newServiceError(config.ErrorCodeAIRequestFailed, config.ErrorMessageAIRequestFailed, true, nil)
+	}
+	if strings.TrimSpace(request.Context.APIBase) == "" || strings.TrimSpace(request.Context.Model) == "" {
+		return ConnectionTestResult{}, newServiceError(config.ErrorCodeInvalidArgument, config.ErrorMessageAIInvalidArgument, false, nil)
+	}
+	return service.connectionTester.TestConnection(request.Context)
 }
 
 func (service *Service) AnalyzeBookmark(request AnalyzeBookmarkRequest) (AnalyzeBookmarkResult, error) {

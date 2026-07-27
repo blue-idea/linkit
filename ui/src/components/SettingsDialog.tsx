@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { AppSettings, LibraryData, StorageMode, ThemeId, UiLocale, UiSize } from '../types';
 import { themes, applyTheme } from '../themes';
 import { DEFAULT_UI_SIZE, UI_SIZE_IDS } from '../config/window-size';
+import { buildBackupFileName } from '../config/backup';
 import { Icon, Button, AIBadge } from './ui';
 import { exportLibrary, importLibrary } from '../storage';
 import { getSettingsSections } from '../i18n';
@@ -9,19 +10,28 @@ import { useI18n } from '../i18n/use-i18n';
 import type { SettingsSectionKey } from '../config/i18n';
 import { resolveThemeLabel, ShortcutsPanel } from '../features/settings';
 import {
-  applyConfirmedImport,
+  classifyAIConnectionError,
+  testAIConnection,
+  type AIConnectionErrorKey,
+  type AIConnectionResult,
+} from '../features/settings/ai-connection';
+import {
+  buildBackupEnvelopeFromUi,
   buildExportEnvelopeFromUi,
   localizeImportError,
   parseImportText,
+  resolveImportedSettings,
   summarizeImport,
+  toUiLibraryFromEnvelope,
+  type ImportRestoreRequest,
   type ImportSummary,
+  type PendingImport,
   ImportOverwriteDialog,
 } from '../features/import-export';
 import {
   StorageSwitchDialog,
 } from '../features/storage';
 import { AIConsentDialog, buildConsentRecord, requiresAIConsent } from '../features/settings';
-import type { LibraryEnvelope } from '../domain/library';
 import type { StorageSummary } from '../repositories';
 import {
   deletePreferredAIKey,
@@ -195,7 +205,7 @@ export function SettingsDialog({
   cloudSummary?: StorageSummary | null;
   onClose: () => void;
   onSave: (s: AppSettings) => void | Promise<void>;
-  onImport: (lib: LibraryData) => void;
+  onImport: (request: ImportRestoreRequest) => void | Promise<void>;
   onSignOut: () => void;
   onRestoreSampleData?: () => void;
   /** 用户确认 Use Target / Overwrite Target 时回调；Cancel 不调用。 */
@@ -208,11 +218,16 @@ export function SettingsDialog({
   const [draft, setDraft] = useState<AppSettings>(settings);
   const [importMsg, setImportMsg] = useState<string | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
-  const [pendingEnvelope, setPendingEnvelope] = useState<LibraryEnvelope | null>(null);
+  const [pendingImport, setPendingImport] = useState<PendingImport | null>(null);
   const [pendingSummary, setPendingSummary] = useState<ImportSummary | null>(null);
+  const [importing, setImporting] = useState(false);
   const [pendingSwitchMode, setPendingSwitchMode] = useState<StorageMode | null>(null);
   const [keyDraft, setKeyDraft] = useState('');
   const [keyConfigured, setKeyConfigured] = useState(false);
+  const [aiConnectionTesting, setAIConnectionTesting] = useState(false);
+  const [aiConnectionResult, setAIConnectionResult] = useState<AIConnectionResult | null>(null);
+  const [aiConnectionError, setAIConnectionError] = useState<AIConnectionErrorKey | null>(null);
+  const aiConnectionRequestRef = useRef(0);
   const [consentOpen, setConsentOpen] = useState(false);
   const [dataRootInfo, setDataRootInfo] = useState<DataRootInfo | null>(null);
   const [pendingDataRootTarget, setPendingDataRootTarget] = useState<string | null>(null);
@@ -224,15 +239,21 @@ export function SettingsDialog({
   const i18n = useI18n(draft.locale ?? 'en');
 
   useEffect(() => {
+    // 弹窗关闭、重新打开或外部设置变化时，使未完成的连接测试结果失效。
+    aiConnectionRequestRef.current += 1;
     if (open) {
       // 旧设置缺省 uiSize 时合并为 medium，避免 Appearance 无选中态。
       setDraft({ ...settings, uiSize: settings.uiSize ?? DEFAULT_UI_SIZE });
       setImportMsg(null);
       setImportError(null);
-      setPendingEnvelope(null);
+      setPendingImport(null);
       setPendingSummary(null);
+      setImporting(false);
       setPendingSwitchMode(null);
       setKeyDraft('');
+      setAIConnectionTesting(false);
+      setAIConnectionResult(null);
+      setAIConnectionError(null);
       setConsentOpen(false);
       setPendingDataRootTarget(null);
       setDataRootMessage(null);
@@ -245,7 +266,14 @@ export function SettingsDialog({
   }, [open, settings]);
 
   const update = (patch: Partial<AppSettings>) => setDraft((d) => ({ ...d, ...patch }));
-  const updateAI = (patch: Partial<AppSettings['ai']>) =>
+  const resetAIConnection = () => {
+    aiConnectionRequestRef.current += 1;
+    setAIConnectionTesting(false);
+    setAIConnectionResult(null);
+    setAIConnectionError(null);
+  };
+  const updateAI = (patch: Partial<AppSettings['ai']>) => {
+    resetAIConnection();
     setDraft((d) => {
       const ai = { ...d.ai, ...patch };
       // API Base 变化后清除不匹配的 consent，避免误以为已授权。
@@ -255,6 +283,61 @@ export function SettingsDialog({
           : null;
       return { ...d, ai, aiConsent: consent };
     });
+  };
+
+  const canTestAIConnection = Boolean(
+    draft.ai.apiBase.trim() &&
+    draft.ai.model.trim() &&
+    (keyConfigured || keyDraft.trim())
+  );
+
+  const aiConnectionErrorMessage = (key: AIConnectionErrorKey): string => {
+    switch (key) {
+      case 'missing':
+        return i18n.t('settings.ai.connectionMissing');
+      case 'unauthorized':
+        return i18n.t('settings.ai.connectionUnauthorized');
+      case 'timeout':
+        return i18n.t('settings.ai.connectionTimeout');
+      case 'rateLimited':
+        return i18n.t('settings.ai.connectionRateLimited');
+      default:
+        return i18n.t('settings.ai.connectionUnavailable');
+    }
+  };
+
+  const handleTestAIConnection = async () => {
+    if (!canTestAIConnection || aiConnectionTesting) return;
+    const requestID = aiConnectionRequestRef.current + 1;
+    aiConnectionRequestRef.current = requestID;
+    const keyDraftSnapshot = keyDraft.trim();
+    const contextSnapshot = {
+      apiBase: draft.ai.apiBase.trim(),
+      model: draft.ai.model.trim(),
+      locale: draft.locale ?? 'en',
+    };
+    setAIConnectionTesting(true);
+    setAIConnectionResult(null);
+    setAIConnectionError(null);
+    try {
+      if (keyDraftSnapshot) {
+        await setPreferredAIKey(keyDraftSnapshot);
+        setKeyConfigured(true);
+        setKeyDraft((current) => current.trim() === keyDraftSnapshot ? '' : current);
+        if (aiConnectionRequestRef.current !== requestID) return;
+      }
+      const result = await testAIConnection(contextSnapshot);
+      if (aiConnectionRequestRef.current !== requestID) return;
+      setAIConnectionResult(result);
+    } catch (error) {
+      if (aiConnectionRequestRef.current !== requestID) return;
+      setAIConnectionError(classifyAIConnectionError(error));
+    } finally {
+      if (aiConnectionRequestRef.current === requestID) {
+        setAIConnectionTesting(false);
+      }
+    }
+  };
 
   const submitSettings = async (next: AppSettings) => {
     setSaving(true);
@@ -366,8 +449,9 @@ export function SettingsDialog({
   }) : localSummary;
 
   const handleExport = () => {
-    const doc = buildExportEnvelopeFromUi(library, { now: new Date().toISOString() });
-    exportLibrary(doc, 'linkit-export.json');
+    const now = new Date().toISOString();
+    const doc = buildBackupEnvelopeFromUi(library, settings, { now });
+    exportLibrary(doc, buildBackupFileName(now));
   };
 
   const handleImportFile = async (file: File) => {
@@ -381,24 +465,34 @@ export function SettingsDialog({
         setImportError(localized.message);
         return;
       }
-      setPendingEnvelope(parsed.envelope);
-      setPendingSummary(summarizeImport(parsed.envelope));
+      setPendingImport(parsed);
+      setPendingSummary(summarizeImport(parsed.envelope, parsed.settings));
     } catch {
       const localized = localizeImportError('IMPORT_INVALID', draft.locale ?? 'en');
       setImportError(localized.message);
     }
   };
 
-  const handleConfirmImport = () => {
-    if (!pendingEnvelope) return;
-    const applied = applyConfirmedImport(pendingEnvelope, true);
-    if (!applied) return;
-    onImport(applied);
-    setImportMsg(
-      i18n.t('import.success', { count: pendingEnvelope.data.bookmarks.length })
-    );
-    setPendingEnvelope(null);
-    setPendingSummary(null);
+  const handleConfirmImport = async () => {
+    if (!pendingImport || importing) return;
+    setImporting(true);
+    setImportError(null);
+    const snapshot = {
+      library: toUiLibraryFromEnvelope(pendingImport.envelope),
+      settings: resolveImportedSettings(settings, pendingImport.settings),
+    };
+    try {
+      await onImport({ kind: pendingImport.kind, snapshot });
+      setImportMsg(
+        i18n.t('import.success', { count: pendingImport.envelope.data.bookmarks.length })
+      );
+      setPendingImport(null);
+      setPendingSummary(null);
+    } catch {
+      setImportError(i18n.t('import.restoreFailed'));
+    } finally {
+      setImporting(false);
+    }
   };
 
   const sections = getSettingsSections(i18n).map((s) => ({
@@ -650,7 +744,10 @@ export function SettingsDialog({
                 <input
                   type="password"
                   value={keyDraft}
-                  onChange={(e) => setKeyDraft(e.target.value)}
+                  onChange={(e) => {
+                    setKeyDraft(e.target.value);
+                    resetAIConnection();
+                  }}
                   placeholder={keyConfigured ? i18n.t('settings.ai.keyConfiguredPlaceholder') : 'sk-…'}
                   aria-label={i18n.t('settings.ai.apiKey')}
                   className="w-full rounded-lg bg-ink-800/60 hairline text-[13px] text-ink-100 placeholder:text-ink-500 px-3 py-2.5 outline-none focus-ring font-mono"
@@ -668,11 +765,57 @@ export function SettingsDialog({
                       void deletePreferredAIKey().then(() => {
                         setKeyConfigured(false);
                         setKeyDraft('');
+                        resetAIConnection();
                       });
                     }}
                   >
                     {i18n.t('settings.ai.removeKey')}
                   </button>
+                )}
+              </div>
+              <div className="rounded-mac-lg bg-ink-800/50 hairline p-4 space-y-3" data-testid="ai-connection-test">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-[12px] font-medium text-ink-100">
+                      {i18n.t('settings.ai.connectionLabel')}
+                    </div>
+                    {!canTestAIConnection && (
+                      <p className="text-[10px] text-ink-500 mt-1">
+                        {i18n.t('settings.ai.missingHint')}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="subtle"
+                    icon="Wifi"
+                    disabled={!canTestAIConnection || aiConnectionTesting}
+                    onClick={() => void handleTestAIConnection()}
+                  >
+                    {aiConnectionTesting
+                      ? i18n.t('settings.ai.testing')
+                      : i18n.t('settings.ai.testConnection')}
+                  </Button>
+                </div>
+                {aiConnectionResult && (
+                  <div className="rounded-lg bg-mint-500/10 border border-mint-400/30 px-3 py-2 text-[12px] text-mint-400">
+                    <div className="flex items-center gap-2 font-medium">
+                      <Icon name="Check" size={13} />
+                      {i18n.t('settings.ai.connectionSuccess', { latency: aiConnectionResult.latencyMs })}
+                    </div>
+                    <div className="mt-1 text-[10px] text-ink-400">
+                      {i18n.t('settings.ai.testedAt', { time: aiConnectionResult.testedAt })}
+                    </div>
+                  </div>
+                )}
+                {aiConnectionError && (
+                  <div
+                    role="alert"
+                    className="rounded-lg bg-coral-500/10 border border-coral-400/30 px-3 py-2 text-[12px] text-coral-400 flex items-center gap-2"
+                  >
+                    <Icon name="AlertCircle" size={13} />
+                    {aiConnectionErrorMessage(aiConnectionError)}
+                  </div>
                 )}
               </div>
             </div>
@@ -837,14 +980,26 @@ export function SettingsDialog({
         </Button>
       </div>
       <ImportOverwriteDialog
-        open={Boolean(pendingEnvelope && pendingSummary)}
-        summary={pendingSummary ?? { bookmarks: 0, categories: 0, collections: 0, tags: 0, schemaVersion: 1 }}
+        open={Boolean(pendingImport && pendingSummary)}
+        summary={pendingSummary ?? {
+          bookmarks: 0,
+          categories: 0,
+          collections: 0,
+          tags: 0,
+          schemaVersion: 1,
+          settingsIncluded: false,
+          storageMode: null,
+          theme: null,
+          locale: null,
+          uiSize: null,
+        }}
         i18n={i18n}
+        busy={importing}
         onCancel={() => {
-          setPendingEnvelope(null);
+          setPendingImport(null);
           setPendingSummary(null);
         }}
-        onConfirm={handleConfirmImport}
+        onConfirm={() => void handleConfirmImport()}
       />
       <StorageSwitchDialog
         open={pendingSwitchMode !== null}

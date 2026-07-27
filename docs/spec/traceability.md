@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.40.0
-> 日期：2026-07-25
-> 状态：已定稿（新增并完成 TASK-076；真实 Release 自动推送 BLOCKED）
+> 版本：1.43.0
+> 日期：2026-07-27
+> 状态：TASK-077、TASK-078 已完成
 
 ---
 
@@ -102,6 +102,8 @@
 | TASK-074 | fix_task 1.16-1.18：分类入口、侧栏快捷键拆分与托盘双击显示 | REQ-010-AC-002；REQ-024-AC-003；REQ-030-AC-006~007、011 | done | `ui/src/App.tsx`、`ui/src/features/shell/shortcuts.ts`、`ui/src/features/shell/use-global-shortcuts.ts`、`ui/src/features/settings/ShortcutsPanel.tsx`、`ui/src/domain/schemas.ts`、`ui/src/i18n/catalogs.ts`、`internal/settingsstore/settings.go`、`internal/tray/*` | `ui/tests/e2e/category-crud.spec.ts`、`ui/tests/e2e/app-shell.spec.ts`、`ui/tests/e2e/settings-shortcuts.spec.ts`、`ui/src/features/shell/shortcuts.test.ts`、`ui/src/features/settings/ShortcutsPanel.test.tsx`、`ui/src/features/auth/persist-ui-settings.test.ts`、`ui/src/domain/library.test.ts`、`internal/tray/menu_test.go` | `docs/spec/ac/TASK-074-AC.md` | 2026-07-23 |
 | TASK-075 | 新建书签元数据优先与 AI 后台增强 | REQ-006-AC-001、003、006、009、011 | done | `internal/metadata/service.go`、`internal/metadata/parse.go`、`ui/src/features/bookmarks/metadata-client.ts`、`ui/src/features/ai/bookmark-analysis/inbound.ts`、`ui/src/components/Dialogs.tsx`、`ui/src/i18n/catalogs.ts`、Wails generated metadata bindings | `internal/metadata/service_test.go`、`ui/src/features/bookmarks/metadata-client.test.ts`、`ui/src/features/ai/bookmark-analysis/bookmark-analysis.test.ts`、`ui/src/components/NewBookmarkDialog.entry-modes.test.tsx`、`ui/tests/e2e/new-bookmark-entry-modes.spec.ts` | `docs/spec/ac/TASK-075-AC.md`、`docs/spec/evidence/TASK-075-evidence.md` | 2026-07-25 |
 | TASK-076 | macOS Homebrew Tap 分发与 Release 自动更新 | REQ-032-AC-001~006 | done（AC-004 BLOCKED） | `config/homebrew-tap.json`、`scripts/update-homebrew-cask.mjs`、`homebrew-tap/Casks/linkit.rb`、`homebrew-tap/.github/workflows/ci.yml`、`.github/workflows/release.yml`、`README.md`、`README.zh-CN.md` | `scripts/update-homebrew-cask.test.mjs`、`ui/verify-quality-config.mjs`、远程 Tap macOS CI | `docs/spec/ac/TASK-076-AC.md` | `docs/spec/reports/TASK-076-report.md`、[Tap CI 30141644793](https://github.com/blue-idea/homebrew-tap/actions/runs/30141644793) |
+| TASK-077 | fix_task 1.20：AI 接口连通性测试 | REQ-033-AC-001~003 | done（真实第三方成功态 BLOCKED） | `config/ai.go`、`internal/ai/client.go`、`internal/ai/service.go`、`ui/src/features/settings/ai-connection.ts`、`ui/src/components/SettingsDialog.tsx`、`ui/src/i18n/catalogs.ts` | `internal/ai/client_test.go`、`internal/ai/service_test.go`、`ai-connection.test.ts`、`SettingsDialog.ai-connection.test.tsx`、Settings E2E/Visual | `docs/spec/ac/TASK-077-AC.md` | `docs/spec/evidence/TASK-077-evidence.md`、`docs/spec/reports/TASK-077-report.md` |
+| TASK-078 | fix_task 1.21：完整资料库与可移植设置导入导出 | REQ-034-AC-001~005 | done | `ui/src/config/backup.ts`、`ui/src/config/storage.ts`、`ui/src/config/view.ts`、`ui/src/features/import-export/*`、`ui/src/components/SettingsDialog.tsx`、`ui/src/App.tsx`、`ui/src/services/settings/index.ts`、`ui/src/services/storage/*`、`internal/platform/export.go` | `ui/src/features/import-export/import-export.test.ts`、`ui/src/features/import-export/restore.test.ts`、`ui/src/services/settings/settings.test.ts`、`ui/src/components/SettingsDialog.test.tsx`、`ui/tests/e2e/import-export.spec.ts`、`ui/tests/visual/settings-backup.spec.ts`、`internal/platform/native_file_test.go`、`internal/settingsstore/*_test.go` | `docs/spec/ac/TASK-078-AC.md` | 2026-07-27 |
 
 ---
 
@@ -118,6 +120,7 @@
 | REQ-025~029 | TASK-001~009、022、026~032、040~044、046~047 |
 | REQ-030~031 | TASK-059~066 |
 | REQ-032 | TASK-076 |
+| REQ-033~034 | TASK-077~078 |
 
 ---
 
@@ -184,3 +187,6 @@
 | 2026-07-23 | 新增并完成 TASK-074 | 对齐 fix_task 1.16-1.18；修正“收藏分类”标题 `+` 只创建一级分类，拆分快捷键为左/右侧栏，并为托盘双击显示窗口补齐代码路径与自动化验证 |
 | 2026-07-25 | 新增并完成 TASK-075 | Smart/Enter 先展示网页元数据、AI 后台增强；新增 `FetchMetadataFast`、OpenGraph 优先级与过期请求保护 |
 | 2026-07-25 | 新增并完成 TASK-076 | `blue-idea/tap` 真实 macOS 安装与 Cask 更新链路通过；`TAP_GITHUB_TOKEN` 已成功在主仓库配置闭环，下一次 Release 自动化推送准备就绪 |
+| 2026-07-27 | 新增 TASK-077/078 与 REQ-033/034 追溯 | 对齐 fix_task 1.20 AI 接口测试和 1.21 完整资料库/可移植设置备份，规格已获用户确认，进入实现 |
+| 2026-07-27 | TASK-077 更新为 done | Go/React/E2E/Visual/Security 与 Wails 构建通过；真实第三方服务返回 `AI_UNAUTHORIZED`，成功态保留 BLOCKED 与解除条件 |
+| 2026-07-27 | TASK-078 更新为 done | `linkit-backup` 完整备份、旧格式兼容、失败无副作用、English/中文视觉基线与原生文件门禁均通过真实自动化验收 |

@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { SettingsDialog } from './SettingsDialog';
 import type { AppSettings, LibraryData } from '../types';
+import { createLibraryEnvelope } from '../testing/factories';
 
 const settings: AppSettings = {
   storageMode: 'local',
@@ -79,5 +80,65 @@ describe('SettingsDialog 保存设置', () => {
     expect(saveButton).toBeDisabled();
     resolveSave?.();
     await waitFor(() => expect(saveButton).toBeEnabled());
+  });
+});
+
+describe('SettingsDialog 完整备份导入', () => {
+  test('REQ-034-AC-005 导入进行中禁用重复确认并保持对话框', async () => {
+    const user = userEvent.setup();
+    let resolveImport: (() => void) | undefined;
+    const importing = new Promise<void>((resolve) => {
+      resolveImport = resolve;
+    });
+    render(
+      <SettingsDialog
+        open
+        settings={settings}
+        user={null}
+        library={library}
+        onClose={() => undefined}
+        onSave={() => undefined}
+        onImport={() => importing}
+        onSignOut={() => undefined}
+      />,
+    );
+    const envelope = createLibraryEnvelope();
+    const backup = {
+      ...envelope,
+      format: 'linkit-backup',
+      exportedAt: envelope.updatedAt,
+      appVersion: '0.2.7',
+      settings: {
+        settingsVersion: 1,
+        storageMode: 'local',
+        theme: 'ocean',
+        locale: 'en',
+        ai: { apiBase: '', model: '' },
+        view: { defaultMode: 'card' },
+        shortcuts: {
+          spotlight: 'CmdOrCtrl+K',
+          newBookmark: 'CmdOrCtrl+N',
+          insights: 'CmdOrCtrl+I',
+          settings: 'CmdOrCtrl+,',
+          viewCard: 'CmdOrCtrl+1',
+          viewList: 'CmdOrCtrl+2',
+          viewMasonry: 'CmdOrCtrl+3',
+          toggleLeftSidebar: 'CmdOrCtrl+/',
+          toggleRightSidebar: 'CmdOrCtrl+\\',
+          toggleWindow: 'CmdOrCtrl+L',
+        },
+        uiSize: 'medium',
+      },
+    };
+    const input = screen.getByTestId('import-file-input') as HTMLInputElement;
+    await user.upload(input, new File([JSON.stringify(backup)], 'backup.json', { type: 'application/json' }));
+    const confirm = await screen.findByRole('button', { name: 'Overwrite and import' });
+
+    await user.click(confirm);
+
+    expect(confirm).toBeDisabled();
+    expect(screen.getByRole('dialog', { name: 'Overwrite current library?' })).toBeInTheDocument();
+    resolveImport?.();
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Overwrite current library?' })).not.toBeInTheDocument());
   });
 });

@@ -1,15 +1,15 @@
 # Linkit 技术设计（Design）
 
 > 文件路径：`docs/spec/design.md`  
-> 版本：1.16.0
-> 日期：2026-07-25
+> 版本：1.18.0
+> 日期：2026-07-27
 > 状态：已定稿
 
 ---
 
 ## 1. 设计目标与边界
 
-本设计用于实现 `docs/spec/requirements.md` 2.17.0 定义的 Linkit MVP。总体目标如下：
+本设计用于实现 `docs/spec/requirements.md` 2.18.0 定义的 Linkit MVP。总体目标如下：
 
 - 将现有 Vite + React 演示原型迁移为可交付的 Wails v2 桌面应用。
 - 保留现有三栏布局与主要视觉资产，但拆分巨型组件和直接状态修改逻辑。
@@ -524,6 +524,20 @@ flowchart LR
 - E2E：Playwright（Appearance 四档可发现与文案）
 - 原生窗口立即缩放 / 重启恢复：选定平台 Manual 或桌面绑定冒烟
 
+### 6.9 完整备份与恢复（REQ-034）
+
+Settings → General 的 Export/Import 使用 `linkit-backup` 信封，将当前 LibraryData 与可移植设置投影组合为一个版本化 JSON。导入解析层接受旧 `linkit-library`，但旧格式只替换资料库。
+
+备份设置投影包含 `storageMode`、`theme`、`locale`、AI Base/Model、默认视图、快捷键和 `uiSize`；API Key、session/token、日志、`aiConsent` 与 `lastCloudRevision` 在构建时排除。确认导入后先校验完整备份，再通过一个协调回调同时替换 Store 和持久化设置；任一写入失败都不提交部分状态。
+
+导出/导入纯函数位于 `ui/src/features/import-export`，组件只负责编排文件选择、摘要、确认和英文/中文状态展示，避免在 `SettingsDialog` 内重复实现 Schema 或脱敏逻辑。
+
+**测试工具（仅框架名）**
+
+- 单元：Go `testing`、Vitest（Schema、可移植设置投影、脱敏与向后兼容）
+- E2E：Playwright（导出、摘要确认、恢复与失败无副作用）
+- 视觉回归：Playwright Screenshot（English/中文 Baseline、Actual、Diff）
+
 ---
 
 ## 7. 存储与同步设计
@@ -598,14 +612,20 @@ Go 端按能力提供独立方法，但共用一个 OpenAI-compatible 客户端�
 
 首次向某个 API Base 发送收藏内容前，UI 必须展示数据发送说明。授权状态保存在本机 AppSettings 中，并由 Go AIService 在发送前再次校验；API Base 改变后原授权自动失效。
 
-### 8.2 语义搜索
+### 8.2 AI 接口连通性测试（REQ-033）
+
+`AIService.TestConnection` 使用与业务 AI 相同的 API Base、Model、Keychain Key、URL 规范化和超时约束，但不经过收藏内容 consent。请求体只包含固定的最小测试提示；Client 单独处理 HTTP 状态并测量从请求发出到响应完成的往返时间，不要求服务返回业务 JSON。前端只接收 `status`、`latencyMs` 和 `testedAt`，并通过独立适配器执行 Wails DTO 校验。
+
+API Base、Model 或 Key 缺失时由 UI 禁用动作并由 Go 再次拒绝；401、超时、限流和网络异常映射为稳定 `AppError`，不得改变当前设置或 LibraryData。
+
+### 8.3 语义搜索
 
 1. 前端使用纯函数在当前资料库按标题、描述、域名、备注和标签生成有限候选集。
 2. 仅向 AI 发送候选的最小必要字段和用户查询，不发送 API Key 以外的凭据。
 3. AI 返回候选 ID 与相关度顺序；Go 和前端均验证返回 ID 必须属于候选集。
 4. AI 失败时回退关键词搜索，不生成虚构相关度。
 
-### 8.3 网页元数据与健康
+### 8.4 网页元数据与健康
 
 - 仅接受 `http`/`https` URL。
 - 限制重定向次数、响应体大小和请求时长。
@@ -613,7 +633,7 @@ Go 端按能力提供独立方法，但共用一个 OpenAI-compatible 客户端�
 - 健康扫描仅由用户主动触发；每个 URL 记录检查时间、状态码、内容指纹和归类结果。
 - 扫描进度通过 Wails runtime event 报告，用户关闭对话框不等同于伪造完成状态。
 
-### 8.4 性能实现策略
+### 8.5 性能实现策略
 
 - 10,000 个书签基线下，Card、List、Masonry、Timeline、Tag Aggregation 和 Theme Space 使用虚拟化或分段渲染，禁止一次挂载全部条目。
 - 搜索与筛选使用预计算的规范化搜索投影和细粒度 Zustand selector，避免每次按键重建无关结构。
@@ -743,6 +763,7 @@ flowchart LR
 | AI Services | REQ-006、REQ-013、REQ-018 至 REQ-021 |
 | Insights + Health | REQ-022 |
 | Settings + i18n + Theme Tokens | REQ-019、REQ-023、REQ-028、REQ-029、REQ-031 |
+| AI Connection + Portable Backup | REQ-033、REQ-034 |
 | Tray + Global Hotkey + Shortcuts | REQ-030、REQ-023、REQ-024、REQ-027 |
 | Appearance Window Size | REQ-031 |
 | Release + Homebrew Tap | REQ-032 |
@@ -772,4 +793,5 @@ flowchart LR
 | 1.15.0 | 2026-07-25 | 已定稿 | 新增 New Bookmark 两阶段元数据/AI 编排、FetchMetadataFast 快速接口、后台增强竞态保护与 OpenGraph 元数据优先级 |
 | 1.16.0 | 2026-07-25 | 已定稿 | 新增 universal DMG → 第三方 Homebrew Tap 自动更新设计、集中配置、Cask 更新器、macOS Tap CI、凭据门禁与 quarantine 最小作用域 |
 | 1.17.0 | 2026-07-25 | 已定稿 | 新增侧边栏标签新建与删除组件交互、悬停显隐删除 `X` 按钮与状态管理设计，对齐 REQ-014-AC-004/005 |
+| 1.18.0 | 2026-07-27 | 已确认待实现 | 新增 AI 接口连通性测试与 `linkit-backup` 完整资料库/可移植设置备份设计，对齐 REQ-033/034 |
 

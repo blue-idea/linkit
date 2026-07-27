@@ -24,6 +24,19 @@ type capturingCompleter struct {
 	calls   int
 }
 
+type capturingConnectionTester struct {
+	last   AIContext
+	result ConnectionTestResult
+	err    error
+	calls  int
+}
+
+func (tester *capturingConnectionTester) TestConnection(context AIContext) (ConnectionTestResult, error) {
+	tester.calls++
+	tester.last = context
+	return tester.result, tester.err
+}
+
 func (c *capturingCompleter) ChatCompletions(request ChatRequest) (ChatResult, error) {
 	c.calls++
 	c.last = request
@@ -75,6 +88,48 @@ func TestAnalyzeBookmarkSystemPromptFollowsSettingsLocale(t *testing.T) {
 			t.Fatalf("Expected locale=zh in user payload, got: %s", capture.last.User)
 		}
 	})
+}
+
+func TestServiceTestConnectionDelegatesValidatedContext(t *testing.T) {
+	tester := &capturingConnectionTester{result: ConnectionTestResult{
+		Status:    "ok",
+		LatencyMs: 17,
+		TestedAt:  "2026-07-27T09:00:00Z",
+	}}
+	service := NewService(WithConnectionTester(tester))
+	request := TestConnectionRequest{Context: AIContext{
+		APIBase: "https://api.example.test/v1",
+		Model:   "test-model",
+		Locale:  "zh",
+	}}
+
+	// REQ-033-AC-001：服务层返回稳定 DTO，且不持有资料库写入能力。
+	result, err := service.TestConnection(request)
+	if err != nil {
+		t.Fatalf("TestConnection returned error: %v", err)
+	}
+	if tester.calls != 1 || tester.last != request.Context {
+		t.Fatalf("Unexpected tester call: calls=%d context=%+v", tester.calls, tester.last)
+	}
+	if result != tester.result {
+		t.Fatalf("Unexpected result: got %+v want %+v", result, tester.result)
+	}
+}
+
+func TestServiceTestConnectionRejectsMissingContext(t *testing.T) {
+	tester := &capturingConnectionTester{}
+	service := NewService(WithConnectionTester(tester))
+
+	for _, request := range []TestConnectionRequest{
+		{Context: AIContext{Model: "m", Locale: "en"}},
+		{Context: AIContext{APIBase: "https://api.example.test/v1", Locale: "en"}},
+	} {
+		_, err := service.TestConnection(request)
+		assertCodedError(t, err, config.ErrorCodeInvalidArgument, false)
+	}
+	if tester.calls != 0 {
+		t.Fatalf("Invalid context must not call tester, calls=%d", tester.calls)
+	}
 }
 
 func TestAnalyzeBookmarkReturnsValidatedSuggestions(t *testing.T) {

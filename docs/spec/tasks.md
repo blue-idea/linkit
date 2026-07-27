@@ -1,11 +1,11 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：4.0.0
-> 日期：2026-07-25
-> 状态：已定稿
+> 版本：4.3.0
+> 日期：2026-07-27
+> 状态：TASK-077、TASK-078 已完成
 
-执行时须严格遵循 `docs/spec/requirements.md` 2.15.0、`docs/spec/design.md` 1.14.0 和 `docs/spec/test_strategy.md` 2.6.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
+执行时须严格遵循 `docs/spec/requirements.md` 2.18.0、`docs/spec/design.md` 1.18.0 和 `docs/spec/test_strategy.md` 2.9.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
 
 AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首尾均包含。
 
@@ -1817,6 +1817,62 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-077 · fix_task 1.20：Settings → AI 接口连通性测试**
+
+  > 依赖：TASK-031、TASK-032、TASK-066 · 对齐：fix_task 1.20 · 预计：2–3 小时 · 状态：已完成（真实第三方成功态 BLOCKED）
+
+  - [x] Red：Go 单测复现 `TestConnection` 方法不存在、缺失 API Base/Model/Key 仍可能发请求；TypeScript 组件测试复现 AI 设置页没有测试动作和状态；E2E 骨架覆盖成功、缺失配置与错误路径；代码审查追加竞态 RED。
+  - [x] Green：新增 `AIService.TestConnection` 与独立 Client 连接测试路径，返回 `status/latencyMs/testedAt`；新增 `ui/src/features/settings/ai-connection.ts` DTO 校验和 Settings UI 状态编排；不触发 bookmark consent。
+  - [x] Refactor：复用既有 API Base 规范化、Keychain 读取、HTTP 超时与错误映射，集中测试提示和状态文案键，并通过请求版本门禁避免旧结果覆盖新配置。
+  - [x] QA：Go Unit、Vitest、Typecheck、Lint、Build、Wails Build、Playwright E2E 与 Settings Baseline/Actual/Diff 全部通过；真实第三方服务返回 `AI_UNAUTHORIZED`，成功态按规范记录 BLOCKED。
+
+  **验证方式：**
+  ```powershell
+  go test ./internal/ai -cover
+  pnpm --dir ui exec vitest run src/features/settings/ai-connection.test.ts src/components/SettingsDialog.ai-connection.test.tsx
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui build
+  pnpm --dir ui exec playwright test tests/e2e/settings-ai-connection.spec.ts --workers=1
+  pnpm --dir ui exec playwright test tests/visual/settings-ai-connection.spec.ts --workers=1
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-077-AC.md`、`docs/spec/evidence/TASK-077-evidence.md`、`docs/spec/reports/TASK-077-report.md`。
+
+  _需求: REQ-033、REQ-019、REQ-025
+  验收标准：REQ-033-AC-001~003
+  测试类型：Unit + Component + API + E2E + Visual + Security
+
+---
+
+- [x] **TASK-078 · fix_task 1.21：完整资料库与可移植设置导入导出**
+
+  > 依赖：TASK-007、TASK-008、TASK-024、TASK-066、TASK-077 · 对齐：fix_task 1.21 · 预计：3–4 小时 · 状态：done · 2026-07-27
+
+  - [x] Red：纯函数测试复现导出只包含 LibraryEnvelope、缺少设置；敏感字段门禁测试复现 `aiConsent/lastCloudRevision` 或凭据可能进入备份；导入测试复现旧 `linkit-library` 兼容和失败无副作用缺失；E2E 骨架覆盖摘要、取消、确认与错误路径。
+  - [x] Green：新增 `linkit-backup` Schema、PortableAppSettings 投影、旧格式兼容解析和原子应用协调；Settings General 导出/导入同时处理 LibraryData 与设置；原生文件服务允许新信封并继续拒绝敏感字段。
+  - [x] Refactor：将构建、解析、脱敏、设置恢复和摘要逻辑抽到 `ui/src/features/import-export` 可复用模块，组件仅负责交互；统一英文错误键与中英文翻译。
+  - [x] QA：Vitest、Go 文件服务单测、Typecheck、Lint、Build、导入导出 E2E、English/中文视觉 Baseline/Actual/Diff；验证导入失败时资料库和设置均保持原值。
+
+  **验证方式：**
+  ```powershell
+  pnpm --dir ui exec vitest run src/features/import-export src/services/settings src/components/SettingsDialog.test.tsx
+  go test ./internal/platform ./internal/settingsstore -cover
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui build
+  pnpm --dir ui exec playwright test tests/e2e/import-export.spec.ts --workers=1
+  pnpm --dir ui exec playwright test tests/visual/settings-backup.spec.ts --workers=1
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-078-AC.md`、`docs/spec/evidence/TASK-078-evidence.md`、`docs/spec/reports/TASK-078-report.md`。
+
+  _需求: REQ-034、REQ-005、REQ-023、REQ-025
+  验收标准：REQ-034-AC-001~005
+  测试类型：Unit + Component + E2E + Visual + Security
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1897,6 +1953,8 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-074 | fix_task 1.16-1.18：分类入口、侧栏快捷键拆分与托盘双击显示 | Unit/E2E/Manual | done（Manual 部分 BLOCKED） | REQ-010、024、030 |
 | TASK-075 | 新建书签元数据优先与 AI 后台增强 | Unit/Component/E2E/Visual | done | REQ-006 |
 | TASK-076 | macOS Homebrew Tap 分发与 Release 自动更新 | Unit/Integration/Manual | done | REQ-032 |
+| TASK-077 | fix_task 1.20：AI 接口连通性测试 | Unit/Component/API/E2E/Visual/Security | done | REQ-033 |
+| TASK-078 | fix_task 1.21：完整资料库与可移植设置导入导出 | Unit/Component/E2E/Visual/Security | done | REQ-034 |
 
 ---
 
@@ -1937,3 +1995,5 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 3.9.0 | 2026-07-23 | 已定稿 | 完成 TASK-074；自动化验证通过，真实原生托盘双击 Manual 保持 BLOCKED |
 | 4.0.0 | 2026-07-25 | 已定稿 | 新增并完成 TASK-075：元数据先展示、AI 后台增强、快速 favicon 路径与元数据优先级解析 |
 | 4.1.0 | 2026-07-25 | 已定稿 | 完成 TASK-076：Homebrew Tap 分发与 Release 自动更新完全闭环，TAP_GITHUB_TOKEN 配置校验通过 |
+| 4.2.0 | 2026-07-27 | 已确认待实现 | 新增 TASK-077/078，覆盖 fix_task 1.20 AI 接口测试与 1.21 完整资料库/可移植设置备份 |
+| 4.3.0 | 2026-07-27 | 已完成 | 完成 TASK-077 与 TASK-078；AI 连通性保留真实第三方成功态 BLOCKED，完整备份与可移植设置导入导出自动化和视觉验收通过 |

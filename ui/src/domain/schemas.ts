@@ -1,7 +1,14 @@
 import { z } from 'zod';
 import { THEME_IDS } from '../config/themes';
 import { DEFAULT_UI_SIZE, UI_SIZE_IDS } from '../config/window-size';
-import { DEFAULT_SHORTCUTS, SHORTCUT_ACTION_IDS, normalizeShortcutMap } from '../features/shell/shortcuts';
+import { VIEW_MODE_IDS } from '../config/view';
+import { BACKUP_FORMAT, BACKUP_SCHEMA_VERSION, BACKUP_SETTINGS_VERSION } from '../config/backup';
+import {
+  DEFAULT_SHORTCUTS,
+  SHORTCUT_ACTION_IDS,
+  applyShortcutChange,
+  normalizeShortcutMap,
+} from '../features/shell/shortcuts';
 import { isGlyphFaviconValue, isHttpFaviconValue } from './bookmark-icon';
 
 const colorSchema = z.enum(['blue', 'green', 'amber', 'coral', 'violet', 'gray']);
@@ -23,6 +30,18 @@ const shortcutMapSchema = z.preprocess((raw) => normalizeShortcutMap(raw as Reco
     }
   }
   return merged;
+});
+const portableShortcutMapSchema = shortcutMapSchema.superRefine((value, context) => {
+  for (const id of SHORTCUT_ACTION_IDS) {
+    const result = applyShortcutChange(value, id, value[id]);
+    if (!result.ok) {
+      context.addIssue({
+        code: 'custom',
+        message: result.message,
+        path: [id],
+      });
+    }
+  }
 });
 
 export const BookmarkSchema = z.strictObject({
@@ -58,6 +77,28 @@ const apiBaseSchema = z.url().refine((value) => {
 // 空字符串表示 AI 未配置；非空时必须满足 HTTPS/loopback 约束。
 const optionalApiBaseSchema = z.union([z.literal(''), apiBaseSchema]);
 
+export const PortableAppSettingsSchema = z.strictObject({
+  settingsVersion: z.literal(BACKUP_SETTINGS_VERSION),
+  storageMode: z.enum(['local', 'cloud']),
+  theme: z.enum(THEME_IDS),
+  locale: z.enum(['en', 'zh']),
+  ai: z.strictObject({ apiBase: optionalApiBaseSchema, model: z.string().trim() }),
+  view: z.strictObject({ defaultMode: z.enum(VIEW_MODE_IDS) }),
+  shortcuts: portableShortcutMapSchema,
+  uiSize: z.enum(UI_SIZE_IDS),
+});
+
+export const BackupEnvelopeSchema = z.strictObject({
+  format: z.literal(BACKUP_FORMAT),
+  schemaVersion: z.literal(BACKUP_SCHEMA_VERSION),
+  revision: z.int().min(0),
+  updatedAt: z.iso.datetime(),
+  exportedAt: z.iso.datetime(),
+  appVersion: z.string().trim().min(1),
+  data: LibraryDataSchema,
+  settings: PortableAppSettingsSchema,
+});
+
 export const AppSettingsSchema = z.preprocess((raw) => {
   if (!raw || typeof raw !== 'object') {
     return raw;
@@ -76,7 +117,7 @@ export const AppSettingsSchema = z.preprocess((raw) => {
   theme: z.enum(THEME_IDS), locale: z.enum(['en', 'zh']),
   ai: z.strictObject({ apiBase: optionalApiBaseSchema, model: z.string().trim() }),
   aiConsent: z.strictObject({ apiBase: apiBaseSchema, grantedAt: z.iso.datetime() }).nullable(),
-  view: z.strictObject({ defaultMode: z.enum(['card', 'list', 'masonry', 'timeline', 'tag-aggregation', 'theme-space']) }),
+  view: z.strictObject({ defaultMode: z.enum(VIEW_MODE_IDS) }),
   lastCloudRevision: z.int().min(0).nullable(),
   shortcuts: shortcutMapSchema,
   uiSize: z.enum(UI_SIZE_IDS),
@@ -85,4 +126,6 @@ export const AppSettingsSchema = z.preprocess((raw) => {
 export type Bookmark = z.infer<typeof BookmarkSchema>;
 export type LibraryData = z.infer<typeof LibraryDataSchema>;
 export type LibraryEnvelope = z.infer<typeof LibraryEnvelopeSchema>;
+export type PortableAppSettings = z.infer<typeof PortableAppSettingsSchema>;
+export type BackupEnvelope = z.infer<typeof BackupEnvelopeSchema>;
 export type AppSettings = z.infer<typeof AppSettingsSchema>;

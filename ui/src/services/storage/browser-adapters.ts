@@ -4,12 +4,14 @@ import { validateLibraryEnvelope } from '../../domain/library';
 import { normalizeDomainFavicon, normalizeDomainFaviconColor } from '../../domain/bookmark-icon';
 import type { RepositoryLoadResult } from '../../repositories';
 import type { SettingsLoadResult } from './bootstrap';
+import { BROWSER_STORAGE_KEYS } from '../../config/storage';
 
-const SETTINGS_KEY = 'linkit.settings.v1';
-const LIBRARY_KEY = 'linkit.library.v1';
-/** 兼容 TASK-010 之前原型 localStorage 键，用于重启恢复旅程。 */
-const LEGACY_LIBRARY_KEY = 'lattice.library';
-const LEGACY_SETTINGS_KEY = 'lattice.settings';
+const {
+  settings: SETTINGS_KEY,
+  library: LIBRARY_KEY,
+  legacyLibrary: LEGACY_LIBRARY_KEY,
+  legacySettings: LEGACY_SETTINGS_KEY,
+} = BROWSER_STORAGE_KEYS;
 
 export interface BrowserStorageAdapters {
   loadSettings: () => Promise<SettingsLoadResult>;

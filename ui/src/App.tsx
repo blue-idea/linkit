@@ -97,10 +97,15 @@ import {
   runDeleteTag,
   runRemoveTagFromBookmark,
 } from './features/tags';
-import { createPreferredStorageAdapters } from './services/storage';
+import {
+  createBackupPersistenceAdapters,
+  createPreferredStorageAdapters,
+} from './services/storage';
 import { isBookmarkUrlDuplicate, normalizeBookmarkUrl } from './domain/commands';
 import {
+  restoreBackupAtomically,
   toUiLibraryFromEnvelope,
+  type ImportRestoreRequest,
 } from './features/import-export';
 import {
   clearBookmarkFilters,
@@ -238,6 +243,7 @@ export default function App() {
   const [libraryHydrated, setLibraryHydrated] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const browserStorage = useMemo(() => createPreferredStorageAdapters(), []);
+  const backupPersistence = useMemo(() => createBackupPersistenceAdapters(), []);
 
   /* ---------- when authed, load library from chosen storage ---------- */
   useEffect(() => {
@@ -1109,14 +1115,33 @@ export default function App() {
     flashToast(createI18n(next.locale ?? 'en').t('toast.settingsSaved'));
   }, [flashToast, setSettings, settings]);
 
-  const handleImport = useCallback((lib: LibraryData) => {
-    setBookmarks(lib.bookmarks);
-    if (lib.categories) setCats(lib.categories);
-    if (lib.collections) setCols(lib.collections);
-    if (lib.tags) setTagList(lib.tags);
-    setState((s) => ({ ...s, selectedBookmarkId: lib.bookmarks[0]?.id ?? null }));
-    flashToast(i18n.t('toast.imported', { count: lib.bookmarks.length }));
-  }, [flashToast, i18n]);
+  const handleImport = useCallback(async (request: ImportRestoreRequest) => {
+    const previous = { library, settings };
+    await restoreBackupAtomically({
+      previous,
+      next: request.snapshot,
+      persistLibrary: backupPersistence.persistLibrary,
+      persistSettings: request.kind === 'backup'
+        ? backupPersistence.persistSettings
+        : async () => undefined,
+      apply: (snapshot) => {
+        const lib = snapshot.library;
+        setBookmarks(lib.bookmarks);
+        setCats(lib.categories);
+        setCols(lib.collections);
+        setTagList(lib.tags);
+        setSettings(snapshot.settings);
+        applyTheme(snapshot.settings.theme);
+        document.documentElement.lang = snapshot.settings.locale ?? 'en';
+        setState((current) => ({
+          ...current,
+          density: snapshot.settings.view?.defaultMode ?? current.density,
+          selectedBookmarkId: lib.bookmarks[0]?.id ?? null,
+        }));
+      },
+    });
+    flashToast(i18n.t('toast.imported', { count: request.snapshot.library.bookmarks.length }));
+  }, [backupPersistence, flashToast, i18n, library, setSettings, settings]);
 
   const applySampleLibrary = useCallback(() => {
     const sample = {

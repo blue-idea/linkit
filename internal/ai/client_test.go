@@ -375,6 +375,194 @@ func TestChatCompletionsFailsWithoutKeyAndSkipsNetwork(t *testing.T) {
 	}
 }
 
+func TestConnectionUsesMinimalPayloadWithoutConsent(t *testing.T) {
+	var gotBody map[string]any
+	var gotAuthorization string
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		gotAuthorization = request.Header.Get("Authorization")
+		raw, _ := io.ReadAll(request.Body)
+		_ = json.Unmarshal(raw, &gotBody)
+		writer.WriteHeader(http.StatusOK)
+		_, _ = io.WriteString(writer, "connected")
+	}))
+	t.Cleanup(server.Close)
+
+	consent := &stubConsent{granted: false}
+	clockValues := []time.Time{
+		time.Date(2026, time.July, 27, 9, 0, 0, 0, time.UTC),
+		time.Date(2026, time.July, 27, 9, 0, 0, 42_000_000, time.UTC),
+	}
+	clockIndex := 0
+	client := NewClient(
+		WithHTTPClient(server.Client()),
+		WithKeyLoader(stubKeyLoader{key: "sk-connection-secret"}),
+		WithConsentChecker(consent),
+		WithMaxRetries(0),
+		WithClock(func() time.Time {
+			value := clockValues[clockIndex]
+			clockIndex++
+			return value
+		}),
+	)
+
+	// REQ-033-AC-001：连接测试只发送最小提示，不携带收藏内容，也不要求 consent。
+	result, err := client.TestConnection(AIContext{
+		APIBase: server.URL + "/v1",
+		Model:   "test-model",
+		Locale:  "en",
+	})
+	if err != nil {
+		t.Fatalf("TestConnection returned error: %v", err)
+	}
+	if gotAuthorization != "Bearer sk-connection-secret" {
+		t.Fatalf("Unexpected Authorization header: %q", gotAuthorization)
+	}
+	if gotBody["model"] != "test-model" {
+		t.Fatalf("Unexpected model: %#v", gotBody["model"])
+	}
+	if _, exists := gotBody["bookmark"]; exists {
+		t.Fatal("Connection payload must not contain bookmark data")
+	}
+	if _, exists := gotBody["contentText"]; exists {
+		t.Fatal("Connection payload must not contain contentText")
+	}
+	if consent.calls.Load() != 0 {
+		t.Fatalf("Connection test must not consult consent, calls=%d", consent.calls.Load())
+	}
+	if result.Status != "ok" || result.LatencyMs != 42 || result.TestedAt != "2026-07-27T09:00:00.042Z" {
+		t.Fatalf("Unexpected connection result: %+v", result)
+	}
+}
+
+func TestConnectionRejectsMissingConfigurationBeforeNetwork(t *testing.T) {
+	var hits atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+		hits.Add(1)
+		writer.WriteHeader(http.StatusOK)
+	}))
+	t.Cleanup(server.Close)
+
+	tests := []struct {
+		name      string
+		context   AIContext
+		keyLoader KeyLoader
+		code      string
+	}{
+		{
+			name:      "缺少 API Base",
+			context:   AIContext{Model: "test-model", Locale: "en"},
+			keyLoader: stubKeyLoader{key: "sk-test"},
+			code:      config.ErrorCodeInvalidArgument,
+		},
+		{
+			name:      "缺少 Model",
+			context:   AIContext{APIBase: server.URL + "/v1", Locale: "en"},
+			keyLoader: stubKeyLoader{key: "sk-test"},
+			code:      config.ErrorCodeInvalidArgument,
+		},
+		{
+			name:    "缺少 Key",
+			context: AIContext{APIBase: server.URL + "/v1", Model: "test-model", Locale: "en"},
+			keyLoader: stubKeyLoader{err: newServiceError(
+				config.ErrorCodeSecretNotConfigured,
+				config.ErrorMessageSecretNotConfigured,
+				false,
+				nil,
+			)},
+			code: config.ErrorCodeSecretNotConfigured,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			before := hits.Load()
+			client := NewClient(
+				WithHTTPClient(server.Client()),
+				WithKeyLoader(test.keyLoader),
+				WithMaxRetries(0),
+			)
+			_, err := client.TestConnection(test.context)
+			assertCodedError(t, err, test.code, false)
+			if hits.Load() != before {
+				t.Fatalf("Invalid configuration must not hit network, before=%d after=%d", before, hits.Load())
+			}
+		})
+	}
+}
+
+func TestConnectionMapsErrorsAndRetries(t *testing.T) {
+	t.Run("未授权", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+			writer.WriteHeader(http.StatusUnauthorized)
+		}))
+		t.Cleanup(server.Close)
+		client := NewClient(
+			WithHTTPClient(server.Client()),
+			WithKeyLoader(stubKeyLoader{key: "sk-bad"}),
+			WithMaxRetries(0),
+		)
+		_, err := client.TestConnection(AIContext{APIBase: server.URL + "/v1", Model: "m", Locale: "en"})
+		assertCodedError(t, err, config.ErrorCodeAIUnauthorized, false)
+	})
+
+	t.Run("超时", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+			time.Sleep(100 * time.Millisecond)
+			writer.WriteHeader(http.StatusOK)
+		}))
+		t.Cleanup(server.Close)
+		httpClient := server.Client()
+		httpClient.Timeout = 20 * time.Millisecond
+		client := NewClient(
+			WithHTTPClient(httpClient),
+			WithKeyLoader(stubKeyLoader{key: "sk-test"}),
+			WithMaxRetries(0),
+		)
+		_, err := client.TestConnection(AIContext{APIBase: server.URL + "/v1", Model: "m", Locale: "en"})
+		assertCodedError(t, err, config.ErrorCodeAITimeout, true)
+	})
+
+	t.Run("网络失败", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+			writer.WriteHeader(http.StatusOK)
+		}))
+		apiBase := server.URL + "/v1"
+		server.Close()
+		client := NewClient(
+			WithHTTPClient(&http.Client{Timeout: 100 * time.Millisecond}),
+			WithKeyLoader(stubKeyLoader{key: "sk-test"}),
+			WithMaxRetries(0),
+		)
+		_, err := client.TestConnection(AIContext{APIBase: apiBase, Model: "m", Locale: "en"})
+		assertCodedError(t, err, config.ErrorCodeAIRequestFailed, true)
+	})
+
+	t.Run("限流后按配置重试", func(t *testing.T) {
+		var hits atomic.Int32
+		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+			if hits.Add(1) == 1 {
+				writer.WriteHeader(http.StatusTooManyRequests)
+				return
+			}
+			writer.WriteHeader(http.StatusOK)
+		}))
+		t.Cleanup(server.Close)
+		client := NewClient(
+			WithHTTPClient(server.Client()),
+			WithKeyLoader(stubKeyLoader{key: "sk-test"}),
+			WithMaxRetries(1),
+			WithRetryBaseDelay(0),
+		)
+		result, err := client.TestConnection(AIContext{APIBase: server.URL + "/v1", Model: "m", Locale: "en"})
+		if err != nil {
+			t.Fatalf("TestConnection returned error after retry: %v", err)
+		}
+		if result.Status != "ok" || hits.Load() != 2 {
+			t.Fatalf("Unexpected retry result: result=%+v hits=%d", result, hits.Load())
+		}
+	})
+}
+
 func sampleRequest(apiBase string) ChatRequest {
 	return ChatRequest{
 		Context: AIContext{
