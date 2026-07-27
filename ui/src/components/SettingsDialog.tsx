@@ -773,50 +773,40 @@ export function SettingsDialog({
                   </button>
                 )}
               </div>
-              <div className="rounded-mac-lg bg-ink-800/50 hairline p-4 space-y-3" data-testid="ai-connection-test">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-[12px] font-medium text-ink-100">
-                      {i18n.t('settings.ai.connectionLabel')}
+              <div className="rounded-mac-lg bg-ink-800/50 hairline p-3 flex items-center justify-between gap-3 min-h-[44px]" data-testid="ai-connection-test">
+                <Button
+                  size="sm"
+                  variant="subtle"
+                  icon="Wifi"
+                  disabled={!canTestAIConnection || aiConnectionTesting}
+                  onClick={() => void handleTestAIConnection()}
+                >
+                  {aiConnectionTesting
+                    ? i18n.t('settings.ai.testing')
+                    : i18n.t('settings.ai.testConnection')}
+                </Button>
+                <div className="flex-1 flex items-center justify-end min-w-0">
+                  {!canTestAIConnection && (
+                    <p className="text-[11px] text-ink-500 truncate">
+                      {i18n.t('settings.ai.missingHint')}
+                    </p>
+                  )}
+                  {canTestAIConnection && aiConnectionResult && (
+                    <div className="flex items-center gap-2 text-[12px] text-mint-400 font-medium">
+                      <Icon name="Check" size={13} className="flex-shrink-0" />
+                      <span>{i18n.t('settings.ai.connectionSuccess', { latency: aiConnectionResult.latencyMs })}</span>
                     </div>
-                    {!canTestAIConnection && (
-                      <p className="text-[10px] text-ink-500 mt-1">
-                        {i18n.t('settings.ai.missingHint')}
-                      </p>
-                    )}
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="subtle"
-                    icon="Wifi"
-                    disabled={!canTestAIConnection || aiConnectionTesting}
-                    onClick={() => void handleTestAIConnection()}
-                  >
-                    {aiConnectionTesting
-                      ? i18n.t('settings.ai.testing')
-                      : i18n.t('settings.ai.testConnection')}
-                  </Button>
+                  )}
+                  {canTestAIConnection && aiConnectionError && (
+                    <div
+                      role="alert"
+                      className="flex items-center gap-1.5 text-[12px] text-coral-400 font-medium truncate"
+                    >
+                      <Icon name="AlertCircle" size={13} className="flex-shrink-0" />
+                      <span className="truncate">{aiConnectionErrorMessage(aiConnectionError)}</span>
+                    </div>
+                  )}
                 </div>
-                {aiConnectionResult && (
-                  <div className="rounded-lg bg-mint-500/10 border border-mint-400/30 px-3 py-2 text-[12px] text-mint-400">
-                    <div className="flex items-center gap-2 font-medium">
-                      <Icon name="Check" size={13} />
-                      {i18n.t('settings.ai.connectionSuccess', { latency: aiConnectionResult.latencyMs })}
-                    </div>
-                    <div className="mt-1 text-[10px] text-ink-400">
-                      {i18n.t('settings.ai.testedAt', { time: aiConnectionResult.testedAt })}
-                    </div>
-                  </div>
-                )}
-                {aiConnectionError && (
-                  <div
-                    role="alert"
-                    className="rounded-lg bg-coral-500/10 border border-coral-400/30 px-3 py-2 text-[12px] text-coral-400 flex items-center gap-2"
-                  >
-                    <Icon name="AlertCircle" size={13} />
-                    {aiConnectionErrorMessage(aiConnectionError)}
-                  </div>
-                )}
               </div>
             </div>
           )}
