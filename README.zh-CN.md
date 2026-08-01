@@ -5,6 +5,11 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/blue-idea/linkit/releases"><img src="https://img.shields.io/github/v/release/blue-idea/linkit?style=flat-square&color=blue" alt="GitHub release"></a>
+  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue?style=flat-square" alt="Platform">
+</p>
+
+<p align="center">
   <a href="README.md">English</a> | <b>简体中文</b>
 </p>
 
