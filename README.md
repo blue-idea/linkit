@@ -5,6 +5,11 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/blue-idea/linkit/releases"><img src="https://img.shields.io/github/v/release/blue-idea/linkit?style=flat-square&color=blue" alt="GitHub release"></a>
+  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue?style=flat-square" alt="Platform">
+</p>
+
+<p align="center">
   <b>English</b> | <a href="README.zh-CN.md">简体中文</a>
 </p>
 
@@ -86,6 +91,51 @@ brew upgrade linkit
 Pre-compiled binaries for Windows, macOS (DMG), and Linux (AppImage / DEB) are available on the [GitHub Releases](https://github.com/blue-idea/linkit/releases) page.
 
 > **macOS DMG Note**: The DMG package includes an interactive helper script (`Fix Gatekeeper.command`). If macOS Gatekeeper prevents opening Linkit, drag `Linkit.app` to `/Applications` first, then double-click `Fix Gatekeeper.command` inside the DMG to automatically clear the quarantine attribute.
+
+---
+
+### 🛠️ Building from Source (Developers)
+
+#### Prerequisites
+- [Go](https://go.dev/) (v1.26.0+ recommended)
+- [Node.js](https://nodejs.org/) (v18+) & [pnpm](https://pnpm.io/)
+- [Wails CLI](https://wails.io/docs/gettingstarted/installation) (v2.13.0+)
+
+#### 1. Clone & Install Dependencies
+```bash
+git clone https://github.com/blue-idea/collection.git
+cd collection
+pnpm --prefix ui install --frozen-lockfile
+```
+
+#### 2. Configure Environment Variables
+Copy `.env.test.example` to `.env` (or configure your Supabase backend / local API keys in the app settings):
+```bash
+cp ui/.env.test.example ui/.env
+```
+
+#### 3. Start Development Mode
+Run Wails with the **dev identity** so AppData / Keychain use `Linkit-Dev` and stay isolated from release installs:
+```bash
+# Windows
+./scripts/dev.ps1
+
+# macOS / Linux
+./scripts/dev.sh
+```
+Equivalent: `wails dev -tags dev`. Do **not** use plain `wails dev` for daily testing if you also verify release builds on the same machine.
+
+*Alternatively, you can run the React frontend prototype independently:*
+```bash
+cd ui && pnpm dev
+```
+Open `http://localhost:5173/` in your browser.
+
+#### 4. Build Production Application
+Compile without the `dev` tag so the app uses the clean `Linkit` identity slot:
+```bash
+wails build
+```
 
 ---
 

@@ -5,6 +5,11 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/blue-idea/linkit/releases"><img src="https://img.shields.io/github/v/release/blue-idea/linkit?style=flat-square&color=blue" alt="GitHub release"></a>
+  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue?style=flat-square" alt="Platform">
+</p>
+
+<p align="center">
   <a href="README.md">English</a> | <b>简体中文</b>
 </p>
 
@@ -86,6 +91,52 @@ brew upgrade linkit
 包含 Windows、macOS (DMG) 和 Linux (AppImage / DEB) 的最新预编译版本均可在 [GitHub Releases](https://github.com/blue-idea/linkit/releases) 页面直接下载。
 
 > **macOS DMG 用户提示**：DMG 安装包内置了一键修复脚本 `Fix Gatekeeper.command`。如果在 macOS 上提示“无法验证开发者”或无法打开，只需先将 `Linkit.app` 拖入 `Applications` 文件夹，再双击运行 DMG 内的 `Fix Gatekeeper.command` 脚本，即可自动清除 Gatekeeper 隔离属性。
+
+---
+
+### 🛠️ 源码构建 (开发者指南)
+
+#### 开发前置要求
+- [Go 语言](https://go.dev/) (推荐 v1.26.0+)
+- [Node.js](https://nodejs.org/) (v18+) 及 [pnpm](https://pnpm.io/)
+- [Wails CLI](https://wails.io/docs/gettingstarted/installation) (v2.13.0+)
+
+#### 1. 克隆项目并安装依赖
+```bash
+git clone https://github.com/blue-idea/collection.git
+cd collection
+pnpm --prefix ui install --frozen-lockfile
+```
+
+#### 2. 配置环境变量
+复制 `.env.test.example` 为 `.env` 并填写您的 Supabase 连接密钥或本地 AI 密钥配置：
+```bash
+cp ui/.env.test.example ui/.env
+```
+
+#### 3. 运行开发环境
+使用**开发身份**启动 Wails，使 AppData / Keychain 使用 `Linkit-Dev`，与正式安装隔离：
+```bash
+# Windows
+./scripts/dev.ps1
+
+# macOS / Linux
+./scripts/dev.sh
+```
+等价命令：`wails dev -tags dev`。若同一台机器还要验证 Release 安装包，请勿日常使用不带 `-tags dev` 的 `wails dev`。
+
+*如果只需开发前端 React 原型界面：*
+```bash
+cd ui && pnpm dev
+```
+然后在浏览器中访问 `http://localhost:5173/`。
+
+#### 4. 打包发布应用
+正式构建**不要**加 `dev` tag，产物使用干净的 `Linkit` 身份槽：
+```bash
+wails build
+```
+输出的可执行文件将会保存在 `build/bin/` 目录下。
 
 ---
 
