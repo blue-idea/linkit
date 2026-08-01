@@ -33,6 +33,9 @@ jobs:
 
           BODY="$(gh release view "$TAG" --repo "$SRC_REPO" --json body --jq '.body')"
           TITLE="$(gh release view "$TAG" --repo "$SRC_REPO" --json title --jq '.title')"
+          if [[ "$TITLE" == "$TAG" ]]; then
+            TITLE="$TAG - Smart Knowledge Curation Space"
+          fi
 
           # 2. 在公开仓库创建或更新 Release
           gh release view "$TAG" --repo "$DEST_REPO" >/dev/null 2>&1 || \
