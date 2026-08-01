@@ -83,7 +83,7 @@ brew upgrade linkit
 > **注意**：Linkit 当前尚未进行 Apple 官方签名公证。第三方 Cask 会在安装完成后自动移除 `Linkit.app` 的 Gatekeeper `com.apple.quarantine` 隔离属性，无需 `sudo` 权限，也不会修改系统其他应用。
 
 #### 📦 预编译二进制下载
-包含 Windows、macOS (DMG) 和 Linux (AppImage / DEB) 的最新预编译版本均可在 [GitHub Releases](https://github.com/blue-idea/collection/releases) 页面直接下载。
+包含 Windows、macOS (DMG) 和 Linux (AppImage / DEB) 的最新预编译版本均可在 [GitHub Releases](https://github.com/blue-idea/linkit/releases) 页面直接下载。
 
 > **macOS DMG 用户提示**：DMG 安装包内置了一键修复脚本 `Fix Gatekeeper.command`。如果在 macOS 上提示“无法验证开发者”或无法打开，只需先将 `Linkit.app` 拖入 `Applications` 文件夹，再双击运行 DMG 内的 `Fix Gatekeeper.command` 脚本，即可自动清除 Gatekeeper 隔离属性。
 

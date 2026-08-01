@@ -201,8 +201,9 @@ jobs:
         if: matrix.os == 'linux'
         env:
           GH_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN || github.token }}
+          GH_REPO: blue-idea/linkit
         run: |
-          gh release view "${{ env.RELEASE_TAG }}" >/dev/null 2>&1 || gh release create "${{ env.RELEASE_TAG }}" --target "$GITHUB_SHA" --generate-notes || true
+          gh release view "${{ env.RELEASE_TAG }}" >/dev/null 2>&1 || gh release create "${{ env.RELEASE_TAG }}" --generate-notes || true
           gh release upload "${{ env.RELEASE_TAG }}" build/bin/linkit-${{ matrix.deb_arch }} build/bin/linkit_${{ env.RELEASE_TAG }}_${{ matrix.deb_arch }}.deb --clobber
 
       - name: Upload Windows artifacts
@@ -210,8 +211,9 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN || github.token }}
+          GH_REPO: blue-idea/linkit
         run: |
-          gh release view "${{ env.RELEASE_TAG }}" >/dev/null 2>&1 || gh release create "${{ env.RELEASE_TAG }}" --target "$GITHUB_SHA" --generate-notes || true
+          gh release view "${{ env.RELEASE_TAG }}" >/dev/null 2>&1 || gh release create "${{ env.RELEASE_TAG }}" --generate-notes || true
           cp build/bin/linkit.exe build/bin/linkit-windows-amd64.exe
           gh release upload "${{ env.RELEASE_TAG }}" build/bin/linkit-amd64-installer.exe build/bin/linkit-windows-amd64.exe --clobber
 
@@ -219,8 +221,9 @@ jobs:
         if: matrix.os == 'macos'
         env:
           GH_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN || github.token }}
+          GH_REPO: blue-idea/linkit
         run: |
-          gh release view "${{ env.RELEASE_TAG }}" >/dev/null 2>&1 || gh release create "${{ env.RELEASE_TAG }}" --target "$GITHUB_SHA" --generate-notes || true
+          gh release view "${{ env.RELEASE_TAG }}" >/dev/null 2>&1 || gh release create "${{ env.RELEASE_TAG }}" --generate-notes || true
           gh release upload "${{ env.RELEASE_TAG }}" build/bin/Linkit.dmg --clobber
 
   update-homebrew-tap:
