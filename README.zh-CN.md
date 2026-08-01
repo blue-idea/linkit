@@ -15,7 +15,34 @@
 
 ---
 
-**Linkit** 是一款桌面端的「智能知识收藏空间」，用于网址、网页资源与灵感素材的收集、整理、发现与再利用。它不同于传统的浏览器收藏夹：分类用于长期稳定整理，主题用于跨分类的创意组合，而 AI 则是你的个人智囊，帮助你深度理解、连接与整理所有收藏资产。
+**Linkit** 是一款桌面端的「智能知识收藏空间」（桌面端智能书签管理与知识收藏空间），用于网址、网页资源与灵感素材的收集、整理、发现与再利用。它不同于传统的浏览器收藏夹（浏览器书签管理器）：分类用于长期稳定整理，主题用于跨分类的创意组合，而 AI 则是你的个人智囊，帮助你深度理解、连接与整理所有收藏资产。
+
+---
+
+### 🚀 安装与快速开始
+
+#### 🍺 推荐方式：macOS Homebrew 安装
+
+通过第三方 Homebrew Tap 一键安装通用 (Universal) macOS 应用：
+
+```bash
+brew install blue-idea/tap/linkit
+```
+
+随时升级至最新版本：
+
+```bash
+brew upgrade linkit
+```
+
+> **注意**：Linkit 当前尚未进行 Apple 官方签名公证。第三方 Cask 会在安装完成后自动移除 `Linkit.app` 的 Gatekeeper `com.apple.quarantine` 隔离属性，无需 `sudo` 权限，也不会修改系统其他应用。
+
+#### 📦 预编译二进制下载
+包含 Windows、macOS (DMG) 和 Linux (AppImage / DEB) 的最新预编译版本均可在 [GitHub Releases](https://github.com/blue-idea/linkit/releases) 页面直接下载。
+
+> **macOS DMG 用户提示**：DMG 安装包内置了一键修复脚本 `Fix Gatekeeper.command`。如果在 macOS 上提示“无法验证开发者”或无法打开，只需先将 `Linkit.app` 拖入 `Applications` 文件夹，再双击运行 DMG 内的 `Fix Gatekeeper.command` 脚本，即可自动清除 Gatekeeper 隔离属性。
+
+---
 
 ### 🌟 核心特性
 
@@ -66,31 +93,6 @@
 - **数据库与服务**：[Supabase](https://supabase.com/) (PostgreSQL & 行级安全策略)
 - **状态管理**：React Context + 自定义 Hooks
 - **AI 引擎**：兼容本地及 OpenAI/DeepSeek 等标准 API 协议的大模型后端
-
----
-
-### 🚀 安装与快速开始
-
-#### 🍺 推荐方式：macOS Homebrew 安装
-
-通过第三方 Homebrew Tap 一键安装通用 (Universal) macOS 应用：
-
-```bash
-brew install blue-idea/tap/linkit
-```
-
-随时升级至最新版本：
-
-```bash
-brew upgrade linkit
-```
-
-> **注意**：Linkit 当前尚未进行 Apple 官方签名公证。第三方 Cask 会在安装完成后自动移除 `Linkit.app` 的 Gatekeeper `com.apple.quarantine` 隔离属性，无需 `sudo` 权限，也不会修改系统其他应用。
-
-#### 📦 预编译二进制下载
-包含 Windows、macOS (DMG) 和 Linux (AppImage / DEB) 的最新预编译版本均可在 [GitHub Releases](https://github.com/blue-idea/linkit/releases) 页面直接下载。
-
-> **macOS DMG 用户提示**：DMG 安装包内置了一键修复脚本 `Fix Gatekeeper.command`。如果在 macOS 上提示“无法验证开发者”或无法打开，只需先将 `Linkit.app` 拖入 `Applications` 文件夹，再双击运行 DMG 内的 `Fix Gatekeeper.command` 脚本，即可自动清除 Gatekeeper 隔离属性。
 
 ---
 
