@@ -83,7 +83,7 @@ brew upgrade linkit
 > **Note**: Linkit is currently distributed without Apple notarization. The third-party Cask automatically clears the Gatekeeper `com.apple.quarantine` attribute from `Linkit.app` upon installation without using `sudo` or affecting other apps.
 
 #### 📦 Direct Downloads
-Pre-compiled binaries for Windows, macOS (DMG), and Linux (AppImage / DEB) are available on the [GitHub Releases](https://github.com/blue-idea/collection/releases) page.
+Pre-compiled binaries for Windows, macOS (DMG), and Linux (AppImage / DEB) are available on the [GitHub Releases](https://github.com/blue-idea/linkit/releases) page.
 
 > **macOS DMG Note**: The DMG package includes an interactive helper script (`Fix Gatekeeper.command`). If macOS Gatekeeper prevents opening Linkit, drag `Linkit.app` to `/Applications` first, then double-click `Fix Gatekeeper.command` inside the DMG to automatically clear the quarantine attribute.
 
