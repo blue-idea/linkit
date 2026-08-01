@@ -15,7 +15,7 @@
 
 ---
 
-**Linkit** is a desktop "Smart Knowledge Curation Space" designed to help you collect, organize, discover, and reuse web links, page resources, and creative inspirations. Unlike traditional browser bookmark managers, Linkit focuses on long-term organization using categories, flexible cross-category compilation using collections, and AI-powered understanding, connection, and cataloging.
+**Linkit** is a desktop "Smart Knowledge Curation Space" (桌面端智能书签管理与知识收藏空间) designed to help you collect, organize, discover, and reuse web links, page resources, and creative inspirations. Unlike traditional browser bookmark managers (浏览器书签管理器), Linkit focuses on long-term organization using categories, flexible cross-category compilation using collections, and AI-powered understanding, connection, and cataloging.
 
 ### 🌟 Key Features
 
