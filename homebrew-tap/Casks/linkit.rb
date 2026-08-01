@@ -5,7 +5,7 @@ cask "linkit" do
   url "https://github.com/blue-idea/collection/releases/download/v#{version}/Linkit.dmg"
   name "Linkit"
   desc "Smart knowledge curation space with AI-assisted organization and cloud sync"
-  homepage "https://github.com/blue-idea/collection"
+  homepage "https://github.com/blue-idea/linkit"
 
   livecheck do
     url :url
