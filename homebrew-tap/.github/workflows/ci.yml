@@ -1,0 +1,48 @@
+name: Homebrew Cask CI
+
+on:
+  push:
+    paths:
+      - 'Casks/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    paths:
+      - 'Casks/**'
+      - '.github/workflows/ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-cask:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Cask syntax and style
+        run: |
+          ruby -c Casks/linkit.rb
+          brew style Casks/linkit.rb
+
+      - name: Install Linkit Cask
+        run: |
+          brew tap blue-idea/tap
+          brew install --cask blue-idea/tap/linkit
+
+      - name: Verify installation and quarantine cleanup
+        run: |
+          test -d /Applications/Linkit.app
+          if xattr -p com.apple.quarantine /Applications/Linkit.app >/dev/null 2>&1; then
+            echo "Linkit.app still has com.apple.quarantine" >&2
+            exit 1
+          fi
+
+      - name: Uninstall Linkit Cask
+        if: always()
+        run: |
+          if brew list --cask linkit >/dev/null 2>&1; then
+            brew uninstall --cask linkit
+          fi

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Linkit
+Comment=Smart knowledge bookmarking desktop app
+Exec=linkit
+Icon=linkit
+Terminal=false
+Categories=Utility;Office;
+StartupWMClass=Linkit
