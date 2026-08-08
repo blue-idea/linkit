@@ -41,7 +41,7 @@ export function LoginScreen({
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent-500 to-mint-500 flex items-center justify-center mx-auto mb-4 hairline">
               <Icon name="Boxes" size={26} className="text-white" />
             </div>
-            <h1 className="text-[20px] font-bold text-ink-100">Lattice</h1>
+            <h1 className="text-[20px] font-bold text-ink-100">Linkit</h1>
             <p className="text-[12px] text-ink-400 mt-1">
               {i18n.t('auth.subtitle')}
             </p>

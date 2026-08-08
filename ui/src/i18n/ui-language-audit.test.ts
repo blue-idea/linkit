@@ -18,7 +18,7 @@ const translatableAttributes = new Set([
   'emptyBody',
 ]);
 const allowedExactText = new Set([
-  'Lattice',
+  'Linkit',
   'AI',
   'API',
   'URL',

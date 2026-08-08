@@ -53,9 +53,8 @@ export function WindowChrome({
         aria-label={i18n.t('chrome.toggleSidebar')}
         aria-pressed={sidebarOpen}
         title={i18n.t('chrome.toggleSidebar')}
-        className={`w-7 h-7 rounded-md flex items-center justify-center transition focus-ring ${
-          sidebarOpen ? 'text-ink-200 hover:bg-ink-700/60' : 'text-ink-500 hover:bg-ink-700/60'
-        }`}
+        className={`w-7 h-7 rounded-md flex items-center justify-center transition focus-ring ${sidebarOpen ? 'text-ink-200 hover:bg-ink-700/60' : 'text-ink-500 hover:bg-ink-700/60'
+          }`}
       >
         <Icon name="PanelLeft" size={14} />
       </button>
@@ -64,7 +63,7 @@ export function WindowChrome({
         <span className="w-4 h-4 rounded bg-gradient-to-br from-accent-500 to-mint-500 flex items-center justify-center">
           <Icon name="Boxes" size={10} className="text-white" />
         </span>
-        Lattice
+        Linkit
         <span className="text-ink-600 font-normal hidden sm:inline">—</span>
         <span className="text-[12px] text-ink-400 font-normal hidden sm:inline">
           {i18n.t('app.tagline')}
@@ -121,9 +120,8 @@ export function WindowChrome({
           aria-label={i18n.t('chrome.toggleDetail')}
           aria-pressed={detailOpen}
           title={i18n.t('chrome.toggleDetail')}
-          className={`w-7 h-7 rounded-md flex items-center justify-center transition focus-ring ${
-            detailOpen ? 'text-ink-200 hover:bg-ink-700/60' : 'text-ink-500 hover:bg-ink-700/60'
-          }`}
+          className={`w-7 h-7 rounded-md flex items-center justify-center transition focus-ring ${detailOpen ? 'text-ink-200 hover:bg-ink-700/60' : 'text-ink-500 hover:bg-ink-700/60'
+            }`}
         >
           <Icon name="PanelRight" size={14} />
         </button>

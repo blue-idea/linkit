@@ -335,7 +335,7 @@ export function Sidebar({
           <Icon name="Boxes" size={16} className="text-white" />
         </div>
         <div className="flex-1">
-          <div className="text-[13px] font-semibold text-ink-100 leading-none">Lattice</div>
+          <div className="text-[13px] font-semibold text-ink-100 leading-none">Linkit</div>
           <div className="text-[10px] text-ink-400 mt-0.5">{i18n.t('app.tagline')}</div>
         </div>
         <button
