@@ -1,6 +1,6 @@
 # TASK-079 AC 验收矩阵
 
-> 任务：fix_task 1.22：浏览器书签 HTML 导入导出契约与 Settings 集成
+> 任务：REQ-035 / TASK-079：浏览器书签 HTML 导入导出契约与 Settings 集成
 > 日期：2026-08-09
 > 状态：done（Playwright MCP 视觉门禁 BLOCKED）
 
