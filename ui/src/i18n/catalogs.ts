@@ -33,7 +33,7 @@ const messages = {
   'common.bookmarkCount_other': ['{{count}} bookmarks', '{{count}} 个书签'],
 
   'app.loading': ['Loading Linkit', '正在加载 Linkit'],
-  'app.tagline': ['Bookmark library', '网址收藏管理'],
+  'app.tagline': ['Smart Bookmark Library', '智能收藏夹'],
   'app.drop.title': ['Drop a URL to save it', '拖入网址即可收藏'],
   'app.drop.body': ['AI will fetch the page and suggest a summary, category, and tags.', 'AI 将自动抓取内容并生成摘要、分类与标签。'],
   'app.seed.title': ['Replace current library?', '替换当前资料库？'],
