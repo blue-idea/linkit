@@ -107,7 +107,7 @@ async function verifyHomebrewTap() {
 
   assert.deepEqual(tapConfig, {
     tapRepository: 'blue-idea/homebrew-tap',
-    releaseRepository: 'blue-idea/linkit',
+    releaseRepository: 'blue-idea/collection',
     caskRelativePath: 'Casks/linkit.rb',
     releaseAsset: 'Linkit.dmg',
   });
