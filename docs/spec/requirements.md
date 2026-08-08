@@ -2400,7 +2400,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 ---
 
 ### 需求 REQ-035 · 浏览器书签 HTML 导入导出与 AI 整理
-**来源：** fix_task 1.22、F-STORE-05、F-AI-10、NF-06
+**来源：** 用户请求（浏览器书签 HTML 互通）、F-STORE-05、F-AI-10、NF-06
 **用户故事：** 作为用户，我希望在 Settings → General 中与 Chrome、Edge、Firefox 互通书签 HTML，并在导入后自动完成 AI 分类和标签整理，以便迁移旧书签库时减少手工整理工作。
 
 #### 验收标准
@@ -2533,7 +2533,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | `knowledge/Homebrew-Tap分发指南.md` | REQ-032 |
 | fix_task 1.20、Settings → AI 接口测试 | REQ-033 |
 | fix_task 1.21、完整资料库与设置备份 | REQ-034 |
-| fix_task 1.22、Settings → General 浏览器书签 HTML 导入导出与 AI 整理 | REQ-035 |
+| 用户请求：Settings → General 浏览器书签 HTML 导入导出与 AI 整理 | REQ-035 |
 
 ---
 
@@ -2571,5 +2571,5 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.16.0 | 2026-07-25 | 已定稿 | 新增 REQ-006-AC-011：Smart/Enter 先展示网页元数据，AI 后台增强；新增 FetchMetadataFast 快速接口并保留旧接口兼容性 |
 | 2.17.0 | 2026-07-25 | 已定稿 | 新增 REQ-032：以 universal DMG 通过 `blue-idea/tap` 分发，Release 自动更新 Cask，并显式约束隔离属性清理与凭据失败路径 |
 | 2.18.0 | 2026-07-27 | 已确认待实现 | 新增 REQ-033 AI 接口连通性测试与 REQ-034 完整资料库/可移植设置备份，对齐 fix_task 1.20/1.21 |
-| 2.19.0 | 2026-08-08 | 已确认待实现 | 新增 REQ-035：Settings → General 浏览器书签 HTML 导入导出、文件夹映射、重复跳过与导入后 AI 分类标签整理，对齐 fix_task 1.22 |
+| 2.19.0 | 2026-08-08 | 已确认待实现 | 新增 REQ-035：Settings → General 浏览器书签 HTML 导入导出、文件夹映射、重复跳过与导入后 AI 分类标签整理 |
 | 2.20.0 | 2026-08-09 | 已定稿/已实现 | TASK-079/080 完成 REQ-035；补充全重复零副作用、Chrome/Edge/Firefox smoke 证据，真实第三方 AI 与 Playwright MCP 按门禁保持 BLOCKED |

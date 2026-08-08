@@ -1873,9 +1873,9 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [x] **TASK-079 · fix_task 1.22：浏览器书签 HTML 导入导出契约与 Settings 集成**
+- [x] **TASK-079 · REQ-035：浏览器书签 HTML 导入导出契约与 Settings 集成**
 
-  > 依赖：TASK-007、TASK-008、TASK-024、TASK-078 · 对齐：fix_task 1.22 · 预计：3–4 小时 · 状态：done · 2026-08-09
+  > 依赖：TASK-007、TASK-008、TASK-024、TASK-078 · 对齐：REQ-035 · 预计：3–4 小时 · 状态：done · 2026-08-09
 
   - [x] Red：先补 `browser-html` 解析、序列化、摘要与无关字段排除测试，覆盖 Chrome / Edge / Firefox 样本、无效 HTML 和取消路径。
   - [x] Green：在 `ui/src/features/import-export/browser-html` 实现纯函数解析与导出；Settings → General 新增浏览器书签 HTML 的 Import / Export 入口，并复用原生文件服务。
@@ -1901,9 +1901,9 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
-- [x] **TASK-080 · fix_task 1.22：浏览器书签导入后 AI 分类与标签整理**
+- [x] **TASK-080 · REQ-035：浏览器书签导入后 AI 分类与标签整理**
 
-  > 依赖：TASK-033、TASK-069、TASK-075、TASK-079 · 对齐：fix_task 1.22 · 预计：3–4 小时 · 状态：done · 2026-08-09
+  > 依赖：TASK-033、TASK-069、TASK-075、TASK-079 · 对齐：REQ-035 · 预计：3–4 小时 · 状态：done · 2026-08-09
 
   - [x] Red：先补导入确认后的 AI 整理用例，覆盖分类映射、现有标签优先复用、每条书签最多 3 个标签、重复 URL 跳过统计和 AI 不可用降级。
   - [x] Green：实现浏览器书签导入后整理协调器，仅对新增书签执行 AI 分类和标签写入；AI 错误不回滚已成功的导入落库。
@@ -2011,8 +2011,8 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-076 | macOS Homebrew Tap 分发与 Release 自动更新 | Unit/Integration/Manual | done | REQ-032 |
 | TASK-077 | fix_task 1.20：AI 接口连通性测试 | Unit/Component/API/E2E/Visual/Security | done | REQ-033 |
 | TASK-078 | fix_task 1.21：完整资料库与可移植设置导入导出 | Unit/Component/E2E/Visual/Security | done | REQ-034 |
-| TASK-079 | fix_task 1.22：浏览器书签 HTML 导入导出契约与 Settings 集成 | Unit/Component/E2E/Visual/Security/Manual | done | REQ-035 |
-| TASK-080 | fix_task 1.22：浏览器书签导入后 AI 分类与标签整理 | Unit/Component/E2E/Visual/Manual | done | REQ-035 |
+| TASK-079 | REQ-035：浏览器书签 HTML 导入导出契约与 Settings 集成 | Unit/Component/E2E/Visual/Security/Manual | done | REQ-035 |
+| TASK-080 | REQ-035：浏览器书签导入后 AI 分类与标签整理 | Unit/Component/E2E/Visual/Manual | done | REQ-035 |
 
 ---
 
@@ -2055,6 +2055,6 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 4.1.0 | 2026-07-25 | 已定稿 | 完成 TASK-076：Homebrew Tap 分发与 Release 自动更新完全闭环，TAP_GITHUB_TOKEN 配置校验通过 |
 | 4.2.0 | 2026-07-27 | 已确认待实现 | 新增 TASK-077/078，覆盖 fix_task 1.20 AI 接口测试与 1.21 完整资料库/可移植设置备份 |
 | 4.3.0 | 2026-07-27 | 已完成 | 完成 TASK-077 与 TASK-078；AI 连通性保留真实第三方成功态 BLOCKED，完整备份与可移植设置导入导出自动化和视觉验收通过 |
-| 4.4.0 | 2026-08-08 | 已确认待实现 | 新增 TASK-079/080，覆盖浏览器书签 HTML 导入导出、文件夹映射、重复跳过与导入后 AI 分类标签整理，对齐 fix_task 1.22 |
+| 4.4.0 | 2026-08-08 | 已确认待实现 | 新增 TASK-079/080，覆盖 REQ-035 浏览器书签 HTML 导入导出、文件夹映射、重复跳过与导入后 AI 分类标签整理 |
 | 4.4.1 | 2026-08-08 | 已完成 | 完成 TASK-079/080：Settings 支持主流浏览器书签 HTML 导入导出，导入确认后对新增书签执行 AI 分类与最多 3 个标签整理；Playwright MCP 视觉验收受本机浏览器路径解析缺陷阻塞 |
 | 4.4.2 | 2026-08-09 | 已完成（部分门禁 BLOCKED） | 复跑 450 项 Vitest、静态门禁、浏览器 E2E 与视觉回归；Chrome/Edge/Firefox 真实 HTML 导入导出 smoke 通过；Playwright MCP 与真实第三方 AI 仍按规范保留 BLOCKED |

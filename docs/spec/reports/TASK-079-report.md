@@ -1,6 +1,6 @@
 # TASK-079 测试报告
 
-> 任务：fix_task 1.22：浏览器书签 HTML 导入导出契约与 Settings 集成
+> 任务：REQ-035 / TASK-079：浏览器书签 HTML 导入导出契约与 Settings 集成
 > 版本 / Sprint / 发布：TASK-079
 > 报告日期：2026-08-09
 > 执行人：Codex
