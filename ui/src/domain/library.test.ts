@@ -55,7 +55,7 @@ const validBackupEnvelope = {
   revision: 12,
   updatedAt: timestamp,
   exportedAt: timestamp,
-  appVersion: '0.2.8',
+  appVersion: '0.2.9',
   data: validLibraryEnvelope.data,
   settings: validPortableSettings,
 };
