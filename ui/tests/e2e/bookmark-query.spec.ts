@@ -10,7 +10,7 @@ const evidenceDirectory = resolve(
 
 async function enterLocalMode(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Continue in local mode' }).click();
-  await expect(page.getByText('Lattice', { exact: true })).toBeVisible();
+  await expect(page.getByText('Linkit', { exact: true })).toBeVisible();
 }
 
 test.describe('排序与筛选', () => {

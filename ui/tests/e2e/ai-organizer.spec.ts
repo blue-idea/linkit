@@ -66,7 +66,7 @@ test.describe('AI 创建主题与去重整理', () => {
     if (await page.getByRole('button', { name: 'Continue in local mode' }).count()) {
       await enterLocalMode(page);
     } else {
-      await expect(page.getByText('Lattice', { exact: true })).toBeVisible();
+      await expect(page.getByText('Linkit', { exact: true })).toBeVisible();
     }
     await mkdir(evidenceDirectory, { recursive: true });
   });

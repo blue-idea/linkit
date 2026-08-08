@@ -12,7 +12,7 @@ const evidenceDirectory = resolve(
 
 async function enterLocalMode(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Continue in local mode' }).click();
-  await expect(page.getByText('Lattice', { exact: true })).toBeVisible();
+  await expect(page.getByText('Linkit', { exact: true })).toBeVisible();
 }
 
 /** Chromium 会拦截部分 Ctrl 快捷键；派发等价 keydown。 */

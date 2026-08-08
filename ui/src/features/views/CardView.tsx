@@ -8,7 +8,7 @@ import { BookmarkItemActions } from './BookmarkItemActions';
 import { useI18n } from '../../i18n/use-i18n';
 
 const COLUMNS = 3;
-const ROW_ESTIMATE = 168;
+const ROW_ESTIMATE = 180;
 
 type CardViewProps = {
   items: BookmarkPresentation[];
@@ -74,7 +74,7 @@ export function CardView({
               key={virtualRow.key}
               data-index={virtualRow.index}
               ref={virtualizer.measureElement}
-              className="absolute left-0 w-full grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
+              className="absolute left-0 w-full grid gap-3.5 pb-3.5 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
               style={{ transform: `translateY(${virtualRow.start}px)` }}
             >
               {rowItems.map((item) => (
