@@ -3,8 +3,12 @@ import type { AppSettings, LibraryData, StorageMode, ThemeId, UiLocale, UiSize }
 import { themes, applyTheme } from '../themes';
 import { DEFAULT_UI_SIZE, UI_SIZE_IDS } from '../config/window-size';
 import { buildBackupFileName } from '../config/backup';
+import {
+  BROWSER_BOOKMARKS_MIME_TYPE,
+  buildBrowserBookmarksFileName,
+} from '../config/browser-bookmarks';
 import { Icon, Button, AIBadge } from './ui';
-import { exportLibrary, importLibrary } from '../storage';
+import { downloadTextFile, exportLibrary, importLibrary } from '../storage';
 import { getSettingsSections } from '../i18n';
 import { useI18n } from '../i18n/use-i18n';
 import type { SettingsSectionKey } from '../config/i18n';
@@ -17,12 +21,15 @@ import {
 } from '../features/settings/ai-connection';
 import {
   buildBackupEnvelopeFromUi,
+  buildBrowserBookmarkHtml,
   buildExportEnvelopeFromUi,
   localizeImportError,
+  parseBrowserBookmarkHtml,
   parseImportText,
   resolveImportedSettings,
   summarizeImport,
   toUiLibraryFromEnvelope,
+  type BrowserBookmarkPendingImport,
   type ImportRestoreRequest,
   type ImportSummary,
   type PendingImport,
@@ -219,6 +226,7 @@ export function SettingsDialog({
   const [importMsg, setImportMsg] = useState<string | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [pendingImport, setPendingImport] = useState<PendingImport | null>(null);
+  const [pendingBrowserImport, setPendingBrowserImport] = useState<BrowserBookmarkPendingImport | null>(null);
   const [pendingSummary, setPendingSummary] = useState<ImportSummary | null>(null);
   const [importing, setImporting] = useState(false);
   const [pendingSwitchMode, setPendingSwitchMode] = useState<StorageMode | null>(null);
@@ -236,6 +244,7 @@ export function SettingsDialog({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const browserFileRef = useRef<HTMLInputElement>(null);
   const i18n = useI18n(draft.locale ?? 'en');
 
   useEffect(() => {
@@ -247,6 +256,7 @@ export function SettingsDialog({
       setImportMsg(null);
       setImportError(null);
       setPendingImport(null);
+      setPendingBrowserImport(null);
       setPendingSummary(null);
       setImporting(false);
       setPendingSwitchMode(null);
@@ -454,9 +464,20 @@ export function SettingsDialog({
     exportLibrary(doc, buildBackupFileName(now));
   };
 
+  const handleBrowserExport = () => {
+    const now = new Date().toISOString();
+    const html = buildBrowserBookmarkHtml(library, { exportedAt: now });
+    downloadTextFile(
+      html,
+      buildBrowserBookmarksFileName(now),
+      BROWSER_BOOKMARKS_MIME_TYPE,
+    );
+  };
+
   const handleImportFile = async (file: File) => {
     setImportMsg(null);
     setImportError(null);
+    setPendingBrowserImport(null);
     try {
       const raw = await importLibrary(file);
       const parsed = parseImportText(raw, new Date().toISOString());
@@ -473,23 +494,76 @@ export function SettingsDialog({
     }
   };
 
+  const handleBrowserImportFile = async (file: File) => {
+    setImportMsg(null);
+    setImportError(null);
+    setPendingImport(null);
+    setPendingSummary(null);
+    try {
+      const raw = await importLibrary(file);
+      const parsed = parseBrowserBookmarkHtml(raw, {
+        library,
+        now: new Date().toISOString(),
+      });
+      if (!parsed.success) {
+        const localized = localizeImportError(parsed.error.key, draft.locale ?? 'en');
+        setImportError(localized.message);
+        setPendingBrowserImport(null);
+        return;
+      }
+      setPendingBrowserImport(parsed.pendingImport);
+    } catch {
+      const localized = localizeImportError('IMPORT_INVALID', draft.locale ?? 'en');
+      setImportError(localized.message);
+      setPendingBrowserImport(null);
+    }
+  };
+
   const handleConfirmImport = async () => {
-    if (!pendingImport || importing) return;
+    if (importing || (!pendingImport && !pendingBrowserImport)) return;
+
+    // REQ-035-AC-003：批次全部为重复项时不触发持久化，确保确认后的零副作用。
+    if (pendingBrowserImport && pendingBrowserImport.summary.newBookmarks === 0) {
+      setPendingBrowserImport(null);
+      setPendingSummary(null);
+      setImportMsg(i18n.t('import.success', { count: 0 }));
+      return;
+    }
+
     setImporting(true);
     setImportError(null);
-    const snapshot = {
-      library: toUiLibraryFromEnvelope(pendingImport.envelope),
-      settings: resolveImportedSettings(settings, pendingImport.settings),
-    };
     try {
-      await onImport({ kind: pendingImport.kind, snapshot });
-      setImportMsg(
-        i18n.t('import.success', { count: pendingImport.envelope.data.bookmarks.length })
-      );
+      if (pendingBrowserImport) {
+        await onImport({
+          kind: pendingBrowserImport.kind,
+          snapshot: {
+            library: pendingBrowserImport.snapshot,
+            settings,
+          },
+          browserImport: {
+            importedBookmarkIds: [...pendingBrowserImport.importedBookmarkIds],
+          },
+        });
+        setImportMsg(
+          i18n.t('import.success', { count: pendingBrowserImport.summary.newBookmarks })
+        );
+        setPendingBrowserImport(null);
+      } else if (pendingImport) {
+        const snapshot = {
+          library: toUiLibraryFromEnvelope(pendingImport.envelope),
+          settings: resolveImportedSettings(settings, pendingImport.settings),
+        };
+        await onImport({ kind: pendingImport.kind, snapshot });
+        setImportMsg(
+          i18n.t('import.success', { count: pendingImport.envelope.data.bookmarks.length })
+        );
+      }
       setPendingImport(null);
       setPendingSummary(null);
     } catch {
-      setImportError(i18n.t('import.restoreFailed'));
+      setImportError(
+        i18n.t(pendingBrowserImport ? 'import.browserRestoreFailed' : 'import.restoreFailed'),
+      );
     } finally {
       setImporting(false);
     }
@@ -586,6 +660,41 @@ export function SettingsDialog({
                 />
                 <Button size="sm" variant="subtle" icon="Upload" onClick={() => fileRef.current?.click()}>
                   {i18n.t('import.button')}
+                </Button>
+              </Row>
+              <Row
+                icon="Download"
+                label={i18n.t('settings.general.browserExport')}
+                hint={i18n.t('settings.general.browserExportHint')}
+              >
+                <Button size="sm" variant="subtle" icon="Download" onClick={handleBrowserExport}>
+                  {i18n.t('settings.general.browserExport')}
+                </Button>
+              </Row>
+              <Row
+                icon="Upload"
+                label={i18n.t('settings.general.browserImport')}
+                hint={i18n.t('settings.general.browserImportHint')}
+              >
+                <input
+                  ref={browserFileRef}
+                  type="file"
+                  accept="text/html,.html,.htm"
+                  className="hidden"
+                  data-testid="browser-import-file-input"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void handleBrowserImportFile(f);
+                    e.target.value = '';
+                  }}
+                />
+                <Button
+                  size="sm"
+                  variant="subtle"
+                  icon="Upload"
+                  onClick={() => browserFileRef.current?.click()}
+                >
+                  {i18n.t('settings.general.browserImport')}
                 </Button>
               </Row>
               {onRestoreSampleData && (
@@ -970,8 +1079,9 @@ export function SettingsDialog({
         </Button>
       </div>
       <ImportOverwriteDialog
-        open={Boolean(pendingImport && pendingSummary)}
-        summary={pendingSummary ?? {
+        open={Boolean((pendingImport && pendingSummary) || pendingBrowserImport)}
+        summary={pendingBrowserImport?.summary ?? pendingSummary ?? {
+          mode: 'linkit-json',
           bookmarks: 0,
           categories: 0,
           collections: 0,
@@ -987,6 +1097,7 @@ export function SettingsDialog({
         busy={importing}
         onCancel={() => {
           setPendingImport(null);
+          setPendingBrowserImport(null);
           setPendingSummary(null);
         }}
         onConfirm={() => void handleConfirmImport()}

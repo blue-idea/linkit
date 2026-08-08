@@ -1,9 +1,9 @@
 # Linkit 数据设计（Data）
 
 > 文件路径：`docs/spec/data.md`  
-> 版本：1.7.0
-> 日期：2026-07-27
-> 状态：已定稿
+> 版本：1.9.0
+> 日期：2026-08-09
+> 状态：已定稿；浏览器书签 HTML 数据边界已实现（部分外部门禁 BLOCKED）
 
 ---
 
@@ -416,6 +416,42 @@ Settings → General 的导出使用 `linkit-backup` 信封：
 7. 显示数据与设置摘要及覆盖确认。
 8. 用户确认后一次性替换活动 Repository 并持久化设置；任一步失败不得改变最后一次有效状态。
 
+### 7.3 浏览器书签 HTML 导出
+
+Settings → General 的 `Export browser bookmarks` 使用主流浏览器兼容的 Netscape bookmark file 结构。Category 树按父子关系映射为文件夹层级，Bookmark 导出为 `<A href="...">title</A>` 记录；允许写入标准时间属性，但不得写入 Linkit 专有元数据。
+
+浏览器 HTML 导出仅包含：
+
+- 文件夹层级
+- 书签标题
+- 书签 URL
+- 浏览器导入所需的标准时间属性（可选）
+
+以下字段不得进入浏览器 HTML：
+
+- `id`
+- `tagIds`
+- `collectionIds`
+- `notes`
+- `aiSummary`
+- `aiSuggestedTags`
+- `health*`
+- `readStatus`
+- `thumbnail`
+- 任何 `settings`、凭据、session/token 或运行态字段
+
+### 7.4 浏览器书签 HTML 导入
+
+Settings → General 的 `Import browser bookmarks` 接受 Chrome、Edge、Firefox 导出的标准书签 HTML。解析器只识别 `<DL>`、`<DT>`、`<H3>` 和 `<A>` 的层级语义，忽略脚本、样式、注释和非标准节点，不执行任何 HTML 中的主动内容。
+
+导入规则：
+
+1. 提取文件夹路径并映射到 Category 树；根层书签保持顶层分类或未分类。
+2. 对每条书签执行 URL 规范化，并与当前资料库及当前导入批次做去重。
+3. 重复书签不覆盖现有记录，只计入 `skipped duplicates` 摘要。
+4. 用户确认后仅追加新增书签；Category 可按需复用或创建。
+5. 导入后 AI 整理只作用于新增书签，且每条书签最终最多 3 个唯一标签。
+
 ---
 
 ## 8. Schema 版本与迁移
@@ -458,6 +494,7 @@ Settings → General 的导出使用 `linkit-backup` 信封：
 | DATA-INV-013 | 更改数据根必须先确认；目标已占用或迁移失败时不得更新指针、不得破坏源数据 |
 | DATA-INV-014 | 正式身份与开发身份的引导根目录名、Keychain 服务名必须隔离：正式为 `Linkit`，开发（`-tags dev`）为 `Linkit-Dev` |
 | DATA-INV-015 | `linkit-backup.settings` 不得包含凭据、session、日志、`aiConsent` 或 `lastCloudRevision`；导入不得授予 AI 数据发送授权 |
+| DATA-INV-016 | 浏览器书签 HTML 导出不得包含 Linkit 专有字段；浏览器 HTML 导入不得因重复规范化 URL 覆盖现有书签 |
 
 ---
 
@@ -488,3 +525,5 @@ MVP 不预先拆分 JSONB。若真实测量出现以下任一情况，必须回�
 | 1.4.0 | 2026-07-21 | 已定稿 | AppSettings 增加 `shortcuts` 映射与默认 accelerator 表；对齐 REQ-030 |
 | 1.5.0 | 2026-07-21 | 已定稿 | AppSettings 增加 `uiSize` 枚举与四档宽高预设表；对齐 REQ-031 |
 | 1.7.0 | 2026-07-27 | 已确认待实现 | 新增 `PortableAppSettings` 与 `linkit-backup` 格式，保留旧 `linkit-library` 导入兼容并明确设备状态排除边界 |
+| 1.8.0 | 2026-08-08 | 已确认待实现 | 新增浏览器书签 HTML 导入导出格式约束、文件夹映射、重复跳过与 Linkit 专有字段排除边界，对齐 REQ-035 |
+| 1.9.0 | 2026-08-09 | 已定稿/已实现 | TASK-079/080 验证浏览器 HTML 只承载文件夹、标题、URL 和标准时间属性；导入按规范化 URL 去重，AI 标签上限为 3 |

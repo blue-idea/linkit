@@ -182,6 +182,7 @@ describe('导入导出文档', () => {
     if (!result.success) return;
     expect(result.status).toBe('pending_confirm');
     expect(summarizeImport(result.envelope)).toEqual({
+      mode: 'linkit-json',
       bookmarks: 1,
       categories: 1,
       collections: 1,

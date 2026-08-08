@@ -1,6 +1,7 @@
 import { Icon, Button } from '../../components/ui';
 import { DialogFrame } from '../../components/DialogFrame';
 import type { ImportSummary } from './document';
+import type { BrowserBookmarkImportSummary } from './browser-html';
 import type { I18nApi } from '../../i18n';
 
 /**
@@ -16,13 +17,30 @@ export function ImportOverwriteDialog({
   onConfirm,
 }: {
   open: boolean;
-  summary: ImportSummary;
+  summary: ImportSummary | BrowserBookmarkImportSummary;
   i18n: I18nApi;
   busy?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
   if (!open) return null;
+
+  const browserImport = summary.mode === 'browser-bookmarks';
+  const titleKey = browserImport ? 'import.browserOverwriteTitle' : 'import.overwriteTitle';
+  const bodyKey = browserImport ? 'import.browserOverwriteBody' : 'import.overwriteBody';
+  const summaryText = browserImport
+    ? i18n.t('import.browserSummary', {
+        folders: summary.folders,
+        bookmarks: summary.bookmarks,
+        newBookmarks: summary.newBookmarks,
+        skippedDuplicates: summary.skippedDuplicates,
+      })
+    : i18n.t('import.summary', {
+        bookmarks: summary.bookmarks,
+        categories: summary.categories,
+        collections: summary.collections,
+        tags: summary.tags,
+      });
 
   return (
     <DialogFrame
@@ -38,23 +56,22 @@ export function ImportOverwriteDialog({
           </span>
           <div className="min-w-0">
             <h2 id="import-overwrite-title" className="text-[15px] font-semibold text-ink-100">
-              {i18n.t('import.overwriteTitle')}
+              {i18n.t(titleKey)}
             </h2>
             <p className="text-[12px] text-ink-400 mt-1 leading-relaxed">
-              {i18n.t('import.overwriteBody')}
+              {i18n.t(bodyKey)}
             </p>
             <p className="text-[12px] text-ink-200 mt-3 tabular-nums" data-testid="import-summary">
-              {i18n.t('import.summary', {
-                bookmarks: summary.bookmarks,
-                categories: summary.categories,
-                collections: summary.collections,
-                tags: summary.tags,
-              })}
+              {summaryText}
             </p>
             <p className="text-[12px] text-ink-200 mt-2" data-testid="import-settings-summary">
-              {i18n.t(summary.settingsIncluded ? 'import.settingsIncluded' : 'import.settingsKept')}
+              {i18n.t(
+                !browserImport && summary.settingsIncluded
+                  ? 'import.settingsIncluded'
+                  : 'import.settingsKept',
+              )}
             </p>
-            {summary.settingsIncluded && (
+            {!browserImport && summary.settingsIncluded && (
               <p className="text-[11px] text-ink-400 mt-1" data-testid="import-settings-details">
                 {i18n.t('import.settingsDetails', {
                   theme: summary.theme ?? '',
@@ -71,7 +88,13 @@ export function ImportOverwriteDialog({
             {i18n.t('import.cancel')}
           </Button>
           <Button variant="danger" icon="Upload" onClick={onConfirm} disabled={busy}>
-            {i18n.t(busy ? 'import.importing' : 'import.confirm')}
+            {i18n.t(
+              busy
+                ? 'import.importing'
+                : browserImport
+                  ? 'import.browserConfirm'
+                  : 'import.confirm',
+            )}
           </Button>
         </div>
       </div>
