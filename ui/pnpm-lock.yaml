@@ -6,14 +6,14 @@ settings:
 
 overrides:
   vite: ^6.4.3
-  brace-expansion: 5.0.8
+  brace-expansion: 5.0.9
   js-yaml: ^4.3.1
   nanoid: ^3.3.17
 
 patchedDependencies:
-  brace-expansion@5.0.8:
-    hash: 7cb9bb8ff788c97c760d4ff46bba4473c44f78fb166a850965bef4a532f1e9a0
-    path: patches/brace-expansion@5.0.8.patch
+  brace-expansion@5.0.9:
+    hash: 2c8e3c57120a216c5dd334fd201f6e63e3f36aeea4d172b5174cb2f8a8eb7067
+    path: patches/brace-expansion@5.0.9.patch
 
 importers:
 
@@ -986,8 +986,8 @@ packages:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
 
-  brace-expansion@5.0.8:
-    resolution: {integrity: sha512-JZyDyq3D4AUifKTPOB7DELf6XsB3WdPuNxCtob1vFXPsSXhdAiHBWJ/tJ8HAc9aH84BK+5JFZLNkJKx3G9kzQg==}
+  brace-expansion@5.0.9:
+    resolution: {integrity: sha512-ScQ4IuvIEF1TMlP7Zt+vjJ//9zlPb2SDcxWxM3bk8s6t6GGdJ7KO1dCcTidOPJKePW30LE/2cT7wCyPho9/Wxg==}
     engines: {node: 20 || >=22}
 
   braces@3.0.3:
@@ -2993,7 +2993,7 @@ snapshots:
 
   binary-extensions@2.3.0: {}
 
-  brace-expansion@5.0.8(patch_hash=7cb9bb8ff788c97c760d4ff46bba4473c44f78fb166a850965bef4a532f1e9a0):
+  brace-expansion@5.0.9(patch_hash=2c8e3c57120a216c5dd334fd201f6e63e3f36aeea4d172b5174cb2f8a8eb7067):
     dependencies:
       balanced-match: 4.0.4
 
@@ -3566,15 +3566,15 @@ snapshots:
 
   minimatch@10.2.5:
     dependencies:
-      brace-expansion: 5.0.8(patch_hash=7cb9bb8ff788c97c760d4ff46bba4473c44f78fb166a850965bef4a532f1e9a0)
+      brace-expansion: 5.0.9(patch_hash=2c8e3c57120a216c5dd334fd201f6e63e3f36aeea4d172b5174cb2f8a8eb7067)
 
   minimatch@3.1.5:
     dependencies:
-      brace-expansion: 5.0.8(patch_hash=7cb9bb8ff788c97c760d4ff46bba4473c44f78fb166a850965bef4a532f1e9a0)
+      brace-expansion: 5.0.9(patch_hash=2c8e3c57120a216c5dd334fd201f6e63e3f36aeea4d172b5174cb2f8a8eb7067)
 
   minimatch@9.0.9:
     dependencies:
-      brace-expansion: 5.0.8(patch_hash=7cb9bb8ff788c97c760d4ff46bba4473c44f78fb166a850965bef4a532f1e9a0)
+      brace-expansion: 5.0.9(patch_hash=2c8e3c57120a216c5dd334fd201f6e63e3f36aeea4d172b5174cb2f8a8eb7067)
 
   minipass@7.1.3: {}
 
