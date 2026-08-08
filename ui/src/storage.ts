@@ -88,14 +88,26 @@ export function saveSettings(s: AppSettings) {
   }
 }
 
-export function exportLibrary(payload: unknown, filename = 'linkit-export.json') {
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+export function downloadTextFile(
+  content: string,
+  filename: string,
+  mimeType = 'text/plain;charset=utf-8',
+) {
+  const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+export function exportLibrary(payload: unknown, filename = 'linkit-export.json') {
+  downloadTextFile(
+    JSON.stringify(payload, null, 2),
+    filename,
+    'application/json',
+  );
 }
 
 /** 读取导入文件原文；解析与确认由 import-export 模块负责。 */

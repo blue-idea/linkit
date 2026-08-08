@@ -1,9 +1,9 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：2.18.0
-> 日期：2026-07-27
-> 状态：已定稿
+> 版本：2.20.0
+> 日期：2026-08-09
+> 状态：已定稿；REQ-035 已由 TASK-079/080 实现（部分外部门禁 BLOCKED）
 
 ---
 
@@ -42,6 +42,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 18. macOS 免费分发使用第三方 Homebrew Tap `blue-idea/tap`；当前 Release 产物为 universal `Linkit.dmg`，Cask 使用单一 SHA256，不拆分 Apple Silicon / Intel 资产；安装后仅对 `/Applications/Linkit.app` 递归清理 `com.apple.quarantine`，不使用 `sudo`。
 19. Settings → AI 提供当前 API Base、Model 与 Key 的连通性测试；缺失任一配置时不发请求；测试不包含收藏内容并显示实际往返耗时。
 20. Settings → General 导出完整 `linkit-backup`，包含全部 LibraryData 与可移植设置；API Key、session/token、日志、AI consent 与云 revision 不进入备份；旧 `linkit-library` 继续兼容导入。
+21. Settings → General 支持从 Chrome、Edge、Firefox 导入浏览器书签 HTML 并导出兼容主流浏览器导入的 HTML；导入时将文件夹映射为 Category 树，按规范化 URL 跳过重复书签，仅在用户确认后对新增书签执行 AI 分类与标签整理；AI 不可用时仍允许完成导入；每条导入书签最多保留 3 个标签。
 
 ---
 
@@ -2398,6 +2399,88 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 
 ---
 
+### 需求 REQ-035 · 浏览器书签 HTML 导入导出与 AI 整理
+**来源：** fix_task 1.22、F-STORE-05、F-AI-10、NF-06
+**用户故事：** 作为用户，我希望在 Settings → General 中与 Chrome、Edge、Firefox 互通书签 HTML，并在导入后自动完成 AI 分类和标签整理，以便迁移旧书签库时减少手工整理工作。
+
+#### 验收标准
+
+```yaml
+- id: REQ-035-AC-001
+  ears: >
+    When 用户在 Settings → General 执行 Export browser bookmarks,
+    the Linkit shall 生成可被 Chrome、Edge 和 Firefox 导入的书签 HTML，
+    且仅包含文件夹层级与书签导入所需字段。
+  test_type: Unit + E2E + Manual
+  expected:
+    ui_state: "A browser-compatible HTML file is saved from Settings → General"
+    return_value: "HTML follows the Netscape bookmark file structure and contains bookmark links plus folder hierarchy only"
+    side_effects: []
+
+- id: REQ-035-AC-002
+  ears: >
+    While 用户选择结构有效的浏览器书签 HTML,
+    when Linkit 解析并展示导入摘要,
+    the Linkit shall 在任何资料库变更前显示文件夹数、书签数、将新增的书签数和 skipped duplicates 数量。
+  test_type: Component + E2E
+  expected:
+    ui_state: "An import summary dialog shows folders, bookmarks, new bookmarks and skipped duplicates before confirmation"
+    side_effects:
+      - "No library data or settings are modified before explicit confirmation"
+
+- id: REQ-035-AC-003
+  ears: >
+    While 用户确认导入结构有效的浏览器书签 HTML,
+    when Linkit 持久化解析结果,
+    the Linkit shall 将书签文件夹映射为 Category 树，
+    仅追加规范化 URL 不重复的书签，
+    并对重复项保持原资料库不变且计入 skipped duplicates。
+  test_type: Unit + E2E
+  expected:
+    return_value: "Imported bookmarks are mapped into Category hierarchy and duplicate normalized URLs are skipped"
+    side_effects:
+      - "Existing library data remains unchanged for skipped duplicates"
+      - "Only new browser-imported bookmarks are appended"
+
+- id: REQ-035-AC-004
+  ears: >
+    While 浏览器 HTML 导入已确认且 AI 服务已配置并获得授权,
+    when Linkit 对新增书签执行导入后整理,
+    the Linkit shall 为每条新增书签写入最多 3 个唯一标签并给出分类结果，
+    且必须优先复用现有标签；
+    when AI 不可用、未授权或超时,
+    the Linkit shall 完成导入但不阻塞资料库落库。
+  test_type: Unit + Component + E2E
+  expected:
+    ui_state: "Imported bookmarks finish with AI-enriched category/tags when available, or remain imported without enrichment when AI is unavailable"
+    return_value: "Each imported bookmark has no more than 3 unique tags after enrichment"
+    side_effects:
+      - "Existing Tag labels are reused before creating new tags"
+      - "AI failure does not roll back a successful browser bookmark import"
+
+- id: REQ-035-AC-005
+  ears: >
+    When 用户取消浏览器 HTML 导入或选择无效、不兼容的 HTML 文件,
+    the Linkit shall 显示本地化导入状态或错误提示并保持最后一次有效资料库与设置不变。
+  test_type: E2E
+  expected:
+    ui_state: "A localized cancelled or invalid import status is visible"
+    side_effects:
+      - "The current library and settings remain unchanged"
+
+- id: REQ-035-AC-006
+  ears: >
+    While 资料库包含标签、主题、备注、AI 摘要、健康状态或其他 Linkit 专有字段,
+    when 用户导出 browser bookmarks HTML,
+    the Linkit shall 排除 tags、collections、notes、aiSummary、health、readStatus、内部 ID 和任何设置字段。
+  test_type: Unit
+  expected:
+    return_value: "Exported browser HTML excludes Linkit-only metadata and settings"
+    side_effects: []
+```
+
+---
+
 ## 非目标
 
 以下能力不属于 Linkit MVP，不得在未更新需求规格的情况下加入当前任务范围：
@@ -2450,6 +2533,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | `knowledge/Homebrew-Tap分发指南.md` | REQ-032 |
 | fix_task 1.20、Settings → AI 接口测试 | REQ-033 |
 | fix_task 1.21、完整资料库与设置备份 | REQ-034 |
+| fix_task 1.22、Settings → General 浏览器书签 HTML 导入导出与 AI 整理 | REQ-035 |
 
 ---
 
@@ -2487,3 +2571,5 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.16.0 | 2026-07-25 | 已定稿 | 新增 REQ-006-AC-011：Smart/Enter 先展示网页元数据，AI 后台增强；新增 FetchMetadataFast 快速接口并保留旧接口兼容性 |
 | 2.17.0 | 2026-07-25 | 已定稿 | 新增 REQ-032：以 universal DMG 通过 `blue-idea/tap` 分发，Release 自动更新 Cask，并显式约束隔离属性清理与凭据失败路径 |
 | 2.18.0 | 2026-07-27 | 已确认待实现 | 新增 REQ-033 AI 接口连通性测试与 REQ-034 完整资料库/可移植设置备份，对齐 fix_task 1.20/1.21 |
+| 2.19.0 | 2026-08-08 | 已确认待实现 | 新增 REQ-035：Settings → General 浏览器书签 HTML 导入导出、文件夹映射、重复跳过与导入后 AI 分类标签整理，对齐 fix_task 1.22 |
+| 2.20.0 | 2026-08-09 | 已定稿/已实现 | TASK-079/080 完成 REQ-035；补充全重复零副作用、Chrome/Edge/Firefox smoke 证据，真实第三方 AI 与 Playwright MCP 按门禁保持 BLOCKED |

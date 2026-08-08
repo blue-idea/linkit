@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/test_strategy.md`  
 > 参考方法论：`phases/qa_engine.md` §第1阶段  
-> 版本：2.9.0
-> 日期：2026-07-27
-> 状态：已定稿
+> 版本：2.11.0
+> 日期：2026-08-09
+> 状态：已执行；浏览器 smoke 与 CLI 视觉通过，Playwright MCP/真实 AI 保持 BLOCKED
 
 ---
 
@@ -56,6 +56,8 @@ test_scope:
     - "OpenAI-compatible AI、授权、降级、语义重排和建议确认"
     - "Settings → AI 连通性测试的缺失配置、成功耗时、未授权、超时和网络失败路径"
     - "linkit-backup 完整资料库与可移植设置 round-trip、旧 linkit-library 兼容和敏感字段排除"
+    - "Settings → General 浏览器书签 HTML 导入导出、文件夹映射、重复跳过、无关字段排除与 Chrome/Edge/Firefox 兼容 smoke"
+    - "浏览器书签导入后 AI 分类与标签整理、现有标签优先复用、每条书签最多 3 个标签，以及 AI 不可用时的成功降级路径"
     - "New Bookmark Manual 零 AI 与 Smart/Enter 智能分析双入口"
     - "New Bookmark Smart/Enter 元数据优先、AI 后台增强与过期请求竞态保护"
     - "macOS universal DMG 的 Homebrew Cask、Cask 更新器、Release→Tap 自动化与中英文安装文档"
@@ -87,7 +89,7 @@ test_scope:
 | 性能测试 | ✅ | REQ-028：10,000 条数据的启动、交互、保存和进度预算 | Go Benchmark + Playwright 性能采样 |
 | 安全测试 | ✅ | RLS、密钥泄露、URL 输入、导入校验、破坏性操作和依赖漏洞 | Supabase 本地测试、`govulncheck`、`pnpm audit`、Secret Scan |
 | 无障碍测试 | ✅ | 核心路径达到 WCAG 2.1 AA 自动检查基线 | axe-core + Playwright |
-| 人工测试 | ✅ | 选定平台的原生窗口、Keychain/Credential Manager、平台惯例和最终视觉审查 | 记录式检查清单 |
+| 人工测试 | ✅ | 选定平台的原生窗口、Keychain/Credential Manager、平台惯例、最终视觉审查，以及 Chrome/Edge/Firefox 浏览器书签 HTML 兼容 smoke | 记录式检查清单 |
 
 真实云端与真实 AI 用例只有在 `docs/spec/info.md` 对应环境解除 `BLOCKED` 后才能执行。
 
@@ -117,6 +119,7 @@ test_scope:
 | J-18 | Settings→Appearance 选择 Small/Medium/Large/Extra large；保存后窗口立即变为预设宽高；重启按档位恢复；手动拖拽后重启仍按档位 |
 | J-19 | 发布 tag → universal `Linkit.dmg` → 自动计算 SHA256 → 更新 `blue-idea/homebrew-tap` → `brew install` / `brew upgrade` → Linkit.app 无 quarantine |
 | J-20 | Settings → AI 缺失配置不发请求；完整配置后测试成功显示耗时；未授权/超时显示英文错误且设置不变 |
+| J-21 | Settings → General 导出 browser bookmarks HTML → 在 Chrome / Edge / Firefox 导入成功；导入浏览器 HTML 时显示摘要、跳过重复、确认后完成 AI 分类与最多 3 个标签 |
 
 ---
 
@@ -239,6 +242,7 @@ environments:
 |------|----------|
 | Supabase Auth/RLS/revision | 可访问本地或远程测试项目、migration 已应用、测试账号已配置 |
 | 真实 AI | API Base、Model、Key 已配置并取得测试数据发送授权 |
+| 浏览器兼容 smoke | 至少完成一次真实 Chrome、Edge 或 Firefox 导入导出验证，并记录实际浏览器版本与截图 |
 | 选定平台桌面旅程 | 至少一个目标平台具备可运行 Wails 应用与 Playwright/人工验收环境 |
 | 另一平台构建 | 另一个目标平台具备可运行的 Wails 构建 runner；仅要求构建，不重复完整桌面旅程 |
 | OS Keychain | 在真实 Windows Credential Manager 与 macOS Keychain 中执行；开发与正式服务名分别验证 `Linkit-Dev` / `Linkit` |
@@ -276,3 +280,5 @@ environments:
 | 2.7.0 | 2026-07-25 | 已定稿 | 新增 New Bookmark 元数据优先与 AI 后台增强的 Component/E2E/Visual 验收范围和“不等待 AI 即可保存”预算 |
 | 2.8.0 | 2026-07-25 | 已定稿 | 新增 J-19、Homebrew Cask/Release 配置单元测试，以及远程 Tap、最小权限 Token 和 macOS 真实安装门禁 |
 | 2.9.0 | 2026-07-27 | 已确认待实现 | 新增 J-20 AI 接口连通性旅程，并将 J-10 扩展为完整资料库/可移植设置备份、旧格式兼容和安全 round-trip |
+| 2.10.0 | 2026-08-08 | 已确认待实现 | 新增 J-21 浏览器书签 HTML 兼容旅程，并补浏览器导入导出、AI 整理和真实浏览器 smoke 门禁 |
+| 2.11.0 | 2026-08-09 | 已执行/部分 BLOCKED | J-21 已完成 Chrome/Edge/Firefox 真实 smoke、CLI 视觉和自动化回归；MCP 路径缺陷与真实第三方 AI 凭据缺失按门禁记录 BLOCKED |

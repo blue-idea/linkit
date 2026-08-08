@@ -52,6 +52,7 @@ import {
   shouldConfirmBookmarkDelete,
   updateBookmarkFromEditor,
   visitBookmark,
+  fetchBookmarkMetadata,
 } from './features/bookmarks';
 import {
   applyCategoryDeleteDecision,
@@ -103,6 +104,8 @@ import {
 } from './services/storage';
 import { isBookmarkUrlDuplicate, normalizeBookmarkUrl } from './domain/commands';
 import {
+  mergeBrowserImportAIResult,
+  enrichImportedBookmarksWithAI,
   restoreBackupAtomically,
   toUiLibraryFromEnvelope,
   type ImportRestoreRequest,
@@ -121,6 +124,7 @@ import {
   applyDuplicateDecision,
   buildDuplicatePreview,
   generateCollectionPreview,
+  wailsAnalyzeClient,
   type CollectionSuggestion,
   type DuplicatePreview,
 } from './features/ai';
@@ -329,6 +333,10 @@ export default function App() {
     () => ({ bookmarks, categories: cats, collections: cols, tags: tagList }),
     [bookmarks, cats, cols, tagList]
   );
+  const libraryRef = useRef(library);
+  useEffect(() => {
+    libraryRef.current = library;
+  }, [library]);
 
   /* ---------- debounced auto-save on library change ---------- */
   useEffect(() => {
@@ -1141,6 +1149,36 @@ export default function App() {
       },
     });
     flashToast(i18n.t('toast.imported', { count: request.snapshot.library.bookmarks.length }));
+
+    if (request.browserImport?.importedBookmarkIds.length) {
+      void (async () => {
+        const result = await enrichImportedBookmarksWithAI({
+          library: request.snapshot.library,
+          importedBookmarkIds: request.browserImport?.importedBookmarkIds ?? [],
+          settings: request.snapshot.settings,
+          client: wailsAnalyzeClient,
+          fetchMetadata: fetchBookmarkMetadata,
+        });
+        if (result.updatedBookmarkIds.length === 0) {
+          return;
+        }
+
+        const merged = mergeBrowserImportAIResult(libraryRef.current, result);
+        setBookmarks(merged.bookmarks);
+        setCats(merged.categories);
+        setCols(merged.collections);
+        setTagList(merged.tags);
+
+        try {
+          await backupPersistence.persistLibrary(merged);
+          flashToast(i18n.t('toast.browserImportAIComplete', {
+            count: result.updatedBookmarkIds.length,
+          }));
+        } catch {
+          // AI 整理落库失败不得回滚已成功的导入结果，仅跳过提示。
+        }
+      })();
+    }
   }, [backupPersistence, flashToast, i18n, library, setSettings, settings]);
 
   const applySampleLibrary = useCallback(() => {

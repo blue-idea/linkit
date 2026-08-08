@@ -9,6 +9,9 @@ export interface RestoreSnapshot {
 export interface ImportRestoreRequest {
   kind: 'backup' | 'library';
   snapshot: RestoreSnapshot;
+  browserImport?: {
+    importedBookmarkIds: string[];
+  };
 }
 
 export class BackupRestoreError extends Error {

@@ -17,6 +17,7 @@ export const IMPORT_ERROR_MESSAGES = {
 } as const;
 
 export type ImportSummary = {
+  mode: 'linkit-json';
   bookmarks: number;
   categories: number;
   collections: number;
@@ -65,6 +66,7 @@ export function summarizeImport(
   settings: PortableAppSettings | null = null,
 ): ImportSummary {
   return {
+    mode: 'linkit-json',
     bookmarks: envelope.data.bookmarks.length,
     categories: envelope.data.categories.length,
     collections: envelope.data.collections.length,

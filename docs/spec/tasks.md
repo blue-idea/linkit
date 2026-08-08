@@ -1,11 +1,11 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：4.3.0
-> 日期：2026-07-27
-> 状态：TASK-077、TASK-078 已完成
+> 版本：4.4.2
+> 日期：2026-08-09
+> 状态：TASK-079、TASK-080 已完成；CLI 视觉与三浏览器 smoke 通过，Playwright MCP 与真实第三方 AI 保持 BLOCKED
 
-执行时须严格遵循 `docs/spec/requirements.md` 2.18.0、`docs/spec/design.md` 1.18.0 和 `docs/spec/test_strategy.md` 2.9.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
+执行时须严格遵循 `docs/spec/requirements.md` 2.20.0、`docs/spec/design.md` 1.20.0 和 `docs/spec/test_strategy.md` 2.11.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
 
 AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首尾均包含。
 
@@ -1873,6 +1873,62 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-079 · fix_task 1.22：浏览器书签 HTML 导入导出契约与 Settings 集成**
+
+  > 依赖：TASK-007、TASK-008、TASK-024、TASK-078 · 对齐：fix_task 1.22 · 预计：3–4 小时 · 状态：done · 2026-08-09
+
+  - [x] Red：先补 `browser-html` 解析、序列化、摘要与无关字段排除测试，覆盖 Chrome / Edge / Firefox 样本、无效 HTML 和取消路径。
+  - [x] Green：在 `ui/src/features/import-export/browser-html` 实现纯函数解析与导出；Settings → General 新增浏览器书签 HTML 的 Import / Export 入口，并复用原生文件服务。
+  - [x] Refactor：统一浏览器 HTML 与 `linkit-backup` 入口的对话框、状态提示与错误映射，避免在 `SettingsDialog` 中重复实现解析和摘要逻辑。
+  - [x] QA：Vitest 450 项、TypeScript、ESLint、Vite build、浏览器书签 E2E 2 项、视觉回归 3 项和 Go 平台/AI 单测通过；Chrome 151.0.7922.76、Edge 145.0.3800.70、Firefox 151.0 真实 smoke 通过；Playwright MCP 因固定 `%USERNAME%` 路径保持 BLOCKED。
+
+  **验证命令：**
+  ```bash
+  pnpm --dir ui exec vitest run src/features/import-export/browser-html.test.ts src/components/SettingsDialog.browser-bookmarks.test.tsx
+  pnpm --dir ui exec playwright test tests/e2e/browser-bookmarks.spec.ts --workers=1
+  pnpm --dir ui exec playwright test tests/visual/settings-browser-bookmarks.spec.ts --workers=1
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui build
+  go test ./internal/platform/... ./internal/ai/... -count=1
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-079-AC.md`、`docs/spec/evidence/TASK-079-evidence.md`、`docs/spec/reports/TASK-079-report.md`。
+
+  _需求: REQ-035、REQ-023、REQ-025
+  验收标准：REQ-035-AC-001、REQ-035-AC-002、REQ-035-AC-005、REQ-035-AC-006
+  测试类型：Unit + Component + E2E + Visual + Security + Manual
+
+---
+
+- [x] **TASK-080 · fix_task 1.22：浏览器书签导入后 AI 分类与标签整理**
+
+  > 依赖：TASK-033、TASK-069、TASK-075、TASK-079 · 对齐：fix_task 1.22 · 预计：3–4 小时 · 状态：done · 2026-08-09
+
+  - [x] Red：先补导入确认后的 AI 整理用例，覆盖分类映射、现有标签优先复用、每条书签最多 3 个标签、重复 URL 跳过统计和 AI 不可用降级。
+  - [x] Green：实现浏览器书签导入后整理协调器，仅对新增书签执行 AI 分类和标签写入；AI 错误不回滚已成功的导入落库。
+  - [x] Refactor：复用既有 `AnalyzeBookmark`、标签匹配和分类建议链路，统一导入进度与最终摘要，避免新增第二套 AI DTO 或状态机。
+  - [x] QA：AI 整理 Unit/Component、全量 Vitest、TypeScript、ESLint、Vite build 与浏览器三方 smoke 通过；真实第三方 AI 因 `docs/spec/info.md` 无可用凭据保持 BLOCKED。
+
+  **验证命令：**
+  ```bash
+  pnpm --dir ui exec vitest run src/features/import-export/browser-import-ai.test.ts src/components/SettingsDialog.browser-bookmarks.test.tsx
+  pnpm --dir ui exec playwright test tests/e2e/browser-bookmarks.spec.ts --workers=1
+  pnpm --dir ui exec playwright test tests/visual/settings-browser-bookmarks.spec.ts --workers=1
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui build
+  go test ./internal/ai/... -count=1
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-080-AC.md`、`docs/spec/evidence/TASK-080-evidence.md`、`docs/spec/reports/TASK-080-report.md`。
+
+  _需求: REQ-035、REQ-006、REQ-014
+  验收标准：REQ-035-AC-003、REQ-035-AC-004、REQ-006-AC-002、REQ-014-AC-003
+  测试类型：Unit + Component + E2E + Visual + Manual
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1955,6 +2011,8 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-076 | macOS Homebrew Tap 分发与 Release 自动更新 | Unit/Integration/Manual | done | REQ-032 |
 | TASK-077 | fix_task 1.20：AI 接口连通性测试 | Unit/Component/API/E2E/Visual/Security | done | REQ-033 |
 | TASK-078 | fix_task 1.21：完整资料库与可移植设置导入导出 | Unit/Component/E2E/Visual/Security | done | REQ-034 |
+| TASK-079 | fix_task 1.22：浏览器书签 HTML 导入导出契约与 Settings 集成 | Unit/Component/E2E/Visual/Security/Manual | done | REQ-035 |
+| TASK-080 | fix_task 1.22：浏览器书签导入后 AI 分类与标签整理 | Unit/Component/E2E/Visual/Manual | done | REQ-035 |
 
 ---
 
@@ -1997,3 +2055,6 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 4.1.0 | 2026-07-25 | 已定稿 | 完成 TASK-076：Homebrew Tap 分发与 Release 自动更新完全闭环，TAP_GITHUB_TOKEN 配置校验通过 |
 | 4.2.0 | 2026-07-27 | 已确认待实现 | 新增 TASK-077/078，覆盖 fix_task 1.20 AI 接口测试与 1.21 完整资料库/可移植设置备份 |
 | 4.3.0 | 2026-07-27 | 已完成 | 完成 TASK-077 与 TASK-078；AI 连通性保留真实第三方成功态 BLOCKED，完整备份与可移植设置导入导出自动化和视觉验收通过 |
+| 4.4.0 | 2026-08-08 | 已确认待实现 | 新增 TASK-079/080，覆盖浏览器书签 HTML 导入导出、文件夹映射、重复跳过与导入后 AI 分类标签整理，对齐 fix_task 1.22 |
+| 4.4.1 | 2026-08-08 | 已完成 | 完成 TASK-079/080：Settings 支持主流浏览器书签 HTML 导入导出，导入确认后对新增书签执行 AI 分类与最多 3 个标签整理；Playwright MCP 视觉验收受本机浏览器路径解析缺陷阻塞 |
+| 4.4.2 | 2026-08-09 | 已完成（部分门禁 BLOCKED） | 复跑 450 项 Vitest、静态门禁、浏览器 E2E 与视觉回归；Chrome/Edge/Firefox 真实 HTML 导入导出 smoke 通过；Playwright MCP 与真实第三方 AI 仍按规范保留 BLOCKED |
