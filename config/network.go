@@ -21,6 +21,8 @@ const (
 	HTTPUserAgent = "Linkit/" + AppVersion + " (+desktop)"
 	// HealthMaxConcurrency 限制手动链接健康扫描的并发请求数。
 	HealthMaxConcurrency = 4
+	// HealthMaxRetries 允许瞬时网络失败在判定 broken 前做有限重试。
+	HealthMaxRetries = 2
 
 	// AITotalTimeout 限制单次 Chat Completions 请求总耗时。
 	AITotalTimeout = 40 * time.Second

@@ -6,11 +6,14 @@ import (
 	"time"
 
 	"github.com/blue-idea/collection/config"
+	"github.com/blue-idea/collection/internal/netproxy"
 )
+
+var resolveProxyFunc = netproxy.Resolve
 
 func NewBoundedHTTPClient() *http.Client {
 	transport := &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
+		Proxy: resolveProxyFunc(),
 		DialContext: (&net.Dialer{
 			Timeout:   config.HTTPConnectTimeout,
 			KeepAlive: 30 * time.Second,

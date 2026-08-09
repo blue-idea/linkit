@@ -6,6 +6,7 @@ toolchain go1.26.5
 
 require (
 	github.com/energye/systray v1.0.3
+	github.com/mattn/go-ieproxy v0.0.12
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/wailsapp/wails/v2 v2.13.0
 	github.com/zalando/go-keyring v0.2.6
