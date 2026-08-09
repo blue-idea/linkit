@@ -62,8 +62,8 @@ func TestLaunchWindowSizeFromSettings(t *testing.T) {
 	if err != nil {
 		t.Fatalf("LaunchWindowSize: %v", err)
 	}
-	if width != 1792 || height != 1120 {
-		t.Fatalf("got %dx%d, want 1792x1120", width, height)
+	if width != 1822 || height != 1139 {
+		t.Fatalf("got %dx%d, want 1822x1139", width, height)
 	}
 }
 

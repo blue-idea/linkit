@@ -487,10 +487,10 @@ Settings → Appearance 在主题选择之外增加 **界面窗口大小** 四�
 
 | `uiSize` | 英文文案 | 中文文案 | 宽 × 高 |
 |----------|----------|----------|---------|
-| `small` | Small | 小 | 1152 × 720（相对 Medium ×0.9） |
-| `medium` | Medium | 中 | 1280 × 800（默认，与 `config.AppWidth/AppHeight` 一致） |
-| `large` | Large | 大 | 1536 × 960 |
-| `xlarge` | Extra large | 超大 | 1792 × 1120 |
+| `small` | Small | 小 | 1182 × 739 |
+| `medium` | Medium | 中 | 1384 × 865（默认，与 `config.AppWidth/AppHeight` 一致） |
+| `large` | Large | 大 | 1566 × 979 |
+| `xlarge` | Extra large | 超大 | 1822 × 1139 |
 
 预设映射集中在 `config/`（Go）与 `ui/src/config/`（TS），两边数值必须一致；禁止在组件内散落魔法数字。
 

@@ -15,8 +15,8 @@ func TestSetMainWindowSizeAppliesPreset(t *testing.T) {
 	if err := service.SetMainWindowSize(SetMainWindowSizeRequest{UiSize: config.UiSizeLarge}); err != nil {
 		t.Fatalf("SetMainWindowSize: %v", err)
 	}
-	if runtime.setSizeN != 1 || runtime.lastW != 1536 || runtime.lastH != 960 {
-		t.Fatalf("expected SetSize(1536,960), got n=%d w=%d h=%d", runtime.setSizeN, runtime.lastW, runtime.lastH)
+	if runtime.setSizeN != 1 || runtime.lastW != 1566 || runtime.lastH != 979 {
+		t.Fatalf("expected SetSize(1566,979), got n=%d w=%d h=%d", runtime.setSizeN, runtime.lastW, runtime.lastH)
 	}
 }
 
