@@ -81,6 +81,11 @@ func main() {
 				wailsruntime.EventsEmit(appContext, config.EventOpenSettings)
 			}
 		},
+		func() {
+			if appContext != nil {
+				wailsruntime.EventsEmit(appContext, config.EventOpenAbout)
+			}
+		},
 		func() { _ = nativeFileService.QuitApplication() },
 	)
 

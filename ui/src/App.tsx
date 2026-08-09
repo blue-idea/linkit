@@ -26,6 +26,8 @@ import {
 } from './features/shell';
 import { setToggleWindowHotkey } from './features/shell/desktop-hotkey';
 import { setMainWindowSize } from './features/shell/desktop-window-size';
+import { AboutDialog } from './features/shell/AboutDialog';
+import { subscribeTrayAbout } from './features/shell/tray-about';
 import { subscribeTraySettings } from './features/shell/tray-settings';
 import { DEFAULT_UI_SIZE } from './config/window-size';
 import { useAuth } from './auth';
@@ -210,6 +212,7 @@ export default function App() {
   const [insightsOpen, setInsightsOpen] = useState(false);
   const [healthOpen, setHealthOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [aiCollectionGoalOpen, setAICollectionGoalOpen] = useState(false);
   const [aiCollectionGenerating, setAICollectionGenerating] = useState(false);
   const [aiCollectionPreview, setAICollectionPreview] = useState<CollectionSuggestion | null>(null);
@@ -225,8 +228,9 @@ export default function App() {
   const [dragActive, setDragActive] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  // 原生托盘 Settings：窗口由 Go 侧显示，前端事件只负责打开设置弹窗。
+  // 原生托盘 Settings / About：窗口由 Go 侧显示，前端事件只负责打开对应弹窗。
   useEffect(() => subscribeTraySettings(() => setSettingsOpen(true)), []);
+  useEffect(() => subscribeTrayAbout(() => setAboutOpen(true)), []);
   const [syncing, setSyncing] = useState(false);
   const [seedConfirmOpen, setSeedConfirmOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -1292,6 +1296,7 @@ export default function App() {
       explore: exploreOpen,
       health: healthOpen,
       settings: settingsOpen,
+      about: aboutOpen,
     }),
     [
       seedConfirmOpen,
@@ -1310,6 +1315,7 @@ export default function App() {
       exploreOpen,
       healthOpen,
       settingsOpen,
+      aboutOpen,
     ]
   );
 
@@ -1365,6 +1371,9 @@ export default function App() {
         break;
       case 'settings':
         setSettingsOpen(false);
+        break;
+      case 'about':
+        setAboutOpen(false);
         break;
     }
   }, []);
@@ -1568,6 +1577,7 @@ export default function App() {
             onDeleteCollection={(id) => setCollectionDeleteId(id)}
             onNewTag={() => setTagFormOpen(true)}
             onDeleteTag={(id) => setTagDeleteId(id)}
+            onOpenHealth={() => setHealthOpen(true)}
             onDropToCompose={handleComposeDrop}
             insightCount={insights.length}
           />
@@ -2162,6 +2172,7 @@ export default function App() {
         onSignOut={handleSignOut}
         onRestoreSampleData={handleRestoreSampleData}
       />
+      <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
       <CloudConflictDialog
         open={cloudConflictOpen}
         cloudRevision={cloudConflictRevision}

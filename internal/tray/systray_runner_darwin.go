@@ -10,7 +10,7 @@ package tray
 #include <stdbool.h>
 #include <stdlib.h>
 
-extern bool linkitCreateStatusTray(const char *settingsTitle, const char *quitTitle, const char *tooltip, const void *iconBytes, int iconLen);
+extern bool linkitCreateStatusTray(const char *settingsTitle, const char *aboutTitle, const char *quitTitle, const char *tooltip, const void *iconBytes, int iconLen);
 extern void linkitDestroyStatusTray(void);
 */
 import "C"
@@ -22,7 +22,8 @@ import (
 
 const (
 	darwinTraySettingsMenuID = 1
-	darwinTrayQuitMenuID     = 2
+	darwinTrayAboutMenuID    = 2
+	darwinTrayQuitMenuID     = 3
 )
 
 var (
@@ -73,6 +74,8 @@ func (r *SystrayRunner) Stop() {
 func createDarwinStatusTray(tooltip string, icon []byte) bool {
 	settingsTitle := C.CString("Settings")
 	defer C.free(unsafe.Pointer(settingsTitle))
+	aboutTitle := C.CString("About")
+	defer C.free(unsafe.Pointer(aboutTitle))
 	quitTitle := C.CString("Quit")
 	defer C.free(unsafe.Pointer(quitTitle))
 
@@ -87,7 +90,7 @@ func createDarwinStatusTray(tooltip string, icon []byte) bool {
 		iconPointer = unsafe.Pointer(&icon[0])
 	}
 
-	return bool(C.linkitCreateStatusTray(settingsTitle, quitTitle, tooltipText, iconPointer, C.int(len(icon))))
+	return bool(C.linkitCreateStatusTray(settingsTitle, aboutTitle, quitTitle, tooltipText, iconPointer, C.int(len(icon))))
 }
 
 //export linkitDarwinTrayMenuSelected
@@ -102,6 +105,8 @@ func linkitDarwinTrayMenuSelected(menuID C.int) {
 	switch int(menuID) {
 	case darwinTraySettingsMenuID:
 		runner.host.HandleMenuClick(MenuSettings)
+	case darwinTrayAboutMenuID:
+		runner.host.HandleMenuClick(MenuAbout)
 	case darwinTrayQuitMenuID:
 		runner.host.HandleMenuClick(MenuQuit)
 	}

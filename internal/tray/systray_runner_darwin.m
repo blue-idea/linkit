@@ -36,7 +36,7 @@ static void linkitRunOnMainSync(dispatch_block_t block) {
 	dispatch_sync(dispatch_get_main_queue(), block);
 }
 
-bool linkitCreateStatusTray(const char *settingsTitle, const char *quitTitle, const char *tooltip, const void *iconBytes, int iconLen) {
+bool linkitCreateStatusTray(const char *settingsTitle, const char *aboutTitle, const char *quitTitle, const char *tooltip, const void *iconBytes, int iconLen) {
 	__block bool created = false;
 	linkitRunOnMainSync(^{
 		if (linkitStatusItem != nil) {
@@ -65,8 +65,14 @@ bool linkitCreateStatusTray(const char *settingsTitle, const char *quitTitle, co
 		}
 
 		NSString *settingsText = [NSString stringWithUTF8String:settingsTitle];
+		NSString *aboutText = [NSString stringWithUTF8String:aboutTitle];
 		NSString *quitText = [NSString stringWithUTF8String:quitTitle];
 		linkitStatusMenu = [[NSMenu alloc] initWithTitle:@"Linkit"];
+
+		NSMenuItem *aboutItem = [[NSMenuItem alloc] initWithTitle:aboutText action:@selector(handleMenuItem:) keyEquivalent:@""];
+		aboutItem.tag = 2;
+		aboutItem.target = linkitTrayTarget;
+		[linkitStatusMenu addItem:aboutItem];
 
 		NSMenuItem *settingsItem = [[NSMenuItem alloc] initWithTitle:settingsText action:@selector(handleMenuItem:) keyEquivalent:@""];
 		settingsItem.tag = 1;
@@ -74,7 +80,7 @@ bool linkitCreateStatusTray(const char *settingsTitle, const char *quitTitle, co
 		[linkitStatusMenu addItem:settingsItem];
 
 		NSMenuItem *quitItem = [[NSMenuItem alloc] initWithTitle:quitText action:@selector(handleMenuItem:) keyEquivalent:@""];
-		quitItem.tag = 2;
+		quitItem.tag = 3;
 		quitItem.target = linkitTrayTarget;
 		[linkitStatusMenu addItem:quitItem];
 

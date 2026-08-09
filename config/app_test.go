@@ -10,3 +10,10 @@ func TestAppVersion(t *testing.T) {
 		t.Errorf("AppVersion = %q; want %q", AppVersion, expected)
 	}
 }
+
+func TestGitHubURL(t *testing.T) {
+	expected := "https://github.com/blue-idea/linkit"
+	if GitHubURL != expected {
+		t.Errorf("GitHubURL = %q; want %q", GitHubURL, expected)
+	}
+}
