@@ -1493,7 +1493,7 @@ export default function App() {
 
   return (
     <I18nProvider locale={locale}>
-    <div className="h-screen w-screen workspace flex items-center justify-center p-0 md:p-6 overflow-hidden">
+    <div className="h-screen w-screen workspace flex items-center justify-center p-0 md:pt-3.5 md:px-3.5 md:pb-6 overflow-hidden">
       <AppShell
         syncing={syncing}
         sidebarOpen={sidebarOpen}

@@ -190,7 +190,7 @@ export function Sidebar({
   onDropToCategory: (categoryId: string, bookmarkId: string) => void;
   onDropToCollection: (collectionId: string, bookmarkId: string) => void;
   onOpenInsights: () => void;
-  onNewBookmark: () => void;
+  onNewBookmark?: () => void;
   onNewCategory: (parentId?: string) => void;
   onRenameCategory: (categoryId: string) => void;
   onDeleteCategory: (categoryId: string) => void;
