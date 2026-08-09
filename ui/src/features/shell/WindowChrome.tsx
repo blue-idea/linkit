@@ -41,6 +41,17 @@ export function WindowChrome({
       className="h-11 shrink-0 glass-strong border-b border-white/5 flex items-center px-4 gap-3 no-select relative"
       aria-label={i18n.t('chrome.topBar')}
     >
+      <div className="flex items-center gap-1.5 text-[12px] font-semibold text-ink-100">
+        <span className="w-4 h-4 rounded bg-gradient-to-br from-accent-500 to-mint-500 flex items-center justify-center">
+          <Icon name="Boxes" size={10} className="text-white" />
+        </span>
+        Linkit
+        <span className="text-ink-600 font-normal hidden sm:inline">—</span>
+        <span className="text-[12px] text-ink-400 font-normal hidden sm:inline">
+          {i18n.t('app.tagline')}
+        </span>
+      </div>
+
       <button
         type="button"
         onClick={onToggleSidebar}
