@@ -16,7 +16,8 @@ export type OverlayKind =
   | 'insights'
   | 'explore'
   | 'health'
-  | 'settings';
+  | 'settings'
+  | 'about';
 
 export const OVERLAY_PRIORITY: OverlayKind[] = [
   'seed-confirm',
@@ -35,6 +36,7 @@ export const OVERLAY_PRIORITY: OverlayKind[] = [
   'explore',
   'health',
   'settings',
+  'about',
 ];
 
 /** 返回当前打开的最上层浮层 ID；无打开浮层时返回 null。 */

@@ -176,6 +176,7 @@ export function Sidebar({
   onDeleteCollection,
   onNewTag,
   onDeleteTag,
+  onOpenHealth,
   onDropToCompose,
   insightCount,
 }: {
@@ -201,6 +202,8 @@ export function Sidebar({
   onDeleteCollection: (collectionId: string) => void;
   onNewTag?: () => void;
   onDeleteTag?: (tagId: string) => void;
+  /** 打开既有链接健康扫描对话框，不另起流程。 */
+  onOpenHealth?: () => void;
   onDropToCompose: (rawPayload: string) => void;
   insightCount: number;
 }) {
@@ -546,8 +549,36 @@ export function Sidebar({
           })}
         </div>
 
-        {/* Health */}
-        <SectionLabel>{i18n.t('sidebar.health')}</SectionLabel>
+        {/* Health：标题栏扫描入口用文字按钮，复用现有 HealthScanDialog。 */}
+        <SectionLabel
+          right={
+            onOpenHealth ? (
+              <button
+                type="button"
+                aria-label={i18n.t('health.start')}
+                title={i18n.t('health.start')}
+                className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-accent-300 hover:bg-accent-500/15 hover:text-accent-200 transition"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenHealth();
+                }}
+              >
+                <Icon name="RefreshCw" size={11} />
+                {i18n.t('health.start')}
+              </button>
+            ) : undefined
+          }
+        >
+          {i18n.t('sidebar.health')}
+        </SectionLabel>
+        <NavRow
+          active={selection.kind === 'health' && selection.status === 'ok'}
+          icon="ShieldCheck"
+          iconColor="text-mint-400"
+          label={i18n.t('sidebar.ok')}
+          count={bookmarks.filter((b) => b.health === 'ok').length}
+          onClick={() => onSelect({ kind: 'health', status: 'ok' })}
+        />
         <NavRow
           active={selection.kind === 'health' && selection.status === 'changed'}
           icon="RefreshCw"

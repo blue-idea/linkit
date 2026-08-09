@@ -634,7 +634,14 @@ function useSelectionTitle(selection: Selection, categories: Category[], collect
       case 'category': return categories.find((c) => c.id === selection.id)?.name ?? i18n.t('content.selection.categoryFallback');
       case 'collection': return collections.find((c) => c.id === selection.id)?.name ?? i18n.t('content.selection.collectionFallback');
       case 'tag': return i18n.t('content.selection.tag');
-      case 'health': return i18n.t(selection.status === 'changed' ? 'health.changed' : 'health.broken');
+      case 'health':
+        return i18n.t(
+          selection.status === 'ok'
+            ? 'health.ok'
+            : selection.status === 'changed'
+              ? 'health.changed'
+              : 'health.broken',
+        );
     }
   }, [selection, categories, collections, i18n]);
 }

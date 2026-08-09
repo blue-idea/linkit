@@ -7,7 +7,7 @@ export type Selection =
   | { kind: 'category'; id: string }
   | { kind: 'collection'; id: string }
   | { kind: 'tag'; id: string }
-  | { kind: 'health'; status: 'broken' | 'changed' };
+  | { kind: 'health'; status: 'ok' | 'broken' | 'changed' };
 
 export type ReadStatusFilter = 'all' | 'unread' | 'reading' | 'read' | 'archived';
 

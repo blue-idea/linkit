@@ -22,7 +22,7 @@
 - [X] 1.20 在设置->AI中增加接口测试，对当前配置的接口进行连通性测试，显示联通时间等内容，未设置内容不进行测试。
 - [X] 1.21设置里的导入，导出数据包括全部用户数据和用户设置数据。
 - [ ] 1.22 将左侧栏和右侧栏的宽度互换。
-- [ ] 1.23 托盘右键增加about，显示系统版本和github主页（[github.com/blue-idea/linkit](https://github.com/blue-idea/linkit)））
+- [X] 1.23 托盘右键增加about，显示系统版本和github主页（[github.com/blue-idea/linkit](https://github.com/blue-idea/linkit)））
 
 # 2.修复任务
 

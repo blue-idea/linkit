@@ -5,31 +5,37 @@ import (
 	"time"
 )
 
-// REQ-030-AC-002：托盘菜单至少包含 Settings 与 Quit。
+// REQ-030-AC-002：托盘菜单包含 About、Settings 与 Quit。
 func TestDefaultMenuItems(t *testing.T) {
 	items := DefaultMenuItems()
-	if len(items) != 2 {
-		t.Fatalf("menu items = %d, want 2", len(items))
+	if len(items) != 3 {
+		t.Fatalf("menu items = %d, want 3", len(items))
 	}
-	if items[0].ID != MenuSettings || items[0].Label != "Settings" {
-		t.Fatalf("first item = %+v, want Settings", items[0])
+	if items[0].ID != MenuAbout || items[0].Label != "About" {
+		t.Fatalf("first item = %+v, want About", items[0])
 	}
-	if items[1].ID != MenuQuit || items[1].Label != "Quit" {
-		t.Fatalf("second item = %+v, want Quit", items[1])
+	if items[1].ID != MenuSettings || items[1].Label != "Settings" {
+		t.Fatalf("second item = %+v, want Settings", items[1])
+	}
+	if items[2].ID != MenuQuit || items[2].Label != "Quit" {
+		t.Fatalf("third item = %+v, want Quit", items[2])
 	}
 }
 
-func TestHostDispatchesSettingsAndQuit(t *testing.T) {
+func TestHostDispatchesSettingsAboutAndQuit(t *testing.T) {
 	settingsOpened := make(chan struct{}, 1)
+	aboutOpened := make(chan struct{}, 1)
 	quit := make(chan struct{}, 1)
 	doubleClick := make(chan struct{}, 1)
 	host := NewHost(Callbacks{
 		OnSettings:    func() { settingsOpened <- struct{}{} },
+		OnAbout:       func() { aboutOpened <- struct{}{} },
 		OnQuit:        func() { quit <- struct{}{} },
 		OnDoubleClick: func() { doubleClick <- struct{}{} },
 	})
 
 	host.HandleMenuClick(MenuSettings)
+	host.HandleMenuClick(MenuAbout)
 	host.HandleMenuClick(MenuQuit)
 	host.HandleDoubleClick()
 
@@ -37,6 +43,11 @@ func TestHostDispatchesSettingsAndQuit(t *testing.T) {
 	case <-settingsOpened:
 	case <-time.After(time.Second):
 		t.Fatal("Settings callback was not invoked")
+	}
+	select {
+	case <-aboutOpened:
+	case <-time.After(time.Second):
+		t.Fatal("About callback was not invoked")
 	}
 	select {
 	case <-quit:

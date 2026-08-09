@@ -7,7 +7,7 @@ import (
 	"github.com/energye/systray"
 )
 
-// SystrayRunner 使用平台托盘显示 Settings/Quit。
+// SystrayRunner 使用平台托盘显示 Settings/About/Quit。
 type SystrayRunner struct {
 	mu      sync.Mutex
 	host    *Host
