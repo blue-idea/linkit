@@ -1402,6 +1402,47 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
   expected:
     return_value: "LibraryData with the confirmed duplicate action applied and no dangling references"
     side_effects: []
+
+- id: REQ-020-AC-005
+  ears: >
+    When 用户执行 Find duplicates,
+    the Linkit shall 列出全部重复候选对并显示重复对数，且在用户选择某一对之前不修改资料库.
+  test_type: Unit + E2E
+  expected:
+    ui_state: "A duplicate pairs list shows the total pair count and every candidate pair"
+    side_effects:
+      - "No library mutation occurs until the user opens a pair and confirms Merge or Delete"
+
+- id: REQ-020-AC-006
+  ears: >
+    While 重复候选对列表可见,
+    when 用户选择某一对并完成 Merge 或 Delete,
+    the Linkit shall 返回刷新后的剩余候选对列表；若无剩余则关闭列表.
+  test_type: E2E
+  expected:
+    ui_state: "After resolving one pair the list refreshes with remaining pairs, or closes when empty"
+    side_effects:
+      - "Only the confirmed pair action mutates the library"
+
+- id: REQ-020-AC-007
+  ears: >
+    While 重复候选对列表可见,
+    when 用户勾选一对或多对并执行批量 Merge 或 Delete, 或执行 Merge all / Delete all,
+    the Linkit shall 对目标集合逐对应用操作且无需二次确认, 然后刷新剩余候选列表.
+  test_type: Unit + E2E
+  expected:
+    ui_state: "Selected or all pairs can be batch merged or deleted from the list without a confirmation dialog"
+    side_effects:
+      - "Only bookmarks belonging to processed pairs are mutated"
+
+- id: REQ-020-AC-008
+  ears: >
+    When Linkit 对重复候选对执行 Merge（含逐项与批量）,
+    the Linkit shall 保留 URL 路径更短的书签作为 Keep, 并将另一侧作为 duplicate 合并或删除.
+  test_type: Unit
+  expected:
+    return_value: "Keep id is the bookmark whose URL pathname is shorter; ties use stable secondary rules"
+    side_effects: []
 ```
 
 ---

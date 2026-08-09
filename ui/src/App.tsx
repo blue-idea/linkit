@@ -120,13 +120,17 @@ import { collectCategorySubtreeIds } from './domain/categories';
 import {
   AICollectionGoalDialog,
   AICollectionPreviewDialog,
+  DuplicatePairsDialog,
   DuplicatePreviewDialog,
   applyCollectionSuggestion,
+  applyDuplicateBatch,
   applyDuplicateDecision,
   buildDuplicatePreview,
+  findDuplicatePairs,
   generateCollectionPreview,
   wailsAnalyzeClient,
   type CollectionSuggestion,
+  type DuplicatePairCandidate,
   type DuplicatePreview,
 } from './features/ai';
 import { ExploreDialog, recommendLibraryBookmarks, suggestThemeGaps } from './features/explore';
@@ -209,6 +213,7 @@ export default function App() {
   const [aiCollectionGoalOpen, setAICollectionGoalOpen] = useState(false);
   const [aiCollectionGenerating, setAICollectionGenerating] = useState(false);
   const [aiCollectionPreview, setAICollectionPreview] = useState<CollectionSuggestion | null>(null);
+  const [duplicatePairs, setDuplicatePairs] = useState<DuplicatePairCandidate[] | null>(null);
   const [duplicatePreview, setDuplicatePreview] = useState<DuplicatePreview | null>(null);
   const [exploreOpen, setExploreOpen] = useState(false);
   const [knowledgeGraphOpen, setKnowledgeGraphOpen] = useState(false);
@@ -682,13 +687,15 @@ export default function App() {
     }
   }, [bookmarks, flashToast, i18n, settings.ai?.apiBase, settings.ai?.model, settings.locale, tagList]);
 
+  // REQ-020-AC-005：先展示全部候选对与对数，再逐项进入差异预览。
   const openDuplicates = useCallback(() => {
-    const pair = bookmarks.flatMap((bookmark, index) => bookmarks.slice(index + 1).map((candidate) => [bookmark, candidate] as const))
-      .find(([left, right]) => left.url.replace(/\/$/, '') === right.url.replace(/\/$/, '') || left.domain === right.domain);
-    if (!pair) { flashToast(i18n.t('toast.noDuplicates')); return; }
-    const preview = buildDuplicatePreview(toCategoryLibrary({ bookmarks, categories: cats, collections: cols, tags: tagList }), pair[0].id, pair[1].id);
-    if (preview) setDuplicatePreview(preview);
-  }, [bookmarks, cats, cols, flashToast, i18n, tagList]);
+    const pairs = findDuplicatePairs(bookmarks);
+    if (pairs.length === 0) {
+      flashToast(i18n.t('toast.noDuplicates'));
+      return;
+    }
+    setDuplicatePairs(pairs);
+  }, [bookmarks, flashToast, i18n]);
 
   const createBookmark = useCallback((b: Omit<Bookmark, 'id' | 'createdAt' | 'lastVisitedAt' | 'visitCount' | 'spark'>) => {
     // REQ-006-AC-004：规范化 URL 并生成唯一 ID；确认保存后才进入此路径。
@@ -1993,24 +2000,81 @@ export default function App() {
           }}
         />
       )}
-      {duplicatePreview && (
-        <DuplicatePreviewDialog preview={duplicatePreview} onDecision={(action) => {
-          const result = applyDuplicateDecision(toCategoryLibrary(entities()), {
-            targetId: duplicatePreview.targetId,
-            duplicateId: duplicatePreview.duplicateId,
-            action,
-          });
-          if (result.ok && action !== 'cancel') {
+      {duplicatePairs && !duplicatePreview && (
+        <DuplicatePairsDialog
+          pairs={duplicatePairs}
+          onClose={() => setDuplicatePairs(null)}
+          onSelect={(pair) => {
+            const preview = buildDuplicatePreview(
+              toCategoryLibrary({ bookmarks, categories: cats, collections: cols, tags: tagList }),
+              pair.targetId,
+              pair.duplicateId,
+            );
+            if (preview) setDuplicatePreview(preview);
+          }}
+          onBatchAction={({ action, pairs }) => {
+            // REQ-020-AC-007：勾选或全部批量处理，无需二次确认。
+            const result = applyDuplicateBatch(toCategoryLibrary(entities()), { action, pairs });
+            if (!result.ok || result.appliedCount === 0) return;
             const byId = new Map(result.value.bookmarks.map((bookmark) => [bookmark.id, bookmark]));
-            setBookmarks((current) => current.filter((bookmark) => byId.has(bookmark.id)).map((bookmark) => {
-              const domain = byId.get(bookmark.id)!;
-              return { ...bookmark, tags: [...domain.tagIds], categoryId: domain.categoryId ?? '', collectionIds: [...domain.collectionIds] };
-            }));
+            const nextBookmarks = bookmarks
+              .filter((bookmark) => byId.has(bookmark.id))
+              .map((bookmark) => {
+                const domain = byId.get(bookmark.id)!;
+                return {
+                  ...bookmark,
+                  tags: [...domain.tagIds],
+                  categoryId: domain.categoryId ?? '',
+                  collectionIds: [...domain.collectionIds],
+                };
+              });
+            setBookmarks(nextBookmarks);
             setCols(result.value.collections.map((collection) => ({
               id: collection.id, name: collection.name, emoji: collection.emoji, color: collection.color,
               description: collection.description, bookmarkIds: [...collection.bookmarkIds],
             })));
-            flashToast(action === 'merge' ? i18n.t('toast.bookmarksMerged') : i18n.t('toast.duplicateDeleted'));
+            flashToast(i18n.t(
+              action === 'merge' ? 'toast.duplicatesBatchMerged' : 'toast.duplicatesBatchDeleted',
+              { count: result.appliedCount },
+            ));
+            const remaining = findDuplicatePairs(nextBookmarks);
+            setDuplicatePairs(remaining.length > 0 ? remaining : null);
+          }}
+        />
+      )}
+      {duplicatePreview && (
+        <DuplicatePreviewDialog preview={duplicatePreview} onDecision={(decision) => {
+          const result = applyDuplicateDecision(toCategoryLibrary(entities()), {
+            targetId: decision.targetId,
+            duplicateId: decision.duplicateId,
+            action: decision.action,
+          });
+          if (result.ok && decision.action !== 'cancel') {
+            const byId = new Map(result.value.bookmarks.map((bookmark) => [bookmark.id, bookmark]));
+            const nextBookmarks = bookmarks
+              .filter((bookmark) => byId.has(bookmark.id))
+              .map((bookmark) => {
+                const domain = byId.get(bookmark.id)!;
+                return {
+                  ...bookmark,
+                  tags: [...domain.tagIds],
+                  categoryId: domain.categoryId ?? '',
+                  collectionIds: [...domain.collectionIds],
+                };
+              });
+            setBookmarks(nextBookmarks);
+            setCols(result.value.collections.map((collection) => ({
+              id: collection.id, name: collection.name, emoji: collection.emoji, color: collection.color,
+              description: collection.description, bookmarkIds: [...collection.bookmarkIds],
+            })));
+            flashToast(
+              decision.action === 'merge'
+                ? i18n.t('toast.bookmarksMerged')
+                : i18n.t('toast.duplicateDeleted'),
+            );
+            // REQ-020-AC-006：修复后刷新剩余候选对；无剩余则关闭列表。
+            const remaining = findDuplicatePairs(nextBookmarks);
+            setDuplicatePairs(remaining.length > 0 ? remaining : null);
           }
           setDuplicatePreview(null);
         }} />
