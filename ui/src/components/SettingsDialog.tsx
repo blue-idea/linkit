@@ -30,6 +30,7 @@ import {
   summarizeImport,
   toUiLibraryFromEnvelope,
   type BrowserBookmarkPendingImport,
+  type BrowserImportProgress,
   type ImportRestoreRequest,
   type ImportSummary,
   type PendingImport,
@@ -229,6 +230,7 @@ export function SettingsDialog({
   const [pendingBrowserImport, setPendingBrowserImport] = useState<BrowserBookmarkPendingImport | null>(null);
   const [pendingSummary, setPendingSummary] = useState<ImportSummary | null>(null);
   const [importing, setImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState<BrowserImportProgress | null>(null);
   const [pendingSwitchMode, setPendingSwitchMode] = useState<StorageMode | null>(null);
   const [keyDraft, setKeyDraft] = useState('');
   const [keyConfigured, setKeyConfigured] = useState(false);
@@ -259,6 +261,7 @@ export function SettingsDialog({
       setPendingBrowserImport(null);
       setPendingSummary(null);
       setImporting(false);
+      setImportProgress(null);
       setPendingSwitchMode(null);
       setKeyDraft('');
       setAIConnectionTesting(false);
@@ -526,44 +529,55 @@ export function SettingsDialog({
     if (pendingBrowserImport && pendingBrowserImport.summary.newBookmarks === 0) {
       setPendingBrowserImport(null);
       setPendingSummary(null);
+      setImportProgress(null);
       setImportMsg(i18n.t('import.success', { count: 0 }));
       return;
     }
 
+    const browserImportToConfirm = pendingBrowserImport;
+    const importToConfirm = pendingImport;
     setImporting(true);
     setImportError(null);
+    setImportProgress(browserImportToConfirm ? {
+      stage: 'saving',
+      completed: 0,
+      total: 1,
+    } : null);
     try {
-      if (pendingBrowserImport) {
+      if (browserImportToConfirm) {
         await onImport({
-          kind: pendingBrowserImport.kind,
+          kind: browserImportToConfirm.kind,
           snapshot: {
-            library: pendingBrowserImport.snapshot,
+            library: browserImportToConfirm.snapshot,
             settings,
           },
           browserImport: {
-            importedBookmarkIds: [...pendingBrowserImport.importedBookmarkIds],
+            importedBookmarkIds: [...browserImportToConfirm.importedBookmarkIds],
+            onProgress: setImportProgress,
           },
         });
         setImportMsg(
-          i18n.t('import.success', { count: pendingBrowserImport.summary.newBookmarks })
+          i18n.t('import.success', { count: browserImportToConfirm.summary.newBookmarks })
         );
         setPendingBrowserImport(null);
-      } else if (pendingImport) {
+      } else if (importToConfirm) {
         const snapshot = {
-          library: toUiLibraryFromEnvelope(pendingImport.envelope),
-          settings: resolveImportedSettings(settings, pendingImport.settings),
+          library: toUiLibraryFromEnvelope(importToConfirm.envelope),
+          settings: resolveImportedSettings(settings, importToConfirm.settings),
         };
-        await onImport({ kind: pendingImport.kind, snapshot });
+        await onImport({ kind: importToConfirm.kind, snapshot });
         setImportMsg(
-          i18n.t('import.success', { count: pendingImport.envelope.data.bookmarks.length })
+          i18n.t('import.success', { count: importToConfirm.envelope.data.bookmarks.length })
         );
       }
       setPendingImport(null);
       setPendingSummary(null);
+      setImportProgress(null);
     } catch {
       setImportError(
-        i18n.t(pendingBrowserImport ? 'import.browserRestoreFailed' : 'import.restoreFailed'),
+        i18n.t(browserImportToConfirm ? 'import.browserRestoreFailed' : 'import.restoreFailed'),
       );
+      setImportProgress(null);
     } finally {
       setImporting(false);
     }
@@ -577,14 +591,23 @@ export function SettingsDialog({
   const themeDescKey = (id: ThemeId) => `theme.${id}.desc` as const;
 
   return (
-    <Modal open={open} onClose={onClose} aria-label={i18n.t('settings.title')}>
+    <Modal
+      open={open}
+      onClose={() => {
+        if (!importing) onClose();
+      }}
+      aria-label={i18n.t('settings.title')}
+    >
       <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5 shrink-0">
         <Icon name="Settings" size={18} className="text-ink-200" />
         <span className="text-[15px] font-semibold text-ink-100">{i18n.t('settings.title')}</span>
         <button
           type="button"
-          onClick={onClose}
-          className="ml-auto w-8 h-8 rounded-lg hover:bg-ink-700/60 text-ink-400 hover:text-ink-100 flex items-center justify-center transition"
+          onClick={() => {
+            if (!importing) onClose();
+          }}
+          disabled={importing}
+          className="ml-auto w-8 h-8 rounded-lg hover:bg-ink-700/60 text-ink-400 hover:text-ink-100 flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Icon name="X" size={16} />
         </button>
@@ -1045,13 +1068,19 @@ export function SettingsDialog({
             {saveError}
           </p>
         )}
-        <Button variant="ghost" onClick={onClose} disabled={saving}>
+        <Button
+          variant="ghost"
+          onClick={() => {
+            if (!importing) onClose();
+          }}
+          disabled={saving || importing}
+        >
           {i18n.t('settings.cancel')}
         </Button>
         <Button
           variant="primary"
           icon="Check"
-          disabled={saving}
+          disabled={saving || importing}
           onClick={() => {
             void (async () => {
               const apiBase = draft.ai.apiBase.trim();
@@ -1099,7 +1128,9 @@ export function SettingsDialog({
           setPendingImport(null);
           setPendingBrowserImport(null);
           setPendingSummary(null);
+          setImportProgress(null);
         }}
+        progress={importProgress}
         onConfirm={() => void handleConfirmImport()}
       />
       <StorageSwitchDialog

@@ -1,6 +1,14 @@
 import type { PortableAppSettings } from '../../domain/library';
 import type { AppSettings as UiAppSettings, LibraryData as UiLibraryData } from '../../types';
 
+export type BrowserImportProgressStage = 'saving' | 'metadata' | 'ai' | 'complete';
+
+export interface BrowserImportProgress {
+  stage: BrowserImportProgressStage;
+  completed: number;
+  total: number;
+}
+
 export interface RestoreSnapshot {
   library: UiLibraryData;
   settings: UiAppSettings;
@@ -11,6 +19,7 @@ export interface ImportRestoreRequest {
   snapshot: RestoreSnapshot;
   browserImport?: {
     importedBookmarkIds: string[];
+    onProgress?: (progress: BrowserImportProgress) => void;
   };
 }
 

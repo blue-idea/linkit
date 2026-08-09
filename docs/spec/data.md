@@ -1,9 +1,9 @@
 # Linkit 数据设计（Data）
 
 > 文件路径：`docs/spec/data.md`  
-> 版本：1.9.0
+> 版本：1.11.0
 > 日期：2026-08-09
-> 状态：已定稿；浏览器书签 HTML 数据边界已实现（部分外部门禁 BLOCKED）
+> 状态：TASK-081 数据约束已实现（真实第三方 AI 与 Playwright MCP 按门禁保持 BLOCKED）
 
 ---
 
@@ -117,7 +117,7 @@
 | `parentId` | string/null | 是 | 引用现有 Category；不得引用自身或后代 |
 | `color` | string/null | 是 | 受控颜色 token |
 
-分类计数为派生数据，不持久化。递归删除分类树时，受影响书签的 `categoryId` 设为 null；移动内容后删除时，子分类和直属书签移动到被删分类的父级。
+分类计数为派生数据，不持久化。递归删除分类树时，永久移除该子树中的 Bookmark，并从所有 Collection.bookmarkIds 中同步移除对应 ID；移动内容后删除时，子分类和直属书签移动到被删分类的父级。
 
 ### 3.4 Collection
 
@@ -446,11 +446,12 @@ Settings → General 的 `Import browser bookmarks` 接受 Chrome、Edge、Firef
 
 导入规则：
 
-1. 提取文件夹路径并映射到 Category 树；根层书签保持顶层分类或未分类。
+1. 提取文件夹路径并映射到 Category 树；浏览器虚拟根（Bookmarks Bar、Bookmarks Toolbar、Bookmarks Menu、Favorites Bar、Other Bookmarks、Mobile Bookmarks 及中文别名）仅作为解析边界，不创建 Category、不计入 folders；虚拟根直属书签落到 Linkit 根层，普通子文件夹从根层开始融合。
 2. 对每条书签执行 URL 规范化，并与当前资料库及当前导入批次做去重。
 3. 重复书签不覆盖现有记录，只计入 `skipped duplicates` 摘要。
 4. 用户确认后仅追加新增书签；Category 可按需复用或创建。
-5. 导入后 AI 整理只作用于新增书签，且每条书签最终最多 3 个唯一标签。
+5. 导入后 AI 整理只作用于新增书签，且每条书签最终最多 3 个唯一标签；metadata 与 AI 使用受控并发，结果按输入顺序应用。
+6. 新建 Category 的 `icon`/`color` 必须来自受控候选集并随机选择；Bookmark 的有效 HTTP(S) favicon 优先于任何备用文字图标或颜色。
 
 ---
 
@@ -495,6 +496,12 @@ Settings → General 的 `Import browser bookmarks` 接受 Chrome、Edge、Firef
 | DATA-INV-014 | 正式身份与开发身份的引导根目录名、Keychain 服务名必须隔离：正式为 `Linkit`，开发（`-tags dev`）为 `Linkit-Dev` |
 | DATA-INV-015 | `linkit-backup.settings` 不得包含凭据、session、日志、`aiConsent` 或 `lastCloudRevision`；导入不得授予 AI 数据发送授权 |
 | DATA-INV-016 | 浏览器书签 HTML 导出不得包含 Linkit 专有字段；浏览器 HTML 导入不得因重复规范化 URL 覆盖现有书签 |
+| DATA-INV-017 | 浏览器导入 metadata 只能补全非空的标题、描述和 HTTP(S) favicon；请求失败不得清空原值或删除已导入书签 |
+| DATA-INV-018 | 浏览器文件夹 Category 融合使用 NFKC、首尾空白归一化和大小写不敏感的完整路径 key；命中现有路径必须复用原 Category ID |
+| DATA-INV-019 | 导入增强的异步结果必须以导入后基线合并；用户在处理期间修改的字段优先于 metadata/AI 结果 |
+| DATA-INV-020 | 浏览器虚拟根名称不得持久化为 Category；其直属书签的 categoryId 必须为 null/空根引用，子文件夹路径从根层计算 |
+| DATA-INV-021 | 递归删除分类后不存在指向已删除 Bookmark 的 Collection.bookmarkIds 或其他实体引用 |
+| DATA-INV-022 | 新建导入 Category 的 icon/color 必须是受控候选值；有效 HTTP(S) favicon 不得被备用随机外观覆盖 |
 
 ---
 
@@ -526,4 +533,6 @@ MVP 不预先拆分 JSONB。若真实测量出现以下任一情况，必须回�
 | 1.5.0 | 2026-07-21 | 已定稿 | AppSettings 增加 `uiSize` 枚举与四档宽高预设表；对齐 REQ-031 |
 | 1.7.0 | 2026-07-27 | 已确认待实现 | 新增 `PortableAppSettings` 与 `linkit-backup` 格式，保留旧 `linkit-library` 导入兼容并明确设备状态排除边界 |
 | 1.8.0 | 2026-08-08 | 已确认待实现 | 新增浏览器书签 HTML 导入导出格式约束、文件夹映射、重复跳过与 Linkit 专有字段排除边界，对齐 REQ-035 |
-| 1.9.0 | 2026-08-09 | 已定稿/已实现 | TASK-079/080 验证浏览器 HTML 只承载文件夹、标题、URL 和标准时间属性；导入按规范化 URL 去重，AI 标签上限为 3 |
+| 1.9.0 | 2026-08-09 | 已定稿/已实现 | TASK-079~081 初始波次验证浏览器 HTML 只承载文件夹、标题、URL 和标准时间属性；导入按规范化 URL 去重，metadata/AI 结果按基线合并，AI 标签上限为 3 |
+| 1.10.0 | 2026-08-09 | 已确认规格回退 | 补充虚拟根扁平化、递归删除书签及 Collection 引用清理、受控并发与导入 Category/Bookmark 外观约束 |
+| 1.11.0 | 2026-08-09 | 已完成 | 验证 DATA-INV-016~022；递归删除后的 canonical/legacy 本地快照同步并纳入回归证据 |

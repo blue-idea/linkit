@@ -1,11 +1,11 @@
 # Linkit 实施计划（Tasks）
 
 > 文件路径：`docs/spec/tasks.md`  
-> 版本：4.4.2
+> 版本：4.6.0
 > 日期：2026-08-09
-> 状态：TASK-079、TASK-080 已完成；CLI 视觉与三浏览器 smoke 通过，Playwright MCP 与真实第三方 AI 保持 BLOCKED
+> 状态：TASK-079/080/081 已完成（CLI 视觉与三浏览器 smoke 已复跑；Playwright MCP 与真实第三方 AI 保持 BLOCKED）
 
-执行时须严格遵循 `docs/spec/requirements.md` 2.20.0、`docs/spec/design.md` 1.20.0 和 `docs/spec/test_strategy.md` 2.11.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
+执行时须严格遵循 `docs/spec/requirements.md` 2.22.0、`docs/spec/design.md` 1.22.0 和 `docs/spec/test_strategy.md` 2.13.0。每项生产代码任务必须执行 TDD 红、绿、重构循环。
 
 AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首尾均包含。
 
@@ -1929,6 +1929,35 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-081 · REQ-035/REQ-010：浏览器书签导入修正、metadata/AI 加速与递归删除**
+
+  > 依赖：TASK-014、TASK-075、TASK-079、TASK-080 · 对齐：REQ-010、REQ-035 · 预计：4–6 小时 · 状态：done（外部门禁部分 BLOCKED） · 2026-08-09
+
+  - [x] 规格回退：用户确认虚拟书签根扁平化、递归删除永久删除书签、受控并发与随机 Category 外观；同步 requirements/design/data/test_strategy/traceability。
+  - [x] Red：先补虚拟根不落 Category、根层子文件夹融合、分类随机外观、favicon 优先、递归删除后重新导入可新增、Collection 引用清理、metadata/AI 最大并发和顺序合并测试。
+  - [x] Green：集中配置虚拟根名称和 metadata/AI 并发上限；解析时剥离虚拟根；递归删除过滤书签及 Collection 引用；导入 Category 使用随机外观；enrichment 采用 worker pool 收集结果并按顺序串行应用共享 Tag/Category 状态。
+  - [x] Refactor：抽取通用受控并发 worker、路径扁平化和外观生成辅助函数，保持现有 metadata 基线合并、失败隔离、进度回调和标签上限行为。
+  - [x] QA：465 项 Vitest、TypeScript、ESLint、Vite build、Go metadata/AI 测试、9 项 E2E、4 项视觉回归、CLI 视觉与三浏览器 smoke 通过；真实第三方 AI 与 Playwright MCP 按门禁记录 BLOCKED。
+
+  **验证命令：**
+  ```bash
+  pnpm --dir ui exec vitest run src/features/import-export/browser-import-ai.test.ts src/features/import-export/browser-html.test.ts src/domain/categories/categories.test.ts src/components/SettingsDialog.browser-bookmarks.test.tsx
+  pnpm --dir ui exec playwright test tests/e2e/browser-bookmarks.spec.ts tests/e2e/category-crud.spec.ts --workers=1
+  pnpm --dir ui exec playwright test tests/visual/settings-browser-bookmarks.spec.ts --workers=1
+  pnpm --dir ui typecheck
+  pnpm --dir ui lint
+  pnpm --dir ui build
+  go test ./internal/metadata/... ./internal/ai/... -count=1
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-081-AC.md`、`docs/spec/evidence/TASK-081-evidence.md`、`docs/spec/reports/TASK-081-report.md`。
+
+  _需求: REQ-010、REQ-035
+  验收标准：REQ-010-AC-005、REQ-035-AC-003、REQ-035-AC-007~012
+  测试类型：Unit + Component + E2E + Visual + Performance + Manual
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -2013,6 +2042,7 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-078 | fix_task 1.21：完整资料库与可移植设置导入导出 | Unit/Component/E2E/Visual/Security | done | REQ-034 |
 | TASK-079 | REQ-035：浏览器书签 HTML 导入导出契约与 Settings 集成 | Unit/Component/E2E/Visual/Security/Manual | done | REQ-035 |
 | TASK-080 | REQ-035：浏览器书签导入后 AI 分类与标签整理 | Unit/Component/E2E/Visual/Manual | done | REQ-035 |
+| TASK-081 | REQ-035/REQ-010：浏览器书签导入修正、metadata/AI 加速与递归删除 | Unit/Component/E2E/Visual/Performance/Manual | done（外部门禁部分 BLOCKED） | REQ-010、REQ-035 |
 
 ---
 
@@ -2058,3 +2088,6 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 4.4.0 | 2026-08-08 | 已确认待实现 | 新增 TASK-079/080，覆盖 REQ-035 浏览器书签 HTML 导入导出、文件夹映射、重复跳过与导入后 AI 分类标签整理 |
 | 4.4.1 | 2026-08-08 | 已完成 | 完成 TASK-079/080：Settings 支持主流浏览器书签 HTML 导入导出，导入确认后对新增书签执行 AI 分类与最多 3 个标签整理；Playwright MCP 视觉验收受本机浏览器路径解析缺陷阻塞 |
 | 4.4.2 | 2026-08-09 | 已完成（部分门禁 BLOCKED） | 复跑 450 项 Vitest、静态门禁、浏览器 E2E 与视觉回归；Chrome/Edge/Firefox 真实 HTML 导入导出 smoke 通过；Playwright MCP 与真实第三方 AI 仍按规范保留 BLOCKED |
+| 4.4.3 | 2026-08-09 | 已完成（部分门禁 BLOCKED） | 完成 TASK-081 metadata 补全、AI 上下文增强、分类路径融合与导入进度；全量 459 项 Vitest、E2E/视觉和静态门禁通过，真实第三方 AI 与 Playwright MCP 继续保持 BLOCKED |
+| 4.5.0 | 2026-08-09 | 已确认待实现 | 用户确认浏览器虚拟根扁平化、递归删除永久移除书签、受控并发 enrichment 与随机 Category 外观；TASK-081 回退到修正波次 |
+| 4.6.0 | 2026-08-09 | 已完成（部分外部门禁 BLOCKED） | TASK-081 修正波次完成；修复 canonical 本地快照滞后，465 项 Vitest、9 项 E2E、4 项视觉及 Go/静态门禁通过 |

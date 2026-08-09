@@ -18,16 +18,20 @@ type GoMetadataService = {
   FetchFaviconDataURL?: (request: { url: string }) => Promise<string>;
 };
 
-/**
- * 浏览器/Wails 元数据抓取入口。
- * 桌面端优先调用 Go MetadataService；Vite/CI 环境无绑定则返回失败以降级手动入库。
- * REQ-006-AC-001 / REQ-006-AC-003
- */
-export async function fetchBookmarkMetadata(url: string): Promise<MetadataFetchResult> {
+function getGoMetadataService(): GoMetadataService | null {
+  return (window as unknown as { go?: { metadata?: { Service?: GoMetadataService } } }).go
+    ?.metadata?.Service ?? null;
+}
+
+async function fetchBookmarkMetadataWithPreference(
+  url: string,
+  preferComplete: boolean,
+): Promise<MetadataFetchResult> {
   try {
-    const service = (window as unknown as { go?: { metadata?: { Service?: GoMetadataService } } }).go
-      ?.metadata?.Service;
-    const fetchMetadata = service?.FetchMetadataFast ?? service?.FetchMetadata ?? null;
+    const service = getGoMetadataService();
+    const fetchMetadata = preferComplete
+      ? service?.FetchMetadata ?? service?.FetchMetadataFast ?? null
+      : service?.FetchMetadataFast ?? service?.FetchMetadata ?? null;
     if (!fetchMetadata) {
       return {
         ok: false,
@@ -36,15 +40,15 @@ export async function fetchBookmarkMetadata(url: string): Promise<MetadataFetchR
       };
     }
 
-    // Go 期望 MetadataRequest 结构体，不可直接传 URL 字符串。
+    // Go 绑定要求 MetadataRequest 对象，不能直接传 URL 字符串。
     const payload = await fetchMetadata({ url });
     return {
       ok: true,
-      title: payload.title ?? '',
-      description: payload.description ?? '',
-      contentText: payload.contentText ?? '',
-      favicon: payload.faviconUrl ?? null,
-      faviconDataUrl: payload.faviconDataUrl ?? null,
+      title: typeof payload.title === 'string' ? payload.title : '',
+      description: typeof payload.description === 'string' ? payload.description : '',
+      contentText: typeof payload.contentText === 'string' ? payload.contentText : '',
+      favicon: typeof payload.faviconUrl === 'string' ? payload.faviconUrl : null,
+      faviconDataUrl: typeof payload.faviconDataUrl === 'string' ? payload.faviconDataUrl : null,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to fetch page metadata';
@@ -52,11 +56,24 @@ export async function fetchBookmarkMetadata(url: string): Promise<MetadataFetchR
   }
 }
 
+/**
+ * 浏览器/Wails 元数据抓取入口。
+ * 桌面端优先调用快速 Go MetadataService；没有快速绑定时回退完整绑定。
+ * REQ-006-AC-001 / REQ-006-AC-003
+ */
+export async function fetchBookmarkMetadata(url: string): Promise<MetadataFetchResult> {
+  return fetchBookmarkMetadataWithPreference(url, false);
+}
+
+/** 浏览器书签导入使用完整绑定，以优先取得 favicon data；旧绑定缺失时回退快速绑定。 */
+export async function fetchBookmarkMetadataForImport(url: string): Promise<MetadataFetchResult> {
+  return fetchBookmarkMetadataWithPreference(url, true);
+}
+
 /** WebView 加载外链 favicon 失败时，由 Go 抓取并返回 data URL。 */
 export async function fetchFaviconDataUrl(faviconUrl: string): Promise<string | null> {
   try {
-    const fetchFn = (window as unknown as { go?: { metadata?: { Service?: GoMetadataService } } }).go?.metadata
-      ?.Service?.FetchFaviconDataURL;
+    const fetchFn = getGoMetadataService()?.FetchFaviconDataURL;
     if (typeof fetchFn !== 'function' || !faviconUrl.trim()) {
       return null;
     }

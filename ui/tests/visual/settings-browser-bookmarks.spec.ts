@@ -46,7 +46,7 @@ async function saveEvidence(
   });
 }
 
-test.describe('TASK-079 浏览器书签 Settings 视觉回归', () => {
+test.describe('TASK-079/081 浏览器书签 Settings 视觉回归', () => {
   test('General 页面浏览器导入导出入口匹配基线', async ({ page }) => {
     await prepare(page);
     await page.getByRole('button', { name: 'Settings', exact: true }).click();
@@ -74,6 +74,42 @@ test.describe('TASK-079 浏览器书签 Settings 视觉回归', () => {
       confirm,
       'TASK-079-settings-browser-bookmarks-en.png',
       'TASK-079-settings-browser-bookmarks-en',
+    );
+  });
+
+  test('TASK-081 metadata progress matches baseline', async ({ page }) => {
+    await page.addInitScript(() => {
+      const metadataService = {
+        FetchMetadata: ({ url }: { url: string }) => new Promise((resolve) => {
+          window.setTimeout(() => resolve({
+            title: `Metadata title for ${url}`,
+            description: 'Imported metadata description',
+            contentText: 'Imported metadata content',
+            faviconUrl: 'https://example.com/imported-favicon.ico',
+            faviconDataUrl: null,
+          }), 1200);
+        }),
+      };
+      (window as unknown as { go?: unknown }).go = { metadata: { Service: metadataService } };
+    });
+    await page.goto('/');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expectLoginGate(page);
+    await enterLocalMode(page);
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
+    const settings = page.getByRole('dialog', { name: 'Settings' });
+    await settings.getByRole('tab', { name: 'General' }).click();
+    await uploadBrowserBookmarks(settings);
+    const confirm = page.getByRole('dialog', { name: 'Import browser bookmarks?' });
+    await confirm.getByRole('button', { name: 'Import bookmarks' }).click();
+    await expect(confirm.getByRole('progressbar')).toBeVisible();
+    await expect(confirm.getByTestId('import-progress-stage')).toHaveText('Fetching metadata');
+    await saveEvidence(
+      confirm,
+      'TASK-081-settings-browser-bookmarks-progress-en.png',
+      'TASK-081-settings-browser-bookmarks-progress-en',
     );
   });
 

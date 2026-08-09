@@ -52,7 +52,7 @@ import {
   shouldConfirmBookmarkDelete,
   updateBookmarkFromEditor,
   visitBookmark,
-  fetchBookmarkMetadata,
+  fetchBookmarkMetadataForImport,
 } from './features/bookmarks';
 import {
   applyCategoryDeleteDecision,
@@ -105,9 +105,10 @@ import {
 import { isBookmarkUrlDuplicate, normalizeBookmarkUrl } from './domain/commands';
 import {
   mergeBrowserImportAIResult,
-  enrichImportedBookmarksWithAI,
+  enrichImportedBookmarks,
   restoreBackupAtomically,
   toUiLibraryFromEnvelope,
+  type BrowserImportProgress,
   type ImportRestoreRequest,
 } from './features/import-export';
 import {
@@ -346,13 +347,16 @@ export default function App() {
       if (settings.storageMode === 'cloud' && auth.user) {
         saveCloudLibrary(auth.user.id, library);
       } else {
-        // 同步写浏览器键，并异步写入有效数据根（桌面 Go）。
+        // 同步写旧浏览器键，并同步更新 canonical envelope，避免删除后的旧快照再次被启动恢复。
         saveLocalLibrary(library);
         void browserStorage.saveLibraryData(library);
+        void backupPersistence.persistLibrary(library).catch(() => {
+          // 本地回退保存失败时保留内存状态；下一次变更会再次尝试写入。
+        });
       }
     }, 900);
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
-  }, [library, settings.storageMode, auth.user, authed, libraryHydrated, browserStorage]);
+  }, [library, settings.storageMode, auth.user, authed, libraryHydrated, browserStorage, backupPersistence]);
 
   const insights = useMemo(() => buildLibraryInsights(toCategoryLibrary({
     bookmarks, categories: cats, collections: cols, tags: tagList,
@@ -786,9 +790,10 @@ export default function App() {
       flashToast(localizeCommandError(i18n, result.error));
       return;
     }
-    const applied = applyCategoryLibraryResult(result.value, bookmarks, cats);
+    const applied = applyCategoryLibraryResult(result.value, bookmarks, cats, cols);
     setCats(applied.categories);
     setBookmarks(applied.bookmarks);
+    if (applied.collections) setCols(applied.collections);
     setCategoryForm(null);
     flashToast(i18n.t('toast.categoryRenamed'));
   }, [bookmarks, cats, categoryForm, cols, flashToast, i18n, tagList]);
@@ -1064,9 +1069,10 @@ export default function App() {
       flashToast(localizeCommandError(i18n, result.error));
       return;
     }
-    const applied = applyCategoryLibraryResult(result.value, bookmarks, cats);
+    const applied = applyCategoryLibraryResult(result.value, bookmarks, cats, cols);
     setCats(applied.categories);
     setBookmarks(applied.bookmarks);
+    if (applied.collections) setCols(applied.collections);
     flashToast(i18n.t('toast.categoryDeleted'));
   }, [bookmarks, cats, cols, flashToast, i18n, tagList]);
 
@@ -1099,9 +1105,10 @@ export default function App() {
       flashToast(localizeCommandError(i18n, result.error));
       return;
     }
-    const applied = applyCategoryLibraryResult(result.value, bookmarks, cats);
+    const applied = applyCategoryLibraryResult(result.value, bookmarks, cats, cols);
     setCats(applied.categories);
     setBookmarks(applied.bookmarks);
+    if (applied.collections) setCols(applied.collections);
     setCategoryDeleteId(null);
     setCategoryRecursiveConfirm(false);
     flashToast(i18n.t('toast.categoryDeleted'));
@@ -1124,6 +1131,17 @@ export default function App() {
   }, [flashToast, setSettings, settings]);
 
   const handleImport = useCallback(async (request: ImportRestoreRequest) => {
+    const browserImport = request.browserImport;
+    const reportProgress = (progress: BrowserImportProgress) => {
+      try {
+        browserImport?.onProgress?.(progress);
+      } catch {
+        // 进度回调属于界面观察者，异常不得影响导入。
+      }
+    };
+    if (browserImport) {
+      reportProgress({ stage: 'saving', completed: 0, total: 1 });
+    }
     const previous = { library, settings };
     await restoreBackupAtomically({
       previous,
@@ -1138,6 +1156,7 @@ export default function App() {
         setCats(lib.categories);
         setCols(lib.collections);
         setTagList(lib.tags);
+        libraryRef.current = lib;
         setSettings(snapshot.settings);
         applyTheme(snapshot.settings.theme);
         document.documentElement.lang = snapshot.settings.locale ?? 'en';
@@ -1148,36 +1167,43 @@ export default function App() {
         }));
       },
     });
-    flashToast(i18n.t('toast.imported', { count: request.snapshot.library.bookmarks.length }));
+    if (browserImport) {
+      reportProgress({ stage: 'saving', completed: 1, total: 1 });
+    }
+    flashToast(i18n.t('toast.imported', {
+      count: browserImport?.importedBookmarkIds.length ?? request.snapshot.library.bookmarks.length,
+    }));
 
-    if (request.browserImport?.importedBookmarkIds.length) {
-      void (async () => {
-        const result = await enrichImportedBookmarksWithAI({
-          library: request.snapshot.library,
-          importedBookmarkIds: request.browserImport?.importedBookmarkIds ?? [],
-          settings: request.snapshot.settings,
-          client: wailsAnalyzeClient,
-          fetchMetadata: fetchBookmarkMetadata,
-        });
-        if (result.updatedBookmarkIds.length === 0) {
-          return;
-        }
+    if (browserImport?.importedBookmarkIds.length) {
+      const result = await enrichImportedBookmarks({
+        library: request.snapshot.library,
+        importedBookmarkIds: browserImport.importedBookmarkIds,
+        settings: request.snapshot.settings,
+        client: wailsAnalyzeClient,
+        fetchMetadata: fetchBookmarkMetadataForImport,
+        onProgress: browserImport.onProgress,
+      });
+      if (result.updatedBookmarkIds.length === 0) {
+        return;
+      }
 
-        const merged = mergeBrowserImportAIResult(libraryRef.current, result);
-        setBookmarks(merged.bookmarks);
-        setCats(merged.categories);
-        setCols(merged.collections);
-        setTagList(merged.tags);
+      const merged = mergeBrowserImportAIResult(libraryRef.current, result);
+      setBookmarks(merged.bookmarks);
+      setCats(merged.categories);
+      setCols(merged.collections);
+      setTagList(merged.tags);
+      libraryRef.current = merged;
 
-        try {
-          await backupPersistence.persistLibrary(merged);
-          flashToast(i18n.t('toast.browserImportAIComplete', {
-            count: result.updatedBookmarkIds.length,
-          }));
-        } catch {
-          // AI 整理落库失败不得回滚已成功的导入结果，仅跳过提示。
-        }
-      })();
+      try {
+        await backupPersistence.persistLibrary(merged);
+        flashToast(i18n.t('toast.browserImportEnrichmentComplete', {
+          count: result.updatedBookmarkIds.length,
+        }));
+      } catch {
+        // enrichment 落库失败不得回滚已成功的导入结果，仅保留内存状态。
+      }
+    } else if (browserImport) {
+      reportProgress({ stage: 'complete', completed: 0, total: 0 });
     }
   }, [backupPersistence, flashToast, i18n, library, setSettings, settings]);
 
@@ -1195,8 +1221,11 @@ export default function App() {
     setState((s) => ({ ...s, selectedBookmarkId: seedBookmarks[0]?.id ?? null }));
     saveLocalLibrary(sample);
     void browserStorage.saveLibraryData(sample);
+    void backupPersistence.persistLibrary(sample).catch(() => {
+      // canonical 本地保存失败时保留内存状态；后续自动保存会再次尝试。
+    });
     flashToast(i18n.t('toast.sampleRestored'));
-  }, [browserStorage, flashToast, i18n]);
+  }, [backupPersistence, browserStorage, flashToast, i18n]);
 
   const handleRestoreSampleData = useCallback(() => {
     const hasLocalData = browserStorage.hasLocalLibraryData() || bookmarks.length > 0;

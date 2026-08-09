@@ -83,14 +83,15 @@ export function toCategoryLibrary(input: {
 export function applyCategoryLibraryResult(
   result: LibraryData,
   currentBookmarks: Bookmark[],
-  currentCategories: Category[]
-): { bookmarks: Bookmark[]; categories: Category[] } {
+  currentCategories: Category[],
+  currentCollections?: Collection[],
+): { bookmarks: Bookmark[]; categories: Category[]; collections?: Collection[] } {
   const categoryById = new Map(result.categories.map((category) => [category.id, category]));
   const bookmarkCategory = new Map(
     result.bookmarks.map((bookmark) => [bookmark.id, bookmark.categoryId])
   );
 
-  return {
+  const applied = {
     categories: result.categories.map((category) => {
       const previous = currentCategories.find((item) => item.id === category.id);
       return {
@@ -114,6 +115,19 @@ export function applyCategoryLibraryResult(
           ? { ...bookmark, categoryId: '' }
           : bookmark
       ),
+  };
+
+  if (!currentCollections) {
+    return applied;
+  }
+
+  const remainingBookmarkIds = new Set(result.bookmarks.map((bookmark) => bookmark.id));
+  return {
+    ...applied,
+    collections: currentCollections.map((collection) => ({
+      ...collection,
+      bookmarkIds: collection.bookmarkIds.filter((bookmarkId) => remainingBookmarkIds.has(bookmarkId)),
+    })),
   };
 }
 

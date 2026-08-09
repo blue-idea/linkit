@@ -17,3 +17,20 @@ export const BROWSER_BOOKMARKS_HTML = [
   '  </DL><p>',
   '</DL><p>',
 ].join('\n');
+
+/** 含虚拟根与普通子文件夹的 fixture，用于递归删除后再次导入回归。 */
+export const BROWSER_BOOKMARKS_FOLDER_HTML = [
+  '<!DOCTYPE NETSCAPE-Bookmark-file-1>',
+  '<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">',
+  '<TITLE>Bookmarks</TITLE>',
+  '<H1>Bookmarks</H1>',
+  '<DL><p>',
+  '  <DT><H3 PERSONAL_TOOLBAR_FOLDER="true">Bookmarks Toolbar</H3>',
+  '  <DL><p>',
+  '    <DT><H3>Imported Folder</H3>',
+  '    <DL><p>',
+  `      <DT><A HREF="${BROWSER_BOOKMARK_NEW_URL}" ADD_DATE="1786204801">Browser imported example</A>`,
+  '    </DL><p>',
+  '  </DL><p>',
+  '</DL><p>',
+].join('\n');
