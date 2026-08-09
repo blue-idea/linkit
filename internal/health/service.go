@@ -85,6 +85,7 @@ type Service struct {
 	client           *http.Client
 	emitter          Emitter
 	concurrency      int
+	maxRetries       int
 	maxResponseBytes int64
 	mu               sync.Mutex
 	active           map[string]context.CancelFunc
@@ -93,7 +94,7 @@ type Service struct {
 func NewService(options ...Option) *Service {
 	service := &Service{
 		client: metadata.NewBoundedHTTPClient(), emitter: noopEmitter{},
-		concurrency: config.HealthMaxConcurrency, maxResponseBytes: config.HTTPMaxResponseBytes,
+		concurrency: config.HealthMaxConcurrency, maxRetries: config.HealthMaxRetries, maxResponseBytes: config.HTTPMaxResponseBytes,
 		active: make(map[string]context.CancelFunc),
 	}
 	for _, option := range options {
@@ -122,6 +123,14 @@ func WithConcurrency(concurrency int) Option {
 	return func(service *Service) {
 		if concurrency > 0 {
 			service.concurrency = concurrency
+		}
+	}
+}
+
+func WithMaxRetries(maxRetries int) Option {
+	return func(service *Service) {
+		if maxRetries >= 0 {
+			service.maxRetries = maxRetries
 		}
 	}
 }
@@ -211,24 +220,37 @@ sendLoop:
 }
 
 func (service *Service) check(ctx context.Context, target Target) (Result, bool) {
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, target.URL, nil)
-	if err != nil {
-		return brokenResult(target.BookmarkID, nil, "INVALID_URL"), true
-	}
-	request.Header.Set("User-Agent", config.HTTPUserAgent)
-	request.Header.Set("Accept", "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8")
-	response, err := service.client.Do(request)
-	if err != nil {
+	var response *http.Response
+	var err error
+	for attempt := 0; attempt <= service.maxRetries; attempt++ {
+		request, requestErr := http.NewRequestWithContext(ctx, http.MethodGet, target.URL, nil)
+		if requestErr != nil {
+			return brokenResult(target.BookmarkID, nil, "INVALID_URL"), true
+		}
+		request.Header.Set("User-Agent", config.HTTPUserAgent)
+		request.Header.Set("Accept", "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8")
+		response, err = service.client.Do(request)
+		if err == nil {
+			break
+		}
 		if ctx.Err() != nil {
 			return Result{}, false
 		}
-		code := classifyNetworkError(err)
-		return brokenResult(target.BookmarkID, nil, code), true
+		if attempt == service.maxRetries {
+			code := classifyNetworkError(err)
+			if target.PreviousFingerprint != nil && *target.PreviousFingerprint != "" {
+				return uncertainResult(target.BookmarkID, *target.PreviousFingerprint, code), true
+			}
+			return brokenResult(target.BookmarkID, nil, code), true
+		}
 	}
 	defer response.Body.Close()
 	status := response.StatusCode
-	if status < http.StatusOK || status >= http.StatusBadRequest {
+	if isBrokenHTTPStatus(status) {
 		return brokenResult(target.BookmarkID, &status, fmt.Sprintf("HTTP_%d", status)), true
+	}
+	if status < http.StatusOK || status >= http.StatusMultipleChoices {
+		return reachableResult(target.BookmarkID, status), true
 	}
 	body, err := io.ReadAll(io.LimitReader(response.Body, service.maxResponseBytes+1))
 	if err != nil {
@@ -252,6 +274,20 @@ func brokenResult(bookmarkID string, status *int, code string) Result {
 	return Result{BookmarkID: bookmarkID, Health: HealthBroken, HTTPStatus: status, CheckedAt: time.Now().UTC().Format(time.RFC3339Nano), ErrorCode: &code}
 }
 
+func reachableResult(bookmarkID string, status int) Result {
+	return Result{BookmarkID: bookmarkID, Health: HealthOK, HTTPStatus: &status, CheckedAt: time.Now().UTC().Format(time.RFC3339Nano)}
+}
+
+func uncertainResult(bookmarkID string, previousFingerprint string, code string) Result {
+	return Result{
+		BookmarkID:  bookmarkID,
+		Health:      HealthOK,
+		CheckedAt:   time.Now().UTC().Format(time.RFC3339Nano),
+		Fingerprint: &previousFingerprint,
+		ErrorCode:   &code,
+	}
+}
+
 func validateRequest(request StartScanRequest) error {
 	if strings.TrimSpace(request.ScanID) == "" || len(request.Targets) == 0 {
 		return errors.New("Health scan request is invalid")
@@ -271,4 +307,13 @@ func classifyNetworkError(err error) string {
 		return "TIMEOUT"
 	}
 	return "NETWORK_ERROR"
+}
+
+func isBrokenHTTPStatus(status int) bool {
+	switch status {
+	case http.StatusNotFound, http.StatusGone, http.StatusUnavailableForLegalReasons:
+		return true
+	default:
+		return false
+	}
 }

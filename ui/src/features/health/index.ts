@@ -15,13 +15,20 @@ async function fingerprint(body: string): Promise<string> {
   return [...new Uint8Array(hash)].map((value) => value.toString(16).padStart(2, '0')).join('');
 }
 
+function isBrokenHttpStatus(status: number): boolean {
+  return status === 404 || status === 410 || status === 451;
+}
+
 /** 浏览器开发/E2E 适配器；桌面正式环境由 Go HealthService 执行同一契约。 */
 export async function scanBookmark(bookmark: Bookmark, signal: AbortSignal, url = bookmark.url): Promise<HealthResult> {
   const checkedAt = new Date().toISOString();
   try {
     const response = await fetch(url, { signal, credentials: 'omit', redirect: 'follow' });
-    if (!response.ok) {
+    if (isBrokenHttpStatus(response.status)) {
       return { bookmarkId: bookmark.id, health: 'broken', httpStatus: response.status, checkedAt, fingerprint: null, errorCode: `HTTP_${response.status}` };
+    }
+    if (!response.ok) {
+      return { bookmarkId: bookmark.id, health: 'ok', httpStatus: response.status, checkedAt, fingerprint: null, errorCode: null };
     }
     const body = await response.text();
     const nextFingerprint = await fingerprint(body);
@@ -32,6 +39,16 @@ export async function scanBookmark(bookmark: Bookmark, signal: AbortSignal, url 
     };
   } catch (error) {
     if (signal.aborted) throw error;
+    if (bookmark.healthFingerprint) {
+      return {
+        bookmarkId: bookmark.id,
+        health: 'ok',
+        httpStatus: null,
+        checkedAt,
+        fingerprint: bookmark.healthFingerprint,
+        errorCode: 'NETWORK_ERROR',
+      };
+    }
     return { bookmarkId: bookmark.id, health: 'broken', httpStatus: null, checkedAt, fingerprint: null, errorCode: 'NETWORK_ERROR' };
   }
 }

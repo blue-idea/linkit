@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/blue-idea/collection/config"
+	"github.com/blue-idea/collection/internal/netproxy"
 	"github.com/blue-idea/collection/internal/secretstore"
 )
 
@@ -62,6 +63,8 @@ type Client struct {
 }
 
 type Option func(*Client)
+
+var resolveProxyFunc = netproxy.Resolve
 
 func NewClient(options ...Option) *Client {
 	client := &Client{
@@ -381,7 +384,7 @@ func (client *Client) backoffDelay(attempt int) time.Duration {
 // NewBoundedHTTPClient 为 AI 请求提供连接/响应头/总超时约束。
 func NewBoundedHTTPClient() *http.Client {
 	transport := &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
+		Proxy: resolveProxyFunc(),
 		DialContext: (&net.Dialer{
 			Timeout:   config.AIConnectTimeout,
 			KeepAlive: 30 * time.Second,

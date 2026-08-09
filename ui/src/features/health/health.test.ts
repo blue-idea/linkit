@@ -21,6 +21,13 @@ describe('链接健康浏览器适配器', () => {
     }));
   });
 
+  test('受限访问状态不应误判为 broken 或 changed', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('access denied', { status: 403 })));
+    await expect(scanBookmark({ ...bookmarks[0], healthFingerprint: 'old' }, new AbortController().signal)).resolves.toEqual(expect.objectContaining({
+      health: 'ok', httpStatus: 403, fingerprint: null, errorCode: null,
+    }));
+  });
+
   test('取消请求时传播 AbortError 而不伪造 broken 结果', async () => {
     vi.stubGlobal('fetch', vi.fn((_url, options: RequestInit) => new Promise((_resolve, reject) => {
       options.signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
@@ -29,5 +36,12 @@ describe('链接健康浏览器适配器', () => {
     const pending = scanBookmark(bookmarks[0], controller.signal);
     controller.abort();
     await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+  });
+
+  test('已有历史指纹时网络错误不应直接误判为 broken', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('network error')));
+    await expect(scanBookmark({ ...bookmarks[0], healthFingerprint: 'known-fingerprint' }, new AbortController().signal)).resolves.toEqual(expect.objectContaining({
+      health: 'ok', httpStatus: null, fingerprint: 'known-fingerprint', errorCode: 'NETWORK_ERROR',
+    }));
   });
 });
