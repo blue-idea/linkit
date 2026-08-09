@@ -20,10 +20,10 @@ func TestResolveWindowSizePresets(t *testing.T) {
 		width  int
 		height int
 	}{
-		{UiSizeSmall, 1152, 720},
-		{UiSizeMedium, 1280, 800},
-		{UiSizeLarge, 1536, 960},
-		{UiSizeXLarge, 1792, 1120},
+		{UiSizeSmall, 1182, 739},
+		{UiSizeMedium, 1384, 865},
+		{UiSizeLarge, 1566, 979},
+		{UiSizeXLarge, 1822, 1139},
 	}
 	for _, tc := range cases {
 		width, height, ok := ResolveWindowSize(tc.size)

@@ -38,7 +38,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 14. 本地存储目录可在 Settings → Storage 中通过原生文件夹选择器变更；变更时迁移除 OS Keychain 密钥外的全部应用数据目录内容。目标目录已含 Linkit 数据时阻止迁移；迁移失败保持原路径与原数据并清理目标残留；默认 AppData 保留轻量 bootstrap 指针文件，真实数据根可重定向。
 15. 开发构建与正式构建使用隔离的本机身份槽：正式身份 AppData/Keychain 为 `Linkit`；开发身份（`-tags dev`）为 `Linkit-Dev`。发布产物不得嵌入开发身份字符串或携带开发者本机测试数据/密钥。
 16. OS 窗口关闭将应用隐藏到系统托盘/菜单栏且不退出进程；托盘菜单至少提供 Show 与 Quit；默认窗口显隐热键为 Windows `Ctrl+L` / macOS `Cmd+L`，且必须注册为系统级全局热键；Settings → Shortcuts 列出全部可配置快捷键，支持修改、冲突检测与本地持久化；Linux 对托盘与全局热键为 best-effort。
-17. Settings → Appearance 提供界面窗口大小四档：Small / Medium / Large / Extra large（中文界面对应小 / 中 / 大 / 超大）；默认 Medium；仅缩放主窗口宽高（不缩放 UI 字号/控件密度）；档位尺寸为 Small 1152×720（相对 Medium 0.9）、Medium 1280×800、Large 1536×960、Extra large 1792×1120；保存后立即生效并写入 AppSettings；重启按档位恢复；用户手动拖拽窗口不单独持久化，下次启动仍按档位重置。
+17. Settings → Appearance 提供界面窗口大小四档：Small / Medium / Large / Extra large（中文界面对应小 / 中 / 大 / 超大）；默认 Medium；仅缩放主窗口宽高（不缩放 UI 字号/控件密度）；档位尺寸为 Small 1182×739、Medium 1384×865、Large 1566×979、Extra large 1822×1139；保存后立即生效并写入 AppSettings；重启按档位恢复；用户手动拖拽窗口不单独持久化，下次启动仍按档位重置。
 18. macOS 免费分发使用第三方 Homebrew Tap `blue-idea/tap`；当前 Release 产物为 universal `Linkit.dmg`，Cask 使用单一 SHA256，不拆分 Apple Silicon / Intel 资产；安装后仅对 `/Applications/Linkit.app` 递归清理 `com.apple.quarantine`，不使用 `sudo`。
 19. Settings → AI 提供当前 API Base、Model 与 Key 的连通性测试；缺失任一配置时不发请求；测试不包含收藏内容并显示实际往返耗时。
 20. Settings → General 导出完整 `linkit-backup`，包含全部 LibraryData 与可移植设置；API Key、session/token、日志、AI consent 与云 revision 不进入备份；旧 `linkit-library` 继续兼容导入。
@@ -2170,17 +2170,17 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 - id: REQ-031-AC-002
   ears: >
     When Linkit 首次启动且不存在窗口大小偏好,
-    the Linkit shall 使用 Medium（1280×800）作为默认主窗口尺寸.
+    the Linkit shall 使用 Medium（1384×865）作为默认主窗口尺寸.
   test_type: Unit
   expected:
-    return_value: "Default uiSize is medium mapped to 1280x800"
+    return_value: "Default uiSize is medium mapped to 1384x865"
     side_effects: []
 
 - id: REQ-031-AC-003
   ears: >
     When 用户选择某一窗口大小档位并确认保存,
     the Linkit shall 立即将主窗口宽高调整为该档位预设尺寸
-    （Small 1152×720、Medium 1280×800、Large 1536×960、Extra large 1792×1120），
+    （Small 1182×739、Medium 1384×865、Large 1566×979、Extra large 1822×1139），
     且不得仅通过缩放字号或控件密度冒充尺寸变更.
   test_type: Unit
   expected:

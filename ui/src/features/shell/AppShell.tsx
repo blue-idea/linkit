@@ -40,7 +40,7 @@ export function AppShell({
         {sidebarOpen && (
           <nav
             aria-label={i18n.t('shell.sidebar')}
-            className="w-[248px] shrink-0 hidden sm:block animate-slide-down"
+            className="w-[288px] shrink-0 hidden sm:block animate-slide-down"
           >
             {sidebar}
           </nav>
@@ -53,7 +53,7 @@ export function AppShell({
         {detailOpen && (
           <aside
             aria-label={i18n.t('shell.detail')}
-            className="w-[320px] shrink-0 hidden lg:block animate-slide-down"
+            className="w-[310px] shrink-0 hidden lg:block animate-slide-down"
           >
             {detail}
           </aside>

@@ -4,10 +4,10 @@ export const UI_SIZE_IDS = ['small', 'medium', 'large', 'xlarge'] as const satis
 
 /** 窗口大小预设；与 config/window_size.go 及 data.md 对齐。REQ-031 */
 export const UI_SIZE_PRESETS: Record<UiSize, { width: number; height: number }> = {
-  small: { width: 1152, height: 720 },
-  medium: { width: 1280, height: 800 },
-  large: { width: 1536, height: 960 },
-  xlarge: { width: 1792, height: 1120 },
+  small: { width: 1182, height: 739 },
+  medium: { width: 1384, height: 865 },
+  large: { width: 1566, height: 979 },
+  xlarge: { width: 1822, height: 1139 },
 };
 
 export const DEFAULT_UI_SIZE: UiSize = 'medium';

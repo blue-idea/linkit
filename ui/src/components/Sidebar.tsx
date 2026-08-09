@@ -166,7 +166,6 @@ export function Sidebar({
   onDropToCategory,
   onDropToCollection,
   onOpenInsights,
-  onNewBookmark,
   onNewCategory,
   onRenameCategory,
   onDeleteCategory,
@@ -329,25 +328,7 @@ export function Sidebar({
       onClick={() => onSelect({ kind: 'all' })}
       className="h-full flex flex-col glass border-r border-white/5"
     >
-      {/* Brand + new */}
-      <div className="px-3 pt-3 pb-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent-500 to-mint-500 flex items-center justify-center hairline shrink-0">
-          <Icon name="Boxes" size={16} className="text-white" />
-        </div>
-        <div className="flex-1">
-          <div className="text-[13px] font-semibold text-ink-100 leading-none">Linkit</div>
-          <div className="text-[10px] text-ink-400 mt-0.5">{i18n.t('app.tagline')}</div>
-        </div>
-        <button
-          onClick={onNewBookmark}
-          className="w-7 h-7 rounded-lg bg-ink-700/70 hover:bg-accent-600 text-ink-200 hover:text-white flex items-center justify-center transition-all hairline"
-          title={`${i18n.t('sidebar.newBookmark')} (⌘N)`}
-        >
-          <Icon name="Plus" size={15} />
-        </button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto scroll-thin pb-4">
+      <div className="flex-1 overflow-y-auto scroll-thin pb-4 pt-1">
         {/* Library */}
         <SectionLabel>{i18n.t('sidebar.library')}</SectionLabel>
         <NavRow
