@@ -1,15 +1,15 @@
 # Linkit 技术设计（Design）
 
 > 文件路径：`docs/spec/design.md`  
-> 版本：1.20.0
+> 版本：1.22.0
 > 日期：2026-08-09
-> 状态：已定稿；REQ-035 设计已实现（部分外部门禁 BLOCKED）
+> 状态：TASK-081 已完成（真实第三方 AI 与 Playwright MCP 按门禁保持 BLOCKED）
 
 ---
 
 ## 1. 设计目标与边界
 
-本设计用于实现 `docs/spec/requirements.md` 2.20.0 定义的 Linkit MVP。总体目标如下：
+本设计用于实现 `docs/spec/requirements.md` 2.22.0 定义的 Linkit MVP。总体目标如下：
 
 - 将现有 Vite + React 演示原型迁移为可交付的 Wails v2 桌面应用。
 - 保留现有三栏布局与主要视觉资产，但拆分巨型组件和直接状态修改逻辑。
@@ -312,6 +312,8 @@ sequenceDiagram
 - `mergeDuplicateBookmarks`
 - `applyImportedDocument`
 
+分类递归删除命令在二次确认后删除分类子树及其全部 Bookmark 记录，并同步过滤 Collection.bookmarkIds；“移动内容后删除”仍只移动内容，不改变其既有语义。两种策略必须由领域测试分别锁定，避免把破坏性删除误当成未分类迁移。
+
 命令统一返回：
 
 ```text
@@ -546,7 +548,13 @@ Settings → General 在既有 `linkit-backup` Export / Import 旁新增 `Export
 
 浏览器 HTML 导入按两阶段编排。第一阶段只解析 HTML、提取文件夹路径与书签链接并生成可确认摘要：统计文件夹数、总书签数、`new bookmarks` 与 `skipped duplicates`；重复判断同时覆盖导入文件内部重复和当前资料库中按规范化 URL 已存在的书签。第二阶段在用户确认后才落库：文件夹树映射为 Category 树，新增书签追加到资料库，重复项跳过且不改写原记录。
 
-导入后 AI 整理复用既有 `AnalyzeBookmark` 客户端、标签匹配与分类建议路径，不新建第二套 AI 契约。对每条新增书签，协调层在落库后触发有界导入整理任务：优先复用现有 Tag label，最终每条书签最多保留 3 个唯一标签；AI 不可用、未授权、超时或限流时，浏览器书签导入仍视为成功，只跳过增强步骤并展示稳定状态。为避免长时间阻塞 Settings，先显示导入成功反馈，AI 整理在后台异步执行并在完成后显示最终摘要；实际写入逻辑保持在 `features/import-export` 与 `features/ai/bookmark-analysis` 的可测试纯函数和协调器中。
+导入后 AI 整理复用既有 `AnalyzeBookmark` 客户端、标签匹配与分类建议路径，不新建第二套 AI 契约。对每条新增书签，协调层在原始快照落库后触发有界导入整理任务：优先复用现有 Tag label，最终每条书签最多保留 3 个唯一标签；AI 不可用、未授权、超时或限流时，浏览器书签导入仍视为成功，只跳过 AI 步骤并保留 metadata 结果。Settings 在任务完成前保持导入对话框可见，展示阶段与 `completed/total` 进度，完成后再显示最终摘要；实际写入逻辑保持在 `features/import-export` 与 `features/ai/bookmark-analysis` 的可测试纯函数和协调器中。
+
+TASK-081 修正波次在上述流程上增加导入增强编排：确认后先持久化原始新增书签，再对每个新增 URL 调用完整 `FetchMetadata`（优先完整 favicon 返回，缺少绑定时回退 `FetchMetadataFast`），以非空标题、描述和 HTTP(S) favicon 补全书签；metadata 失败只记录该项失败并继续。metadata 结果的正文随后作为既有 AI 入参的上下文，AI 候选集同时包含当前资料库与本次导入新增的 Category/Tag，仍受每条书签最多 3 个唯一标签约束。metadata 与 AI 分别使用 `config/browser-bookmarks.ts` 中的并发上限和 worker pool，先并发收集结果，再按原始书签顺序串行创建 Tag、应用 Category/Tag，避免共享状态竞态。
+
+浏览器导出中的虚拟根名称由 `config/browser-bookmarks.ts` 集中维护。解析时剥离首段虚拟根（Bookmarks Bar、Bookmarks Toolbar、Bookmarks Menu、Favorites Bar、Other Bookmarks、Mobile Bookmarks 及中文别名），虚拟根本身不创建 Category、不计入文件夹摘要；其直属书签落到 Linkit 根层，普通子文件夹从根层开始参与 NFKC、去首尾空白和大小写不敏感的完整路径融合。匹配到现有路径时复用其 ID，只有缺失路径才创建节点；新 Category 使用受控候选集随机 icon/color，书签成功取得 HTTP(S) favicon 时优先保留 favicon。
+
+导入协调器通过 `ImportRestoreRequest.browserImport.onProgress` 回调报告 `saving`、`metadata`、`ai`、`complete` 阶段及 `completed/total`，Settings 导入对话框在整个增强过程结束前保持可见并显示可访问进度条；用户在后台编辑的标题、描述、favicon、分类和标签按基线合并规则优先保留。
 
 ---
 
@@ -758,7 +766,9 @@ flowchart LR
 | 未签名/未公证 DMG 被 Gatekeeper 隔离 | 用户无法直接启动应用 | 第三方 Cask 安装后仅对 Linkit.app 清理 quarantine；README 明示该行为，后续取得证书后回退 STEP 2/3 评估移除 |
 | Tap 仓库或跨仓库 Token 缺失 | Release 成功但 Homebrew 版本未更新 | 独立 Job 显式失败；使用细粒度、仅限 Tap 内容写权限的 Token；无变化不提交 |
 | Release 资产命名或 Cask 模板漂移 | 哈希更新错误或下载 404 | 资产名集中配置；更新器严格验证单一 version/sha256；契约测试覆盖 workflow、Cask 与 README |
-| 浏览器书签 HTML 方言差异 | 解析失败或导入后结构错乱 | 只接受标准 `<DL>/<DT>/<H3>/<A>` 语义，忽略非标准节点；使用 Chrome / Edge / Firefox 样本与真实导出文件回归 |
+| 浏览器书签 HTML 方言差异 | 解析失败或导入后结构错乱 | 只接受标准 `<DL>/<DT>/<H3>/<A>` 语义，忽略非标准节点；虚拟根名称集中归一并扁平化；使用 Chrome / Edge / Firefox 样本与真实导出文件回归 |
+| 大批量导入逐条串行请求 | AI/metadata 导入时间过长或 UI 长时间无响应 | metadata 与 AI 使用集中配置的受控 worker pool；先并发收集、再按原顺序应用共享标签和分类状态，并对每条更新报告进度 |
+| 递归删除后残留书签导致重新导入误判重复 | 用户无法重新导入已删除书签，Collection 出现悬空 ID | 领域递归删除同时过滤 Bookmark 与 Collection.bookmarkIds；持久化后用 E2E 删除再导入回归 |
 
 ---
 
@@ -807,4 +817,6 @@ flowchart LR
 | 1.17.0 | 2026-07-25 | 已定稿 | 新增侧边栏标签新建与删除组件交互、悬停显隐删除 `X` 按钮与状态管理设计，对齐 REQ-014-AC-004/005 |
 | 1.18.0 | 2026-07-27 | 已确认待实现 | 新增 AI 接口连通性测试与 `linkit-backup` 完整资料库/可移植设置备份设计，对齐 REQ-033/034 |
 | 1.19.0 | 2026-08-08 | 已确认待实现 | 新增浏览器书签 HTML 导入导出、文件夹到 Category 树映射、重复跳过与导入后 AI 标签上限 3 的整理设计，对齐 REQ-035 |
-| 1.20.0 | 2026-08-09 | 已定稿/已实现 | TASK-079/080 按设计完成 Netscape HTML 互通、确认后落库、AI 增量合并与最多 3 个标签；真实 AI 与 Playwright MCP 继续按门禁记录 BLOCKED |
+| 1.20.0 | 2026-08-09 | 已定稿/已实现 | TASK-079~081 初始波次完成 Netscape HTML 互通、确认后落库、metadata/AI enrichment、分类路径融合、进度回调与最多 3 个标签 |
+| 1.21.0 | 2026-08-09 | 已确认规格回退 | 补充虚拟书签根扁平化、受控并发、随机 Category 外观和递归删除永久移除 Bookmark 的设计约束 |
+| 1.22.0 | 2026-08-09 | 已完成 | TASK-081 修正波次落地 worker pool、canonical/legacy 本地保存同步、递归删除引用清理和导入外观/favicons 约束 |

@@ -18,7 +18,7 @@ export {
   type BookmarkIconEditorValue,
 } from './bookmark-icon-editor-model';
 export { applyDeleteDecision, shouldConfirmBookmarkDelete } from './delete-confirm';
-export { fetchBookmarkMetadata } from './metadata-client';
+export { fetchBookmarkMetadata, fetchBookmarkMetadataForImport } from './metadata-client';
 export {
   resolveNewBookmarkCategoryId,
   shouldApplyAiCategorySuggestion,

@@ -278,14 +278,19 @@ function moveThenDelete(library: LibraryData, categoryId: string): LibraryData {
 
 function recursiveDelete(library: LibraryData, categoryId: string): LibraryData {
   const subtree = collectCategorySubtreeIds(library.categories, categoryId);
+  const removedBookmarkIds = new Set(
+    library.bookmarks
+      .filter((bookmark) => bookmark.categoryId !== null && subtree.has(bookmark.categoryId))
+      .map((bookmark) => bookmark.id),
+  );
   return {
     ...library,
     categories: library.categories.filter((category) => !subtree.has(category.id)),
-    bookmarks: library.bookmarks.map((bookmark) =>
-      bookmark.categoryId !== null && subtree.has(bookmark.categoryId)
-        ? { ...bookmark, categoryId: null }
-        : bookmark
-    ),
+    bookmarks: library.bookmarks.filter((bookmark) => !removedBookmarkIds.has(bookmark.id)),
+    collections: library.collections.map((collection) => ({
+      ...collection,
+      bookmarkIds: collection.bookmarkIds.filter((bookmarkId) => !removedBookmarkIds.has(bookmarkId)),
+    })),
   };
 }
 

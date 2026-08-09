@@ -78,6 +78,8 @@ export function createBackupPersistenceAdapters(
         return;
       }
       storage.setItem(BROWSER_STORAGE_KEYS.library, documentJson);
+      // 浏览器回退同时保留旧 UI 键，兼容尚未迁移的启动与 E2E 读取路径。
+      storage.setItem(BROWSER_STORAGE_KEYS.legacyLibrary, JSON.stringify(library));
     },
 
     async persistSettings(settings) {

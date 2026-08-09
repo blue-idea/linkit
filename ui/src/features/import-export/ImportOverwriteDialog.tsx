@@ -2,7 +2,9 @@ import { Icon, Button } from '../../components/ui';
 import { DialogFrame } from '../../components/DialogFrame';
 import type { ImportSummary } from './document';
 import type { BrowserBookmarkImportSummary } from './browser-html';
+import type { BrowserImportProgress } from './restore';
 import type { I18nApi } from '../../i18n';
+import type { MessageKey } from '../../i18n/catalogs';
 
 /**
  * 导入覆盖确认对话框：展示摘要，确认前不修改资料库。
@@ -13,6 +15,7 @@ export function ImportOverwriteDialog({
   summary,
   i18n,
   busy = false,
+  progress = null,
   onCancel,
   onConfirm,
 }: {
@@ -20,6 +23,7 @@ export function ImportOverwriteDialog({
   summary: ImportSummary | BrowserBookmarkImportSummary;
   i18n: I18nApi;
   busy?: boolean;
+  progress?: BrowserImportProgress | null;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
@@ -40,7 +44,18 @@ export function ImportOverwriteDialog({
         categories: summary.categories,
         collections: summary.collections,
         tags: summary.tags,
-      });
+    });
+  const activeProgress = progress ?? {
+    stage: 'saving' as const,
+    completed: 0,
+    total: browserImport ? summary.newBookmarks : 0,
+  };
+  const progressStageKey = `import.progress.${activeProgress.stage}` as MessageKey;
+  const progressTotal = Math.max(activeProgress.total, 1);
+  const progressCompleted = Math.min(
+    Math.max(activeProgress.completed, 0),
+    progressTotal,
+  );
 
   return (
     <DialogFrame
@@ -80,6 +95,29 @@ export function ImportOverwriteDialog({
                   uiSize: summary.uiSize ?? '',
                 })}
               </p>
+            )}
+            {browserImport && busy && (
+              <div className="mt-4 space-y-1.5" data-testid="import-progress">
+                <div className="flex items-center justify-between text-[11px] text-ink-300">
+                  <span data-testid="import-progress-stage">{i18n.t(progressStageKey)}</span>
+                  <span className="tabular-nums" data-testid="import-progress-count">
+                    {activeProgress.completed} / {activeProgress.total}
+                  </span>
+                </div>
+                <div
+                  role="progressbar"
+                  aria-label={i18n.t('import.progress.label')}
+                  aria-valuemin={0}
+                  aria-valuemax={progressTotal}
+                  aria-valuenow={progressCompleted}
+                  className="h-1.5 overflow-hidden rounded-full bg-ink-700/70"
+                >
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-accent-500 to-mint-500 transition-all"
+                    style={{ width: `${(progressCompleted / progressTotal) * 100}%` }}
+                  />
+                </div>
+              </div>
             )}
           </div>
         </div>

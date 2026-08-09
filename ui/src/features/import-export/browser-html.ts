@@ -1,10 +1,10 @@
 import {
   BROWSER_BOOKMARKS_DEFAULT_TITLE,
   BROWSER_BOOKMARKS_FAVICON_COLOR,
-  BROWSER_BOOKMARKS_FOLDER_COLOR,
-  BROWSER_BOOKMARKS_FOLDER_ICON,
+  isBrowserBookmarkVirtualRootName,
 } from '../../config/browser-bookmarks';
 import { normalizeBookmarkUrl } from '../../domain/commands';
+import { randomCategoryAppearance } from '../categories/appearance';
 import type { Bookmark, Category, LibraryData } from '../../types';
 import { IMPORT_ERROR_MESSAGES, type ImportErrorKey } from './document';
 
@@ -76,6 +76,13 @@ function pathKey(path: string[]): string {
   return JSON.stringify(path);
 }
 
+/** 分类融合 key：兼容全角字符、首尾空白和浏览器导出中的大小写差异。 */
+function normalizedPathKey(path: string[]): string {
+  return JSON.stringify(
+    path.map((segment) => segment.normalize('NFKC').trim().toLocaleLowerCase()),
+  );
+}
+
 function pathFromKey(key: string): string[] {
   try {
     const parsed: unknown = JSON.parse(key);
@@ -135,7 +142,7 @@ function collectExistingCategoryPaths(categories: Category[]): Map<string, strin
     return segments;
   };
 
-  return new Map(categories.map((category) => [pathKey(resolvePath(category.id)), category.id]));
+  return new Map(categories.map((category) => [normalizedPathKey(resolvePath(category.id)), category.id]));
 }
 
 function findNestedDl(node: Element): HTMLDListElement | null {
@@ -166,8 +173,14 @@ function collectBookmarksFromDl(
     );
     if (folder) {
       const name = folder.textContent?.trim() ?? '';
-      const nextPath = name ? [...folderPath, name] : [...folderPath];
-      if (name) {
+      // 浏览器虚拟根不是用户分类：剥离首段后，直属书签回到 Linkit 根层。
+      const virtualRoot = folderPath.length === 0 && name && isBrowserBookmarkVirtualRootName(name);
+      const nextPath = virtualRoot
+        ? [...folderPath]
+        : name
+          ? [...folderPath, name]
+          : [...folderPath];
+      if (name && !virtualRoot) {
         folders.add(pathKey(nextPath));
       }
       const nestedDl = findNestedDl(child);
@@ -198,13 +211,14 @@ function ensureCategoryPath(
   categoryIdsByPath: Map<string, string>,
   path: string[],
   idFactory: () => string,
+  random: () => number,
 ): string {
   let parentId: string | null = null;
   let currentPath: string[] = [];
 
   for (const name of path) {
     currentPath = [...currentPath, name];
-    const key = pathKey(currentPath);
+    const key = normalizedPathKey(currentPath);
     const existing = categoryIdsByPath.get(key);
     if (existing) {
       parentId = existing;
@@ -212,12 +226,13 @@ function ensureCategoryPath(
     }
 
     const createdId = idFactory();
+    const appearance = randomCategoryAppearance(random);
     snapshot.categories.push({
       id: createdId,
       name,
-      icon: BROWSER_BOOKMARKS_FOLDER_ICON,
+      icon: appearance.icon,
       parentId,
-      color: BROWSER_BOOKMARKS_FOLDER_COLOR,
+      color: appearance.color,
     });
     categoryIdsByPath.set(key, createdId);
     parentId = createdId;
@@ -380,6 +395,7 @@ export function parseBrowserBookmarkHtml(
     library: LibraryData;
     now: string;
     idFactory?: () => string;
+    random?: () => number;
   },
 ): BrowserBookmarkParseResult {
   const document = new DOMParser().parseFromString(raw, 'text/html');
@@ -398,6 +414,7 @@ export function parseBrowserBookmarkHtml(
 
   const snapshot = cloneLibrary(options.library);
   const nextId = options.idFactory ?? (() => crypto.randomUUID());
+  const random = options.random ?? Math.random;
   const categoryIdsByPath = collectExistingCategoryPaths(snapshot.categories);
 
   const seenUrls = new Set(
@@ -429,12 +446,12 @@ export function parseBrowserBookmarkHtml(
   // 只有确认会新增的书签才创建对应分类，重复项不产生空分类副作用。
   for (const folder of newFolderPaths) {
     const segments = pathFromKey(folder);
-    ensureCategoryPath(snapshot, categoryIdsByPath, segments, nextId);
+    ensureCategoryPath(snapshot, categoryIdsByPath, segments, nextId, random);
   }
 
   const newBookmarks = acceptedBookmarks.map((parsedBookmark) => {
     const categoryId = parsedBookmark.folderPath.length
-      ? categoryIdsByPath.get(pathKey(parsedBookmark.folderPath)) ?? ''
+      ? categoryIdsByPath.get(normalizedPathKey(parsedBookmark.folderPath)) ?? ''
       : '';
     return createImportedBookmark(parsedBookmark, options.now, nextId(), categoryId);
   });

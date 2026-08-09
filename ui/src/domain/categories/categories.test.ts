@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import {
   createBookmark,
   createCategory,
+  createCollection,
   createCoreJourneySeed,
 } from '../../testing/factories';
 import type { LibraryData } from '../library';
@@ -76,6 +77,12 @@ function sampleLibrary(): LibraryData {
       createBookmark({ id: 'bm-root', categoryId: 'cat-root', title: 'Root BM' }),
       createBookmark({ id: 'bm-child', categoryId: 'cat-child', title: 'Child BM' }),
       createBookmark({ id: 'bm-grand', categoryId: 'cat-grand', title: 'Grand BM' }),
+    ],
+    collections: [
+      createCollection({
+        id: 'collection-delete-check',
+        bookmarkIds: ['bm-root', 'bm-child', 'bm-grand'],
+      }),
     ],
   };
 }
@@ -174,8 +181,8 @@ describe('分类树与领域命令', () => {
     expect(library.categories).toHaveLength(3);
   });
 
-  // REQ-010-AC-005：递归删除需二次确认，书签变未分类。
-  test('deleteCategory recursive-delete 在二次确认后删除子树并清空书签分类', async () => {
+  // REQ-010-AC-005：递归删除需二次确认，并永久删除子树书签及其引用。
+  test('deleteCategory recursive-delete 在二次确认后删除子树书签并清理 Collection 引用', async () => {
     const { deleteCategory } = await loadCategories();
     expect(deleteCategory).toBeTypeOf('function');
     if (!deleteCategory) throw new Error('deleteCategory is required');
@@ -198,9 +205,10 @@ describe('分类树与领域命令', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.value.categories.map((c) => c.id)).toEqual(['cat-root']);
-    expect(result.value.bookmarks.find((b) => b.id === 'bm-child')?.categoryId).toBeNull();
-    expect(result.value.bookmarks.find((b) => b.id === 'bm-grand')?.categoryId).toBeNull();
-    expect(result.value.bookmarks.find((b) => b.id === 'bm-root')?.categoryId).toBe('cat-root');
+    expect(result.value.bookmarks.map((b) => b.id)).toEqual(['bm-root']);
+    expect(result.value.collections).toEqual([
+      expect.objectContaining({ id: 'collection-delete-check', bookmarkIds: ['bm-root'] }),
+    ]);
   });
 
   // REQ-010-AC-003：取消无副作用。

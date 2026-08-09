@@ -131,4 +131,26 @@ describe('桌面优先存储适配器', () => {
       adapters.persistLibrary(toUiLibraryFromEnvelope(createLibraryEnvelope())),
     ).rejects.toBe(failure);
   });
+
+  // REQ-010-AC-005 / REQ-035-AC-003：浏览器回退存储必须同步 canonical 与旧兼容键，
+  // 避免分类递归删除后启动恢复旧快照，导致同一 URL 被错误判为重复。
+  test('递归删除后本地资料库保存会同步 canonical 与 legacy 存储键', async () => {
+    const module = await loadBackupPersistenceModule();
+    expect(module.createBackupPersistenceAdapters).toBeTypeOf('function');
+    if (!module.createBackupPersistenceAdapters) return;
+
+    delete (window as unknown as { go?: unknown }).go;
+    const library = toUiLibraryFromEnvelope(createLibraryEnvelope());
+    const adapters = module.createBackupPersistenceAdapters(
+      localStorage,
+      () => '2026-08-09T00:00:00.000Z',
+    );
+
+    await adapters.persistLibrary(library);
+
+    expect(localStorage.getItem('linkit.library.v1')).toContain('linkit-library');
+    const legacy = localStorage.getItem('lattice.library');
+    expect(legacy).not.toBeNull();
+    expect(legacy).toContain(library.bookmarks[0].url);
+  });
 });

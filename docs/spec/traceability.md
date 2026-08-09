@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/traceability.md`  
 > 创建步骤：STEP 5（任务拆分）  
-> 版本：1.45.0
+> 版本：1.48.0
 > 日期：2026-08-09
-> 状态：TASK-079、TASK-080 done；Playwright MCP 与真实第三方 AI 按门禁保持 BLOCKED
+> 状态：TASK-079/080/081 done；Playwright MCP 与真实第三方 AI 按门禁保持 BLOCKED
 
 ---
 
@@ -106,6 +106,7 @@
 | TASK-078 | fix_task 1.21：完整资料库与可移植设置导入导出 | REQ-034-AC-001~005 | done | `ui/src/config/backup.ts`、`ui/src/config/storage.ts`、`ui/src/config/view.ts`、`ui/src/features/import-export/*`、`ui/src/components/SettingsDialog.tsx`、`ui/src/App.tsx`、`ui/src/services/settings/index.ts`、`ui/src/services/storage/*`、`internal/platform/export.go` | `ui/src/features/import-export/import-export.test.ts`、`ui/src/features/import-export/restore.test.ts`、`ui/src/services/settings/settings.test.ts`、`ui/src/components/SettingsDialog.test.tsx`、`ui/tests/e2e/import-export.spec.ts`、`ui/tests/visual/settings-backup.spec.ts`、`internal/platform/native_file_test.go`、`internal/settingsstore/*_test.go` | `docs/spec/ac/TASK-078-AC.md` | 2026-07-27 |
 | TASK-079 | REQ-035：浏览器书签 HTML 导入导出契约与 Settings 集成 | REQ-035-AC-001~002、REQ-035-AC-005~006 | done（MCP BLOCKED） | `ui/src/features/import-export/browser-html.ts`、`ui/src/config/browser-bookmarks.ts`、`ui/src/components/SettingsDialog.tsx`、`ui/src/features/import-export/ImportOverwriteDialog.tsx`、`ui/src/storage.ts`、`ui/src/i18n/catalogs.ts` | `ui/src/features/import-export/browser-html.test.ts`、`ui/src/components/SettingsDialog.browser-bookmarks.test.tsx`、`ui/tests/e2e/browser-bookmarks.spec.ts`、`ui/tests/visual/settings-browser-bookmarks.spec.ts` | `docs/spec/ac/TASK-079-AC.md` | 2026-08-09 |
 | TASK-080 | REQ-035：浏览器书签导入后 AI 分类与标签整理 | REQ-035-AC-003~004、REQ-006-AC-002、REQ-014-AC-003 | done（真实 AI BLOCKED） | `ui/src/features/import-export/browser-import-ai.ts`、`ui/src/App.tsx`、`ui/src/components/SettingsDialog.tsx`、`ui/src/features/import-export/restore.ts`、`ui/src/features/ai/bookmark-analysis/inbound.ts`、`ui/src/features/tags/suggested-tag-matching.ts` | `ui/src/features/import-export/browser-import-ai.test.ts`、`ui/src/components/SettingsDialog.browser-bookmarks.test.tsx`、`ui/tests/e2e/browser-bookmarks.spec.ts`、`ui/tests/visual/settings-browser-bookmarks.spec.ts` | `docs/spec/ac/TASK-080-AC.md` | 2026-08-09 |
+| TASK-081 | REQ-010/REQ-035：浏览器书签导入修正、metadata/AI 加速与递归删除 | REQ-010-AC-005；REQ-035-AC-003、007~012 | done（外部门禁部分 BLOCKED） | `ui/src/domain/categories/index.ts`、`ui/src/config/browser-bookmarks.ts`、`ui/src/features/import-export/browser-import-ai.ts`、`ui/src/features/import-export/browser-html.ts`、`ui/src/features/import-export/restore.ts`、`ui/src/components/SettingsDialog.tsx`、`ui/src/services/storage/desktop-adapters.ts`、`ui/src/App.tsx` | `ui/src/domain/categories/categories.test.ts`、`ui/src/features/import-export/browser-html.test.ts`、`ui/src/features/import-export/browser-import-ai.test.ts`、`ui/src/components/SettingsDialog.browser-bookmarks.test.tsx`、`ui/src/services/storage/desktop-adapters.test.ts`、`ui/tests/e2e/browser-bookmarks.spec.ts`、`ui/tests/e2e/category-crud.spec.ts`、`ui/tests/visual/settings-browser-bookmarks.spec.ts` | `docs/spec/ac/TASK-081-AC.md` | `docs/spec/evidence/TASK-081-evidence.md`、`docs/spec/reports/TASK-081-report.md` |
 
 ---
 
@@ -194,3 +195,6 @@
 | 2026-07-27 | TASK-078 更新为 done | `linkit-backup` 完整备份、旧格式兼容、失败无副作用、English/中文视觉基线与原生文件门禁均通过真实自动化验收 |
 | 2026-08-08 | 新增 TASK-079/080 与 REQ-035 追溯 | 对齐用户提出的浏览器书签 HTML 导入导出、文件夹映射、重复跳过与导入后 AI 分类标签整理需求，规格已获用户确认，进入实现准备 |
 | 2026-08-09 | TASK-079/080 更新为 done | 实现文件、测试文件、AC 矩阵和报告已补齐；CLI 视觉回归及 Chrome/Edge/Firefox smoke 通过，Playwright MCP 与真实第三方 AI 依赖继续标记 BLOCKED |
+| 2026-08-09 | TASK-081 更新为 done | metadata/AI enrichment、分类路径融合、进度回调及用户编辑保护完成；459 项 Vitest、E2E、视觉、静态门禁和安全扫描通过，真实第三方 AI 与 Playwright MCP 仍按门禁标记 BLOCKED |
+| 2026-08-09 | TASK-081 回退到修正波次 | 用户确认虚拟书签根扁平化、递归删除永久删除书签、受控并发与随机 Category 外观；新增 REQ-035-AC-011~012 及删除后重新导入追溯 |
+| 2026-08-09 | TASK-081 修正波次更新为 done | 修复 canonical 本地快照滞后；465 项 Vitest、9 项 E2E、4 项视觉、Go metadata/AI、静态门禁与安全扫描通过，外部 AI/MCP 继续 BLOCKED |

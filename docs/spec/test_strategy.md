@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/test_strategy.md`  
 > 参考方法论：`phases/qa_engine.md` §第1阶段  
-> 版本：2.11.0
+> 版本：2.13.0
 > 日期：2026-08-09
-> 状态：已执行；浏览器 smoke 与 CLI 视觉通过，Playwright MCP/真实 AI 保持 BLOCKED
+> 状态：TASK-081 验收完成（Playwright MCP/真实 AI 保持 BLOCKED）
 
 ---
 
@@ -56,8 +56,9 @@ test_scope:
     - "OpenAI-compatible AI、授权、降级、语义重排和建议确认"
     - "Settings → AI 连通性测试的缺失配置、成功耗时、未授权、超时和网络失败路径"
     - "linkit-backup 完整资料库与可移植设置 round-trip、旧 linkit-library 兼容和敏感字段排除"
-    - "Settings → General 浏览器书签 HTML 导入导出、文件夹映射、重复跳过、无关字段排除与 Chrome/Edge/Firefox 兼容 smoke"
-    - "浏览器书签导入后 AI 分类与标签整理、现有标签优先复用、每条书签最多 3 个标签，以及 AI 不可用时的成功降级路径"
+    - "Settings → General 浏览器书签 HTML 导入导出、虚拟书签根扁平化、文件夹映射、重复跳过、无关字段排除与 Chrome/Edge/Firefox 兼容 smoke"
+    - "浏览器书签导入后 metadata 补全、受控并发 AI 分类与标签整理、现有分类/标签融合、随机 Category 外观、favicon 优先、每条书签最多 3 个标签，以及 AI 不可用时的成功降级路径"
+    - "分类递归删除永久移除子树书签、清理 Collection 引用，并可重新导入同一 URL"
     - "New Bookmark Manual 零 AI 与 Smart/Enter 智能分析双入口"
     - "New Bookmark Smart/Enter 元数据优先、AI 后台增强与过期请求竞态保护"
     - "macOS universal DMG 的 Homebrew Cask、Cask 更新器、Release→Tap 自动化与中英文安装文档"
@@ -120,6 +121,8 @@ test_scope:
 | J-19 | 发布 tag → universal `Linkit.dmg` → 自动计算 SHA256 → 更新 `blue-idea/homebrew-tap` → `brew install` / `brew upgrade` → Linkit.app 无 quarantine |
 | J-20 | Settings → AI 缺失配置不发请求；完整配置后测试成功显示耗时；未授权/超时显示英文错误且设置不变 |
 | J-21 | Settings → General 导出 browser bookmarks HTML → 在 Chrome / Edge / Firefox 导入成功；导入浏览器 HTML 时显示摘要、跳过重复、确认后完成 AI 分类与最多 3 个标签 |
+| J-22 | Settings → General 导入 browser bookmarks HTML → 持久化原始书签 → 显示 metadata/AI completed/total 进度 → 与现有 Category 融合并完成 metadata 补全及最多 3 个标签 |
+| J-23 | 导入包含浏览器虚拟根的 HTML → 书签落到 Linkit 根层并融合子文件夹 → 递归删除分类及书签 → 再次导入同一 URL 显示为新增 |
 
 ---
 
@@ -159,6 +162,7 @@ E2E/视觉/人工测试：10%
 | 本地保存 P95 | 10,000 个书签 | ≤500ms |
 | 网络操作进度提示 | AI、抓取、同步、健康 | ≤300ms |
 | 新建书签元数据预览 | Smart/Enter 元数据响应 | 不等待 AI；AI 未完成时 Save 可用 |
+| 浏览器导入 enrichment 并发 | 受控 metadata/AI worker pool | 在途请求数不超过配置上限；相同延迟 fixture 下总耗时低于串行基线 |
 
 性能测试必须记录参考硬件、操作系统、构建模式、样本数和原始数据；开发服务器结果不能替代正式构建结果。
 
@@ -281,4 +285,6 @@ environments:
 | 2.8.0 | 2026-07-25 | 已定稿 | 新增 J-19、Homebrew Cask/Release 配置单元测试，以及远程 Tap、最小权限 Token 和 macOS 真实安装门禁 |
 | 2.9.0 | 2026-07-27 | 已确认待实现 | 新增 J-20 AI 接口连通性旅程，并将 J-10 扩展为完整资料库/可移植设置备份、旧格式兼容和安全 round-trip |
 | 2.10.0 | 2026-08-08 | 已确认待实现 | 新增 J-21 浏览器书签 HTML 兼容旅程，并补浏览器导入导出、AI 整理和真实浏览器 smoke 门禁 |
-| 2.11.0 | 2026-08-09 | 已执行/部分 BLOCKED | J-21 已完成 Chrome/Edge/Firefox 真实 smoke、CLI 视觉和自动化回归；MCP 路径缺陷与真实第三方 AI 凭据缺失按门禁记录 BLOCKED |
+| 2.11.0 | 2026-08-09 | 已执行/部分 BLOCKED | J-21 完成初始 Chrome/Edge/Firefox smoke、TASK-081 metadata/进度回归和 CLI 视觉；MCP 路径缺陷与真实第三方 AI 凭据缺失按门禁记录 BLOCKED |
+| 2.12.0 | 2026-08-09 | 已确认待实现 | 新增 J-23、虚拟根扁平化、递归删除后重新导入、受控并发与随机 Category 外观验收范围 |
+| 2.13.0 | 2026-08-09 | 已执行/部分 BLOCKED | J-23 完成 465 项 Vitest、9 项 E2E、4 项视觉、Go metadata/AI、静态门禁及 CLI 视觉；真实 AI 与 Playwright MCP 继续按门禁 BLOCKED |

@@ -152,6 +152,54 @@ describe('SettingsDialog 浏览器书签 HTML 导入导出', () => {
     )).toBe(true);
   });
 
+  // REQ-035-AC-010：导入增强期间保持对话框可见并显示可访问进度。
+  test('导入时显示 metadata 阶段和 completed/total 进度', async () => {
+    const user = userEvent.setup();
+    let releaseImport!: () => void;
+    const importDone = new Promise<void>((resolve) => {
+      releaseImport = resolve;
+    });
+    const onImport = vi.fn(async (request: ImportRestoreRequest) => {
+      const progress = (request.browserImport as typeof request.browserImport & {
+        onProgress?: (value: { stage: string; completed: number; total: number }) => void;
+      })?.onProgress;
+      expect(progress).toBeTypeOf('function');
+      progress?.({ stage: 'metadata', completed: 1, total: 2 });
+      await importDone;
+    });
+    render(
+      <SettingsDialog
+        open
+        settings={settings}
+        user={null}
+        library={library}
+        onClose={() => undefined}
+        onSave={() => undefined}
+        onImport={onImport}
+        onSignOut={() => undefined}
+      />,
+    );
+
+    const html = [
+      '<!DOCTYPE NETSCAPE-Bookmark-file-1>',
+      '<DL><p>',
+      '  <DT><A HREF="https://react.dev/">React</A>',
+      '  <DT><A HREF="https://vite.dev/">Vite</A>',
+      '</DL><p>',
+    ].join('\n');
+    const input = screen.getByTestId('browser-import-file-input') as HTMLInputElement;
+    await user.upload(input, new File([html], 'bookmarks.html', { type: 'text/html' }));
+    await user.click(screen.getByRole('button', { name: 'Import bookmarks' }));
+
+    expect(await screen.findByRole('progressbar')).toHaveAttribute('aria-valuenow', '1');
+    expect(screen.getByTestId('import-progress-stage')).toHaveTextContent('Fetching metadata');
+    expect(screen.getByTestId('import-progress-count')).toHaveTextContent('1 / 2');
+    expect(screen.getByRole('dialog', { name: 'Import browser bookmarks?' })).toBeInTheDocument();
+
+    releaseImport();
+    await screen.findByText('Imported 2 bookmarks');
+  });
+
   test('REQ-035-AC-003 全部为重复项时确认导入保持零副作用', async () => {
     const user = userEvent.setup();
     const onImport = vi.fn(async () => undefined);
