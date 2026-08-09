@@ -540,6 +540,17 @@ Settings → General 的 Export/Import 使用 `linkit-backup` 信封，将当前
 - E2E：Playwright（导出、摘要确认、恢复与失败无副作用）
 - 视觉回归：Playwright Screenshot（English/中文 Baseline、Actual、Diff）
 
+### 6.10A 重复书签候选列表与逐项修复（REQ-020）
+
+Find duplicates 采用两阶段 UI：
+
+1. **候选列表**：前端纯函数 `findDuplicatePairs` 扫描当前资料库，按规范化 URL 相等或同域名生成全部候选对；`github.com` / `youtube.com`（含 `www.`）不参与 Same domain 配对，精确 URL 仍检出。每对按 URL pathname 长度定向：路径更短者为 Keep（`targetId`），另一侧为 duplicate。列表分行展示 Keep/Remove 标题与本地化匹配依据；支持勾选、Merge/Delete selected 与 Merge all / Delete all；批量操作无需二次确认。确认打开某一对或执行批量操作之前不得修改资料库。
+2. **逐项修复**：用户从列表打开一对后进入 `DuplicatePreviewDialog`。可单选切换保留侧；Merge/Delete 作用于当前 Keep/Duplicate 定向。完成后重新扫描并刷新剩余候选列表，无剩余则关闭列表。Cancel 差异预览返回列表；关闭列表结束流程。
+3. **批量应用**：`applyDuplicateBatch` 按序逐对调用既有决策（默认短路径 Keep）；若一侧书签已不存在则跳过该对；全部完成后统一刷新候选列表。路径长度相同则比较规范化完整 URL 长度，再比较 id 字典序以保持稳定。
+4. **文案**：匹配依据使用结构化 `DuplicateMatchReason`，经 `translateDuplicateReason` 按当前 locale 渲染（如英文 `Same domain` / 中文 `相同域名`）。
+
+`SuggestDuplicates` API 仍可在后续接入 AI 置信度排序；本阶段以前端确定性规则产出候选对，保证离线可用。
+
 ### 6.10 浏览器书签 HTML 互通与导入后 AI 整理（REQ-035）
 
 Settings → General 在既有 `linkit-backup` Export / Import 旁新增 `Export browser bookmarks` 与 `Import browser bookmarks` 入口。两组能力共用现有原生文件选择与保存通道，但浏览器书签适配逻辑保持在 `ui/src/features/import-export/browser-html` 纯函数模块中，避免把 HTML 解析、序列化与摘要逻辑散落到 `SettingsDialog`。
@@ -820,3 +831,5 @@ flowchart LR
 | 1.20.0 | 2026-08-09 | 已定稿/已实现 | TASK-079~081 初始波次完成 Netscape HTML 互通、确认后落库、metadata/AI enrichment、分类路径融合、进度回调与最多 3 个标签 |
 | 1.21.0 | 2026-08-09 | 已确认规格回退 | 补充虚拟书签根扁平化、受控并发、随机 Category 外观和递归删除永久移除 Bookmark 的设计约束 |
 | 1.22.0 | 2026-08-09 | 已完成 | TASK-081 修正波次落地 worker pool、canonical/legacy 本地保存同步、递归删除引用清理和导入外观/favicons 约束 |
+| 1.23.0 | 2026-08-09 | 已完成 | 新增 6.10A：Find duplicates 候选列表展示重复对数并支持逐项进入差异预览修复，对齐 REQ-020-AC-005~006 |
+| 1.24.0 | 2026-08-09 | 已完成 | 6.10A 增加勾选批量与 Merge/Delete all；Merge 保留更短 URL pathname，对齐 REQ-020-AC-007~008 |

@@ -1958,6 +1958,52 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 
 ---
 
+- [x] **TASK-082 · REQ-020：重复书签候选列表与逐项修复**
+
+  > 依赖：TASK-035 · 对齐：REQ-020 · 预计：2–3 小时 · 状态：done（Playwright MCP BLOCKED） · 2026-08-09
+
+  - [x] 规格：补齐 REQ-020-AC-005~006 与 design 6.10A（列表 + 重复对数 + 逐项修复）。
+  - [x] Red：`findDuplicatePairs` 返回全部候选对；列表对话框展示对数；选择后进入差异预览。
+  - [x] Green：Find duplicates 打开候选列表；Merge/Delete 后刷新剩余列表；无剩余则关闭。
+  - [x] QA：Vitest 9 项、去重 E2E 3 项、列表/差异截图证据；Playwright MCP BLOCKED。
+
+  **验证命令：**
+  ```bash
+  pnpm --dir ui exec vitest run src/features/ai/duplicates src/features/ai/OrganizerDialogs.test.tsx
+  pnpm --dir ui exec playwright test -g "去重" --workers=1
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-082-AC.md`、`docs/spec/evidence/TASK-082-evidence.md`、列表与差异截图。
+
+  _需求: REQ-020
+  验收标准：REQ-020-AC-003~006
+  测试类型：Unit + Component + E2E + Visual
+
+---
+
+- [x] **TASK-083 · REQ-020：重复候选批量 Merge/Delete**
+
+  > 依赖：TASK-082 · 对齐：REQ-020 · 预计：2–3 小时 · 状态：done · 2026-08-09
+
+  - [x] 规格：补齐 REQ-020-AC-007~008（勾选批量 + 全部处理；Merge 保留更短 URL 路径；无二次确认）。
+  - [x] Red：`resolveDuplicateKeep` / `applyDuplicateBatch` 与列表批量控件失败测试。
+  - [x] Green：列表支持勾选、Merge/Delete selected、Merge all / Delete all；定向 Keep 后刷新剩余列表。
+  - [x] QA：Vitest 13 项、去重 E2E 4 项、批量截图证据。
+
+  **验证命令：**
+  ```bash
+  pnpm --dir ui exec vitest run src/features/ai/duplicates src/features/ai/OrganizerDialogs.test.tsx
+  pnpm --dir ui exec playwright test -g "去重" --workers=1
+  ```
+
+  **验收证据：** `docs/spec/ac/TASK-083-AC.md`、`docs/spec/evidence/TASK-083-evidence.md`。
+
+  _需求: REQ-020
+  验收标准：REQ-020-AC-007~008
+  测试类型：Unit + Component + E2E
+
+---
+
 ## 进度汇总
 
 | TASK ID | 名称 | 测试类型 | 状态 | 关联需求 |
@@ -1997,6 +2043,8 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | TASK-033 | AI 分析与重分析 | API/E2E | done | REQ-006、020 |
 | TASK-034 | 语义搜索 | API/E2E | done | REQ-018 |
 | TASK-035 | AI 主题与去重 | Unit/API/E2E | done | REQ-013、020 |
+| TASK-082 | 重复书签候选列表与逐项修复 | Unit/Component/E2E | done | REQ-020 |
+| TASK-083 | 重复候选批量 Merge/Delete | Unit/Component/E2E | done | REQ-020 |
 | TASK-036 | 推荐与知识网络 | Unit/E2E | done | REQ-021 |
 | TASK-037 | 真实 AI 验收 | API/E2E | BLOCKED | REQ-006、013、018~021 |
 | TASK-038 | 收藏洞察 | Unit/E2E | done | REQ-022 |
@@ -2091,3 +2139,5 @@ AC 范围记法如 `REQ-003-AC-001~005` 表示从 001 到 005 的全部 AC，首
 | 4.4.3 | 2026-08-09 | 已完成（部分门禁 BLOCKED） | 完成 TASK-081 metadata 补全、AI 上下文增强、分类路径融合与导入进度；全量 459 项 Vitest、E2E/视觉和静态门禁通过，真实第三方 AI 与 Playwright MCP 继续保持 BLOCKED |
 | 4.5.0 | 2026-08-09 | 已确认待实现 | 用户确认浏览器虚拟根扁平化、递归删除永久移除书签、受控并发 enrichment 与随机 Category 外观；TASK-081 回退到修正波次 |
 | 4.6.0 | 2026-08-09 | 已完成（部分外部门禁 BLOCKED） | TASK-081 修正波次完成；修复 canonical 本地快照滞后，465 项 Vitest、9 项 E2E、4 项视觉及 Go/静态门禁通过 |
+| 4.7.0 | 2026-08-09 | 已确认待实现 | 新增 TASK-082：Find duplicates 展示全部重复对数并支持从列表逐项修复 |
+| 4.7.1 | 2026-08-09 | 已完成（MCP BLOCKED） | 完成 TASK-082：候选列表 + 重复对数 + 逐项修复；9 项 Vitest、3 项去重 E2E 通过 |
