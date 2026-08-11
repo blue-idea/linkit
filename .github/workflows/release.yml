@@ -322,3 +322,10 @@ jobs:
           if ! git push "https://x-access-token:${TAP_TOKEN}@github.com/${TAP_REPOSITORY}.git" HEAD:main; then
             echo "::warning::Failed to push updated Cask to $TAP_REPOSITORY. Please verify TAP_GITHUB_TOKEN has write permissions to $TAP_REPOSITORY."
           fi
+
+      - name: Trigger Public Repo Sync
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+        run: |
+          gh workflow run sync-release.yml --repo "$GITHUB_REPOSITORY" -f tag="$RELEASE_TAG" || true
