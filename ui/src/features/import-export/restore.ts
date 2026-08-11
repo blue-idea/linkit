@@ -1,7 +1,7 @@
 import type { PortableAppSettings } from '../../domain/library';
 import type { AppSettings as UiAppSettings, LibraryData as UiLibraryData } from '../../types';
 
-export type BrowserImportProgressStage = 'saving' | 'metadata' | 'ai' | 'complete';
+export type BrowserImportProgressStage = 'saving' | 'metadata' | 'complete';
 
 export interface BrowserImportProgress {
   stage: BrowserImportProgressStage;

@@ -93,7 +93,7 @@ async function resolveEntryModeAI(page: import('@playwright/test').Page) {
 
 async function enterLocalMode(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Continue in local mode' }).click();
-  await expect(page.getByText('Linkit', { exact: true })).toBeVisible();
+  await expect(page.getByRole('banner', { name: 'Top bar' })).toBeVisible();
 }
 
 test.describe('TASK-071 New Bookmark Manual 与 Smart', () => {

@@ -2,9 +2,9 @@
 
 > 文件路径：`docs/spec/test_strategy.md`  
 > 参考方法论：`phases/qa_engine.md` §第1阶段  
-> 版本：2.13.0
-> 日期：2026-08-09
-> 状态：TASK-081 验收完成（Playwright MCP/真实 AI 保持 BLOCKED）
+> 版本：2.14.0
+> 日期：2026-08-11
+> 状态：已确认待实现（浏览器书签导入回退为 metadata-only）
 
 ---
 
@@ -57,7 +57,7 @@ test_scope:
     - "Settings → AI 连通性测试的缺失配置、成功耗时、未授权、超时和网络失败路径"
     - "linkit-backup 完整资料库与可移植设置 round-trip、旧 linkit-library 兼容和敏感字段排除"
     - "Settings → General 浏览器书签 HTML 导入导出、虚拟书签根扁平化、文件夹映射、重复跳过、无关字段排除与 Chrome/Edge/Firefox 兼容 smoke"
-    - "浏览器书签导入后 metadata 补全、受控并发 AI 分类与标签整理、现有分类/标签融合、随机 Category 外观、favicon 优先、每条书签最多 3 个标签，以及 AI 不可用时的成功降级路径"
+    - "浏览器书签导入后 metadata 补全、受控并发 metadata worker、现有 Category 融合、随机 Category 外观、favicon 优先，以及导入后不触发任何 AI 后处理"
     - "分类递归删除永久移除子树书签、清理 Collection 引用，并可重新导入同一 URL"
     - "New Bookmark Manual 零 AI 与 Smart/Enter 智能分析双入口"
     - "New Bookmark Smart/Enter 元数据优先、AI 后台增强与过期请求竞态保护"
@@ -120,8 +120,8 @@ test_scope:
 | J-18 | Settings→Appearance 选择 Small/Medium/Large/Extra large；保存后窗口立即变为预设宽高；重启按档位恢复；手动拖拽后重启仍按档位 |
 | J-19 | 发布 tag → universal `Linkit.dmg` → 自动计算 SHA256 → 更新 `blue-idea/homebrew-tap` → `brew install` / `brew upgrade` → Linkit.app 无 quarantine |
 | J-20 | Settings → AI 缺失配置不发请求；完整配置后测试成功显示耗时；未授权/超时显示英文错误且设置不变 |
-| J-21 | Settings → General 导出 browser bookmarks HTML → 在 Chrome / Edge / Firefox 导入成功；导入浏览器 HTML 时显示摘要、跳过重复、确认后完成 AI 分类与最多 3 个标签 |
-| J-22 | Settings → General 导入 browser bookmarks HTML → 持久化原始书签 → 显示 metadata/AI completed/total 进度 → 与现有 Category 融合并完成 metadata 补全及最多 3 个标签 |
+| J-21 | Settings → General 导出 browser bookmarks HTML → 在 Chrome / Edge / Firefox 导入成功；导入浏览器 HTML 时显示摘要、跳过重复，确认后仅完成 metadata 补全 |
+| J-22 | Settings → General 导入 browser bookmarks HTML → 持久化原始书签 → 显示 metadata completed/total 进度 → 与现有 Category 融合并完成 metadata 补全，且不触发 AI 分类或标签写入 |
 | J-23 | 导入包含浏览器虚拟根的 HTML → 书签落到 Linkit 根层并融合子文件夹 → 递归删除分类及书签 → 再次导入同一 URL 显示为新增 |
 
 ---
@@ -162,7 +162,7 @@ E2E/视觉/人工测试：10%
 | 本地保存 P95 | 10,000 个书签 | ≤500ms |
 | 网络操作进度提示 | AI、抓取、同步、健康 | ≤300ms |
 | 新建书签元数据预览 | Smart/Enter 元数据响应 | 不等待 AI；AI 未完成时 Save 可用 |
-| 浏览器导入 enrichment 并发 | 受控 metadata/AI worker pool | 在途请求数不超过配置上限；相同延迟 fixture 下总耗时低于串行基线 |
+| 浏览器导入 enrichment 并发 | 受控 metadata worker pool | 在途 metadata 请求数不超过配置上限；相同延迟 fixture 下总耗时低于串行基线 |
 
 性能测试必须记录参考硬件、操作系统、构建模式、样本数和原始数据；开发服务器结果不能替代正式构建结果。
 
@@ -288,3 +288,4 @@ environments:
 | 2.11.0 | 2026-08-09 | 已执行/部分 BLOCKED | J-21 完成初始 Chrome/Edge/Firefox smoke、TASK-081 metadata/进度回归和 CLI 视觉；MCP 路径缺陷与真实第三方 AI 凭据缺失按门禁记录 BLOCKED |
 | 2.12.0 | 2026-08-09 | 已确认待实现 | 新增 J-23、虚拟根扁平化、递归删除后重新导入、受控并发与随机 Category 外观验收范围 |
 | 2.13.0 | 2026-08-09 | 已执行/部分 BLOCKED | J-23 完成 465 项 Vitest、9 项 E2E、4 项视觉、Go metadata/AI、静态门禁及 CLI 视觉；真实 AI 与 Playwright MCP 继续按门禁 BLOCKED |
+| 2.14.0 | 2026-08-11 | 已确认待实现 | 浏览器导入规格回退为 metadata-only；J-21/J-22 与 in-scope 移除 AI 后处理，保留 metadata 并发、Category 融合和无 AI 调用断言 |

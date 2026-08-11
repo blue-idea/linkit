@@ -10,7 +10,7 @@ const evidenceDirectory = resolve(
 
 async function enterLocalMode(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Continue in local mode' }).click();
-  await expect(page.getByText('Linkit', { exact: true })).toBeVisible();
+  await expect(page.getByRole('banner', { name: 'Top bar' })).toBeVisible();
 }
 
 test.describe('Timeline Tag Aggregation Theme Space', () => {

@@ -4,7 +4,6 @@ import type { AppSettings, LibraryData } from '../../types';
 import {
   enrichImportedBookmarksWithAI,
   mergeBrowserImportAIResult,
-  shouldEnrichBrowserImportWithAI,
 } from './browser-import-ai';
 
 const baseSettings: AppSettings = {
@@ -95,19 +94,15 @@ function createLibrary(): LibraryData {
 }
 
 describe('browser-import-ai', () => {
-  test('REQ-035-AC-004 导入后仅整理新增书签，优先复用现有标签且每条最多 3 个标签', async () => {
+  test('REQ-035-AC-008 导入后即使提供 AI client 也不发起 AI 请求，且 metadata 不修改分类或标签', async () => {
     const analyzeBookmark = vi.fn(async ({ url }: { url: string }) => {
-      if (url === 'https://react.dev/') {
-        return {
-          title: 'React',
-          description: 'React docs',
-          summary: 'Official React docs',
-          suggestedCategoryId: 'category-frontend',
-          suggestedTags: ['React', 'Docs', 'Frontend', 'Guides'],
-        };
-      }
-
-      throw { code: 'AI_TIMEOUT', message: 'AI request timed out' };
+      return {
+        title: `AI title for ${url}`,
+        description: 'AI description',
+        summary: 'AI summary',
+        suggestedCategoryId: 'category-frontend',
+        suggestedTags: ['React', 'Docs'],
+      };
     });
     const fetchMetadata = vi.fn(async (url: string) => ({
       ok: true as const,
@@ -128,7 +123,7 @@ describe('browser-import-ai', () => {
       })(),
     });
 
-    expect(analyzeBookmark).toHaveBeenCalledTimes(2);
+    expect(analyzeBookmark).not.toHaveBeenCalled();
     expect(fetchMetadata).toHaveBeenCalledTimes(2);
     expect(result.updatedBookmarkIds).toEqual(['bookmark-react', 'bookmark-vite']);
 
@@ -137,8 +132,10 @@ describe('browser-import-ai', () => {
     const existingBookmark = result.library.bookmarks.find((bookmark) => bookmark.id === 'bookmark-existing');
 
     expect(reactBookmark).toMatchObject({
-      categoryId: 'category-frontend',
-      tags: ['tag-react', 'tag-ai-1', 'tag-ai-2'],
+      categoryId: '',
+      tags: [],
+      title: 'Metadata for https://react.dev/',
+      description: 'Metadata description',
     });
     expect(viteBookmark).toMatchObject({
       categoryId: '',
@@ -150,11 +147,7 @@ describe('browser-import-ai', () => {
       categoryId: 'category-existing',
       tags: [],
     });
-    expect(result.library.tags).toEqual([
-      { id: 'tag-react', label: 'React', color: 'blue' },
-      { id: 'tag-ai-1', label: 'Docs', color: 'gray' },
-      { id: 'tag-ai-2', label: 'Frontend', color: 'gray' },
-    ]);
+    expect(result.library.tags).toEqual([{ id: 'tag-react', label: 'React', color: 'blue' }]);
   });
 
   // REQ-035-AC-007：AI 未配置时仍必须为每一条新增书签获取并补全 metadata。
@@ -232,40 +225,8 @@ describe('browser-import-ai', () => {
     });
   });
 
-  // REQ-035-AC-008：metadata contentText 必须传给 AI 作为分类/标签上下文。
-  test('AI 请求包含 metadata contentText 上下文', async () => {
-    const analyzeBookmark = vi.fn(async () => ({
-      title: 'React',
-      description: '',
-      summary: 'React docs',
-      suggestedCategoryId: null,
-      suggestedTags: [],
-    }));
-    const fetchMetadata = vi.fn(async () => ({
-      ok: true as const,
-      title: 'React metadata',
-      description: 'React description',
-      contentText: 'Full page text used for AI',
-      favicon: null,
-    }));
-
-    await enrichImportedBookmarksWithAI({
-      library: createLibrary(),
-      importedBookmarkIds: ['bookmark-react'],
-      settings: baseSettings,
-      client: { analyzeBookmark },
-      fetchMetadata,
-    });
-
-    expect(analyzeBookmark).toHaveBeenCalledWith(expect.objectContaining({
-      contentText: 'Full page text used for AI',
-      title: 'React metadata',
-      description: 'React description',
-    }));
-  });
-
   // REQ-035-AC-010：导入增强通过阶段和 completed/total 回调报告进度。
-  test('导入增强按 metadata、ai、complete 阶段报告进度', async () => {
+  test('导入增强按 metadata、complete 阶段报告进度', async () => {
     const progress: Array<{ stage: string; completed: number; total: number }> = [];
     const input = {
       library: createLibrary(),
@@ -287,75 +248,11 @@ describe('browser-import-ai', () => {
     expect(progress).toEqual(expect.arrayContaining([
       { stage: 'metadata', completed: 0, total: 2 },
       { stage: 'metadata', completed: 2, total: 2 },
-      { stage: 'ai', completed: 0, total: 2 },
-      { stage: 'ai', completed: 2, total: 2 },
       { stage: 'complete', completed: 2, total: 2 },
     ]));
   });
 
-  test('AI 未授权时应直接跳过整理且不发起请求', async () => {
-    const analyzeBookmark = vi.fn();
-    const library = createLibrary();
-    const settings: AppSettings = {
-      ...baseSettings,
-      aiConsent: null,
-    };
-
-    expect(shouldEnrichBrowserImportWithAI(settings, ['bookmark-react'])).toBe(false);
-
-    const result = await enrichImportedBookmarksWithAI({
-      library,
-      importedBookmarkIds: ['bookmark-react'],
-      settings,
-      client: { analyzeBookmark },
-      fetchMetadata: vi.fn(),
-    });
-
-    expect(analyzeBookmark).not.toHaveBeenCalled();
-    expect(result.updatedBookmarkIds).toEqual([]);
-    expect(result.library).toBe(library);
-  });
-
-  test('REQ-014-AC-003 标签候选存在歧义时不应错误复用第一个标签', async () => {
-    const analyzeBookmark = vi.fn(async () => ({
-      title: 'React',
-      description: '',
-      summary: 'React documentation',
-      suggestedCategoryId: null,
-      suggestedTags: ['machine_learning'],
-    }));
-    const library = createLibrary();
-    library.tags = [
-      { id: 'tag-ml-a', label: 'Machine Learning', color: 'blue' },
-      { id: 'tag-ml-b', label: 'Machine-Learning', color: 'violet' },
-    ];
-
-    const result = await enrichImportedBookmarksWithAI({
-      library,
-      importedBookmarkIds: ['bookmark-react'],
-      settings: baseSettings,
-      client: { analyzeBookmark },
-      fetchMetadata: vi.fn(async () => ({
-        ok: true as const,
-        title: 'React',
-        description: '',
-        contentText: '',
-      })),
-      idFactory: () => 'new-tag',
-    });
-
-    const bookmark = result.library.bookmarks.find((item) => item.id === 'bookmark-react');
-    expect(bookmark?.tags).toEqual(['tag-new-tag']);
-    expect(result.library.tags).toContainEqual({
-      id: 'tag-new-tag',
-      label: 'machine_learning',
-      color: 'gray',
-    });
-    expect(bookmark?.tags).not.toContain('tag-ml-a');
-    expect(bookmark?.tags).not.toContain('tag-ml-b');
-  });
-
-  test('REQ-035-AC-004 AI 合并只更新分类和标签，不覆盖导入后的用户编辑', () => {
+  test('REQ-035-AC-008 metadata 合并不得覆盖导入后的分类和标签', () => {
     const current = createLibrary();
     current.bookmarks = [{
       ...current.bookmarks[0],
@@ -369,7 +266,6 @@ describe('browser-import-ai', () => {
     }];
     current.categories = [
       { id: 'category-folder', name: 'Imported folder', icon: 'Folder', parentId: null, color: 'blue' },
-      { id: 'category-ai', name: 'AI category', icon: 'Folder', parentId: null, color: 'green' },
       { id: 'category-user', name: 'User category', icon: 'Folder', parentId: null, color: 'violet' },
     ];
     current.tags = [{ id: 'tag-user', label: 'User tag', color: 'blue' }];
@@ -378,15 +274,12 @@ describe('browser-import-ai', () => {
         ...current,
         bookmarks: [{
           ...current.bookmarks[0],
-          title: 'Old AI snapshot title',
-          description: 'Old AI snapshot description',
-          categoryId: 'category-ai',
+          title: 'Metadata title',
+          description: 'Metadata description',
+          categoryId: 'category-folder',
           tags: ['tag-ai'],
         }],
-        tags: [
-          { id: 'tag-user', label: 'User tag', color: 'blue' },
-          { id: 'tag-ai', label: 'AI tag', color: 'gray' },
-        ],
+        tags: [{ id: 'tag-user', label: 'User tag', color: 'blue' }],
       },
       updatedBookmarkIds: ['bookmark-react'],
       baseLibrary: {
@@ -406,7 +299,7 @@ describe('browser-import-ai', () => {
       title: 'User edited title',
       description: 'User edited description',
       categoryId: 'category-user',
-      tags: ['tag-user', 'tag-ai'],
+      tags: ['tag-user'],
     });
   });
 
@@ -487,48 +380,43 @@ describe('browser-import-ai', () => {
     ]);
   });
 
-  // REQ-035-AC-011：并发 AI 结果必须按输入顺序串行应用，避免 Tag ID/标签状态竞态。
-  test('AI 并发返回顺序变化时仍按导入顺序创建和应用标签', async () => {
+  test('REQ-035-AC-008 配置了 AI 也不改变导入时已确定的分类和标签', async () => {
     const library = createLibrary();
-    let active = 0;
-    let maxActive = 0;
-    const analyzeBookmark = vi.fn(async ({ url }: { url: string }) => {
-      active += 1;
-      maxActive = Math.max(maxActive, active);
-      await new Promise((resolve) => setTimeout(resolve, url.includes('vite') ? 1 : 20));
-      active -= 1;
-      return {
-        title: url.includes('vite') ? 'Vite' : 'React',
-        description: '',
-        summary: 'AI result',
-        suggestedCategoryId: null,
-        suggestedTags: [url.includes('vite') ? 'Vite tag' : 'React tag'],
-      };
-    });
+    library.bookmarks[1] = {
+      ...library.bookmarks[1],
+      categoryId: 'category-frontend',
+      tags: ['tag-react'],
+    };
+    const analyzeBookmark = vi.fn(async () => ({
+      title: 'AI title',
+      description: 'AI description',
+      summary: 'AI summary',
+      suggestedCategoryId: 'category-existing',
+      suggestedTags: ['Docs'],
+    }));
 
     const result = await enrichImportedBookmarksWithAI({
       library,
-      importedBookmarkIds: ['bookmark-react', 'bookmark-vite'],
+      importedBookmarkIds: ['bookmark-react'],
       settings: baseSettings,
       client: { analyzeBookmark },
-      fetchMetadata: vi.fn(async (url: string) => ({
+      fetchMetadata: vi.fn(async () => ({
         ok: true as const,
-        title: url.includes('vite') ? 'Vite' : 'React',
-        description: '',
-        contentText: `Metadata for ${url}`,
+        title: 'React metadata',
+        description: 'React description',
+        contentText: 'Metadata text',
+        favicon: 'https://react.dev/favicon.ico',
       })),
-      idFactory: (() => {
-        let index = 0;
-        return () => `ordered-${++index}`;
-      })(),
     });
 
-    expect(maxActive).toBeGreaterThan(1);
-    expect(maxActive).toBeLessThanOrEqual(BROWSER_BOOKMARKS_ENRICHMENT_CONCURRENCY);
-    expect(result.library.bookmarks.find((bookmark) => bookmark.id === 'bookmark-react')?.tags)
-      .toEqual(['tag-ordered-1']);
-    expect(result.library.bookmarks.find((bookmark) => bookmark.id === 'bookmark-vite')?.tags)
-      .toEqual(['tag-ordered-2']);
-    expect(result.library.tags.map((tag) => tag.label)).toEqual(['React', 'React tag', 'Vite tag']);
+    expect(analyzeBookmark).not.toHaveBeenCalled();
+    expect(result.library.bookmarks.find((bookmark) => bookmark.id === 'bookmark-react')).toMatchObject({
+      categoryId: 'category-frontend',
+      tags: ['tag-react'],
+      title: 'React metadata',
+      description: 'React description',
+      favicon: 'https://react.dev/favicon.ico',
+    });
+    expect(result.library.tags).toEqual([{ id: 'tag-react', label: 'React', color: 'blue' }]);
   });
 });

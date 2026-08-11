@@ -8,7 +8,7 @@ test.describe('开发服务器冒烟', () => {
     await page.getByRole('button', { name: 'Continue in local mode' }).click();
 
     await expect(page.getByRole('button', { name: 'Toggle sidebar' })).toBeVisible();
-    await expect(page.getByText('Linkit', { exact: true })).toBeVisible();
+    await expect(page.getByRole('banner', { name: 'Top bar' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Search' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'New', exact: true })).toBeVisible();
   });
