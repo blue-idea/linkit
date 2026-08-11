@@ -1,9 +1,9 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：2.22.0
-> 日期：2026-08-09
-> 状态：TASK-081 已完成（真实第三方 AI 与 Playwright MCP 按门禁保持 BLOCKED）
+> 版本：2.23.0
+> 日期：2026-08-11
+> 状态：已确认待实现（浏览器书签导入回退为 metadata-only）
 
 ---
 
@@ -42,10 +42,10 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 18. macOS 免费分发使用第三方 Homebrew Tap `blue-idea/tap`；当前 Release 产物为 universal `Linkit.dmg`，Cask 使用单一 SHA256，不拆分 Apple Silicon / Intel 资产；安装后仅对 `/Applications/Linkit.app` 递归清理 `com.apple.quarantine`，不使用 `sudo`。
 19. Settings → AI 提供当前 API Base、Model 与 Key 的连通性测试；缺失任一配置时不发请求；测试不包含收藏内容并显示实际往返耗时。
 20. Settings → General 导出完整 `linkit-backup`，包含全部 LibraryData 与可移植设置；API Key、session/token、日志、AI consent 与云 revision 不进入备份；旧 `linkit-library` 继续兼容导入。
-21. Settings → General 支持从 Chrome、Edge、Firefox 导入浏览器书签 HTML 并导出兼容主流浏览器导入的 HTML；导入时将文件夹映射为 Category 树，按规范化 URL 跳过重复书签，仅在用户确认后对新增书签执行 AI 分类与标签整理；AI 不可用时仍允许完成导入；每条导入书签最多保留 3 个标签。
+21. Settings → General 支持从 Chrome、Edge、Firefox 导入浏览器书签 HTML 并导出兼容主流浏览器导入的 HTML；导入时将文件夹映射为 Category 树，按规范化 URL 跳过重复书签，并在用户确认后仅对新增书签执行 metadata 补全；metadata 失败时仍允许完成导入。
 22. 浏览器导入不得把浏览器的虚拟书签根（如 Bookmarks Bar、Bookmarks Toolbar、Favorites Bar、Other Bookmarks、Mobile Bookmarks 及对应中文名称）创建为 Category；虚拟根下的书签落在 Linkit 根层，普通子文件夹从根层开始与现有 Category 融合。
 23. 用户确认分类递归删除后，该分类树中的书签记录必须一并永久删除，并清理 Collection 对这些书签的引用；删除后再次导入相同 URL 时应被识别为新增。
-24. 浏览器导入 metadata 与 AI enrichment 使用集中配置的受控并发，避免对每条书签串行等待；并发结果必须按输入顺序安全合并，单条失败不得阻塞批次。
+24. 浏览器导入 metadata enrichment 使用集中配置的受控并发，避免对每条书签串行等待；并发结果必须按输入顺序安全合并，单条失败不得阻塞批次。
 25. 浏览器导入新建 Category 使用受控候选集随机生成 icon/color；Bookmark 若成功取得 HTTP(S) favicon 必须优先使用该 favicon，不能被随机备用外观覆盖。
 
 ---
@@ -2444,9 +2444,9 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 
 ---
 
-### 需求 REQ-035 · 浏览器书签 HTML 导入导出与 AI 整理
-**来源：** 用户请求（浏览器书签 HTML 互通）、F-STORE-05、F-AI-10、NF-06
-**用户故事：** 作为用户，我希望在 Settings → General 中与 Chrome、Edge、Firefox 互通书签 HTML，并在导入后自动完成 AI 分类和标签整理，以便迁移旧书签库时减少手工整理工作。
+### 需求 REQ-035 · 浏览器书签 HTML 导入导出与 metadata 补全
+**来源：** 用户请求（浏览器书签 HTML 互通）、F-STORE-05、NF-06
+**用户故事：** 作为用户，我希望在 Settings → General 中与 Chrome、Edge、Firefox 互通书签 HTML，并在导入后自动补全网页 metadata，以便迁移旧书签库时减少基础清理工作，同时不触发 AI 后处理。
 
 #### 验收标准
 
@@ -2487,22 +2487,6 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
       - "Existing library data remains unchanged for skipped duplicates"
       - "Only new browser-imported bookmarks are appended"
 
-- id: REQ-035-AC-004
-  ears: >
-    While 浏览器 HTML 导入已确认且 AI 服务已配置并获得授权,
-    when Linkit 对新增书签执行导入后整理,
-    the Linkit shall 为每条新增书签写入最多 3 个唯一标签并给出分类结果，
-    且必须优先复用现有标签；
-    when AI 不可用、未授权或超时,
-    the Linkit shall 完成导入但不阻塞资料库落库。
-  test_type: Unit + Component + E2E
-  expected:
-    ui_state: "Imported bookmarks finish with AI-enriched category/tags when available, or remain imported without enrichment when AI is unavailable"
-    return_value: "Each imported bookmark has no more than 3 unique tags after enrichment"
-    side_effects:
-      - "Existing Tag labels are reused before creating new tags"
-      - "AI failure does not roll back a successful browser bookmark import"
-
 - id: REQ-035-AC-005
   ears: >
     When 用户取消浏览器 HTML 导入或选择无效、不兼容的 HTML 文件,
@@ -2538,17 +2522,15 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 
 - id: REQ-035-AC-008
   ears: >
-    While 浏览器书签导入已确认且 AI 服务已配置并获得授权,
+    While 浏览器书签导入已确认,
     when metadata enrichment completes for a new bookmark,
-    the Linkit shall 将 metadata 内容作为 AI 分类与标签建议上下文，优先复用当前资料库的 Category 和 Tag，
-    并为每条书签写入不超过 3 个唯一标签；
-    当 AI 不可用或单条请求失败时继续处理剩余书签。
+    the Linkit shall 仅补全标题、描述和 favicon，不得触发任何 AI 分类、标签建议或标签写入流程。
   test_type: Unit + Component + E2E
   expected:
-    return_value: "AI receives enriched metadata and returns category/tag suggestions constrained to the merged library"
+    return_value: "Imported bookmarks keep their imported category mapping and original tags while metadata fields are enriched without any AI request"
     side_effects:
-      - "Existing categories and tags remain available as candidates"
-      - "AI failure is isolated to the affected bookmark"
+      - "No AI request is sent after browser bookmark import confirmation"
+      - "No imported bookmark receives AI-generated category or tag updates"
 
 - id: REQ-035-AC-009
   ears: >
@@ -2564,7 +2546,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 - id: REQ-035-AC-010
   ears: >
     While 用户已确认浏览器书签导入,
-    when Linkit 执行 metadata 与 AI enrichment,
+    when Linkit 执行 metadata enrichment,
     the Linkit shall 在 Settings 导入对话框显示当前阶段及 completed/total 进度，并在每条书签处理后更新。
   test_type: Component + E2E + Visual
   expected:
@@ -2574,14 +2556,14 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 - id: REQ-035-AC-011
   ears: >
     While 浏览器书签导入包含多条新增书签,
-    when Linkit 执行 metadata 与 AI enrichment,
+    when Linkit 执行 metadata enrichment,
     the Linkit shall 使用集中配置的受控并发处理多个书签，且不超过配置上限；
     单条结果必须按原始导入顺序合并，任何单条失败不得阻塞剩余书签。
   test_type: Unit + Performance
   expected:
-    return_value: "Observed in-flight metadata/AI requests never exceed the configured limit and all successful results are applied in input order"
+    return_value: "Observed in-flight metadata requests never exceed the configured limit and all successful results are applied in input order"
     side_effects:
-      - "No duplicate tags or categories are created by concurrent workers"
+      - "Concurrent metadata workers do not reorder imported bookmark updates"
 
 - id: REQ-035-AC-012
   ears: >
@@ -2648,7 +2630,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | `knowledge/Homebrew-Tap分发指南.md` | REQ-032 |
 | fix_task 1.20、Settings → AI 接口测试 | REQ-033 |
 | fix_task 1.21、完整资料库与设置备份 | REQ-034 |
-| 用户请求：Settings → General 浏览器书签 HTML 导入导出与 AI 整理 | REQ-035 |
+| 用户请求：Settings → General 浏览器书签 HTML 导入导出与 metadata 补全 | REQ-035 |
 
 ---
 
@@ -2690,3 +2672,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.20.0 | 2026-08-09 | 已定稿/已实现 | TASK-079~081 完成 REQ-035 初始波次；补充 metadata 补全、分类融合、导入进度、全重复零副作用与 Chrome/Edge/Firefox smoke 证据 |
 | 2.21.0 | 2026-08-09 | 已确认规格回退 | 用户确认虚拟书签根扁平化、递归删除永久删除书签、受控并发 enrichment 与随机分类外观；新增 REQ-035-AC-011~012 并更新 REQ-010-AC-005 |
 | 2.22.0 | 2026-08-09 | 已完成 | TASK-081 修正波次实现并通过 465 项 Vitest、E2E、视觉、静态门禁与 Go metadata/AI 测试；真实第三方 AI 与 Playwright MCP 仍按门禁 BLOCKED |
+| 2.23.0 | 2026-08-11 | 已确认待实现 | 用户确认浏览器书签导入后完全不做 AI 后处理，仅保留 metadata 补全；移除 REQ-035-AC-004，并将 AC-008/010/011 改为 metadata-only 约束 |

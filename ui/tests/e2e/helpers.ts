@@ -6,7 +6,8 @@ const LOCAL_LIBRARY_KEY = 'lattice.library';
 /** 默认 English：进入本地模式（REQ-023-AC-004）。 */
 export async function enterLocalMode(page: Page) {
   await page.getByRole('button', { name: 'Continue in local mode' }).click();
-  await expect(page.getByText('Linkit', { exact: true })).toBeVisible();
+  // 品牌区现在渲染为整句标题，使用 Top bar 作为更稳定的壳层就绪信号。
+  await expect(page.getByRole('banner', { name: 'Top bar' })).toBeVisible();
 }
 
 /**

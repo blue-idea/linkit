@@ -266,14 +266,14 @@ export function DuplicatePairsDialog({ pairs, onSelect, onClose, onBatchAction }
                 <input
                   type="checkbox"
                   checked={checked}
-                  aria-label={`Select ${pair.targetTitle} and ${pair.duplicateTitle}`}
+                  aria-label={i18n.t('ai.duplicate.ariaSelect', { target: pair.targetTitle, duplicate: pair.duplicateTitle })}
                   onChange={() => togglePair(pair)}
                 />
               </label>
               <button
                 type="button"
                 className="flex min-w-0 flex-1 flex-col gap-1 px-2 py-2 text-left hover:bg-ink-800/80 focus-ring rounded-r-lg"
-                aria-label={`Review ${pair.targetTitle} and ${pair.duplicateTitle}`}
+                aria-label={i18n.t('ai.duplicate.ariaReview', { target: pair.targetTitle, duplicate: pair.duplicateTitle })}
                 onClick={() => onSelect(pair)}
               >
                 <span data-testid="duplicate-pair-titles" className="flex flex-col gap-1">
@@ -335,7 +335,7 @@ export function DuplicatePreviewDialog({ preview, onDecision }: {
               type="radio"
               name="duplicate-keep-side"
               checked
-              aria-label={`Keep ${keepTitle}`}
+              aria-label={i18n.t('ai.duplicate.ariaKeep', { title: keepTitle })}
               onChange={() => undefined}
             />
             {i18n.t('ai.duplicate.keepSide')}
@@ -348,7 +348,7 @@ export function DuplicatePreviewDialog({ preview, onDecision }: {
               type="radio"
               name="duplicate-keep-side"
               checked={false}
-              aria-label={`Keep ${dropTitle}`}
+              aria-label={i18n.t('ai.duplicate.ariaKeep', { title: dropTitle })}
               onChange={() => setOriented((current) => swapDuplicatePreviewSides(current))}
             />
             {i18n.t('ai.duplicate.keepSide')}

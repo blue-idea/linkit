@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 async function enterLocalMode(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Continue in local mode' }).click();
-  await expect(page.getByText('Linkit', { exact: true })).toBeVisible();
+  await expect(page.getByRole('banner', { name: 'Top bar' })).toBeVisible();
 }
 
 test.describe('本地模式启动恢复', () => {
@@ -73,7 +73,7 @@ test.describe('本地模式启动恢复', () => {
     });
 
     await page.reload();
-    await expect(page.getByText('Linkit', { exact: true })).toBeVisible();
+    await expect(page.getByRole('banner', { name: 'Top bar' })).toBeVisible();
     // 标题会出现在卡片、详情与预览多处，取首个可见即可证明已恢复。
     await expect(page.getByText('Restart Persistence Bookmark').first()).toBeVisible();
   });

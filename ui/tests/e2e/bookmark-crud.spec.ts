@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 async function enterLocalMode(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Continue in local mode' }).click();
-  await expect(page.getByText('Linkit', { exact: true })).toBeVisible();
+  await expect(page.getByRole('banner', { name: 'Top bar' })).toBeVisible();
 }
 
 test.describe('书签 CRUD', () => {

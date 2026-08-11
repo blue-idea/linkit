@@ -3,7 +3,6 @@ export {
   mergeBrowserImportAIResult,
   enrichImportedBookmarks,
   enrichImportedBookmarksWithAI,
-  shouldEnrichBrowserImportWithAI,
   type BrowserImportAIResult,
   type BrowserImportEnrichmentInput,
 } from './browser-import-ai';

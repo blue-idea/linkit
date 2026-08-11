@@ -1,9 +1,9 @@
 # Linkit 数据设计（Data）
 
 > 文件路径：`docs/spec/data.md`  
-> 版本：1.11.0
-> 日期：2026-08-09
-> 状态：TASK-081 数据约束已实现（真实第三方 AI 与 Playwright MCP 按门禁保持 BLOCKED）
+> 版本：1.12.0
+> 日期：2026-08-11
+> 状态：已确认待实现（浏览器书签导入回退为 metadata-only）
 
 ---
 
@@ -450,7 +450,7 @@ Settings → General 的 `Import browser bookmarks` 接受 Chrome、Edge、Firef
 2. 对每条书签执行 URL 规范化，并与当前资料库及当前导入批次做去重。
 3. 重复书签不覆盖现有记录，只计入 `skipped duplicates` 摘要。
 4. 用户确认后仅追加新增书签；Category 可按需复用或创建。
-5. 导入后 AI 整理只作用于新增书签，且每条书签最终最多 3 个唯一标签；metadata 与 AI 使用受控并发，结果按输入顺序应用。
+5. 导入后增强只作用于新增书签，且仅允许 metadata 补全标题、描述和 favicon；metadata 使用受控并发，结果按输入顺序应用，不得写入 AI 分类或标签。
 6. 新建 Category 的 `icon`/`color` 必须来自受控候选集并随机选择；Bookmark 的有效 HTTP(S) favicon 优先于任何备用文字图标或颜色。
 
 ---
@@ -498,7 +498,7 @@ Settings → General 的 `Import browser bookmarks` 接受 Chrome、Edge、Firef
 | DATA-INV-016 | 浏览器书签 HTML 导出不得包含 Linkit 专有字段；浏览器 HTML 导入不得因重复规范化 URL 覆盖现有书签 |
 | DATA-INV-017 | 浏览器导入 metadata 只能补全非空的标题、描述和 HTTP(S) favicon；请求失败不得清空原值或删除已导入书签 |
 | DATA-INV-018 | 浏览器文件夹 Category 融合使用 NFKC、首尾空白归一化和大小写不敏感的完整路径 key；命中现有路径必须复用原 Category ID |
-| DATA-INV-019 | 导入增强的异步结果必须以导入后基线合并；用户在处理期间修改的字段优先于 metadata/AI 结果 |
+| DATA-INV-019 | 导入增强的异步结果必须以导入后基线合并；用户在处理期间修改的字段优先于 metadata 结果 |
 | DATA-INV-020 | 浏览器虚拟根名称不得持久化为 Category；其直属书签的 categoryId 必须为 null/空根引用，子文件夹路径从根层计算 |
 | DATA-INV-021 | 递归删除分类后不存在指向已删除 Bookmark 的 Collection.bookmarkIds 或其他实体引用 |
 | DATA-INV-022 | 新建导入 Category 的 icon/color 必须是受控候选值；有效 HTTP(S) favicon 不得被备用随机外观覆盖 |
@@ -536,3 +536,4 @@ MVP 不预先拆分 JSONB。若真实测量出现以下任一情况，必须回�
 | 1.9.0 | 2026-08-09 | 已定稿/已实现 | TASK-079~081 初始波次验证浏览器 HTML 只承载文件夹、标题、URL 和标准时间属性；导入按规范化 URL 去重，metadata/AI 结果按基线合并，AI 标签上限为 3 |
 | 1.10.0 | 2026-08-09 | 已确认规格回退 | 补充虚拟根扁平化、递归删除书签及 Collection 引用清理、受控并发与导入 Category/Bookmark 外观约束 |
 | 1.11.0 | 2026-08-09 | 已完成 | 验证 DATA-INV-016~022；递归删除后的 canonical/legacy 本地快照同步并纳入回归证据 |
+| 1.12.0 | 2026-08-11 | 已确认待实现 | 浏览器书签导入增强回退为 metadata-only；移除 AI 分类/标签写入约束，并将 DATA-INV-019 改为仅约束 metadata 基线合并 |

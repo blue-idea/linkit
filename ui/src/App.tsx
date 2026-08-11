@@ -130,7 +130,6 @@ import {
   buildDuplicatePreview,
   findDuplicatePairs,
   generateCollectionPreview,
-  wailsAnalyzeClient,
   type CollectionSuggestion,
   type DuplicatePairCandidate,
   type DuplicatePreview,
@@ -1190,7 +1189,6 @@ export default function App() {
         library: request.snapshot.library,
         importedBookmarkIds: browserImport.importedBookmarkIds,
         settings: request.snapshot.settings,
-        client: wailsAnalyzeClient,
         fetchMetadata: fetchBookmarkMetadataForImport,
         onProgress: browserImport.onProgress,
       });

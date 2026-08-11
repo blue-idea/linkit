@@ -1,9 +1,9 @@
 # Linkit 技术设计（Design）
 
 > 文件路径：`docs/spec/design.md`  
-> 版本：1.22.0
-> 日期：2026-08-09
-> 状态：TASK-081 已完成（真实第三方 AI 与 Playwright MCP 按门禁保持 BLOCKED）
+> 版本：1.25.0
+> 日期：2026-08-11
+> 状态：已确认待实现（浏览器书签导入回退为 metadata-only）
 
 ---
 
@@ -551,7 +551,7 @@ Find duplicates 采用两阶段 UI：
 
 `SuggestDuplicates` API 仍可在后续接入 AI 置信度排序；本阶段以前端确定性规则产出候选对，保证离线可用。
 
-### 6.10 浏览器书签 HTML 互通与导入后 AI 整理（REQ-035）
+### 6.10 浏览器书签 HTML 互通与导入后 metadata 补全（REQ-035）
 
 Settings → General 在既有 `linkit-backup` Export / Import 旁新增 `Export browser bookmarks` 与 `Import browser bookmarks` 入口。两组能力共用现有原生文件选择与保存通道，但浏览器书签适配逻辑保持在 `ui/src/features/import-export/browser-html` 纯函数模块中，避免把 HTML 解析、序列化与摘要逻辑散落到 `SettingsDialog`。
 
@@ -559,13 +559,11 @@ Settings → General 在既有 `linkit-backup` Export / Import 旁新增 `Export
 
 浏览器 HTML 导入按两阶段编排。第一阶段只解析 HTML、提取文件夹路径与书签链接并生成可确认摘要：统计文件夹数、总书签数、`new bookmarks` 与 `skipped duplicates`；重复判断同时覆盖导入文件内部重复和当前资料库中按规范化 URL 已存在的书签。第二阶段在用户确认后才落库：文件夹树映射为 Category 树，新增书签追加到资料库，重复项跳过且不改写原记录。
 
-导入后 AI 整理复用既有 `AnalyzeBookmark` 客户端、标签匹配与分类建议路径，不新建第二套 AI 契约。对每条新增书签，协调层在原始快照落库后触发有界导入整理任务：优先复用现有 Tag label，最终每条书签最多保留 3 个唯一标签；AI 不可用、未授权、超时或限流时，浏览器书签导入仍视为成功，只跳过 AI 步骤并保留 metadata 结果。Settings 在任务完成前保持导入对话框可见，展示阶段与 `completed/total` 进度，完成后再显示最终摘要；实际写入逻辑保持在 `features/import-export` 与 `features/ai/bookmark-analysis` 的可测试纯函数和协调器中。
-
-TASK-081 修正波次在上述流程上增加导入增强编排：确认后先持久化原始新增书签，再对每个新增 URL 调用完整 `FetchMetadata`（优先完整 favicon 返回，缺少绑定时回退 `FetchMetadataFast`），以非空标题、描述和 HTTP(S) favicon 补全书签；metadata 失败只记录该项失败并继续。metadata 结果的正文随后作为既有 AI 入参的上下文，AI 候选集同时包含当前资料库与本次导入新增的 Category/Tag，仍受每条书签最多 3 个唯一标签约束。metadata 与 AI 分别使用 `config/browser-bookmarks.ts` 中的并发上限和 worker pool，先并发收集结果，再按原始书签顺序串行创建 Tag、应用 Category/Tag，避免共享状态竞态。
+导入后补全不再复用任何 AI 分类、标签匹配或建议链路。对每条新增书签，协调层在原始快照落库后只触发有界 metadata 补全任务：调用完整 `FetchMetadata`（优先完整 favicon 返回，缺少绑定时回退 `FetchMetadataFast`），以非空标题、描述和 HTTP(S) favicon 补全书签；metadata 失败只记录该项失败并继续，且不得改变导入时已确定的 Category 映射或任何标签集合。Settings 在任务完成前保持导入对话框可见，展示阶段与 `completed/total` 进度，完成后再显示最终摘要；实际写入逻辑保持在 `features/import-export` 的可测试纯函数和协调器中。
 
 浏览器导出中的虚拟根名称由 `config/browser-bookmarks.ts` 集中维护。解析时剥离首段虚拟根（Bookmarks Bar、Bookmarks Toolbar、Bookmarks Menu、Favorites Bar、Other Bookmarks、Mobile Bookmarks 及中文别名），虚拟根本身不创建 Category、不计入文件夹摘要；其直属书签落到 Linkit 根层，普通子文件夹从根层开始参与 NFKC、去首尾空白和大小写不敏感的完整路径融合。匹配到现有路径时复用其 ID，只有缺失路径才创建节点；新 Category 使用受控候选集随机 icon/color，书签成功取得 HTTP(S) favicon 时优先保留 favicon。
 
-导入协调器通过 `ImportRestoreRequest.browserImport.onProgress` 回调报告 `saving`、`metadata`、`ai`、`complete` 阶段及 `completed/total`，Settings 导入对话框在整个增强过程结束前保持可见并显示可访问进度条；用户在后台编辑的标题、描述、favicon、分类和标签按基线合并规则优先保留。
+导入协调器通过 `ImportRestoreRequest.browserImport.onProgress` 回调报告 `saving`、`metadata`、`complete` 阶段及 `completed/total`，Settings 导入对话框在整个增强过程结束前保持可见并显示可访问进度条；用户在后台编辑的标题、描述、favicon、分类和标签按基线合并规则优先保留，其中 metadata 结果只能补全标题、描述和 favicon，不得覆盖用户已改动的分类或标签。
 
 ---
 
@@ -778,7 +776,7 @@ flowchart LR
 | Tap 仓库或跨仓库 Token 缺失 | Release 成功但 Homebrew 版本未更新 | 独立 Job 显式失败；使用细粒度、仅限 Tap 内容写权限的 Token；无变化不提交 |
 | Release 资产命名或 Cask 模板漂移 | 哈希更新错误或下载 404 | 资产名集中配置；更新器严格验证单一 version/sha256；契约测试覆盖 workflow、Cask 与 README |
 | 浏览器书签 HTML 方言差异 | 解析失败或导入后结构错乱 | 只接受标准 `<DL>/<DT>/<H3>/<A>` 语义，忽略非标准节点；虚拟根名称集中归一并扁平化；使用 Chrome / Edge / Firefox 样本与真实导出文件回归 |
-| 大批量导入逐条串行请求 | AI/metadata 导入时间过长或 UI 长时间无响应 | metadata 与 AI 使用集中配置的受控 worker pool；先并发收集、再按原顺序应用共享标签和分类状态，并对每条更新报告进度 |
+| 大批量导入逐条串行请求 | metadata 导入时间过长或 UI 长时间无响应 | metadata 使用集中配置的受控 worker pool；先并发收集、再按原顺序应用补全结果，并对每条更新报告进度 |
 | 递归删除后残留书签导致重新导入误判重复 | 用户无法重新导入已删除书签，Collection 出现悬空 ID | 领域递归删除同时过滤 Bookmark 与 Collection.bookmarkIds；持久化后用 E2E 删除再导入回归 |
 
 ---
@@ -833,3 +831,4 @@ flowchart LR
 | 1.22.0 | 2026-08-09 | 已完成 | TASK-081 修正波次落地 worker pool、canonical/legacy 本地保存同步、递归删除引用清理和导入外观/favicons 约束 |
 | 1.23.0 | 2026-08-09 | 已完成 | 新增 6.10A：Find duplicates 候选列表展示重复对数并支持逐项进入差异预览修复，对齐 REQ-020-AC-005~006 |
 | 1.24.0 | 2026-08-09 | 已完成 | 6.10A 增加勾选批量与 Merge/Delete all；Merge 保留更短 URL pathname，对齐 REQ-020-AC-007~008 |
+| 1.25.0 | 2026-08-11 | 已确认待实现 | 浏览器书签导入后移除 AI 后处理，仅保留 metadata 补全；导入进度阶段收敛为 `saving` / `metadata` / `complete`，并禁止 metadata 更新分类或标签 |

@@ -169,7 +169,7 @@ test.describe('JSON import export', () => {
 
   // REQ-005-AC-003
   test('JSON import rejects invalid file without changing library', async ({ page }) => {
-    await expect(page.getByText('Linkit', { exact: true })).toBeVisible();
+    await expect(page.getByRole('banner', { name: 'Top bar' })).toBeVisible();
     // 避开 App 900ms debounce 自动保存窗口，避免 before=-1 / after=seed 的假失败。
     await waitForPersistedLocalLibrary(page);
     const bookmarkCountBefore = await readPersistedBookmarkCount(page);
