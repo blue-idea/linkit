@@ -32,7 +32,7 @@ jobs:
           gh release download "$TAG" --repo "$SRC_REPO" --dir release_assets || true
 
           BODY="$(gh release view "$TAG" --repo "$SRC_REPO" --json body --jq '.body')"
-          TITLE="$(gh release view "$TAG" --repo "$SRC_REPO" --json title --jq '.title')"
+          TITLE="$(gh release view "$TAG" --repo "$SRC_REPO" --json name --jq '.name')"
           if [[ "$TITLE" == "$TAG" ]]; then
             TITLE="$TAG - Smart Knowledge Curation Space"
           fi
