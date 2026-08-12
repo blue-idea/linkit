@@ -8,7 +8,7 @@ import {
   buildBrowserBookmarksFileName,
 } from '../config/browser-bookmarks';
 import { Icon, Button, AIBadge } from './ui';
-import { downloadTextFile, exportLibrary, importLibrary } from '../storage';
+import { importLibrary } from '../storage';
 import { getSettingsSections } from '../i18n';
 import { useI18n } from '../i18n/use-i18n';
 import type { SettingsSectionKey } from '../config/i18n';
@@ -50,6 +50,7 @@ import {
   createDataRootBindings,
   type DataRootInfo,
 } from '../services/storage/data-root';
+import { exportDesktopFile } from '../services/platform/export';
 import { getDefaultAppSettings, normalizeApiBase } from '../services/settings';
 import { DialogFrame } from './DialogFrame';
 
@@ -245,6 +246,7 @@ export function SettingsDialog({
   const [dataRootError, setDataRootError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const browserFileRef = useRef<HTMLInputElement>(null);
   const i18n = useI18n(draft.locale ?? 'en');
@@ -273,6 +275,7 @@ export function SettingsDialog({
       setDataRootError(null);
       setSaving(false);
       setSaveError(null);
+      setExportError(null);
       void getPreferredAIKeyStatus().then((status) => setKeyConfigured(status.configured));
       void dataRootBindings.getDataRoot().then(setDataRootInfo).catch(() => setDataRootInfo(null));
     }
@@ -461,20 +464,34 @@ export function SettingsDialog({
     exists: false, revision: null, updatedAt: null, bookmarkCount: null, byteSize: 0,
   }) : localSummary;
 
-  const handleExport = () => {
+  const handleExport = async () => {
     const now = new Date().toISOString();
     const doc = buildBackupEnvelopeFromUi(library, settings, { now });
-    exportLibrary(doc, buildBackupFileName(now));
+    setExportError(null);
+    try {
+      await exportDesktopFile({
+        suggestedFileName: buildBackupFileName(now),
+        content: JSON.stringify(doc, null, 2),
+        mimeType: 'application/json',
+      });
+    } catch {
+      setExportError(i18n.t('settings.general.exportFailed'));
+    }
   };
 
-  const handleBrowserExport = () => {
+  const handleBrowserExport = async () => {
     const now = new Date().toISOString();
     const html = buildBrowserBookmarkHtml(library, { exportedAt: now });
-    downloadTextFile(
-      html,
-      buildBrowserBookmarksFileName(now),
-      BROWSER_BOOKMARKS_MIME_TYPE,
-    );
+    setExportError(null);
+    try {
+      await exportDesktopFile({
+        suggestedFileName: buildBrowserBookmarksFileName(now),
+        content: html,
+        mimeType: BROWSER_BOOKMARKS_MIME_TYPE,
+      });
+    } catch {
+      setExportError(i18n.t('settings.general.exportFailed'));
+    }
   };
 
   const handleImportFile = async (file: File) => {
@@ -743,6 +760,15 @@ export function SettingsDialog({
               {importMsg && (
                 <div className="rounded-lg bg-mint-500/10 border border-mint-400/30 px-3 py-2 text-[12px] text-mint-400 flex items-center gap-2 mt-2">
                   <Icon name="Check" size={13} /> {importMsg}
+                </div>
+              )}
+              {exportError && (
+                <div
+                  className="rounded-lg bg-coral-500/10 border border-coral-400/30 px-3 py-2 text-[12px] text-coral-400 flex items-center gap-2 mt-2"
+                  role="alert"
+                  data-testid="export-error"
+                >
+                  <Icon name="AlertCircle" size={13} /> {exportError}
                 </div>
               )}
             </div>

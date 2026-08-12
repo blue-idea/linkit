@@ -16,6 +16,12 @@ type ExportRequest struct {
 	DocumentJSON      string `json:"documentJson"`
 }
 
+type ExportFileRequest struct {
+	SuggestedFileName string `json:"suggestedFileName"`
+	Content           string `json:"content"`
+	MIMEType          string `json:"mimeType"`
+}
+
 type ExportResult struct {
 	State string `json:"state"`
 	Path  string `json:"path,omitempty"`
@@ -106,6 +112,41 @@ func (service *Service) ExportLibrary(request ExportRequest) (ExportResult, erro
 		return ExportResult{State: "cancelled"}, nil
 	}
 	if err := service.writeFile(path, content, 0o600); err != nil {
+		return ExportResult{}, newServiceError(config.ErrorCodeLocalWriteFailed, config.ErrorMessageLocalWriteFailed, true, err)
+	}
+	return ExportResult{State: "saved", Path: path}, nil
+}
+
+func (service *Service) ExportFile(request ExportFileRequest) (ExportResult, error) {
+	content := strings.TrimSpace(request.Content)
+	if content == "" || strings.TrimSpace(request.SuggestedFileName) == "" || strings.TrimSpace(request.MIMEType) == "" {
+		return ExportResult{}, newServiceError(config.ErrorCodeInvalidArgument, config.ErrorMessageInvalidArgument, false, nil)
+	}
+
+	displayName := "Document Files (*.*)"
+	pattern := "*.*"
+	switch request.MIMEType {
+	case "text/html;charset=utf-8":
+		displayName = "HTML Files (*.html)"
+		pattern = "*.html"
+	case "text/plain;charset=utf-8":
+		displayName = "Text Files (*.txt)"
+		pattern = "*.txt"
+	}
+
+	path, cancelled, err := service.dialogs.SaveFile(SaveFileOptions{
+		Title:             "Export File",
+		SuggestedFileName: request.SuggestedFileName,
+		DisplayName:       displayName,
+		Pattern:           pattern,
+	})
+	if err != nil {
+		return ExportResult{}, newServiceError(config.ErrorCodeLocalWriteFailed, config.ErrorMessageLocalWriteFailed, true, err)
+	}
+	if cancelled {
+		return ExportResult{State: "cancelled"}, nil
+	}
+	if err := service.writeFile(path, []byte(request.Content), 0o600); err != nil {
 		return ExportResult{}, newServiceError(config.ErrorCodeLocalWriteFailed, config.ErrorMessageLocalWriteFailed, true, err)
 	}
 	return ExportResult{State: "saved", Path: path}, nil

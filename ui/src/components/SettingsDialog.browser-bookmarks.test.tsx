@@ -4,17 +4,13 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 import type { ImportRestoreRequest } from '../features/import-export';
 import type { AppSettings, LibraryData } from '../types';
 
-const { downloadTextFile } = vi.hoisted(() => ({
-  downloadTextFile: vi.fn(),
+const { exportDesktopFile } = vi.hoisted(() => ({
+  exportDesktopFile: vi.fn(),
 }));
 
-vi.mock('../storage', async () => {
-  const actual = await vi.importActual<typeof import('../storage')>('../storage');
-  return {
-    ...actual,
-    downloadTextFile,
-  };
-});
+vi.mock('../services/platform/export', () => ({
+  exportDesktopFile,
+}));
 
 import { SettingsDialog } from './SettingsDialog';
 
@@ -57,14 +53,41 @@ const library: LibraryData = {
 afterEach(() => {
   cleanup();
   localStorage.clear();
-  downloadTextFile.mockReset();
+  exportDesktopFile.mockReset();
   vi.useRealTimers();
 });
 
 describe('SettingsDialog 浏览器书签 HTML 导入导出', () => {
-  test('REQ-035-AC-001 点击 Export browser bookmarks 会下载 HTML 文件', async () => {
+  test('REQ-005-AC-001 点击 Export data 会调用桌面原生导出', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-08-08T08:00:00.000Z'));
+    exportDesktopFile.mockResolvedValue({ state: 'saved', path: '/tmp/linkit-backup-2026-08-08.json' });
+    render(
+      <SettingsDialog
+        open
+        settings={settings}
+        user={null}
+        library={library}
+        onClose={() => undefined}
+        onSave={() => undefined}
+        onImport={() => undefined}
+        onSignOut={() => undefined}
+      />,
+    );
+
+    screen.getByRole('button', { name: 'Export' }).click();
+
+    expect(exportDesktopFile).toHaveBeenCalledWith({
+      suggestedFileName: 'linkit-backup-2026-08-08.json',
+      content: expect.stringContaining('"format": "linkit-backup"'),
+      mimeType: 'application/json',
+    });
+  });
+
+  test('REQ-035-AC-001 点击 Export browser bookmarks 会调用桌面原生导出', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-08T08:00:00.000Z'));
+    exportDesktopFile.mockResolvedValue({ state: 'saved', path: '/tmp/linkit-bookmarks-2026-08-08.html' });
     render(
       <SettingsDialog
         open
@@ -80,11 +103,32 @@ describe('SettingsDialog 浏览器书签 HTML 导入导出', () => {
 
     screen.getByRole('button', { name: 'Export browser bookmarks' }).click();
 
-    expect(downloadTextFile).toHaveBeenCalledWith(
-      expect.stringContaining('<!DOCTYPE NETSCAPE-Bookmark-file-1>'),
-      'linkit-bookmarks-2026-08-08.html',
-      'text/html;charset=utf-8',
+    expect(exportDesktopFile).toHaveBeenCalledWith({
+      suggestedFileName: 'linkit-bookmarks-2026-08-08.html',
+      content: expect.stringContaining('<!DOCTYPE NETSCAPE-Bookmark-file-1>'),
+      mimeType: 'text/html;charset=utf-8',
+    });
+  });
+
+  test('导出失败时显示错误提示', async () => {
+    const user = userEvent.setup();
+    exportDesktopFile.mockRejectedValue(new Error('dialog failed'));
+    render(
+      <SettingsDialog
+        open
+        settings={settings}
+        user={null}
+        library={library}
+        onClose={() => undefined}
+        onSave={() => undefined}
+        onImport={() => undefined}
+        onSignOut={() => undefined}
+      />,
     );
+
+    await user.click(screen.getByRole('button', { name: 'Export browser bookmarks' }));
+
+    expect(await screen.findByTestId('export-error')).toHaveTextContent('Unable to export file');
   });
 
   test('REQ-035-AC-002 导入浏览器 HTML 时先显示摘要，确认后才调用 onImport', async () => {

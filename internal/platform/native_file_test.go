@@ -29,6 +29,7 @@ type scriptedDialogs struct {
 	savePath   string
 	saveCancel bool
 	saveErr    error
+	saveOptions SaveFileOptions
 }
 
 func (dialogs *scriptedDialogs) OpenJSONFile() (string, bool, error) {
@@ -36,6 +37,11 @@ func (dialogs *scriptedDialogs) OpenJSONFile() (string, bool, error) {
 }
 
 func (dialogs *scriptedDialogs) SaveJSONFile(string) (string, bool, error) {
+	return dialogs.savePath, dialogs.saveCancel, dialogs.saveErr
+}
+
+func (dialogs *scriptedDialogs) SaveFile(options SaveFileOptions) (string, bool, error) {
+	dialogs.saveOptions = options
 	return dialogs.savePath, dialogs.saveCancel, dialogs.saveErr
 }
 
@@ -136,6 +142,38 @@ func TestExportLibraryAcceptsPortableBackup(t *testing.T) {
 	settings, ok := envelope["settings"].(map[string]any)
 	if !ok || settings["settingsVersion"] != float64(1) {
 		t.Fatalf("Portable settings were not preserved: %+v", envelope["settings"])
+	}
+}
+
+func TestExportFileSavesHTMLThroughNativeDialog(t *testing.T) {
+	root := t.TempDir()
+	target := filepath.Join(root, "bookmarks.html")
+	dialogs := &scriptedDialogs{savePath: target}
+	service := NewService(WithDialogs(dialogs))
+
+	result, err := service.ExportFile(ExportFileRequest{
+		SuggestedFileName: "linkit-bookmarks-2026-08-08.html",
+		Content:           "<!DOCTYPE NETSCAPE-Bookmark-file-1>\n<TITLE>Bookmarks</TITLE>",
+		MIMEType:          "text/html;charset=utf-8",
+	})
+	if err != nil {
+		t.Fatalf("ExportFile returned error: %v", err)
+	}
+	if result.State != "saved" || result.Path != target {
+		t.Fatalf("Unexpected export file result: %+v", result)
+	}
+	if dialogs.saveOptions.Title != "Export File" ||
+		dialogs.saveOptions.DisplayName != "HTML Files (*.html)" ||
+		dialogs.saveOptions.Pattern != "*.html" {
+		t.Fatalf("Unexpected save dialog options: %+v", dialogs.saveOptions)
+	}
+
+	content, err := os.ReadFile(target)
+	if err != nil {
+		t.Fatalf("Unable to read exported HTML file: %v", err)
+	}
+	if string(content) != "<!DOCTYPE NETSCAPE-Bookmark-file-1>\n<TITLE>Bookmarks</TITLE>" {
+		t.Fatalf("Unexpected exported HTML content: %s", string(content))
 	}
 }
 
