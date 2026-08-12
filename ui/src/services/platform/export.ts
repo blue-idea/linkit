@@ -1,5 +1,3 @@
-import { ExportLibrary } from '../../../wailsjs/go/platform/Service';
-
 export interface DesktopExportRequest {
   suggestedFileName: string;
   content: string;
@@ -16,6 +14,10 @@ type WailsPlatformService = {
     suggestedFileName: string;
     content: string;
     mimeType: string;
+  }) => Promise<DesktopExportResult>;
+  ExportLibrary?: (request: {
+    suggestedFileName: string;
+    documentJson: string;
   }) => Promise<DesktopExportResult>;
 };
 
@@ -36,8 +38,8 @@ export async function exportDesktopFile(request: DesktopExportRequest): Promise<
     });
   }
 
-  if (request.mimeType === 'application/json') {
-    return ExportLibrary({
+  if (platform?.ExportLibrary && request.mimeType === 'application/json') {
+    return platform.ExportLibrary({
       suggestedFileName: request.suggestedFileName,
       documentJson: request.content,
     });
@@ -52,3 +54,4 @@ export async function exportDesktopFile(request: DesktopExportRequest): Promise<
   URL.revokeObjectURL(url);
   return { state: 'saved' };
 }
+
