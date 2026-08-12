@@ -507,6 +507,7 @@ const messages = {
   'settings.general.export': ['Export data', '导出数据'],
   'settings.general.import': ['Import data', '导入数据'],
   'settings.general.exportHint': ['Export the full library as a versioned JSON file', '将完整资料库导出为带版本的 JSON 文件'],
+  'settings.general.exportFailed': ['Unable to export file', '无法导出文件'],
   'settings.general.importHint': ['Import a Linkit JSON file (requires overwrite confirmation)', '导入 Linkit JSON 文件（需要覆盖确认）'],
   'settings.general.browserExport': ['Export browser bookmarks', '导出浏览器书签'],
   'settings.general.browserImport': ['Import browser bookmarks', '导入浏览器书签'],

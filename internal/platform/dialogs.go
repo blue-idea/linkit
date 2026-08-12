@@ -11,10 +11,18 @@ import (
 type fileDialogs interface {
 	OpenJSONFile() (path string, cancelled bool, err error)
 	SaveJSONFile(suggestedFileName string) (path string, cancelled bool, err error)
+	SaveFile(options SaveFileOptions) (path string, cancelled bool, err error)
 }
 
 type openFileDialogFn func(ctx context.Context, dialogOptions runtime.OpenDialogOptions) (string, error)
 type saveFileDialogFn func(ctx context.Context, dialogOptions runtime.SaveDialogOptions) (string, error)
+
+type SaveFileOptions struct {
+	Title             string
+	SuggestedFileName string
+	DisplayName       string
+	Pattern           string
+}
 
 // 可在测试中替换，避免真实弹出系统对话框。
 var openFileDialog openFileDialogFn = runtime.OpenFileDialog
@@ -44,14 +52,23 @@ func (dialogs wailsDialogs) OpenJSONFile() (string, bool, error) {
 }
 
 func (dialogs wailsDialogs) SaveJSONFile(suggestedFileName string) (string, bool, error) {
+	return dialogs.SaveFile(SaveFileOptions{
+		Title:             "Export Library",
+		SuggestedFileName: suggestedFileName,
+		DisplayName:       "JSON Files (*.json)",
+		Pattern:           "*.json",
+	})
+}
+
+func (dialogs wailsDialogs) SaveFile(options SaveFileOptions) (string, bool, error) {
 	if dialogs.ctx == nil {
 		return "", false, newServiceError(config.ErrorCodeInvalidArgument, config.ErrorMessageInvalidArgument, false, nil)
 	}
 	path, err := saveFileDialog(dialogs.ctx, runtime.SaveDialogOptions{
-		Title:           "Export Library",
-		DefaultFilename: suggestedFileName,
+		Title:           options.Title,
+		DefaultFilename: options.SuggestedFileName,
 		Filters: []runtime.FileFilter{
-			{DisplayName: "JSON Files (*.json)", Pattern: "*.json"},
+			{DisplayName: options.DisplayName, Pattern: options.Pattern},
 		},
 	})
 	if err != nil {
