@@ -1,6 +1,7 @@
 import type { AppLocale } from '../../config/i18n';
 import {
   BackupEnvelopeSchema,
+  type LibraryData,
   type LibraryEnvelope,
   type PortableAppSettings,
   validateLibraryEnvelope,
@@ -91,11 +92,39 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+/**
+ * 修复不对称集合关系：以集合的 bookmarkIds 为权威来源，
+ * 从书签的 collectionIds 中删除不在任何集合 bookmarkIds 中的孤立引用。
+ * 方案B：容错导入，而非直接拒绝历史数据中的不对称记录。
+ */
+function repairAsymmetricCollections(data: LibraryData): LibraryData {
+  const collectionBookmarkIndex = new Map<string, Set<string>>();
+  for (const col of data.collections) {
+    collectionBookmarkIndex.set(col.id, new Set(col.bookmarkIds));
+  }
+
+  const repairedBookmarks = data.bookmarks.map((bookmark) => {
+    const validCollectionIds = bookmark.collectionIds.filter((colId) => {
+      const members = collectionBookmarkIndex.get(colId);
+      return members !== undefined && members.has(bookmark.id);
+    });
+    if (validCollectionIds.length === bookmark.collectionIds.length) {
+      return bookmark;
+    }
+    return { ...bookmark, collectionIds: validCollectionIds };
+  });
+
+  return { ...data, bookmarks: repairedBookmarks };
+}
+
 function parseBackupDocument(parsed: unknown): ParseImportResult {
   const backup = BackupEnvelopeSchema.safeParse(parsed);
   if (!backup.success) {
     return invalidImport();
   }
+
+  // 容错修复：在关系校验前先对齐不对称的集合成员关系（方案B）。
+  const repairedData = repairAsymmetricCollections(backup.data.data);
 
   // 复用统一的资料库关系校验，确保引用完整性与旧格式保持一致。
   const library = validateLibraryEnvelope({
@@ -103,7 +132,7 @@ function parseBackupDocument(parsed: unknown): ParseImportResult {
     schemaVersion: backup.data.schemaVersion,
     revision: backup.data.revision,
     updatedAt: backup.data.updatedAt,
-    data: backup.data.data,
+    data: repairedData,
   });
   if (!library.success) {
     return invalidImport();

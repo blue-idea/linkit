@@ -212,4 +212,38 @@ describe('导入导出文档', () => {
     expect(result.message).toBe('导入文件无效');
     expect(localizeImportError('IMPORT_INVALID', 'en').message).toBe('Import file is invalid');
   });
+
+  // 方案B：容错修复——不对称集合成员关系不应导致整个备份文件被拒绝。
+  test('parseImportText 对含不对称集合关系的备份执行容错修复并成功导入', async () => {
+    const module = await loadPlannedImportExportModule();
+    expect(module.buildBackupEnvelopeFromUi).toBeTypeOf('function');
+
+    // 构建一个书签引用了某集合，但该集合未反向包含此书签的备份。
+    const bookmark = createBookmark({ id: 'b1', title: 'Test' });
+    const collection = createCollection({ id: 'col1', name: 'Theme', bookmarkIds: [] }); // col1 不含 b1
+    const libraryEnvelope = createLibraryEnvelope({
+      bookmarks: [{ ...bookmark, collectionIds: ['col1'] }], // b1 声称属于 col1
+      collections: [collection],
+    });
+
+    const backup = module.buildBackupEnvelopeFromUi?.(
+      toUiLibraryFromEnvelope(libraryEnvelope),
+      createUiSettings(),
+      { now: '2026-07-27T08:00:00.000Z', appVersion: '0.2.9' },
+    );
+
+    // 手动注入不对称引用（绕过 buildBackupEnvelopeFromUi 的内部对齐）
+    const raw = JSON.stringify(backup).replace(
+      '"collectionIds":[]',
+      '"collectionIds":["col1"]',
+    );
+
+    const result = parseImportText(raw, '2026-07-27T08:00:00.000Z');
+    // 容错修复后应成功解析，而非返回 IMPORT_INVALID。
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    // 修复后 b1 的 collectionIds 应为空（孤立引用已被清理）。
+    const b1 = result.envelope.data.bookmarks.find((b) => b.id === 'b1');
+    expect(b1?.collectionIds).toEqual([]);
+  });
 });

@@ -30,18 +30,18 @@ function readWailsPlatformService(): WailsPlatformService | null {
 
 export async function exportDesktopFile(request: DesktopExportRequest): Promise<DesktopExportResult> {
   const platform = readWailsPlatformService();
+  if (platform?.ExportLibrary && request.mimeType === 'application/json') {
+    return platform.ExportLibrary({
+      suggestedFileName: request.suggestedFileName,
+      documentJson: request.content,
+    });
+  }
+
   if (platform?.ExportFile) {
     return platform.ExportFile({
       suggestedFileName: request.suggestedFileName,
       content: request.content,
       mimeType: request.mimeType,
-    });
-  }
-
-  if (platform?.ExportLibrary && request.mimeType === 'application/json') {
-    return platform.ExportLibrary({
-      suggestedFileName: request.suggestedFileName,
-      documentJson: request.content,
     });
   }
 

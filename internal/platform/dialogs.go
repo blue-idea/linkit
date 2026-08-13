@@ -2,6 +2,7 @@ package platform
 
 import (
 	"context"
+	"strings"
 
 	"github.com/blue-idea/collection/config"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -64,12 +65,17 @@ func (dialogs wailsDialogs) SaveFile(options SaveFileOptions) (string, bool, err
 	if dialogs.ctx == nil {
 		return "", false, newServiceError(config.ErrorCodeInvalidArgument, config.ErrorMessageInvalidArgument, false, nil)
 	}
+	var filters []runtime.FileFilter
+	p := strings.TrimSpace(options.Pattern)
+	if p != "" && p != "*.*" && p != "*" {
+		filters = []runtime.FileFilter{
+			{DisplayName: options.DisplayName, Pattern: p},
+		}
+	}
 	path, err := saveFileDialog(dialogs.ctx, runtime.SaveDialogOptions{
 		Title:           options.Title,
 		DefaultFilename: options.SuggestedFileName,
-		Filters: []runtime.FileFilter{
-			{DisplayName: options.DisplayName, Pattern: options.Pattern},
-		},
+		Filters:         filters,
 	})
 	if err != nil {
 		return "", false, err
@@ -77,5 +83,17 @@ func (dialogs wailsDialogs) SaveFile(options SaveFileOptions) (string, bool, err
 	if path == "" {
 		return "", true, nil
 	}
+	// macOS NSSavePanel 有时会将文件过滤器中的通配符（如 .*）追加到文件名末尾，
+	// 例如 "file.json.*"，需要在此处清理。
+	path = cleanSaveDialogPath(path)
 	return path, false, nil
+}
+
+// cleanSaveDialogPath 清理 macOS NSSavePanel 在路径末尾追加的 glob 通配符后缀。
+// 例如 "file.json.*" → "file.json"，"file.*" → "file"。
+func cleanSaveDialogPath(path string) string {
+	for strings.HasSuffix(path, ".*") {
+		path = strings.TrimSuffix(path, ".*")
+	}
+	return path
 }

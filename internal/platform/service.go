@@ -124,12 +124,16 @@ func (service *Service) ExportFile(request ExportFileRequest) (ExportResult, err
 	}
 
 	displayName := "Document Files (*.*)"
-	pattern := "*.*"
-	switch request.MIMEType {
-	case "text/html;charset=utf-8":
+	pattern := ""
+	mimeBase := strings.ToLower(strings.TrimSpace(strings.Split(request.MIMEType, ";")[0]))
+	switch mimeBase {
+	case "application/json":
+		displayName = "JSON Files (*.json)"
+		pattern = "*.json"
+	case "text/html":
 		displayName = "HTML Files (*.html)"
 		pattern = "*.html"
-	case "text/plain;charset=utf-8":
+	case "text/plain":
 		displayName = "Text Files (*.txt)"
 		pattern = "*.txt"
 	}

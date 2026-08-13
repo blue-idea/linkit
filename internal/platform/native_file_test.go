@@ -177,6 +177,42 @@ func TestExportFileSavesHTMLThroughNativeDialog(t *testing.T) {
 	}
 }
 
+func TestExportFileSavesJSONAndUnknownTypes(t *testing.T) {
+	root := t.TempDir()
+	jsonTarget := filepath.Join(root, "backup.json")
+	dialogs := &scriptedDialogs{savePath: jsonTarget}
+	service := NewService(WithDialogs(dialogs))
+
+	result, err := service.ExportFile(ExportFileRequest{
+		SuggestedFileName: "linkit-backup.json",
+		Content:           `{"format":"linkit-backup"}`,
+		MIMEType:          "application/json",
+	})
+	if err != nil {
+		t.Fatalf("ExportFile JSON returned error: %v", err)
+	}
+	if result.State != "saved" || result.Path != jsonTarget {
+		t.Fatalf("Unexpected JSON export result: %+v", result)
+	}
+	if dialogs.saveOptions.DisplayName != "JSON Files (*.json)" || dialogs.saveOptions.Pattern != "*.json" {
+		t.Fatalf("Unexpected save dialog options for JSON: %+v", dialogs.saveOptions)
+	}
+
+	unknownTarget := filepath.Join(root, "data.custom")
+	dialogs.savePath = unknownTarget
+	result, err = service.ExportFile(ExportFileRequest{
+		SuggestedFileName: "data.custom",
+		Content:           "custom-data",
+		MIMEType:          "application/octet-stream",
+	})
+	if err != nil {
+		t.Fatalf("ExportFile custom returned error: %v", err)
+	}
+	if dialogs.saveOptions.Pattern != "" {
+		t.Fatalf("Unknown MIME type must have empty pattern, got %q", dialogs.saveOptions.Pattern)
+	}
+}
+
 func TestSelectImportFileAcceptsPortableBackup(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "portable-backup.json")
 	payload := validPortableBackupJSON()

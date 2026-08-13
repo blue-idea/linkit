@@ -121,3 +121,44 @@ func TestWailsDialogsWithStubbedRuntime(t *testing.T) {
 		t.Fatalf("Expected dialog failure, got %v", err)
 	}
 }
+
+// TestCleanSaveDialogPath 验证 macOS NSSavePanel 追加 glob 后缀的清理逻辑。
+func TestCleanSaveDialogPath(t *testing.T) {
+	cases := []struct {
+		input string
+		want  string
+	}{
+		{"/tmp/export.json.*", "/tmp/export.json"},
+		{"/tmp/export.json", "/tmp/export.json"},
+		{"/tmp/export.*", "/tmp/export"},
+		{"/tmp/export.json.*.*", "/tmp/export.json"},
+		{"", ""},
+		{"/tmp/file.html.*", "/tmp/file.html"},
+	}
+	for _, tc := range cases {
+		got := cleanSaveDialogPath(tc.input)
+		if got != tc.want {
+			t.Errorf("cleanSaveDialogPath(%q) = %q, want %q", tc.input, got, tc.want)
+		}
+	}
+}
+
+// TestWailsDialogsStripsMacOSGlobSuffix 验证 SaveJSONFile 对 macOS 追加的 .* 后缀进行清理。
+func TestWailsDialogsStripsMacOSGlobSuffix(t *testing.T) {
+	originalSave := saveFileDialog
+	t.Cleanup(func() { saveFileDialog = originalSave })
+
+	// 模拟 macOS NSSavePanel 返回带 .* 后缀的路径。
+	saveFileDialog = func(context.Context, runtime.SaveDialogOptions) (string, error) {
+		return "/tmp/linkit-backup.json.*", nil
+	}
+
+	dialogs := wailsDialogs{ctx: context.Background()}
+	path, cancelled, err := dialogs.SaveJSONFile("linkit-backup.json")
+	if err != nil || cancelled {
+		t.Fatalf("SaveJSONFile returned err=%v cancelled=%v", err, cancelled)
+	}
+	if path != "/tmp/linkit-backup.json" {
+		t.Fatalf("Expected cleaned path /tmp/linkit-backup.json, got %q", path)
+	}
+}
