@@ -2,10 +2,10 @@ cask "linkit" do
   version "0.2.2"
   sha256 "41ed2e929a23e415d40ee3c58b09f755dcf6d6e4976ccebec0fd0a3bee47741d"
 
-  url "https://github.com/blue-idea/collection/releases/download/v#{version}/Linkit.dmg"
+  url "https://github.com/blue-idea/linkit/releases/download/v#{version}/Linkit.dmg"
   name "Linkit"
   desc "Smart knowledge curation space with AI-assisted organization and cloud sync"
-  homepage "https://github.com/blue-idea/collection"
+  homepage "https://github.com/blue-idea/linkit"
 
   livecheck do
     url :url
