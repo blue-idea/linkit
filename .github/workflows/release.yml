@@ -134,10 +134,6 @@ jobs:
             throw 'NSIS installer was not produced'
           }
 
-      - name: Install create-dmg (macOS)
-        if: matrix.os == 'macos'
-        run: brew install create-dmg
-
       - name: Build Wails desktop app (macOS)
         if: matrix.os == 'macos'
         run: go run github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }} build -clean -platform ${{ matrix.platform }}
@@ -145,14 +141,11 @@ jobs:
       - name: Build DMG (macOS)
         if: matrix.os == 'macos'
         run: |
-          create-dmg \
-            --volname "Linkit" \
-            --window-size 540 380 \
-            --icon-size 100 \
-            --icon "Linkit.app" 140 170 \
-            --app-drop-link 400 170 \
-            "build/bin/Linkit.dmg" \
-            "build/bin/Linkit.app"
+          mkdir -p build/bin/dmg_root
+          cp -R build/bin/Linkit.app build/bin/dmg_root/
+          ln -s /Applications build/bin/dmg_root/Applications
+          hdiutil create -volname "Linkit" -srcfolder build/bin/dmg_root -ov -format UDZO build/bin/Linkit.dmg
+          rm -rf build/bin/dmg_root
 
       - name: Copy architecture-specific binary (Linux)
         if: matrix.os == 'linux'
