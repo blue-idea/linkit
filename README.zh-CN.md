@@ -30,7 +30,7 @@ brew install blue-idea/tap/linkit
 ```
 
 ```bash
-brew upgrade linkit   # 随时升级
+brew update && brew upgrade linkit   # 随时升级
 ```
 
 > Linkit 当前尚未进行 Apple 官方公证。Cask 会在安装后自动移除 Gatekeeper `com.apple.quarantine` 隔离属性，无需 `sudo` 权限。
