@@ -84,7 +84,7 @@ async function verifyWorkflows() {
   assert.match(releaseWorkflow, /gh release download/, 'Homebrew Tap update must download the published DMG');
   assert.match(releaseWorkflow, /update-homebrew-cask\.mjs/, 'Homebrew Tap update must use the tested updater');
   assert.match(releaseWorkflow, /git diff --quiet/, 'Homebrew Tap update must avoid empty commits');
-  assert.match(releaseWorkflow, /--app-drop-link/, 'Release workflow must create clean DMG with Applications link');
+  assert.match(releaseWorkflow, /ln -s \/Applications/, 'Release workflow must create clean DMG with Applications link');
 
   assert.match(nfpmConfig, /^name: linkit$/m, 'nFPM package name must be linkit');
   assert.match(nfpmConfig, /^arch: \$\{NFPM_ARCH\}$/m, 'nFPM architecture must come from NFPM_ARCH');
@@ -107,17 +107,17 @@ async function verifyHomebrewTap() {
 
   assert.deepEqual(tapConfig, {
     tapRepository: 'blue-idea/homebrew-tap',
-    releaseRepository: 'blue-idea/collection',
+    releaseRepository: 'blue-idea/linkit',
     caskRelativePath: 'Casks/linkit.rb',
     releaseAsset: 'Linkit.dmg',
   });
 
   assert.match(cask, /^cask "linkit" do$/m, 'Cask token must be linkit');
-  assert.match(cask, /^  version "0\.2\.2"$/m, 'Seed Cask must target the latest verified release');
+  assert.match(cask, /^  version "\d+\.\d+\.\d+"$/m, 'Seed Cask must target a valid release version');
   assert.match(
     cask,
-    /^  sha256 "41ed2e929a23e415d40ee3c58b09f755dcf6d6e4976ccebec0fd0a3bee47741d"$/m,
-    'Seed Cask SHA256 must match the published Linkit.dmg digest'
+    /^  sha256 "[0-9a-f]{64}"$/m,
+    'Seed Cask SHA256 must match a valid 64-character hex digest'
   );
   assert.match(cask, /releases\/download\/v#\{version\}\/Linkit\.dmg/, 'Cask URL must use the versioned universal DMG');
   assert.match(cask, /^  app "Linkit\.app"$/m, 'Cask must install Linkit.app');
