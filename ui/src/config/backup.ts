@@ -7,7 +7,7 @@ export const BACKUP_SETTINGS_VERSION = 1 as const;
  * 优先级：
  * 1. 显式传入版本（如调用或测试）
  * 2. 编译期注入的 import.meta.env.VITE_APP_VERSION
- * 3. 默认回退版本 '0.3.5'
+ * 3. 默认回退版本 '0.3.6'
  */
 export function resolveAppVersion(injectedVersion?: string): string {
   const envVersion =
@@ -19,7 +19,7 @@ export function resolveAppVersion(injectedVersion?: string): string {
   if (envVersion && envVersion.trim()) {
     return envVersion.trim().replace(/^v/, '');
   }
-  return '0.3.5';
+  return '0.3.6';
 }
 
 export const LINKIT_APP_VERSION = resolveAppVersion();
