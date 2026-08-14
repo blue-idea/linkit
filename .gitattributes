@@ -17,6 +17,7 @@
 *.env text eol=lf
 *.gitignore text eol=lf
 *.gitattributes text eol=lf
+*.patch text eol=lf
 
 # Windows scripts
 *.bat text eol=crlf
