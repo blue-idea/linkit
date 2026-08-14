@@ -83,15 +83,15 @@ func DefaultAppSettings() appSettings {
 		AIConsent:       nil,
 		View:            viewSettings{DefaultMode: "card"},
 		LastCloudRev:    nil,
-		UiSize:          config.UiSizeMedium,
+		UiSize:          config.UiSizeLarge,
 		Shortcuts: map[string]string{
-			"spotlight":     "CmdOrCtrl+K",
-			"newBookmark":   "CmdOrCtrl+N",
-			"insights":      "CmdOrCtrl+I",
-			"settings":      "CmdOrCtrl+,",
-			"viewCard":      "CmdOrCtrl+1",
-			"viewList":      "CmdOrCtrl+2",
-			"viewMasonry":   "CmdOrCtrl+3",
+			"spotlight":          "CmdOrCtrl+K",
+			"newBookmark":        "CmdOrCtrl+N",
+			"insights":           "CmdOrCtrl+I",
+			"settings":           "CmdOrCtrl+,",
+			"viewCard":           "CmdOrCtrl+1",
+			"viewList":           "CmdOrCtrl+2",
+			"viewMasonry":        "CmdOrCtrl+3",
 			"toggleLeftSidebar":  "CmdOrCtrl+/",
 			"toggleRightSidebar": "CmdOrCtrl+\\",
 			"toggleWindow":       "CmdOrCtrl+L",
@@ -131,7 +131,7 @@ func decodeAndValidateSettings(content []byte) (appSettings, error) {
 
 func normalizeUiSize(settings *appSettings) {
 	if strings.TrimSpace(settings.UiSize) == "" {
-		settings.UiSize = config.UiSizeMedium
+		settings.UiSize = config.UiSizeLarge
 	}
 }
 

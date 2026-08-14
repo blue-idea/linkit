@@ -27,8 +27,10 @@ const validLibraryEnvelope = {
       { id: 'c-tech', name: 'Technology', icon: 'Code2', parentId: null, color: 'blue' },
       { id: 'c-react', name: 'React', icon: 'Atom', parentId: 'c-tech', color: 'blue' },
     ],
-    collections: [{ id: 'col-build', name: 'Build a website', emoji: '🛠️', color: 'blue',
-      description: 'Project references', bookmarkIds: ['b-react'], createdAt: timestamp, updatedAt: timestamp }],
+    collections: [{
+      id: 'col-build', name: 'Build a website', emoji: '🛠️', color: 'blue',
+      description: 'Project references', bookmarkIds: ['b-react'], createdAt: timestamp, updatedAt: timestamp
+    }],
     tags: [{ id: 't-doc', label: 'Doc', color: 'gray' }],
   },
 };
@@ -103,12 +105,14 @@ describe('Library Schema 与引用完整性', () => {
     invalidEnvelope.data.collections[0].bookmarkIds = ['b-missing'];
     expect(domain.validateLibraryEnvelope).toBeTypeOf('function');
     const result = domain.validateLibraryEnvelope?.(invalidEnvelope);
-    expect(result).toMatchObject({ success: false, errors: expect.arrayContaining([
-      expect.objectContaining({ code: 'INVALID_CATEGORY_REFERENCE' }),
-      expect.objectContaining({ code: 'INVALID_TAG_REFERENCE' }),
-      expect.objectContaining({ code: 'INVALID_COLLECTION_REFERENCE' }),
-      expect.objectContaining({ code: 'INVALID_BOOKMARK_REFERENCE' }),
-    ]) });
+    expect(result).toMatchObject({
+      success: false, errors: expect.arrayContaining([
+        expect.objectContaining({ code: 'INVALID_CATEGORY_REFERENCE' }),
+        expect.objectContaining({ code: 'INVALID_TAG_REFERENCE' }),
+        expect.objectContaining({ code: 'INVALID_COLLECTION_REFERENCE' }),
+        expect.objectContaining({ code: 'INVALID_BOOKMARK_REFERENCE' }),
+      ])
+    });
     if (result && !result.success) expect(result.errors).toHaveLength(4);
   });
 
@@ -250,26 +254,36 @@ describe('Library V1 迁移', () => {
   test('迁移器将原型 tags 转为 tagIds 并补齐 V1 默认字段', async () => {
     const domain = await loadDomainModule();
     const legacyDocument = {
-      bookmarks: [{ id: 'b-react', title: 'React documentation', url: 'https://react.dev', domain: 'react.dev',
+      bookmarks: [{
+        id: 'b-react', title: 'React documentation', url: 'https://react.dev', domain: 'react.dev',
         favicon: '⚛️', description: 'React reference', notes: 'Hooks reference', tags: ['t-doc'],
         categoryId: 'c-react', collectionIds: [], createdAt: timestamp, lastVisitedAt: null, visitCount: 3,
         starred: true, pinned: false, thumbnail: 'blue', health: 'ok',
-        aiSummary: 'Official React documentation.', aiSuggestedTags: ['frontend'] }],
+        aiSummary: 'Official React documentation.', aiSuggestedTags: ['frontend']
+      }],
       categories: [{ id: 'c-react', name: 'React', icon: 'Atom', parentId: null, color: 'blue' }],
-      collections: [{ id: 'col-build', name: 'Build a website', emoji: '🛠️', color: 'blue',
-        description: 'Project references', bookmarkIds: ['b-react'] }],
+      collections: [{
+        id: 'col-build', name: 'Build a website', emoji: '🛠️', color: 'blue',
+        description: 'Project references', bookmarkIds: ['b-react']
+      }],
       tags: [{ id: 't-doc', label: 'Doc', color: 'gray' }],
     };
     expect(domain.migrateLibraryDocument).toBeTypeOf('function');
     expect(domain.migrateLibraryDocument?.(legacyDocument, { now: timestamp })).toMatchObject({
       success: true,
-      data: { format: 'linkit-library', schemaVersion: 1, revision: 0, updatedAt: timestamp,
-        data: { bookmarks: [expect.objectContaining({ tagIds: ['t-doc'], collectionIds: ['col-build'],
-          favicon: '⚛️',
-          faviconColor: 'blue',
-          updatedAt: timestamp, readStatus: 'unread', healthCheckedAt: null, healthHttpStatus: null,
-          healthFingerprint: null, healthErrorCode: null })],
-          collections: [expect.objectContaining({ createdAt: timestamp, updatedAt: timestamp })] } },
+      data: {
+        format: 'linkit-library', schemaVersion: 1, revision: 0, updatedAt: timestamp,
+        data: {
+          bookmarks: [expect.objectContaining({
+            tagIds: ['t-doc'], collectionIds: ['col-build'],
+            favicon: '⚛️',
+            faviconColor: 'blue',
+            updatedAt: timestamp, readStatus: 'unread', healthCheckedAt: null, healthHttpStatus: null,
+            healthFingerprint: null, healthErrorCode: null
+          })],
+          collections: [expect.objectContaining({ createdAt: timestamp, updatedAt: timestamp })]
+        }
+      },
     });
   });
 
@@ -352,7 +366,8 @@ describe('AppSettings Schema', () => {
   // TASK-003：有效本机设置必须通过版本化 Schema。
   test('AppSettings 在 HTTPS API Base 与完整偏好有效时返回设置', async () => {
     const domain = await loadDomainModule();
-    const settings = { settingsVersion: 1, storageMode: 'local', theme: 'midnight', locale: 'en',
+    const settings = {
+      settingsVersion: 1, storageMode: 'local', theme: 'midnight', locale: 'en',
       ai: { apiBase: 'https://api.example.com/v1', model: 'gpt-compatible' }, aiConsent: null,
       view: { defaultMode: 'card' }, lastCloudRevision: null, uiSize: 'medium',
       shortcuts: {
@@ -365,8 +380,8 @@ describe('AppSettings Schema', () => {
     expect(domain.AppSettingsSchema?.safeParse(settings)).toEqual({ success: true, data: settings });
   });
 
-  // REQ-031-AC-002 / AC-004：缺省 uiSize 合并为 medium。
-  test('AppSettings 缺省 uiSize 时合并为 medium', async () => {
+  // REQ-031-AC-002 / AC-004：缺省 uiSize 合并为 large。
+  test('AppSettings 缺省 uiSize 时合并为 large', async () => {
     const domain = await loadDomainModule();
     const result = domain.AppSettingsSchema?.safeParse({
       settingsVersion: 1, storageMode: 'local', theme: 'midnight', locale: 'en',
@@ -380,7 +395,7 @@ describe('AppSettings Schema', () => {
     });
     expect(result?.success).toBe(true);
     if (result?.success) {
-      expect(result.data.uiSize).toBe('medium');
+      expect(result.data.uiSize).toBe('large');
     }
   });
 
@@ -388,7 +403,8 @@ describe('AppSettings Schema', () => {
   test('AppSettings 在 API Base 使用非 loopback HTTP 时拒绝配置', async () => {
     const domain = await loadDomainModule();
     expect(domain.AppSettingsSchema).toBeDefined();
-    const result = domain.AppSettingsSchema?.safeParse({ settingsVersion: 1, storageMode: 'local',
+    const result = domain.AppSettingsSchema?.safeParse({
+      settingsVersion: 1, storageMode: 'local',
       theme: 'midnight', locale: 'en', ai: { apiBase: 'http://example.com/v1', model: 'gpt-compatible' },
       aiConsent: null, view: { defaultMode: 'card' }, lastCloudRevision: null, uiSize: 'medium',
       shortcuts: {

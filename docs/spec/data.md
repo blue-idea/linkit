@@ -154,7 +154,7 @@
 | `view.defaultMode` | enum | Card/List/Masonry/Timeline/Tag Aggregation/Theme Space |
 | `lastCloudRevision` | integer/null | 最近成功加载或保存的云版本 |
 | `shortcuts` | object | 可配置快捷键映射；键为稳定 action id，值为跨平台 accelerator 字符串（如 `CmdOrCtrl+L`）；缺省时读取层合并平台默认；不云同步 |
-| `uiSize` | enum | `small`、`medium`、`large`、`xlarge`；默认 `medium`；仅表示主窗口预设档位，不云同步 |
+| `uiSize` | enum | `small`、`medium`、`large`、`xlarge`；默认 `large`；仅表示主窗口预设档位，不云同步 |
 
 窗口大小预设（REQ-031；与 `config` / `ui/src/config` 对齐）：
 
@@ -165,7 +165,7 @@
 | `large` | 1566 | 979 |
 | `xlarge` | 1822 | 1139 |
 
-旧 `settings.json` 无 `uiSize` 时，读取合并为 `medium`，不强制抬升破坏性 `settingsVersion`。手动拖拽产生的瞬时宽高不写入本字段，也不另存字段。
+旧 `settings.json` 无 `uiSize` 时，读取合并为 `large`，不强制抬升破坏性 `settingsVersion`。手动拖拽产生的瞬时宽高不写入本字段，也不另存字段。
 
 可配置 action id（REQ-030）：
 

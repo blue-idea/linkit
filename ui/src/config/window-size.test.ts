@@ -1,9 +1,14 @@
 import { describe, expect, test } from 'vitest';
-import { UI_SIZE_PRESETS, resolveWindowSize, type UiSize } from './window-size';
+import { DEFAULT_UI_SIZE, UI_SIZE_PRESETS, resolveWindowSize, type UiSize } from './window-size';
 
 // REQ-031-AC-002 / AC-003：前端预设与规格表一致。
 describe('window-size presets', () => {
-  test('medium 默认映射 1384x865', () => {
+  test('DEFAULT_UI_SIZE 默认为 large (1566x979)', () => {
+    expect(DEFAULT_UI_SIZE).toBe('large');
+    expect(resolveWindowSize(DEFAULT_UI_SIZE)).toEqual({ width: 1566, height: 979 });
+  });
+
+  test('medium 映射 1384x865', () => {
     expect(resolveWindowSize('medium')).toEqual({ width: 1384, height: 865 });
   });
 

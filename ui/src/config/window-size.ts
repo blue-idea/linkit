@@ -10,7 +10,7 @@ export const UI_SIZE_PRESETS: Record<UiSize, { width: number; height: number }> 
   xlarge: { width: 1822, height: 1139 },
 };
 
-export const DEFAULT_UI_SIZE: UiSize = 'medium';
+export const DEFAULT_UI_SIZE: UiSize = 'large';
 
 export function resolveWindowSize(uiSize: UiSize): { width: number; height: number } {
   return UI_SIZE_PRESETS[uiSize];

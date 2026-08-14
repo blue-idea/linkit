@@ -488,8 +488,8 @@ Settings → Appearance 在主题选择之外增加 **界面窗口大小** 四�
 | `uiSize` | 英文文案 | 中文文案 | 宽 × 高 |
 |----------|----------|----------|---------|
 | `small` | Small | 小 | 1182 × 739 |
-| `medium` | Medium | 中 | 1384 × 865（默认，与 `config.AppWidth/AppHeight` 一致） |
-| `large` | Large | 大 | 1566 × 979 |
+| `medium` | Medium | 中 | 1384 × 865 |
+| `large` | Large | 大 | 1566 × 979（默认） |
 | `xlarge` | Extra large | 超大 | 1822 × 1139 |
 
 预设映射集中在 `config/`（Go）与 `ui/src/config/`（TS），两边数值必须一致；禁止在组件内散落魔法数字。
@@ -497,7 +497,7 @@ Settings → Appearance 在主题选择之外增加 **界面窗口大小** 四�
 #### 持久化
 
 1. `AppSettings.uiSize` 写入本机 `settings.json`，不云同步。详见 `docs/spec/data.md`。
-2. 旧设置缺省字段时，读取层合并为 `medium`，不强制抬升破坏性 `settingsVersion`。
+2. 旧设置缺省字段时，读取层合并为 `large`，不强制抬升破坏性 `settingsVersion`。
 3. **不**单独持久化用户手动拖拽后的宽高；下次启动始终按 `uiSize` 预设打开。
 
 #### 应用时机

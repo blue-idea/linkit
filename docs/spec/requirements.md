@@ -2211,10 +2211,10 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 - id: REQ-031-AC-002
   ears: >
     When Linkit 首次启动且不存在窗口大小偏好,
-    the Linkit shall 使用 Medium（1384×865）作为默认主窗口尺寸.
+    the Linkit shall 使用 Large（1566×979）作为默认主窗口尺寸.
   test_type: Unit
   expected:
-    return_value: "Default uiSize is medium mapped to 1384x865"
+    return_value: "Default uiSize is large mapped to 1566x979"
     side_effects: []
 
 - id: REQ-031-AC-003

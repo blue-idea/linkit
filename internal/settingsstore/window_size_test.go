@@ -9,15 +9,15 @@ import (
 	"github.com/blue-idea/collection/config"
 )
 
-// REQ-031-AC-002：缺省 uiSize 合并为 medium。
-func TestDefaultAppSettingsUiSizeIsMedium(t *testing.T) {
+// REQ-031-AC-002：缺省 uiSize 合并为 large。
+func TestDefaultAppSettingsUiSizeIsLarge(t *testing.T) {
 	settings := DefaultAppSettings()
-	if settings.UiSize != config.UiSizeMedium {
-		t.Fatalf("default uiSize=%q, want %q", settings.UiSize, config.UiSizeMedium)
+	if settings.UiSize != config.UiSizeLarge {
+		t.Fatalf("default uiSize=%q, want %q", settings.UiSize, config.UiSizeLarge)
 	}
 }
 
-// REQ-031-AC-004：旧 settings 无 uiSize 时读取合并为 medium。
+// REQ-031-AC-004：旧 settings 无 uiSize 时读取合并为 large。
 func TestReadSettingsMergesMissingUiSize(t *testing.T) {
 	root := t.TempDir()
 	payload := `{
@@ -40,8 +40,8 @@ func TestReadSettingsMergesMissingUiSize(t *testing.T) {
 	if err := json.Unmarshal([]byte(result.SettingsJSON), &decoded); err != nil {
 		t.Fatalf("unmarshal: %v", err)
 	}
-	if decoded["uiSize"] != config.UiSizeMedium {
-		t.Fatalf("merged uiSize=%v, want %q", decoded["uiSize"], config.UiSizeMedium)
+	if decoded["uiSize"] != config.UiSizeLarge {
+		t.Fatalf("merged uiSize=%v, want %q", decoded["uiSize"], config.UiSizeLarge)
 	}
 }
 
