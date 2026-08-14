@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Bookmark, Category, Collection, Tag } from '../types';
 import { Icon, TagPill, Favicon, MiniBrowser, Sparkline, AIBadge, Button, Kbd } from './ui';
 import { tagColors } from '../colors';
@@ -92,6 +92,11 @@ export function DetailPanel({
   const [editingNotes, setEditingNotes] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [tagInput, setTagInput] = useState('');
+  const [summaryDraft, setSummaryDraft] = useState(bookmark?.aiSummary ?? '');
+
+  useEffect(() => {
+    setSummaryDraft(bookmark?.aiSummary ?? '');
+  }, [bookmark?.id, bookmark?.aiSummary]);
 
   if (!bookmark) {
     return (
@@ -282,14 +287,22 @@ export function DetailPanel({
         </div>
 
         {/* AI summary */}
-        {b.aiSummary && (
-          <div className="mx-4 my-2 rounded-mac bg-violet2-500/10 border border-violet2-400/20 p-3">
-            <div className="flex items-center gap-2 mb-1.5">
-              <AIBadge label={i18n.t('bookmark.aiSummary')} />
-            </div>
-            <p className="text-[12px] text-ink-200 leading-relaxed">{b.aiSummary}</p>
+        <div className="mx-4 my-2 rounded-mac bg-violet2-500/10 border border-violet2-400/20 p-3">
+          <div className="flex items-center gap-2 mb-1.5">
+            <AIBadge label={i18n.t('bookmark.aiSummary')} />
           </div>
-        )}
+          <textarea
+            aria-label={i18n.t('bookmark.aiSummary')}
+            value={summaryDraft}
+            onChange={(e) => setSummaryDraft(e.target.value)}
+            onBlur={(e) => {
+              const next = e.target.value.trim();
+              if (next !== (b.aiSummary ?? '')) onUpdate({ aiSummary: next });
+            }}
+            className="w-full rounded-mac bg-ink-800/40 hairline text-[12px] text-ink-100 p-2.5 leading-relaxed resize-none outline-none focus-ring"
+            rows={4}
+          />
+        </div>
 
         {/* Description */}
         <Field label={i18n.t('bookmark.description')}>

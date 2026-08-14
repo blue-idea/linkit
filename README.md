@@ -1,12 +1,14 @@
-# Linkit - Smart Knowledge Curation Space
+# Linkit — Your Smart Knowledge Curation Space
 
 <p align="center">
-  <img src="ui/screenshot/dashboard.png" alt="Linkit Dashboard" width="80%">
+  <img src="https://raw.githubusercontent.com/blue-idea/linkit/main/ui/screenshot/dashboard.png" alt="Linkit Dashboard" width="80%">
 </p>
 
 <p align="center">
   <a href="https://github.com/blue-idea/linkit/releases"><img src="https://img.shields.io/github/v/release/blue-idea/linkit?style=flat-square&color=blue" alt="GitHub release"></a>
   <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue?style=flat-square" alt="Platform">
+  <img src="https://img.shields.io/badge/storage-local%20%7C%20cloud-green?style=flat-square" alt="Storage">
+  <img src="https://img.shields.io/badge/AI-built--in-purple?style=flat-square" alt="AI">
 </p>
 
 <p align="center">
@@ -15,87 +17,134 @@
 
 ---
 
-**Linkit** is a desktop "Smart Knowledge Curation Space" (桌面端智能书签管理与知识收藏空间) designed to help you collect, organize, discover, and reuse web links, page resources, and creative inspirations. Unlike traditional browser bookmark managers (浏览器书签管理器), Linkit focuses on long-term organization using categories, flexible cross-category compilation using collections, and AI-powered understanding, connection, and cataloging.
+**Linkit** is a desktop bookmark manager built for knowledge workers. AI summaries, semantic search, and a knowledge graph turn saved links into real assets. Collections let you group ideas across categories; link health checks and duplicate detection keep your library clean; one-click import from Chrome, Firefox, Raindrop and more gets you started in seconds. Six beautiful themes, local-first storage, cloud sync when you need it — your data, always yours. Connect any OpenAI-compatible API or a local model (Ollama, etc.) for full AI features. Available on macOS, Windows, and Linux.
 
 ---
 
-### 🚀 Installation & Quick Start
+### 🚀 Installation
 
-#### 🍺 Recommended Installation (macOS Homebrew)
-
-Install the universal macOS app directly via the third-party Homebrew Tap:
+#### 🍺 macOS — Homebrew (Recommended)
 
 ```bash
 brew install blue-idea/tap/linkit
 ```
 
-Upgrade to the latest release at any time:
-
 ```bash
-brew upgrade linkit
+brew upgrade linkit   # upgrade anytime
 ```
 
-> **Note**: Linkit is currently distributed without Apple notarization. The third-party Cask automatically clears the Gatekeeper `com.apple.quarantine` attribute from `Linkit.app` upon installation without using `sudo` or affecting other apps.
+> Linkit is currently distributed without Apple notarization. The Cask automatically clears the Gatekeeper `com.apple.quarantine` attribute on install — no `sudo` required.
 
 #### 📦 Direct Downloads
-Pre-compiled binaries for Windows, macOS (DMG), and Linux (AppImage / DEB) are available on the [GitHub Releases](https://github.com/blue-idea/linkit/releases) page.
 
-> **macOS DMG Note**: The DMG package includes an interactive helper script (`Fix Gatekeeper.command`). If macOS Gatekeeper prevents opening Linkit, drag `Linkit.app` to `/Applications` first, then double-click `Fix Gatekeeper.command` inside the DMG to automatically clear the quarantine attribute.
+Windows, macOS (DMG), and Linux (AppImage / DEB) binaries are on the [GitHub Releases](https://github.com/blue-idea/linkit/releases) page.
+
+> **macOS DMG**: If Gatekeeper blocks the app, drag `Linkit.app` to `/Applications`, then run `Fix Gatekeeper.command` inside the DMG to clear the quarantine flag automatically.
 
 ---
 
-### 🌟 Key Features
+### 🌟 Why Linkit?
 
-- **💡 Knowledge Assets over Link Lists**: Organize links with rich metadata, including custom tags, star ratings, pinning, notes, and reading status (`unread`, `reading`, `read`, `archived`).
-- **📁 Multi-Level Categories**: A stable structure featuring drag-and-drop category tree organization and instant drag-to-categorize bookmarks.
-- **🎨 Dynamic Collections**: Create cross-category themed spaces with customizable emojis and colors. You can drag bookmarks to group them, or ask AI to auto-curate collections based on a specific prompt.
-- **🤖 Built-in AI Copilot**: Fully-integrated local/remote LLM support for page analysis, auto-summarization, smart tag recommendations, target-oriented collection creation, duplicate detection, and semantic search.
-- **🔍 Spotlight Search**: Open instantly with `Cmd/Ctrl + K` to search through titles, descriptions, notes, and semantic contents, or quick-save URLs from the clipboard.
-- **🛡️ Secure Storage Modes**: Run fully locally in offline-first mode, or log in to sync your library across devices with Supabase Cloud. Rest assured that all cloud data is protected by Row-Level Security (RLS).
-- **❤️ Link Health & Insights**: Semi-automated background scans check for broken or changed links, and the automated "Insights Report" summarizes curation statistics and content patterns.
-- **🌐 Static Knowledge Graphs**: Explore how your bookmarks connect visually via shared tags, collections, and semantic relationships in a local interactive network graph.
+| | Linkit | Raindrop | Browser Bookmarks |
+|---|---|---|---|
+| Local-first storage | ✅ | ❌ | ✅ |
+| AI summaries & tags | ✅ | ❌ | ❌ |
+| Semantic search | ✅ | ❌ | ❌ |
+| Duplicate detection | ✅ | ✅ | ❌ |
+| Knowledge graph | ✅ | ❌ | ❌ |
+| Insights report | ✅ | ❌ | ❌ |
+| Import from browsers / Raindrop | ✅ | ✅ | — |
+| Cross-device sync | ✅ | ✅ | ✅ |
+| Offline-first | ✅ | ❌ | ✅ |
+
+---
+
+### ✨ Key Features
+
+#### 🗄️ Local-First, Privacy-Respecting Storage
+All your bookmarks are stored in a local SQLite database on your own machine — no account required to get started. Enable optional Supabase cloud sync to access your library across devices. Either way, your data is never sold or shared.
+
+#### 📥 One-Click Import
+Migrate your existing bookmarks in seconds:
+- **Browser HTML export** — Chrome, Firefox, Safari, Edge
+- **Raindrop.io CSV/JSON export**
+- **Clipboard URL** — paste any link directly via Spotlight (`Cmd/Ctrl + K`)
+
+#### 💡 Knowledge Assets, Not Just Links
+Every bookmark is a rich knowledge card: custom tags, star ratings, pinning, personal notes, and reading status (`unread` → `reading` → `read` → `archived`). Stop losing links you meant to revisit.
+
+#### 📁 Multi-Level Categories + Dynamic Collections
+Build a stable category tree with drag-and-drop. Then create **Collections** — cross-category themed spaces with custom emojis and colors — for projects, research, or inspiration boards. Drag bookmarks in manually, or let AI curate a collection from a single prompt.
+
+#### 🤖 Built-in AI Copilot
+Connect any OpenAI / DeepSeek-compatible API or a local LLM (Ollama, etc.) and unlock:
+- Auto page fetch, summarization, and key takeaways
+- Smart tag and category recommendations
+- AI-curated collections from natural language prompts
+- Semantic search across your entire library
+- Duplicate detection and merge suggestions
+
+#### 🔍 Spotlight Search (`Cmd/Ctrl + K`)
+Instant full-text and semantic vector search across titles, notes, tags, and AI-generated content. Also doubles as a quick-capture bar — paste a URL and save it without leaving your current tab.
+
+#### 📊 Curation Insights Report
+Linkit periodically generates an **Insights Report** summarizing your curation habits: most-used tags, reading progress, content patterns, and AI-surfaced highlights from your unread pile. Turn your bookmark graveyard into an active knowledge base.
+
+#### 🔁 Duplicate Bookmark Detection
+Automatically surface exact-URL duplicates and AI-detected near-duplicates (same content, different URLs). Review and merge with one click to keep your library clean.
+
+#### ❤️ Link Health Check
+Background scans detect broken links (`404`) and silently changed pages. Filter, review, and clean up stale bookmarks before they pile up.
+
+#### 🌐 Knowledge Graph
+Visualize your entire library as an interactive network. Nodes connect via shared tags, collections, and AI semantic similarity. Click any node to jump directly to that bookmark.
+
+#### 🛡️ Secure Cloud Sync
+When you enable sync, all data is protected by Supabase Row-Level Security (RLS) — every row is cryptographically bound to your user ID. No one else can read your bookmarks, not even us.
 
 ---
 
 ### 📸 Interface Showcase
 
 #### 📊 Main Workspace (Dashboard)
-A modern three-column layout featuring collapsible sidebars, multiple grid/list view controls, and a detailed curation sidebar.
-![Dashboard](ui/screenshot/dashboard.png)
+Three-column layout with collapsible sidebars, six view modes (grid, list, waterfall, timeline, tag-cluster, collections), and a rich detail panel.
+![Dashboard](https://raw.githubusercontent.com/blue-idea/linkit/main/ui/screenshot/dashboard.png)
 
 #### 🔍 Spotlight Search (`Cmd/Ctrl + K`)
-Instantly search titles, notes, and semantic embeddings, or paste a URL to quickly save it to Linkit.
-![Spotlight](ui/screenshot/spotlight.png)
+Instant multi-attribute and semantic search, or paste a URL to capture and analyze it on the spot.
+![Spotlight](https://raw.githubusercontent.com/blue-idea/linkit/main/ui/screenshot/spotlight.png)
 
 #### 🤖 AI Insights & Smart Summaries
-Get automated reading summaries, semantic tag suggestions, and key takeaways for each bookmark.
-![AI Insights](ui/screenshot/ai_insights.png)
+One-click page analysis: core takeaways, auto-tags, and a concise summary — all generated locally or via your chosen API.
+![AI Insights](https://raw.githubusercontent.com/blue-idea/linkit/main/ui/screenshot/ai_insights.png)
 
 #### 📥 Adding Bookmarks & Quick Capture
-Capture links instantly with drag-and-drop or clipboard detection. AI analyzes and categorizes them automatically.
-![Add Bookmark](ui/screenshot/add_bookmark.png)
+Drag-and-drop or clipboard detection. AI fetches metadata and suggests tags in real time.
+![Add Bookmark](https://raw.githubusercontent.com/blue-idea/linkit/main/ui/screenshot/add_bookmark.png)
 
 #### 💔 Link Health Check
-Scan for updated or broken links and filter results easily.
-![Health Check](ui/screenshot/health_check.png)
+Scan for broken or changed links and filter results by status.
+![Health Check](https://raw.githubusercontent.com/blue-idea/linkit/main/ui/screenshot/health_check.png)
 
-#### ⚙️ Custom Preferences & Appearance
-Support for multiple elegant themes (*Midnight*, *Ocean*, *Graphite*, *Sunset*) and full localization (English/简体中文).
-![Settings](ui/screenshot/settings.png)
+#### ⚙️ Preferences & Themes
+Six elegant themes (*Midnight*, *Ocean*, *Graphite*, *Sunset*, *Daylight*, *Paper*) and full English / 简体中文 localization.
+![Settings](https://raw.githubusercontent.com/blue-idea/linkit/main/ui/screenshot/settings.png)
 
 ---
 
 ### 🛠️ Technology Stack
 
-- **Desktop Framework**: [Wails](https://wails.io/) (Go / Golang)
-- **Frontend Core**: [React](https://react.dev/) + [Vite](https://vite.dev/) + [TypeScript](https://www.typescriptlang.org/)
-- **UI & Styling**: [Tailwind CSS](https://tailwindcss.com/) + Custom Glassmorphism Theme
-- **Database & Sync**: [Supabase](https://supabase.com/) (PostgreSQL with Row-Level Security)
-- **State & Routing**: React Context + Custom Hooks
-- **AI Engine**: Local LLM APIs or Remote OpenAI/DeepSeek compatible API endpoints
+- **Desktop Framework**: [Wails](https://wails.io/) (Go)
+- **Frontend**: [React](https://react.dev/) + [Vite](https://vite.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- **UI**: [Tailwind CSS](https://tailwindcss.com/) + Glassmorphism design system
+- **Local DB**: SQLite (via GORM)
+- **Cloud Sync**: [Supabase](https://supabase.com/) (PostgreSQL + RLS)
+- **AI**: OpenAI / DeepSeek-compatible APIs or local LLMs (Ollama)
 
 ---
 
-### 🔑 Security & Configuration
-- **Supabase RLS**: All remote data interactions are secured by row-level policies. Users can only access their own records.
-- **AI Credentials**: API base and API keys are stored securely using system keystores (`go-keyring`) and local app preferences. No credentials are ever hardcoded or sent to third-party tracking services.
+### 🔑 Security & Privacy
+
+- **Local by default**: No account, no telemetry, no cloud dependency to get started.
+- **RLS-enforced sync**: Cloud data is row-level secured — only you can access your records.
+- **Keychain-stored credentials**: AI API keys are stored in your OS keystore (`go-keyring` → macOS Keychain / Windows Credential Manager). Never hardcoded, never uploaded.
