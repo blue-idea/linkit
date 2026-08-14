@@ -33,6 +33,41 @@ describe('AboutDialog', () => {
     expect(within(dialog).getByRole('link', { name: /github\.com\/blue-idea\/linkit/i })).toBeInTheDocument();
   });
 
+  test('缺省 appVersion 时自动渲染 LINKIT_APP_VERSION', () => {
+    render(
+      <AboutDialog
+        open
+        onClose={() => undefined}
+      />
+    );
+
+    const dialog = screen.getByRole('dialog', { name: /about/i });
+    expect(within(dialog).getByText(/version\s*0\.3\.5/i)).toBeInTheDocument();
+  });
+
+  test('缺省 appVersion 且存在后端 Wails 运行时时动态拉取最新版本', async () => {
+    const originalGo = (window as unknown as { go?: unknown }).go;
+    (window as unknown as { go: unknown }).go = {
+      platform: {
+        Service: {
+          GetAppVersion: vi.fn().mockResolvedValue('0.3.9'),
+        },
+      },
+    };
+
+    render(
+      <AboutDialog
+        open
+        onClose={() => undefined}
+      />
+    );
+
+    const dialog = screen.getByRole('dialog', { name: /about/i });
+    expect(await within(dialog).findByText(/version\s*0\.3\.9/i)).toBeInTheDocument();
+
+    (window as unknown as { go: unknown }).go = originalGo;
+  });
+
   test('点击 GitHub 链接时通过外部打开', async () => {
     const user = userEvent.setup();
     render(

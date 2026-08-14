@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { LINKIT_APP_VERSION } from '../../config/backup';
 import { LINKIT_GITHUB_URL } from '../../config/links';
 import { useI18n } from '../../i18n/use-i18n';
@@ -17,10 +17,38 @@ type AboutDialogProps = {
 export function AboutDialog({
   open,
   onClose,
-  appVersion = LINKIT_APP_VERSION,
+  appVersion,
   githubUrl = LINKIT_GITHUB_URL,
 }: AboutDialogProps) {
   const i18n = useI18n();
+  const [displayedVersion, setDisplayedVersion] = useState<string>(appVersion ?? LINKIT_APP_VERSION);
+
+  useEffect(() => {
+    if (appVersion) {
+      setDisplayedVersion(appVersion);
+      return;
+    }
+    // 优先从 Wails 桌面端原生服务拉取注入的运行时版本
+    const getGoVersion = (
+      window as unknown as {
+        go?: { platform?: { Service?: { GetAppVersion?: () => Promise<string> } } };
+      }
+    ).go?.platform?.Service?.GetAppVersion;
+
+    if (typeof getGoVersion === 'function') {
+      void getGoVersion()
+        .then((v) => {
+          if (v && v.trim()) {
+            setDisplayedVersion(v.trim().replace(/^v/, ''));
+          }
+        })
+        .catch(() => {
+          // 降级回退到编译期静态版本
+        });
+    } else {
+      setDisplayedVersion(LINKIT_APP_VERSION);
+    }
+  }, [appVersion, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -62,7 +90,7 @@ export function AboutDialog({
         <div className="space-y-1">
           <p className="text-[13px] text-ink-100 font-medium">Linkit</p>
           <p className="text-[12px] text-ink-300">
-            {i18n.t('about.version', { version: appVersion })}
+            {i18n.t('about.version', { version: displayedVersion })}
           </p>
         </div>
         <div className="space-y-1">

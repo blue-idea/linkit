@@ -298,3 +298,12 @@ func (r *recordingBackend) Unregister() error {
 	r.onTrigger = nil
 	return nil
 }
+
+func TestGetAppVersion(t *testing.T) {
+	service := NewService()
+	version := service.GetAppVersion()
+	if version != config.AppVersion {
+		t.Fatalf("GetAppVersion = %q, want %q", version, config.AppVersion)
+	}
+}
+

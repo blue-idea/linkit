@@ -5,9 +5,17 @@ import (
 )
 
 func TestAppVersion(t *testing.T) {
-	expected := "0.3.1"
+	expected := "0.3.5"
 	if AppVersion != expected {
 		t.Errorf("AppVersion = %q; want %q", AppVersion, expected)
+	}
+
+	// 验证 AppVersion 为变量，可在构建期通过 ldflags -X 注入
+	original := AppVersion
+	defer func() { AppVersion = original }()
+	AppVersion = "9.9.9"
+	if AppVersion != "9.9.9" {
+		t.Fatalf("expected AppVersion to be mutable for ldflags injection, got %s", AppVersion)
 	}
 }
 

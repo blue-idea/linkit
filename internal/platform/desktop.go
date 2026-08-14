@@ -182,6 +182,11 @@ func defaultDesktopCapability() DesktopCapability {
 	}
 }
 
+// GetAppVersion 返回当前应用的版本号，供前端运行时动态获取。
+func (service *Service) GetAppVersion() string {
+	return config.AppVersion
+}
+
 // 供测试与装配读取退出意图。
 func (service *Service) AllowQuit() *atomic.Bool {
 	return &service.allowQuit

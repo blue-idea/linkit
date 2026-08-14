@@ -52,7 +52,10 @@ jobs:
             echo "Release tag must match vX.Y.Z or vX.Y.Z.W" >&2
             exit 1
           fi
+          CLEAN_VERSION="${TAG#v}"
           echo "RELEASE_TAG=${TAG}" >> $GITHUB_ENV
+          echo "CLEAN_VERSION=${CLEAN_VERSION}" >> $GITHUB_ENV
+          echo "VITE_APP_VERSION=${CLEAN_VERSION}" >> $GITHUB_ENV
 
       - name: Install Linux build dependencies
         if: matrix.os == 'linux'
@@ -97,6 +100,8 @@ jobs:
           fi
 
       - name: Build frontend
+        env:
+          VITE_APP_VERSION: ${{ env.CLEAN_VERSION }}
         run: pnpm --dir ui build
 
       - name: Install nFPM
@@ -105,7 +110,7 @@ jobs:
 
       - name: Build Wails desktop app (Linux)
         if: matrix.os == 'linux'
-        run: xvfb-run -a go run github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }} build -clean -platform ${{ matrix.platform }} -tags webkit2_41
+        run: xvfb-run -a go run github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }} build -clean -platform ${{ matrix.platform }} -tags webkit2_41 -ldflags "-X github.com/blue-idea/collection/config.AppVersion=${{ env.CLEAN_VERSION }}"
 
       - name: Install NSIS (Windows)
         if: matrix.os == 'windows'
@@ -128,7 +133,8 @@ jobs:
           if (Test-Path $nsisDir) {
             $env:Path = "$nsisDir;$env:Path"
           }
-          go run github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }} build -clean -platform ${{ matrix.platform }} -nsis
+          $cleanVersion = $env:CLEAN_VERSION
+          go run github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }} build -clean -platform ${{ matrix.platform }} -nsis -ldflags "-X github.com/blue-idea/collection/config.AppVersion=$cleanVersion"
           if (-not (Test-Path 'build/bin/linkit-amd64-installer.exe')) {
             Get-ChildItem build/bin -ErrorAction SilentlyContinue | Format-Table Name,Length
             throw 'NSIS installer was not produced'
@@ -136,7 +142,7 @@ jobs:
 
       - name: Build Wails desktop app (macOS)
         if: matrix.os == 'macos'
-        run: go run github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }} build -clean -platform ${{ matrix.platform }}
+        run: go run github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }} build -clean -platform ${{ matrix.platform }} -ldflags "-X github.com/blue-idea/collection/config.AppVersion=${{ env.CLEAN_VERSION }}"
 
       - name: Build DMG (macOS)
         if: matrix.os == 'macos'

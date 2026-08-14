@@ -17,12 +17,23 @@ const (
 	HTTPMaxFaviconBytes int64 = 256 * 1024
 	// MetadataMaxContentRunes 限制清洗后纯文本长度。
 	MetadataMaxContentRunes = 8_000
-	// HTTPUserAgent 标识 Linkit 版本，避免伪装浏览器。
-	HTTPUserAgent = "Linkit/" + AppVersion + " (+desktop)"
 	// HealthMaxConcurrency 限制手动链接健康扫描的并发请求数。
 	HealthMaxConcurrency = 4
 	// HealthMaxRetries 允许瞬时网络失败在判定 broken 前做有限重试。
 	HealthMaxRetries = 2
+)
+
+var (
+	// HTTPUserAgent 标识 Linkit 版本，避免伪装浏览器。
+	HTTPUserAgent = "Linkit/" + AppVersion + " (+desktop)"
+)
+
+// UserAgent 返回随 AppVersion 动态更新的 HTTP User-Agent 字符串。
+func UserAgent() string {
+	return "Linkit/" + AppVersion + " (+desktop)"
+}
+
+const (
 
 	// AITotalTimeout 限制单次 Chat Completions 请求总耗时。
 	AITotalTimeout = 40 * time.Second
