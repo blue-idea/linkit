@@ -1,6 +1,7 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { LINKIT_APP_VERSION } from '../../config/backup';
 import { AboutDialog } from './AboutDialog';
 
 const openExternalUrl = vi.fn();
@@ -42,7 +43,7 @@ describe('AboutDialog', () => {
     );
 
     const dialog = screen.getByRole('dialog', { name: /about/i });
-    expect(within(dialog).getByText(/version\s*0\.3\.5/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(new RegExp(`version\\s*${LINKIT_APP_VERSION}`, 'i'))).toBeInTheDocument();
   });
 
   test('缺省 appVersion 且存在后端 Wails 运行时时动态拉取最新版本', async () => {
