@@ -273,7 +273,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_REPOSITORY: ${{ steps.tap-config.outputs.release_repository }}
+          RELEASE_REPOSITORY: ${{ github.repository }}
           RELEASE_ASSET: ${{ steps.tap-config.outputs.release_asset }}
         run: |
           mkdir -p release-assets
