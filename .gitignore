@@ -11,6 +11,8 @@
 # SDD 测试证据产物
 /docs/spec/evidence/
 /docs/spec/eidence/
+/ui/screenshot/
+ui/tests/**/*.png
 
 # Wails 构建产物
 /build/bin/
