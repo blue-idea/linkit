@@ -13,15 +13,15 @@ describe('backup config & app version', () => {
   });
 
   it('resolveAppVersion 优先使用传入/环境变量中的版本号并去除前导 v', () => {
-    expect(resolveAppVersion('v0.3.6')).toBe('0.3.6');
+    expect(resolveAppVersion('v0.3.7')).toBe('0.3.7');
     expect(resolveAppVersion('0.4.0')).toBe('0.4.0');
     expect(resolveAppVersion('  v1.0.0  ')).toBe('1.0.0');
   });
 
-  it('resolveAppVersion 在无注入时回退至当前默认版本 0.3.6', () => {
-    expect(resolveAppVersion(undefined)).toBe('0.3.6');
-    expect(resolveAppVersion('')).toBe('0.3.6');
-    expect(resolveAppVersion('   ')).toBe('0.3.6');
+  it('resolveAppVersion 在无注入时回退至当前默认版本 0.3.7', () => {
+    expect(resolveAppVersion(undefined)).toBe('0.3.7');
+    expect(resolveAppVersion('')).toBe('0.3.7');
+    expect(resolveAppVersion('   ')).toBe('0.3.7');
   });
 
   it('LINKIT_APP_VERSION 默认应为有效版本字符串', () => {
