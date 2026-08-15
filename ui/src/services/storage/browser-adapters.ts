@@ -4,7 +4,7 @@ import { validateLibraryEnvelope } from '../../domain/library';
 import { normalizeDomainFavicon, normalizeDomainFaviconColor } from '../../domain/bookmark-icon';
 import type { RepositoryLoadResult } from '../../repositories';
 import type { SettingsLoadResult } from './bootstrap';
-import { BROWSER_STORAGE_KEYS } from '../../config/storage';
+import { BROWSER_STORAGE_KEYS, buildBrowserDataRootStorageKey } from '../../config/storage';
 
 const {
   settings: SETTINGS_KEY,
@@ -26,9 +26,25 @@ export interface BrowserStorageAdapters {
  * 桌面正式路径由 LocalRepository + settingsstore 绑定承担。
  */
 export function createBrowserStorageAdapters(storage: Storage = localStorage): BrowserStorageAdapters {
+  const readRootScopedValue = (baseKey: string): string | null => {
+    const dataRoot = storage.getItem(BROWSER_STORAGE_KEYS.dataRoot);
+    if (!dataRoot) return null;
+    return storage.getItem(buildBrowserDataRootStorageKey(baseKey, dataRoot));
+  };
+
+  const writeRootScopedValue = (baseKey: string, value: string): void => {
+    const dataRoot = storage.getItem(BROWSER_STORAGE_KEYS.dataRoot);
+    if (!dataRoot) return;
+    storage.setItem(buildBrowserDataRootStorageKey(baseKey, dataRoot), value);
+  };
+
   return {
     async loadSettings() {
-      const raw = storage.getItem(SETTINGS_KEY) ?? storage.getItem(LEGACY_SETTINGS_KEY);
+      const raw =
+        readRootScopedValue(SETTINGS_KEY) ??
+        readRootScopedValue(LEGACY_SETTINGS_KEY) ??
+        storage.getItem(SETTINGS_KEY) ??
+        storage.getItem(LEGACY_SETTINGS_KEY);
       if (!raw) {
         return { state: 'default', settings: getDefaultAppSettings() };
       }
@@ -40,11 +56,17 @@ export function createBrowserStorageAdapters(storage: Storage = localStorage): B
     },
 
     async saveSettings(settings) {
-      storage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+      const raw = JSON.stringify(settings);
+      writeRootScopedValue(SETTINGS_KEY, raw);
+      storage.setItem(SETTINGS_KEY, raw);
     },
 
     async loadLibrary() {
-      const raw = storage.getItem(LIBRARY_KEY) ?? storage.getItem(LEGACY_LIBRARY_KEY);
+      const raw =
+        readRootScopedValue(LIBRARY_KEY) ??
+        readRootScopedValue(LEGACY_LIBRARY_KEY) ??
+        storage.getItem(LIBRARY_KEY) ??
+        storage.getItem(LEGACY_LIBRARY_KEY);
       if (!raw) {
         return { state: 'empty' };
       }
@@ -157,11 +179,18 @@ export function createBrowserStorageAdapters(storage: Storage = localStorage): B
     },
 
     async saveLibraryData(data) {
-      storage.setItem(LEGACY_LIBRARY_KEY, JSON.stringify(data));
+      const raw = JSON.stringify(data);
+      writeRootScopedValue(LEGACY_LIBRARY_KEY, raw);
+      storage.setItem(LEGACY_LIBRARY_KEY, raw);
     },
 
     hasLocalLibraryData() {
-      return Boolean(storage.getItem(LIBRARY_KEY) ?? storage.getItem(LEGACY_LIBRARY_KEY));
+      return Boolean(
+        readRootScopedValue(LIBRARY_KEY) ??
+        readRootScopedValue(LEGACY_LIBRARY_KEY) ??
+        storage.getItem(LIBRARY_KEY) ??
+        storage.getItem(LEGACY_LIBRARY_KEY)
+      );
     },
   };
 }

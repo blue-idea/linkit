@@ -142,3 +142,37 @@ describe('SettingsDialog 完整备份导入', () => {
     await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Overwrite current library?' })).not.toBeInTheDocument());
   });
 });
+
+describe('SettingsDialog 数据目录切换', () => {
+  test('REQ-029-AC-003 选择保留目标数据后通知上层重新载入数据根', async () => {
+    const user = userEvent.setup();
+    localStorage.setItem('linkit.data-root.occupied:D:\\Occupied', '1');
+    (window as unknown as { __linkitSelectDirectory: () => string }).__linkitSelectDirectory = () => 'D:\\Occupied';
+    const onDataRootChanged = vi.fn();
+
+    render(
+      <SettingsDialog
+        open
+        settings={settings}
+        user={null}
+        library={library}
+        onClose={() => undefined}
+        onSave={() => undefined}
+        onImport={() => undefined}
+        onSignOut={() => undefined}
+        onDataRootChanged={onDataRootChanged}
+      />,
+    );
+
+    await user.click(screen.getByRole('tab', { name: 'Storage' }));
+    await user.click(screen.getByRole('button', { name: 'Change folder' }));
+    await user.click(await screen.findByRole('button', { name: 'Keep target data' }));
+
+    await waitFor(() => {
+      expect(onDataRootChanged).toHaveBeenCalledWith(expect.objectContaining({
+        dataRoot: 'D:\\Occupied',
+        conflictStrategy: 'keep',
+      }));
+    });
+  });
+});

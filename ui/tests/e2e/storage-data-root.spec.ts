@@ -55,8 +55,15 @@ test.describe('Storage data root', () => {
   test('occupied target can keep existing target data without overwrite', async ({ page }) => {
     await enterLocalMode(page);
     await page.evaluate(() => {
+      const sourceLibrary = {
+        bookmarks: [{ id: 'source-bookmark', title: 'Source bookmark', url: 'https://source.test' }],
+      };
+      const targetLibrary = {
+        bookmarks: [{ id: 'target-bookmark', title: 'Target bookmark', url: 'https://target.test' }],
+      };
       localStorage.setItem('linkit.data-root.occupied:D:\\Occupied', '1');
-      localStorage.setItem('linkit.library.v1', '{"format":"linkit-library","schemaVersion":1,"revision":9}');
+      localStorage.setItem('lattice.library', JSON.stringify(sourceLibrary));
+      localStorage.setItem('linkit.data-root.v1:D:\\Occupied:lattice.library', JSON.stringify(targetLibrary));
       (window as unknown as { __linkitSelectDirectory: () => string }).__linkitSelectDirectory = () =>
         'D:\\Occupied';
     });
@@ -81,5 +88,14 @@ test.describe('Storage data root', () => {
     await dialog.getByRole('button', { name: 'Keep target data' }).click();
     await expect(dialog.getByTestId('storage-data-root-path')).toContainText('D:\\Occupied');
     await expect(dialog.getByText('Data location updated')).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(page.locator('[data-view-item]', { hasText: 'Target bookmark' }).first()).toBeVisible();
+    await expect(page.locator('[data-view-item]', { hasText: 'Source bookmark' })).toHaveCount(0);
+    await page.screenshot({
+      path: resolve(evidenceDirectory, 'TASK-047-data-root-keep-target-loaded.png'),
+      fullPage: true,
+    });
   });
 });

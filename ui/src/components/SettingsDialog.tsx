@@ -49,6 +49,7 @@ import {
 import {
   createDataRootBindings,
   type DataRootInfo,
+  type MigrateDataRootResult,
 } from '../services/storage/data-root';
 import { exportDesktopFile } from '../services/platform/export';
 import { getDefaultAppSettings, normalizeApiBase } from '../services/settings';
@@ -205,6 +206,7 @@ export function SettingsDialog({
   onSignOut,
   onRestoreSampleData,
   onStorageSwitchConfirm,
+  onDataRootChanged,
 }: {
   open: boolean;
   settings: AppSettings;
@@ -221,6 +223,10 @@ export function SettingsDialog({
   onStorageSwitchConfirm?: (
     choice: 'use_target' | 'overwrite_target',
     targetMode: StorageMode
+  ) => void | Promise<void>;
+  /** 数据根切换成功后通知上层重新从当前有效根载入资料库。 */
+  onDataRootChanged?: (
+    result: MigrateDataRootResult & { conflictStrategy?: 'keep' | 'overwrite' }
   ) => void | Promise<void>;
 }) {
   const [tab, setTab] = useState<Tab>('general');
@@ -445,6 +451,7 @@ export function SettingsDialog({
         dataRoot: result.dataRoot,
         isCustom: result.dataRoot !== dataRootInfo.bootstrapRoot,
       });
+      await onDataRootChanged?.({ ...result, conflictStrategy });
       setPendingDataRootTarget(null);
       setDataRootConflictTarget(null);
       setDataRootMessage(i18n.t('settings.storage.migrationSuccess'));

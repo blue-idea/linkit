@@ -141,6 +141,7 @@ import { HealthScanDialog, type HealthResult } from './features/health';
 import { I18nProvider, useI18n } from './i18n/use-i18n';
 import { createI18n, type I18nApi } from './i18n';
 import type { MessageKey } from './i18n/catalogs';
+import type { RepositoryLoadResult } from './repositories';
 
 const DOMAIN_ERROR_KEYS: Record<string, MessageKey> = {
   BOOKMARK_NOT_FOUND: 'error.BOOKMARK_NOT_FOUND',
@@ -346,6 +347,49 @@ export default function App() {
   useEffect(() => {
     libraryRef.current = library;
   }, [library]);
+
+  const applyLoadedLocalLibrary = useCallback((loaded: RepositoryLoadResult) => {
+    if (loaded.state === 'found') {
+      const uiLib = toUiLibraryFromEnvelope(loaded.snapshot.envelope);
+      setBookmarks(uiLib.bookmarks);
+      setCats(uiLib.categories ?? seedCategories);
+      setCols(uiLib.collections ?? seedCollections);
+      setTagList(uiLib.tags ?? seedTags);
+      setState((s) => ({ ...s, selectedBookmarkId: uiLib.bookmarks[0]?.id ?? null }));
+      return true;
+    }
+    if (loaded.state === 'recovery_available') {
+      const uiLib = toUiLibraryFromEnvelope(loaded.recovery.envelope);
+      setBookmarks(uiLib.bookmarks);
+      setCats(uiLib.categories ?? seedCategories);
+      setCols(uiLib.collections ?? seedCollections);
+      setTagList(uiLib.tags ?? seedTags);
+      setState((s) => ({ ...s, selectedBookmarkId: uiLib.bookmarks[0]?.id ?? null }));
+      return true;
+    }
+    return false;
+  }, []);
+
+  const reloadLocalLibraryFromActiveRoot = useCallback(async () => {
+    // 切换数据根后先暂停旧内存库的自动保存，避免覆盖刚保留的目标目录数据。
+    setLibraryHydrated(false);
+    if (saveTimer.current) {
+      clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+    }
+    const loaded = await browserStorage.loadLibrary();
+    if (!applyLoadedLocalLibrary(loaded)) {
+      const lib = loadLocalLibrary();
+      if (lib) {
+        setBookmarks(lib.bookmarks);
+        setCats(lib.categories ?? seedCategories);
+        setCols(lib.collections ?? seedCollections);
+        setTagList(lib.tags ?? seedTags);
+        setState((s) => ({ ...s, selectedBookmarkId: lib.bookmarks[0]?.id ?? null }));
+      }
+    }
+    setLibraryHydrated(true);
+  }, [applyLoadedLocalLibrary, browserStorage]);
 
   /* ---------- debounced auto-save on library change ---------- */
   useEffect(() => {
@@ -2169,6 +2213,7 @@ export default function App() {
         onImport={handleImport}
         onSignOut={handleSignOut}
         onRestoreSampleData={handleRestoreSampleData}
+        onDataRootChanged={() => reloadLocalLibraryFromActiveRoot()}
       />
       <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
       <CloudConflictDialog

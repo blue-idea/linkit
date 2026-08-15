@@ -1,4 +1,5 @@
 /** 本地数据根绑定与浏览器 E2E 替身（REQ-029）。 */
+import { BROWSER_STORAGE_KEYS, buildBrowserDataRootStorageKey } from '../../config/storage';
 
 export interface DataRootInfo {
   bootstrapRoot: string;
@@ -39,7 +40,7 @@ export interface DataRootBindings {
   migrateDataRoot: (request: MigrateDataRootRequest) => Promise<MigrateDataRootResult>;
 }
 
-const BROWSER_DATA_ROOT_KEY = 'linkit.data-root.v1';
+const BROWSER_DATA_ROOT_KEY = BROWSER_STORAGE_KEYS.dataRoot;
 
 type WailsLocalstore = {
   GetDataRoot?: () => Promise<DataRootInfo>;
@@ -162,8 +163,10 @@ export function createDataRootBindings(storage: Storage = localStorage): DataRoo
       const hasSnapshot = Boolean(request.libraryDocumentJson?.trim() || request.settingsJson?.trim());
       if (!hasSnapshot && !storage.getItem(BROWSER_DATA_ROOT_KEY)) {
         // 浏览器替身无法复制真实文件；无快照时模拟空迁移失败，避免假成功。
-        const existingLibrary = storage.getItem('linkit.library.v1') ?? storage.getItem('lattice.library');
-        const existingSettings = storage.getItem('linkit.settings.v1') ?? storage.getItem('lattice.settings');
+        const existingLibrary =
+          storage.getItem(BROWSER_STORAGE_KEYS.library) ?? storage.getItem(BROWSER_STORAGE_KEYS.legacyLibrary);
+        const existingSettings =
+          storage.getItem(BROWSER_STORAGE_KEYS.settings) ?? storage.getItem(BROWSER_STORAGE_KEYS.legacySettings);
         if (!existingLibrary && !existingSettings) {
           throw Object.assign(new Error('Failed to migrate local data directory'), {
             code: 'DATA_ROOT_MIGRATE_FAILED',
@@ -171,10 +174,18 @@ export function createDataRootBindings(storage: Storage = localStorage): DataRoo
         }
       }
       if (request.libraryDocumentJson?.trim()) {
-        storage.setItem('linkit.library.v1', request.libraryDocumentJson);
+        storage.setItem(
+          buildBrowserDataRootStorageKey(BROWSER_STORAGE_KEYS.library, target),
+          request.libraryDocumentJson
+        );
+        storage.setItem(BROWSER_STORAGE_KEYS.library, request.libraryDocumentJson);
       }
       if (request.settingsJson?.trim()) {
-        storage.setItem('linkit.settings.v1', request.settingsJson);
+        storage.setItem(
+          buildBrowserDataRootStorageKey(BROWSER_STORAGE_KEYS.settings, target),
+          request.settingsJson
+        );
+        storage.setItem(BROWSER_STORAGE_KEYS.settings, request.settingsJson);
       }
       storage.setItem(BROWSER_DATA_ROOT_KEY, target);
       return {
