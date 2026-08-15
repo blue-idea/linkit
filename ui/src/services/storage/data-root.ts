@@ -26,9 +26,16 @@ export interface MigrateDataRootResult {
   migratedFiles: string[];
 }
 
+export interface DataRootTargetInfo {
+  targetPath: string;
+  hasLinkitData: boolean;
+  existingFiles: string[];
+}
+
 export interface DataRootBindings {
   getDataRoot: () => Promise<DataRootInfo>;
   selectDataRootDirectory: () => Promise<SelectDirectoryResult>;
+  inspectDataRootTarget: (targetPath: string) => Promise<DataRootTargetInfo>;
   migrateDataRoot: (request: MigrateDataRootRequest) => Promise<MigrateDataRootResult>;
 }
 
@@ -37,6 +44,7 @@ const BROWSER_DATA_ROOT_KEY = 'linkit.data-root.v1';
 type WailsLocalstore = {
   GetDataRoot?: () => Promise<DataRootInfo>;
   SelectDataRootDirectory?: () => Promise<SelectDirectoryResult>;
+  InspectDataRootTarget?: (targetPath: string) => Promise<DataRootTargetInfo>;
   /** Wails 扁平参数：避免结构体绑定丢失快照字段。 */
   MigrateDataRoot?: (
     targetPath: string,
@@ -91,6 +99,23 @@ export function createDataRootBindings(storage: Storage = localStorage): DataRoo
         return { state: 'selected', path };
       }
       return { state: 'cancelled' };
+    },
+
+    async inspectDataRootTarget(targetPath) {
+      const wails = readWailsLocalstore();
+      if (wails?.InspectDataRootTarget) {
+        return wails.InspectDataRootTarget(targetPath);
+      }
+      const target = targetPath.trim();
+      if (!target) {
+        throw Object.assign(new Error('Target data directory is invalid'), { code: 'DATA_ROOT_INVALID' });
+      }
+      const occupiedMarker = storage.getItem(`linkit.data-root.occupied:${target}`);
+      return {
+        targetPath: target,
+        hasLinkitData: occupiedMarker === '1',
+        existingFiles: occupiedMarker === '1' ? ['library.json', 'settings.json'] : [],
+      };
     },
 
     async migrateDataRoot(request) {

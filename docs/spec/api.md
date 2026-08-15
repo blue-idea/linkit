@@ -186,6 +186,20 @@ interface SelectDirectoryResult {
 
 打开原生文件夹选择对话框。取消时不改变数据根。
 
+#### `InspectDataRootTarget(targetPath)`
+
+```typescript
+interface DataRootTargetInfo {
+  targetPath: string;
+  hasLinkitData: boolean;
+  existingFiles: string[];
+}
+```
+
+- 仅按已知 Linkit 数据文件名预检目标目录，不写盘。
+- `existingFiles` 包含命中的 `library.json`、`settings.json`、`data-root.json` 或已知临时/备份文件名。
+- 目标路径无效时返回 `DATA_ROOT_INVALID`。
+
 #### `MigrateDataRoot(request)`
 
 ```typescript

@@ -37,6 +37,13 @@ type MigrateDataRootResult struct {
 	MigratedFiles []string `json:"migratedFiles"`
 }
 
+// DataRootTargetInfo 描述候选目标目录中的既有 Linkit 数据文件。
+type DataRootTargetInfo struct {
+	TargetPath    string   `json:"targetPath"`
+	HasLinkitData bool     `json:"hasLinkitData"`
+	ExistingFiles []string `json:"existingFiles"`
+}
+
 type dataRootPointer struct {
 	Format        string `json:"format"`
 	SchemaVersion int    `json:"schemaVersion"`
@@ -95,6 +102,30 @@ func (service *Service) SelectDataRootDirectory() (SelectDirectoryResult, error)
 		return SelectDirectoryResult{State: "cancelled"}, nil
 	}
 	return SelectDirectoryResult{State: "selected", Path: path}, nil
+}
+
+// InspectDataRootTarget 仅按已知文件名预检目标目录是否已有 Linkit 数据，不写盘。
+func (service *Service) InspectDataRootTarget(targetPath string) (DataRootTargetInfo, error) {
+	target, err := normalizeTargetPath(targetPath)
+	if err != nil {
+		return DataRootTargetInfo{}, err
+	}
+	targetInfo, err := os.Stat(target)
+	if err == nil && !targetInfo.IsDir() {
+		return DataRootTargetInfo{}, newServiceError(config.ErrorCodeDataRootInvalid, config.ErrorMessageDataRootInvalid, false, nil)
+	}
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return DataRootTargetInfo{}, newServiceError(config.ErrorCodeDataRootInvalid, config.ErrorMessageDataRootInvalid, false, err)
+	}
+	files, err := listLinkitDataFiles(target)
+	if err != nil {
+		return DataRootTargetInfo{}, migrateFailed(err)
+	}
+	return DataRootTargetInfo{
+		TargetPath:    target,
+		HasLinkitData: len(files) > 0,
+		ExistingFiles: files,
+	}, nil
 }
 
 // ResolveEffectiveDataRoot 从引导根的 data-root.json 解析有效数据根。
@@ -296,12 +327,20 @@ func normalizeTargetPath(raw string) (string, error) {
 }
 
 func containsLinkitData(dir string) (bool, error) {
-	entries, err := os.ReadDir(dir)
-	if errors.Is(err, os.ErrNotExist) {
-		return false, nil
-	}
+	files, err := listLinkitDataFiles(dir)
 	if err != nil {
 		return false, err
+	}
+	return len(files) > 0, nil
+}
+
+func listLinkitDataFiles(dir string) ([]string, error) {
+	entries, err := os.ReadDir(dir)
+	if errors.Is(err, os.ErrNotExist) {
+		return []string{}, nil
+	}
+	if err != nil {
+		return nil, err
 	}
 	known := map[string]struct{}{
 		config.DataRootFileName: {},
@@ -309,12 +348,13 @@ func containsLinkitData(dir string) (bool, error) {
 	for _, name := range config.MigratableDataFileNames {
 		known[name] = struct{}{}
 	}
+	found := make([]string, 0, len(known))
 	for _, entry := range entries {
 		if _, ok := known[entry.Name()]; ok {
-			return true, nil
+			found = append(found, entry.Name())
 		}
 	}
-	return false, nil
+	return found, nil
 }
 
 // stageMigrationSnapshots 将前端传来的当前资料库/设置写入指定目录。

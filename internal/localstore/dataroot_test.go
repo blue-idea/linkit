@@ -81,6 +81,25 @@ func TestMigrateDataRoot_目标已有数据时阻止(t *testing.T) {
 	}
 }
 
+func TestInspectDataRootTarget_按已知文件名识别目标已有数据(t *testing.T) {
+	// REQ-029-AC-003：选择目录后 shall 用已知文件名预检目标是否已有 Linkit 数据。
+	bootstrap := t.TempDir()
+	target := t.TempDir()
+	service := NewService(bootstrap, WithBootstrapRoot(bootstrap), WithClock(func() time.Time { return fixedTime }))
+	mustWrite(t, filepath.Join(target, config.LibraryFileName), `{"format":"linkit-library","schemaVersion":1}`)
+	mustWrite(t, filepath.Join(target, config.SettingsFileName), `{"settingsVersion":1,"storageMode":"local"}`)
+
+	info, err := service.InspectDataRootTarget(target)
+	if err != nil {
+		t.Fatalf("InspectDataRootTarget returned error: %v", err)
+	}
+	if !info.HasLinkitData {
+		t.Fatalf("Expected target to be occupied: %+v", info)
+	}
+	assertContainsFile(t, info.ExistingFiles, config.LibraryFileName)
+	assertContainsFile(t, info.ExistingFiles, config.SettingsFileName)
+}
+
 func TestMigrateDataRoot_目标已有数据选择保留时只切换目录(t *testing.T) {
 	// REQ-029-AC-003：目标已有数据时选择保留，shall 只切换数据根且不覆盖目标文件。
 	bootstrap := t.TempDir()

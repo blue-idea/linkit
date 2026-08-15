@@ -619,7 +619,7 @@ describe() -> StorageSummary
 目录迁移由 Go `LocalDocumentService`（或同层 DataRoot 协调模块）独占执行，前端只发起选择与确认：
 
 1. UI 调用原生目录选择器拿到候选路径。
-2. Go 校验目标可写，并用已知文件名判断目标是否包含既有 Linkit 数据文件（如 `library.json`、`settings.json`、`data-root.json` 或已知临时/备份文件）。允许目标为当前数据根的子目录或父目录（仅按白名单文件复制/清理，不递归删除目录）。冲突时返回 `DATA_ROOT_TARGET_OCCUPIED`，由 UI 提供 Keep target data / Overwrite target data。
+2. UI 选择目标目录后先调用 Go 预检接口；Go 校验目标可写，并用已知文件名判断目标是否包含既有 Linkit 数据文件（如 `library.json`、`settings.json`、`data-root.json` 或已知临时/备份文件）。允许目标为当前数据根的子目录或父目录（仅按白名单文件复制/清理，不递归删除目录）。冲突时 UI 立即提供 Keep target data / Overwrite target data。
 3. 确认前 UI 展示源路径、目标路径与将迁移文件摘要；未确认不得写盘。
 4. 目标冲突且用户选择 Keep target data 时：仅原子更新引导根 `data-root.json` 并切换后续读写到目标目录；不得写入、复制、覆盖或删除源/目标中的应用数据文件。
 5. 用户选择 Overwrite target data 或目标无冲突时：暂停本地/云自动保存；将源数据根中除 `data-root.json` 外的全部应用数据文件复制到目标；校验目标可读且关键文件完整；原子更新引导根 `data-root.json`；删除源数据根中已成功迁走的文件；恢复自动保存并切换后续读写到新根。

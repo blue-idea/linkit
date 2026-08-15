@@ -2022,7 +2022,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 - id: REQ-029-AC-003
   ears: >
     While 目标目录已包含 Linkit 应用数据文件,
-    when 用户确认更改本地数据目录,
+    when 用户选择该目标目录,
     the Linkit shall 提供 Keep target data 与 Overwrite target data；
     当用户选择 Keep target data 时仅持久化新数据根且不得覆盖目标目录既有数据；
     当用户选择 Overwrite target data 时使用当前迁移流程覆盖目标目录应用数据.

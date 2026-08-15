@@ -394,6 +394,17 @@ export function SettingsDialog({
       return;
     }
     setPendingDataRootTarget(selected.path);
+    try {
+      const targetInfo = await dataRootBindings.inspectDataRootTarget(selected.path);
+      if (targetInfo.hasLinkitData) {
+        setDataRootError(i18n.t('settings.storage.migrationOccupied'));
+        setDataRootConflictTarget(selected.path);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '';
+      setPendingDataRootTarget(null);
+      setDataRootError(message || i18n.t('settings.storage.migrationFailed'));
+    }
   };
 
   const confirmChangeDataRoot = async (conflictStrategy?: 'keep' | 'overwrite') => {

@@ -65,7 +65,6 @@ test.describe('Storage data root', () => {
     const dialog = page.getByRole('dialog', { name: 'Settings' });
     await dialog.getByRole('tab', { name: 'Storage' }).click();
     await dialog.getByRole('button', { name: 'Change folder' }).click();
-    await dialog.getByTestId('storage-data-root-confirm').getByRole('button', { name: 'Confirm' }).click();
 
     await expect(dialog.getByTestId('storage-data-root-error')).toContainText(
       'Target directory already contains Linkit data'

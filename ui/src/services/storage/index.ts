@@ -13,6 +13,7 @@ export { createDataRootBindings, resetBrowserDataRootForTests } from './data-roo
 export type {
   DataRootBindings,
   DataRootInfo,
+  DataRootTargetInfo,
   MigrateDataRootRequest,
   MigrateDataRootResult,
   SelectDirectoryResult,

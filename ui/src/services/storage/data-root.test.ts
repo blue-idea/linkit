@@ -28,6 +28,18 @@ describe('数据根浏览器适配器', () => {
     });
   });
 
+  // REQ-029-AC-003：选择目录后 shall 预检目标目录是否已有 Linkit 数据。
+  test('预检目标目录时识别占用标记', async () => {
+    const storage = window.localStorage;
+    storage.setItem('linkit.data-root.occupied:D:\\Occupied', '1');
+    const bindings = createDataRootBindings(storage);
+
+    await expect(bindings.inspectDataRootTarget('D:\\Occupied')).resolves.toMatchObject({
+      targetPath: 'D:\\Occupied',
+      hasLinkitData: true,
+    });
+  });
+
   // REQ-029-AC-003：目标占用时选择保留只切换目录，不覆盖浏览器替身中的当前快照。
   test('目标占用选择保留时只设置数据根', async () => {
     const storage = window.localStorage;
