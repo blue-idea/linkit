@@ -16,6 +16,9 @@ import (
 // REQ-029-AC-001~005：本地数据根查询、迁移冲突、失败回滚与成功切换。
 
 func migrateRoot(service *Service, request MigrateDataRootRequest) (MigrateDataRootResult, error) {
+	if strings.TrimSpace(request.ConflictStrategy) != "" {
+		return service.MigrateDataRootWithConflictStrategy(request.TargetPath, request.Confirmed, request.ConflictStrategy, request.LibraryDocumentJSON, request.SettingsJSON)
+	}
 	return service.MigrateDataRoot(request.TargetPath, request.Confirmed, request.LibraryDocumentJSON, request.SettingsJSON)
 }
 
@@ -75,6 +78,79 @@ func TestMigrateDataRoot_目标已有数据时阻止(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(bootstrap, config.DataRootFileName)); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("Bootstrap pointer must not be created on conflict: %v", err)
+	}
+}
+
+func TestMigrateDataRoot_目标已有数据选择保留时只切换目录(t *testing.T) {
+	// REQ-029-AC-003：目标已有数据时选择保留，shall 只切换数据根且不覆盖目标文件。
+	bootstrap := t.TempDir()
+	target := t.TempDir()
+	service := NewService(bootstrap, WithBootstrapRoot(bootstrap), WithClock(func() time.Time { return fixedTime }))
+	sourceLibrary := `{"format":"linkit-library","schemaVersion":1,"revision":1}`
+	targetLibrary := `{"format":"linkit-library","schemaVersion":1,"revision":9}`
+	mustWrite(t, filepath.Join(bootstrap, config.LibraryFileName), sourceLibrary)
+	mustWrite(t, filepath.Join(target, config.LibraryFileName), targetLibrary)
+
+	result, err := migrateRoot(service, MigrateDataRootRequest{
+		TargetPath:          target,
+		Confirmed:           true,
+		ConflictStrategy:    "keep",
+		LibraryDocumentJSON: sourceLibrary,
+	})
+	if err != nil {
+		t.Fatalf("MigrateDataRoot keep occupied target returned error: %v", err)
+	}
+	if result.DataRoot != target || len(result.MigratedFiles) != 0 {
+		t.Fatalf("Keep should only switch root without migrated files: %+v", result)
+	}
+	gotTarget, err := os.ReadFile(filepath.Join(target, config.LibraryFileName))
+	if err != nil {
+		t.Fatalf("Read target library: %v", err)
+	}
+	if string(gotTarget) != targetLibrary {
+		t.Fatalf("Target data should be preserved: got %s", gotTarget)
+	}
+	if _, err := os.Stat(filepath.Join(bootstrap, config.LibraryFileName)); err != nil {
+		t.Fatalf("Source data should remain when keeping target data: %v", err)
+	}
+	info, err := service.GetDataRoot()
+	if err != nil {
+		t.Fatalf("GetDataRoot: %v", err)
+	}
+	if info.DataRoot != target || !info.IsCustom {
+		t.Fatalf("Service should switch to kept target root: %+v", info)
+	}
+}
+
+func TestMigrateDataRoot_目标已有数据选择覆盖时替换目标(t *testing.T) {
+	// REQ-029-AC-003：目标已有数据时选择覆盖，shall 使用当前迁移逻辑替换目标应用数据。
+	bootstrap := t.TempDir()
+	target := t.TempDir()
+	service := NewService(bootstrap, WithBootstrapRoot(bootstrap), WithClock(func() time.Time { return fixedTime }))
+	sourceLibrary := `{"format":"linkit-library","schemaVersion":1,"revision":2}`
+	targetLibrary := `{"format":"linkit-library","schemaVersion":1,"revision":9}`
+	mustWrite(t, filepath.Join(bootstrap, config.LibraryFileName), sourceLibrary)
+	mustWrite(t, filepath.Join(target, config.LibraryFileName), targetLibrary)
+
+	result, err := migrateRoot(service, MigrateDataRootRequest{
+		TargetPath:          target,
+		Confirmed:           true,
+		ConflictStrategy:    "overwrite",
+		LibraryDocumentJSON: sourceLibrary,
+	})
+	if err != nil {
+		t.Fatalf("MigrateDataRoot overwrite occupied target returned error: %v", err)
+	}
+	assertContainsFile(t, result.MigratedFiles, config.LibraryFileName)
+	gotTarget, err := os.ReadFile(filepath.Join(target, config.LibraryFileName))
+	if err != nil {
+		t.Fatalf("Read target library: %v", err)
+	}
+	if string(gotTarget) != sourceLibrary {
+		t.Fatalf("Target data should be overwritten: got %s", gotTarget)
+	}
+	if _, err := os.Stat(filepath.Join(bootstrap, config.LibraryFileName)); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("Source data should be removed after overwrite migration: %v", err)
 	}
 }
 

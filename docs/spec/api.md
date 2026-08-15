@@ -1,8 +1,8 @@
 # Linkit 接口设计（API）
 
 > 文件路径：`docs/spec/api.md`  
-> 版本：1.7.0
-> 日期：2026-07-27
+> 版本：1.8.0
+> 日期：2026-08-15
 > 状态：已定稿
 
 ---
@@ -192,6 +192,8 @@ interface SelectDirectoryResult {
 interface MigrateDataRootRequest {
   targetPath: string;
   confirmed: boolean;
+  /** 目标已含 Linkit 数据时的用户选择；未提供时仅探测冲突并返回 DATA_ROOT_TARGET_OCCUPIED。 */
+  conflictStrategy?: 'keep' | 'overwrite';
   /** 可选：迁移前将当前资料库信封写入源根后再复制。 */
   libraryDocumentJson?: string;
   /** 可选：迁移前将当前设置写入源根后再复制。 */
@@ -207,7 +209,9 @@ interface MigrateDataRootResult {
 - `confirmed` 为 false 时返回 `INVALID_ARGUMENT`，不写盘。
 - 若提供 `libraryDocumentJson` / `settingsJson`，迁移前先写入源数据根，确保内存态/浏览器态数据也会落到目标。
 - 源与快照均无任何可迁移文件时返回 `DATA_ROOT_MIGRATE_FAILED`，不得报告成功。
-- 目标已含 Linkit 数据时返回 `DATA_ROOT_TARGET_OCCUPIED`。
+- 目标已含 Linkit 数据且 `conflictStrategy` 未提供时返回 `DATA_ROOT_TARGET_OCCUPIED`。
+- `conflictStrategy: 'keep'` 时只更新引导根 `data-root.json` 并切换有效数据根，不覆盖目标目录中的既有 Linkit 数据文件。
+- `conflictStrategy: 'overwrite'` 时使用当前迁移流程覆盖目标目录中的可迁移 Linkit 数据文件。
 - 成功后更新引导根 `data-root.json`，删除源中已迁文件，后续读写使用新数据根。
 - 失败时返回 `DATA_ROOT_MIGRATE_FAILED` 或 `DATA_ROOT_INVALID`，保持原根，清理目标残留。
 - 不迁移 OS Keychain 密钥。

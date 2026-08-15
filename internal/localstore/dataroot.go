@@ -26,14 +26,15 @@ type DataRootInfo struct {
 type MigrateDataRootRequest struct {
 	TargetPath          string `json:"targetPath"`
 	Confirmed           bool   `json:"confirmed"`
+	ConflictStrategy    string `json:"conflictStrategy,omitempty"`
 	LibraryDocumentJSON string `json:"libraryDocumentJson,omitempty"`
 	SettingsJSON        string `json:"settingsJson,omitempty"`
 }
 
 // MigrateDataRootResult 返回迁移后的有效数据根与已迁移文件名。
 type MigrateDataRootResult struct {
-	DataRoot       string   `json:"dataRoot"`
-	MigratedFiles  []string `json:"migratedFiles"`
+	DataRoot      string   `json:"dataRoot"`
+	MigratedFiles []string `json:"migratedFiles"`
 }
 
 type dataRootPointer struct {
@@ -149,6 +150,16 @@ func (service *Service) MigrateDataRoot(targetPath string, confirmed bool, libra
 	})
 }
 
+func (service *Service) MigrateDataRootWithConflictStrategy(targetPath string, confirmed bool, conflictStrategy string, libraryDocumentJson string, settingsJson string) (MigrateDataRootResult, error) {
+	return service.migrateDataRoot(MigrateDataRootRequest{
+		TargetPath:          targetPath,
+		Confirmed:           confirmed,
+		ConflictStrategy:    conflictStrategy,
+		LibraryDocumentJSON: libraryDocumentJson,
+		SettingsJSON:        settingsJson,
+	})
+}
+
 func (service *Service) migrateDataRoot(request MigrateDataRootRequest) (MigrateDataRootResult, error) {
 	if !request.Confirmed {
 		return MigrateDataRootResult{}, newServiceError(config.ErrorCodeInvalidArgument, config.ErrorMessageInvalidArgument, false, nil)
@@ -187,8 +198,25 @@ func (service *Service) migrateDataRoot(request MigrateDataRootRequest) (Migrate
 	if err != nil {
 		return MigrateDataRootResult{}, migrateFailed(err)
 	}
+	strategy := normalizeDataRootConflictStrategy(request.ConflictStrategy)
 	if occupied {
-		return MigrateDataRootResult{}, newServiceError(config.ErrorCodeDataRootTargetOccupied, config.ErrorMessageDataRootTargetOccupied, false, nil)
+		switch strategy {
+		case "keep":
+			if err := writeDataRootPointer(bootstrap, target, service.now().UTC()); err != nil {
+				return MigrateDataRootResult{}, migrateFailed(err)
+			}
+			service.rootDir = target
+			if service.onRootChanged != nil {
+				service.onRootChanged(target)
+			}
+			return MigrateDataRootResult{DataRoot: target, MigratedFiles: []string{}}, nil
+		case "overwrite":
+			if err := cleanupDirectoryArtifacts(target); err != nil {
+				return MigrateDataRootResult{}, migrateFailed(err)
+			}
+		default:
+			return MigrateDataRootResult{}, newServiceError(config.ErrorCodeDataRootTargetOccupied, config.ErrorMessageDataRootTargetOccupied, false, nil)
+		}
 	}
 
 	if err := os.MkdirAll(target, 0o755); err != nil {
@@ -227,6 +255,17 @@ func (service *Service) migrateDataRoot(request MigrateDataRootRequest) (Migrate
 	}
 
 	return MigrateDataRootResult{DataRoot: target, MigratedFiles: migrated}, nil
+}
+
+func normalizeDataRootConflictStrategy(raw string) string {
+	switch strings.ToLower(strings.TrimSpace(raw)) {
+	case "keep":
+		return "keep"
+	case "overwrite":
+		return "overwrite"
+	default:
+		return ""
+	}
 }
 
 func migrateFailed(cause error) error {

@@ -51,11 +51,12 @@ test.describe('Storage data root', () => {
     });
   });
 
-  // REQ-029-AC-003：目标占用时英文错误并保持原路径。
-  test('occupied target blocks migration', async ({ page }) => {
+  // REQ-029-AC-003：目标占用时提供保留/覆盖选择，保留只切换路径。
+  test('occupied target can keep existing target data without overwrite', async ({ page }) => {
     await enterLocalMode(page);
     await page.evaluate(() => {
       localStorage.setItem('linkit.data-root.occupied:D:\\Occupied', '1');
+      localStorage.setItem('linkit.library.v1', '{"format":"linkit-library","schemaVersion":1,"revision":9}');
       (window as unknown as { __linkitSelectDirectory: () => string }).__linkitSelectDirectory = () =>
         'D:\\Occupied';
     });
@@ -69,6 +70,17 @@ test.describe('Storage data root', () => {
     await expect(dialog.getByTestId('storage-data-root-error')).toContainText(
       'Target directory already contains Linkit data'
     );
-    await expect(dialog.getByTestId('storage-data-root-path')).toContainText('browser://linkit');
+    await expect(dialog.getByRole('button', { name: 'Keep target data' })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Overwrite target data' })).toBeVisible();
+
+    await mkdir(evidenceDirectory, { recursive: true });
+    await page.screenshot({
+      path: resolve(evidenceDirectory, 'TASK-047-data-root-conflict-choice.png'),
+      fullPage: true,
+    });
+
+    await dialog.getByRole('button', { name: 'Keep target data' }).click();
+    await expect(dialog.getByTestId('storage-data-root-path')).toContainText('D:\\Occupied');
+    await expect(dialog.getByText('Data location updated')).toBeVisible();
   });
 });

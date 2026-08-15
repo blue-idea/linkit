@@ -14,6 +14,7 @@ export interface SelectDirectoryResult {
 export interface MigrateDataRootRequest {
   targetPath: string;
   confirmed: boolean;
+  conflictStrategy?: 'keep' | 'overwrite';
   /** 当前资料库信封 JSON；源目录无文件时用于落盘再迁移。 */
   libraryDocumentJson?: string;
   /** 当前设置 JSON；与资料库一并迁移。 */
@@ -40,6 +41,13 @@ type WailsLocalstore = {
   MigrateDataRoot?: (
     targetPath: string,
     confirmed: boolean,
+    libraryDocumentJson: string,
+    settingsJson: string
+  ) => Promise<MigrateDataRootResult>;
+  MigrateDataRootWithConflictStrategy?: (
+    targetPath: string,
+    confirmed: boolean,
+    conflictStrategy: string,
     libraryDocumentJson: string,
     settingsJson: string
   ) => Promise<MigrateDataRootResult>;
@@ -87,6 +95,15 @@ export function createDataRootBindings(storage: Storage = localStorage): DataRoo
 
     async migrateDataRoot(request) {
       const wails = readWailsLocalstore();
+      if (wails?.MigrateDataRootWithConflictStrategy) {
+        return wails.MigrateDataRootWithConflictStrategy(
+          request.targetPath,
+          request.confirmed,
+          request.conflictStrategy ?? '',
+          request.libraryDocumentJson ?? '',
+          request.settingsJson ?? ''
+        );
+      }
       if (wails?.MigrateDataRoot) {
         return wails.MigrateDataRoot(
           request.targetPath,
@@ -104,9 +121,18 @@ export function createDataRootBindings(storage: Storage = localStorage): DataRoo
       }
       const occupiedMarker = storage.getItem(`linkit.data-root.occupied:${target}`);
       if (occupiedMarker === '1') {
-        throw Object.assign(new Error('Target directory already contains Linkit data'), {
-          code: 'DATA_ROOT_TARGET_OCCUPIED',
-        });
+        if (request.conflictStrategy === 'keep') {
+          storage.setItem(BROWSER_DATA_ROOT_KEY, target);
+          return {
+            dataRoot: target,
+            migratedFiles: [],
+          };
+        }
+        if (request.conflictStrategy !== 'overwrite') {
+          throw Object.assign(new Error('Target directory already contains Linkit data'), {
+            code: 'DATA_ROOT_TARGET_OCCUPIED',
+          });
+        }
       }
       const hasSnapshot = Boolean(request.libraryDocumentJson?.trim() || request.settingsJson?.trim());
       if (!hasSnapshot && !storage.getItem(BROWSER_DATA_ROOT_KEY)) {

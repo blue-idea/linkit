@@ -497,6 +497,8 @@ const messages = {
   'settings.storage.migrationTarget': ['To', '目标路径'],
   'settings.storage.migrationSuccess': ['Data location updated', '数据目录已更新'],
   'settings.storage.migrationOccupied': ['Target directory already contains Linkit data', '目标目录已包含 Linkit 数据'],
+  'settings.storage.keepTargetData': ['Keep target data', '保留目标数据'],
+  'settings.storage.overwriteTargetData': ['Overwrite target data', '覆盖目标数据'],
   'settings.storage.migrationFailed': ['Failed to migrate local data directory', '迁移本地数据目录失败'],
   'settings.storage.localHint': ['Data stays on this device. No sync across machines.', '数据保存在此设备上，不会跨设备同步。'],
   'settings.storage.cloudHint': ['Sync across devices while signed in.', '登录后跨设备同步。'],

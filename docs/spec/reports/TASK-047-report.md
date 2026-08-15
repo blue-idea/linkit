@@ -1,7 +1,7 @@
 # 测试报告 — TASK-047 本地存储目录与数据迁移
 
-> 日期：2026-07-19  
-> 分支：`feat/TASK-047-data-root`  
+> 日期：2026-08-15
+> 分支：`feat/TASK-047-data-root-conflict-choice`
 > 需求：REQ-023-AC-002；REQ-029-AC-001~005
 
 ---
@@ -10,12 +10,14 @@
 
 | 层级 | 结果 |
 |------|------|
-| Go Unit | PASS（localstore 79.1%，settingsstore 85.6%） |
-| Vitest | PASS（3/3） |
+| Go Unit | PASS（`go test ./internal/localstore`） |
+| Vitest | PASS（495/495；其中 `data-root.test.ts` 5/5） |
 | Playwright E2E | PASS（2/2，含截图） |
 | Typecheck | PASS |
+| Lint | PASS |
+| Build | PASS（Vite 输出既有 chunk-size warning） |
 
-结论：TASK-047 验收通过，可合并任务分支。
+结论：TASK-047 的数据根冲突选择修订已通过相关单元测试与 Storage E2E。Playwright MCP 截图因 MCP 浏览器路径解析问题标记为 BLOCKED，CLI Playwright 已生成截图证据。
 
 ---
 
@@ -29,15 +31,14 @@
 
 | 维度 | 分 | 说明 |
 |------|:--:|------|
-| 需求覆盖 | 10 | 五条 REQ-029 AC + Storage 路径展示均有证据 |
-| 测试真实性 | 9 | Go/Vitest/Playwright 真实执行；原生对话框桌面补验留 TASK-042 |
-| 失败安全 | 10 | 占用阻止、失败回滚、子路径拒绝均有单测 |
+| 需求覆盖 | 10 | 五条 REQ-029 AC + Storage 路径展示均有证据；补充 Keep/Overwrite 冲突分支 |
+| 测试真实性 | 9 | Go/Vitest/Playwright CLI 真实执行；Playwright MCP 截图因浏览器路径解析 BLOCKED |
+| 失败安全 | 10 | 默认冲突探测、Keep 不覆盖、Overwrite 覆盖、失败回滚均有单测 |
 | 可维护性 | 9 | 引导根/有效根分离清晰，settings 通过回调同步 |
 
 ---
 
 ## 下一步
 
-1. 合并 `feat/TASK-047-data-root` 到主分支（按用户确认）。  
-2. Windows 桌面旅程 TASK-042 补一轮真实文件夹选择与重启恢复。  
-3. 勾选 float_task 1.3（若仍存在）。
+1. 完成本轮 `typecheck` / lint / build 门禁后合并 `feat/TASK-047-data-root-conflict-choice`。
+2. Windows 桌面旅程补一轮真实文件夹选择、Keep target data 与重启恢复。

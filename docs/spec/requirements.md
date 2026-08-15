@@ -1,8 +1,8 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：2.23.0
-> 日期：2026-08-11
+> 版本：2.24.0
+> 日期：2026-08-15
 > 状态：已确认待实现（浏览器书签导入回退为 metadata-only）
 
 ---
@@ -35,7 +35,7 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 11. 首次向某个 API Base 发送收藏内容前必须获得用户明确授权；授权按 API Base 记忆，API Base 改变后重新确认。
 12. Windows 与 macOS 均为目标平台；每个发布候选至少在一个选定平台执行完整桌面关键旅程，另一平台保留 Wails 构建门禁，不重复要求完整真实旅程。
 13. 外观提供 Midnight、Ocean、Graphite、Sunset、Daylight、Paper 六套主题；新增浅色主题不得改变现有设置交互、持久化流程或业务功能。
-14. 本地存储目录可在 Settings → Storage 中通过原生文件夹选择器变更；变更时迁移除 OS Keychain 密钥外的全部应用数据目录内容。目标目录已含 Linkit 数据时阻止迁移；迁移失败保持原路径与原数据并清理目标残留；默认 AppData 保留轻量 bootstrap 指针文件，真实数据根可重定向。
+14. 本地存储目录可在 Settings → Storage 中通过原生文件夹选择器变更；变更时迁移除 OS Keychain 密钥外的全部应用数据目录内容。目标目录已含 Linkit 数据时提供 Keep target data 与 Overwrite target data；Keep 仅切换目录指针且不覆盖目标数据，Overwrite 使用当前迁移流程覆盖目标应用数据；迁移失败保持原路径与原数据并清理目标残留；默认 AppData 保留轻量 bootstrap 指针文件，真实数据根可重定向。
 15. 开发构建与正式构建使用隔离的本机身份槽：正式身份 AppData/Keychain 为 `Linkit`；开发身份（`-tags dev`）为 `Linkit-Dev`。发布产物不得嵌入开发身份字符串或携带开发者本机测试数据/密钥。
 16. OS 窗口关闭将应用隐藏到系统托盘/菜单栏且不退出进程；托盘菜单至少提供 Show 与 Quit；默认窗口显隐热键为 Windows `Ctrl+L` / macOS `Cmd+L`，且必须注册为系统级全局热键；Settings → Shortcuts 列出全部可配置快捷键，支持修改、冲突检测与本地持久化；Linux 对托盘与全局热键为 best-effort。
 17. Settings → Appearance 提供界面窗口大小四档：Small / Medium / Large / Extra large（中文界面对应小 / 中 / 大 / 超大）；默认 Medium；仅缩放主窗口宽高（不缩放 UI 字号/控件密度）；档位尺寸为 Small 1182×739、Medium 1384×865、Large 1566×979、Extra large 1822×1139；保存后立即生效并写入 AppSettings；重启按档位恢复；用户手动拖拽窗口不单独持久化，下次启动仍按档位重置。
@@ -2021,15 +2021,18 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 
 - id: REQ-029-AC-003
   ears: >
-    While 目标目录已包含 Linkit 应用数据或非空冲突标记文件,
-    when 用户选择该目标目录,
-    the Linkit shall 阻止迁移并保持原数据根不变.
+    While 目标目录已包含 Linkit 应用数据文件,
+    when 用户确认更改本地数据目录,
+    the Linkit shall 提供 Keep target data 与 Overwrite target data；
+    当用户选择 Keep target data 时仅持久化新数据根且不得覆盖目标目录既有数据；
+    当用户选择 Overwrite target data 时使用当前迁移流程覆盖目标目录应用数据.
   test_type: Unit + E2E
   expected:
-    ui_state: "An English error explains that the target already contains Linkit data"
+    ui_state: "A conflict state offers Keep target data and Overwrite target data"
     side_effects:
-      - "Original data root and files remain unchanged"
-      - "Bootstrap pointer is not updated"
+      - "Keep target data updates only the bootstrap pointer and active data root"
+      - "Keep target data does not overwrite files matched by Linkit data file names"
+      - "Overwrite target data replaces migratable target files with current data and switches the active data root"
 
 - id: REQ-029-AC-004
   ears: >
@@ -2673,3 +2676,4 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.21.0 | 2026-08-09 | 已确认规格回退 | 用户确认虚拟书签根扁平化、递归删除永久删除书签、受控并发 enrichment 与随机分类外观；新增 REQ-035-AC-011~012 并更新 REQ-010-AC-005 |
 | 2.22.0 | 2026-08-09 | 已完成 | TASK-081 修正波次实现并通过 465 项 Vitest、E2E、视觉、静态门禁与 Go metadata/AI 测试；真实第三方 AI 与 Playwright MCP 仍按门禁 BLOCKED |
 | 2.23.0 | 2026-08-11 | 已确认待实现 | 用户确认浏览器书签导入后完全不做 AI 后处理，仅保留 metadata 补全；移除 REQ-035-AC-004，并将 AC-008/010/011 改为 metadata-only 约束 |
+| 2.24.0 | 2026-08-15 | 已定稿/已实现 | 修订 REQ-029-AC-003：目标目录已有 Linkit 数据时提供 Keep target data / Overwrite target data；Keep 仅切换目录，Overwrite 沿用迁移覆盖流程 |

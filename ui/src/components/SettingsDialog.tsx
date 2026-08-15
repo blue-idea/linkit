@@ -242,6 +242,7 @@ export function SettingsDialog({
   const [consentOpen, setConsentOpen] = useState(false);
   const [dataRootInfo, setDataRootInfo] = useState<DataRootInfo | null>(null);
   const [pendingDataRootTarget, setPendingDataRootTarget] = useState<string | null>(null);
+  const [dataRootConflictTarget, setDataRootConflictTarget] = useState<string | null>(null);
   const [dataRootMessage, setDataRootMessage] = useState<string | null>(null);
   const [dataRootError, setDataRootError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -271,6 +272,7 @@ export function SettingsDialog({
       setAIConnectionError(null);
       setConsentOpen(false);
       setPendingDataRootTarget(null);
+      setDataRootConflictTarget(null);
       setDataRootMessage(null);
       setDataRootError(null);
       setSaving(false);
@@ -386,6 +388,7 @@ export function SettingsDialog({
     // REQ-029-AC-001：先选目录并展示确认摘要，确认前不写盘。
     setDataRootError(null);
     setDataRootMessage(null);
+    setDataRootConflictTarget(null);
     const selected = await dataRootBindings.selectDataRootDirectory();
     if (selected.state !== 'selected' || !selected.path) {
       return;
@@ -393,7 +396,7 @@ export function SettingsDialog({
     setPendingDataRootTarget(selected.path);
   };
 
-  const confirmChangeDataRoot = async () => {
+  const confirmChangeDataRoot = async (conflictStrategy?: 'keep' | 'overwrite') => {
     if (!pendingDataRootTarget || !dataRootInfo) {
       return;
     }
@@ -422,6 +425,7 @@ export function SettingsDialog({
       const result = await dataRootBindings.migrateDataRoot({
         targetPath: pendingDataRootTarget,
         confirmed: true,
+        conflictStrategy,
         libraryDocumentJson: JSON.stringify(libraryDocument),
         settingsJson: JSON.stringify(settingsDocument),
       });
@@ -431,20 +435,22 @@ export function SettingsDialog({
         isCustom: result.dataRoot !== dataRootInfo.bootstrapRoot,
       });
       setPendingDataRootTarget(null);
+      setDataRootConflictTarget(null);
       setDataRootMessage(i18n.t('settings.storage.migrationSuccess'));
     } catch (error) {
       const code = extractErrorCode(error);
       const message = error instanceof Error ? error.message : '';
       if (code === 'DATA_ROOT_TARGET_OCCUPIED' || message.includes('already contains Linkit data')) {
         setDataRootError(i18n.t('settings.storage.migrationOccupied'));
+        setDataRootConflictTarget(pendingDataRootTarget);
       } else if (code === 'DATA_ROOT_EMPTY' || message.includes('No library or settings')) {
         setDataRootError('No library or settings data available to migrate');
       } else if (message) {
         setDataRootError(message);
       } else {
         setDataRootError(i18n.t('settings.storage.migrationFailed'));
+        setPendingDataRootTarget(null);
       }
-      setPendingDataRootTarget(null);
     }
   };
 
@@ -845,10 +851,28 @@ export function SettingsDialog({
                       {i18n.t('settings.storage.migrationTarget')}: {pendingDataRootTarget}
                     </p>
                     <div className="flex gap-2 pt-1">
-                      <Button size="sm" onClick={() => void confirmChangeDataRoot()}>
-                        {i18n.t('common.confirm')}
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => setPendingDataRootTarget(null)}>
+                      {dataRootConflictTarget === pendingDataRootTarget ? (
+                        <>
+                          <Button size="sm" onClick={() => void confirmChangeDataRoot('keep')}>
+                            {i18n.t('settings.storage.keepTargetData')}
+                          </Button>
+                          <Button variant="subtle" size="sm" onClick={() => void confirmChangeDataRoot('overwrite')}>
+                            {i18n.t('settings.storage.overwriteTargetData')}
+                          </Button>
+                        </>
+                      ) : (
+                        <Button size="sm" onClick={() => void confirmChangeDataRoot()}>
+                          {i18n.t('common.confirm')}
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setPendingDataRootTarget(null);
+                          setDataRootConflictTarget(null);
+                        }}
+                      >
                         {i18n.t('common.cancel')}
                       </Button>
                     </div>
