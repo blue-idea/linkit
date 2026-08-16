@@ -1,3 +1,5 @@
+
+
 # Linkit — Your Smart Knowledge Curation Space
 
 <p align="center">
@@ -31,6 +33,10 @@ brew install blue-idea/tap/linkit
 
 ```bash
 brew update && brew upgrade linkit  # upgrade anytime
+```
+
+```bash
+brew uninstall --cask linkit  # remove anytime
 ```
 
 > Linkit is currently distributed without Apple notarization. The Cask automatically clears the Gatekeeper `com.apple.quarantine` attribute on install — no `sudo` required.
