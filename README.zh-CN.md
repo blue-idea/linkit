@@ -45,7 +45,7 @@ Windows、macOS (DMG) 和 Linux (AppImage / DEB) 的预编译版本均可在 [Gi
 
 ### 🌟 为什么选择 Linkit？
 
-|                        | Linkit | Raindrop | 浏览器书签 |
+|                        | Linkit | R* | 浏览器书签 |
 | ---------------------- | ------ | -------- | ---------- |
 | 本地优先存储           | ✅     | ❌       | ✅         |
 | AI 摘要与标签          | ✅     | ❌       | ❌         |
