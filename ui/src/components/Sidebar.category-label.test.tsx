@@ -103,4 +103,19 @@ describe('Sidebar 分类标签与悬停操作', () => {
       expect(overlay.className).toMatch(/has-\[:focus-visible\]:opacity-100|has-\[button:focus-visible\]:opacity-100/);
     }
   });
+
+  test('分类选中时悬停操作区 shall 使用主题感知遮罩且不包含硬编码暗色背景', () => {
+    const { container } = render(
+      <Sidebar
+        {...baseProps}
+        selection={{ kind: 'category', id: 'c-long' }}
+      />
+    );
+
+    const overlay = container.querySelector('[data-nav-actions="overlay"]');
+    expect(overlay).toBeTruthy();
+    // 严禁包含硬编码暗色背景 rgb(18,28,48)，浅色主题下会导致黑色色块
+    expect(overlay?.className).not.toContain('[rgb(18,28,48)]');
+    expect(overlay?.className).toContain('nav-row-overlay-active');
+  });
 });

@@ -597,6 +597,16 @@ body {
 .scroll-thin::-webkit-scrollbar-track { background: transparent; }
 .scroll-none::-webkit-scrollbar { display: none; }
 
+/* 选中导航行（如分类项）悬停操作区的主题感知平滑渐变遮罩。 */
+.nav-row-overlay-active {
+  background-image: linear-gradient(
+    to left,
+    color-mix(in srgb, rgb(var(--accent-500)) 22%, rgb(var(--ink-700))) 0%,
+    color-mix(in srgb, rgb(var(--accent-500)) 22%, rgb(var(--ink-700))) 60%,
+    transparent 100%
+  );
+}
+
 /* AI 状态使用当前主题的文字与强调色。 */
 .ai-shimmer {
   background: linear-gradient(90deg, rgb(var(--ink-400)) 0%, rgb(var(--ink-200)) 25%, rgb(var(--accent-400)) 50%, #19c083 75%, rgb(var(--ink-400)) 100%);

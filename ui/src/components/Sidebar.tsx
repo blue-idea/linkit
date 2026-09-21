@@ -71,7 +71,7 @@ function NavRow({
         overlayTrailing
           ? `pointer-events-none absolute inset-y-0 right-0 z-[1] flex items-center justify-end pl-6 opacity-0 transition-opacity group-hover:opacity-100 has-[:focus-visible]:opacity-100 ${
               active
-                ? 'bg-gradient-to-l from-[rgb(18,28,48)] via-[rgb(18,28,48)]/90 to-transparent'
+                ? 'nav-row-overlay-active'
                 : 'bg-gradient-to-l from-ink-800 via-ink-800/90 to-transparent group-hover:from-ink-700 group-hover:via-ink-700/90'
             }`
           : 'flex items-center gap-0.5'
