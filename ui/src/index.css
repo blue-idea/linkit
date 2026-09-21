@@ -107,6 +107,22 @@ body {
     linear-gradient(180deg, #f7f3ee 0%, #f3eee7 50%, #efe9e0 100%);
 }
 
+[data-theme="cupertino"] .workspace {
+  background:
+    radial-gradient(1000px 700px at 10% -10%, rgba(0,122,255,0.15), transparent 60%),
+    radial-gradient(900px 600px at 90% 5%, rgba(88,86,214,0.10), transparent 60%),
+    radial-gradient(800px 800px at 75% 105%, rgba(52,199,89,0.10), transparent 60%),
+    linear-gradient(180deg, #e4e7ed 0%, #dbe0e8 50%, #d2d8e2 100%);
+}
+
+[data-theme="sequoia"] .workspace {
+  background:
+    radial-gradient(1000px 700px at 10% -10%, rgba(5,150,105,0.16), transparent 60%),
+    radial-gradient(900px 600px at 92% 5%, rgba(59,130,246,0.10), transparent 60%),
+    radial-gradient(800px 800px at 75% 105%, rgba(16,185,129,0.12), transparent 60%),
+    linear-gradient(180deg, #e3eae4 0%, #d8e3da 50%, #ccded0 100%);
+}
+
 /* Ocean：深青黑表面与青色强调色。 */
 [data-theme="ocean"] {
   --ink-950: 2 12 20;
@@ -282,9 +298,131 @@ body {
   --scrollbar-hover-alpha: 0.24;
 }
 
+/* Cupertino：经典 macOS 浅色系统质感。 */
+[data-theme="cupertino"] {
+  color-scheme: light;
+  --ink-950: 17 24 39;
+  --ink-900: 31 41 55;
+  --ink-850: 55 65 81;
+  --ink-800: 255 255 255;
+  --ink-700: 243 244 246;
+  --ink-600: 229 231 235;
+  --ink-500: 156 163 175;
+  --ink-400: 107 114 128;
+  --ink-300: 75 85 99;
+  --ink-200: 31 41 55;
+  --ink-100: 17 24 39;
+  --accent-50: 235 245 255;
+  --accent-100: 209 232 255;
+  --accent-200: 168 210 255;
+  --accent-300: 107 178 255;
+  --accent-400: 0 122 255;
+  --accent-500: 0 110 230;
+  --accent-600: 0 92 200;
+  --accent-700: 0 74 165;
+  --accent-800: 0 58 135;
+  --accent-900: 0 42 105;
+  --hairline-rgb: 0 0 0;
+  --hairline-alpha: 0.08;
+  --glass-bg: 255 255 255;
+  --glass-alpha: 0.85;
+  --glass-strong-bg: 255 255 255;
+  --glass-strong-alpha: 0.92;
+  --glass-light-bg: 243 245 249;
+  --glass-light-alpha: 0.7;
+  --shadow-win-rgb: 15 23 42;
+  --shadow-win-alpha: 0.16;
+  --shadow-soft-rgb: 15 23 42;
+  --shadow-soft-alpha: 0.08;
+  --scrollbar-rgb: 15 23 42;
+  --scrollbar-alpha: 0.14;
+  --scrollbar-hover-alpha: 0.24;
+}
+
+/* Sequoia：现代加州红杉自然浅色。 */
+[data-theme="sequoia"] {
+  color-scheme: light;
+  --ink-950: 19 36 28;
+  --ink-900: 28 47 38;
+  --ink-850: 38 60 50;
+  --ink-800: 255 255 255;
+  --ink-700: 242 247 244;
+  --ink-600: 226 235 229;
+  --ink-500: 140 165 150;
+  --ink-400: 95 125 108;
+  --ink-300: 60 88 72;
+  --ink-200: 36 60 48;
+  --ink-100: 20 40 30;
+  --accent-50: 236 253 245;
+  --accent-100: 209 250 229;
+  --accent-200: 167 243 208;
+  --accent-300: 110 231 183;
+  --accent-400: 16 185 129;
+  --accent-500: 5 150 105;
+  --accent-600: 4 120 87;
+  --accent-700: 4 95 70;
+  --accent-800: 6 78 59;
+  --accent-900: 6 64 49;
+  --hairline-rgb: 20 45 30;
+  --hairline-alpha: 0.08;
+  --glass-bg: 255 255 255;
+  --glass-alpha: 0.85;
+  --glass-strong-bg: 255 255 255;
+  --glass-strong-alpha: 0.92;
+  --glass-light-bg: 241 246 242;
+  --glass-light-alpha: 0.7;
+  --shadow-win-rgb: 20 45 30;
+  --shadow-win-alpha: 0.14;
+  --shadow-soft-rgb: 20 45 30;
+  --shadow-soft-alpha: 0.08;
+  --scrollbar-rgb: 20 45 30;
+  --scrollbar-alpha: 0.14;
+  --scrollbar-hover-alpha: 0.24;
+}
+
+/* macOS 3-Pane 差异化分栏模式：Cupertino 经典浅色 */
+[data-theme="cupertino"] nav .glass {
+  background: rgba(235, 238, 244, 0.88);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+[data-theme="cupertino"] main .glass {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+[data-theme="cupertino"] aside .glass {
+  background: rgba(246, 248, 251, 0.92);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+}
+
+/* macOS 3-Pane 差异化分栏模式：Sequoia 自然浅色 */
+[data-theme="sequoia"] nav .glass {
+  background: rgba(232, 238, 234, 0.88);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-right: 1px solid rgba(20, 45, 30, 0.08);
+}
+[data-theme="sequoia"] main .glass {
+  background: rgba(253, 254, 253, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(20, 45, 30, 0.08);
+}
+[data-theme="sequoia"] aside .glass {
+  background: rgba(245, 248, 246, 0.92);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+}
+
 /* 取消浅色主题下 List 视图列表的灰色背景 */
 [data-theme="daylight"] [data-view="list"] > div,
-[data-theme="paper"] [data-view="list"] > div {
+[data-theme="paper"] [data-view="list"] > div,
+[data-theme="cupertino"] [data-view="list"] > div,
+[data-theme="sequoia"] [data-view="list"] > div {
   background-color: transparent;
   box-shadow: none;
 }

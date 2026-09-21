@@ -38,12 +38,14 @@ type viewSettings struct {
 }
 
 var allowedThemes = map[string]struct{}{
-	"midnight": {},
-	"ocean":    {},
-	"graphite": {},
-	"sunset":   {},
-	"daylight": {},
-	"paper":    {},
+	"midnight":  {},
+	"ocean":     {},
+	"graphite":  {},
+	"sunset":    {},
+	"daylight":  {},
+	"paper":     {},
+	"cupertino": {},
+	"sequoia":   {},
 }
 
 var allowedLocales = map[string]struct{}{

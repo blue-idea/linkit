@@ -73,8 +73,8 @@ describe('设置服务', () => {
   });
 
   // REQ-023-AC-003：主题偏好必须能作为可持久化设置通过校验。
-  test('六套主题枚举均可通过 Schema 校验', () => {
-    for (const theme of ['midnight', 'ocean', 'graphite', 'sunset', 'daylight', 'paper']) {
+  test('八套主题枚举均可通过 Schema 校验', () => {
+    for (const theme of ['midnight', 'ocean', 'graphite', 'sunset', 'daylight', 'paper', 'cupertino', 'sequoia']) {
       const candidate = { ...sampleSettings(), theme };
 
       expect(AppSettingsSchema.safeParse(candidate).success).toBe(true);

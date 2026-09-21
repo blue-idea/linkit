@@ -1,9 +1,9 @@
 # Linkit 技术设计（Design）
 
 > 文件路径：`docs/spec/design.md`  
-> 版本：1.26.0
-> 日期：2026-08-15
-> 状态：已确认待实现（浏览器书签导入回退为 metadata-only）
+> 版本：1.27.0
+> 日期：2026-09-21
+> 状态：已定稿（新增 Cupertino 与 Sequoia macOS 风格浅色主题设计）
 
 ---
 
@@ -352,10 +352,14 @@ CommandResult<T> =
 
 ### 6.4 主题皮肤与视觉令牌
 
-- `ThemeId` 与 `AppSettingsSchema.theme` 统一支持 `midnight`、`ocean`、`graphite`、`sunset`、`daylight`、`paper` 六个稳定值；扩展枚举不改变设置保存接口和 `settingsVersion`。
-- `ui/src/themes.ts` 仅维护主题元数据、预览色板和默认主题；`applyTheme(theme)` 继续只设置根节点 `data-theme` 属性，不承载业务逻辑。
+- `ThemeId` 与 `AppSettingsSchema.theme` 统一支持 `midnight`、`ocean`、`graphite`、`sunset`、`daylight`、`paper`、`cupertino`、`sequoia` 八个稳定值；扩展枚举不改变设置保存接口和 `settingsVersion`。
+- `ui/src/themes.ts` 维护主题元数据、预览色板和默认主题；`applyTheme(theme)` 继续只设置根节点 `data-theme` 属性，不承载业务逻辑。
 - `ui/tailwind.config.js` 将 `ink`、`accent` 与主题相关阴影映射到 RGB CSS 自定义属性，确保既有 Tailwind 透明度修饰符继续生效。
-- `ui/src/index.css` 集中定义六套主题的背景、表面、文字、强调色、描边、阴影、滚动条和焦点令牌；四套深色主题使用 `color-scheme: dark`，Daylight 与 Paper 使用 `color-scheme: light`。
+- `ui/src/index.css` 集中定义八套主题的背景、表面、文字、强调色、描边、阴影、滚动条和焦点令牌：
+  - 四套深色主题使用 `color-scheme: dark`。
+  - Daylight 与 Paper 使用 `color-scheme: light`。
+  - 新增 `cupertino`（经典 macOS 浅色）与 `sequoia`（加州红杉自然浅色）两套非深色主题，使用 `color-scheme: light`。
+  - 新增主题采用 macOS 经典的 3-Pane 视觉分层架构：在 CSS 中基于 `nav .glass`（左栏 Sidebar）、`main .glass`（中栏 Content）、`aside .glass`（右栏 Detail）分别配置独立的表面明暗度、磨砂度与微弱色相偏移，实现左中右材质分离，重现原生 macOS 桌面应用的层次感。
 - 组件继续复用既有 `ink-*`、`accent-*`、`glass*`、`hairline` 与阴影工具类，不为单个主题复制组件逻辑或增加主题条件分支。
 - 主题变更只影响视觉呈现和外观偏好枚举，不改变收藏、分类、主题组合、同步、AI 或窗口交互功能。
 
@@ -833,3 +837,5 @@ flowchart LR
 | 1.23.0 | 2026-08-09 | 已完成 | 新增 6.10A：Find duplicates 候选列表展示重复对数并支持逐项进入差异预览修复，对齐 REQ-020-AC-005~006 |
 | 1.24.0 | 2026-08-09 | 已完成 | 6.10A 增加勾选批量与 Merge/Delete all；Merge 保留更短 URL pathname，对齐 REQ-020-AC-007~008 |
 | 1.25.0 | 2026-08-11 | 已确认待实现 | 浏览器书签导入后移除 AI 后处理，仅保留 metadata 补全；导入进度阶段收敛为 `saving` / `metadata` / `complete`，并禁止 metadata 更新分类或标签 |
+| 1.27.0 | 2026-09-21 | 已定稿 | 增加 Cupertino 与 Sequoia 八主题 CSS 令牌架构与 macOS 3-Pane 差异化分栏设计 |
+

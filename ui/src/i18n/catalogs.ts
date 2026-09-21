@@ -712,12 +712,16 @@ const messages = {
   'theme.sunset': ['Sunset', '暮霞'],
   'theme.daylight': ['Daylight', '日光'],
   'theme.paper': ['Paper', '纸墨'],
+  'theme.cupertino': ['Cupertino', '库比蒂诺'],
+  'theme.sequoia': ['Sequoia', '红杉自然'],
   'theme.midnight.desc': ['Deep navy night, the default look', '深蓝夜空，默认主题'],
   'theme.ocean.desc': ['Cyan ocean tones', '青蓝海洋色调'],
   'theme.graphite.desc': ['Neutral graphite for low contrast focus', '中性灰黑，专注低对比'],
   'theme.sunset.desc': ['Warm orange and rose', '暖橙玫红，柔和明亮'],
   'theme.daylight.desc': ['Clean light surfaces with blue accents', '清爽浅色，蓝白配色'],
   'theme.paper.desc': ['Warm paper surfaces with terracotta accents', '暖白纸感，陶土橙点缀'],
+  'theme.cupertino.desc': ['Classic macOS light styling with distinct three-pane surfaces', '经典 macOS 浅色，左中右三栏分层质感'],
+  'theme.sequoia.desc': ['Modern macOS nature-inspired light palette with subtle forest mist', '现代 macOS 自然浅色，薄雾森林与雅致分栏'],
 
   'error.SETTINGS_INVALID': ['Settings document is invalid', '设置无效'],
 } as const satisfies Record<string, MessagePair>;

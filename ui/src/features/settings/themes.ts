@@ -9,6 +9,8 @@ const themeKeys = {
   sunset: 'theme.sunset',
   daylight: 'theme.daylight',
   paper: 'theme.paper',
+  cupertino: 'theme.cupertino',
+  sequoia: 'theme.sequoia',
 } as const;
 
 /** 按 locale 解析主题展示名。覆盖 REQ-023-AC-003。 */

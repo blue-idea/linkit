@@ -1,9 +1,9 @@
 # Linkit 数据设计（Data）
 
 > 文件路径：`docs/spec/data.md`  
-> 版本：1.12.0
-> 日期：2026-08-11
-> 状态：已确认待实现（浏览器书签导入回退为 metadata-only）
+> 版本：1.13.0
+> 日期：2026-09-21
+> 状态：已定稿（扩展 AppSettings.theme 支持 Cupertino 与 Sequoia）
 
 ---
 
@@ -146,7 +146,7 @@
 |------|------|------|
 | `settingsVersion` | integer | `>= 1` |
 | `storageMode` | enum | `local`、`cloud` |
-| `theme` | enum | `midnight`、`ocean`、`graphite`、`sunset`、`daylight`、`paper`；新增值向后兼容，默认仍为 `midnight` |
+| `theme` | enum | `midnight`、`ocean`、`graphite`、`sunset`、`daylight`、`paper`、`cupertino`、`sequoia`；新增值向后兼容，默认仍为 `midnight` |
 | `locale` | enum | `en`、`zh`；默认 `en` |
 | `ai.apiBase` | string | HTTPS；loopback 可使用 HTTP |
 | `ai.model` | string | trim 后非空或未配置 |
@@ -537,3 +537,5 @@ MVP 不预先拆分 JSONB。若真实测量出现以下任一情况，必须回�
 | 1.10.0 | 2026-08-09 | 已确认规格回退 | 补充虚拟根扁平化、递归删除书签及 Collection 引用清理、受控并发与导入 Category/Bookmark 外观约束 |
 | 1.11.0 | 2026-08-09 | 已完成 | 验证 DATA-INV-016~022；递归删除后的 canonical/legacy 本地快照同步并纳入回归证据 |
 | 1.12.0 | 2026-08-11 | 已确认待实现 | 浏览器书签导入增强回退为 metadata-only；移除 AI 分类/标签写入约束，并将 DATA-INV-019 改为仅约束 metadata 基线合并 |
+| 1.13.0 | 2026-09-21 | 已定稿 | 扩展 AppSettings.theme 枚举支持 Cupertino 与 Sequoia，持久化版本与结构不变 |
+

@@ -6,4 +6,6 @@ export const THEME_IDS = [
   'sunset',
   'daylight',
   'paper',
+  'cupertino',
+  'sequoia',
 ] as const;

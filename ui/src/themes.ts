@@ -59,6 +59,22 @@ export const themes: ThemeDef[] = [
     swatches: ['#f7f3ee', '#d97757', '#a87850', '#78a878'],
     light: true,
   },
+  {
+    id: 'cupertino',
+    name: 'Cupertino',
+    emoji: '🍏',
+    description: 'Classic macOS light styling with distinct three-pane surfaces',
+    swatches: ['#e8ebf0', '#007aff', '#34c759', '#5856d6'],
+    light: true,
+  },
+  {
+    id: 'sequoia',
+    name: 'Sequoia',
+    emoji: '🌲',
+    description: 'Modern macOS nature-inspired light palette with subtle forest mist',
+    swatches: ['#e9efe9', '#059669', '#10b981', '#3b82f6'],
+    light: true,
+  },
 ];
 
 export const defaultSettings = {
