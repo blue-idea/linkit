@@ -11,6 +11,8 @@ const themeKeys = {
   paper: 'theme.paper',
   cupertino: 'theme.cupertino',
   sequoia: 'theme.sequoia',
+  obsidian: 'theme.obsidian',
+  aurora: 'theme.aurora',
 } as const;
 
 /** 按 locale 解析主题展示名。覆盖 REQ-023-AC-003。 */

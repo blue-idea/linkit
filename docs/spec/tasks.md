@@ -1694,6 +1694,7 @@ AC 闁肩厧鍟ú璺ㄦ媼閻楀牏銆婂┑?`REQ-003-AC-001~005` 閻炴稏�
 | TASK-080 | REQ-035闁挎稒纰嶇粊鑽ゆ喆閸繃鐝ゅ☉鏃撳椤掗鈧數鍘ч崣鍡涘触?AI 闁告帒妫涚悮顐ｇ▔鎼淬垻鍨肩紒娑氬亾閺嗭綁鎮?| Unit/Component/E2E/Visual/Manual | done | REQ-035 |
 | TASK-081 | REQ-035/REQ-010闁挎稒纰嶇粊鑽ゆ喆閸繃鐝ゅ☉鏃撳椤掗鈧數鍘ч崣鍡樼┍椤旂瓔鍔€闁靛棔娌焑tadata/AI 闁告梻濞€閳ь剛鍠嶇粭宀勬焻閹烘垹绉洪柛鎺斿█濞?| Unit/Component/E2E/Visual/Performance/Manual | done闁挎稑鐗嗛ˇ濠氭焾閵娾晜锛岀紒鍌欑窔閸庢挳宕?BLOCKED闁?| REQ-010闁靛棔闃淓Q-035 |
 | TASK-085 | REQ-023：新增 Cupertino 与 Sequoia 两套 macOS 风格浅色主题及三栏分层设计 | Unit/Component/Visual/Manual | done | REQ-023 |
+| TASK-086 | REQ-023：新增 Obsidian 与 Aurora 两套 macOS 风格深色主题及三栏分层设计 | Unit/Component/Visual/Manual | done | REQ-023 |
 
 ---
 
@@ -1746,4 +1747,5 @@ AC 闁肩厧鍟ú璺ㄦ媼閻楀牏銆婂┑?`REQ-003-AC-001~005` 閻炴稏�
 | 4.8.0 | 2026-08-11 | 鐎规瓕灏欓垾妯兼媼閵堝懐绐￠悗鍦仧楠?| 闁哄倹婢橀·?TASK-084闁挎稒纰嶇粊鑽ゆ喆閸繃鐝ゅ☉鏃撳椤掗鈧數鍘ч崣鍡欑矓婵犳碍鐝?AI 闁告艾楠搁ˇ鈺呮偠閸☆厾绀夊ù鐘叉噸缁绘岸鎮?metadata 閻炴稏鍎遍崣蹇涙晬濞戞粠娼愰柡宥囧帶濞叉牠鏌呴埀顒佺▔?metadata-only |
 | 4.8.1 | 2026-08-11 | 已完成 | 完成 TASK-084 metadata-only 实现；Vitest、Playwright、TypeScript、ESLint、Vite build 通过 |
 | 4.9.0 | 2026-09-21 | 已完成 | 完成 TASK-085：增加 Cupertino 与 Sequoia 两套 macOS 风格浅色主题，实现左中右三栏分层设计并通过单元与视觉回归测试 |
+| 4.10.0 | 2026-09-21 | 已完成 | 完成 TASK-086：增加 Obsidian 与 Aurora 两套 macOS 风格深色主题，实现左中右三栏材质差异化分层；499 个 Vitest 测试、Go 测试、Playwright 视觉回归测试全部通过 |
 

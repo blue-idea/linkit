@@ -75,6 +75,22 @@ export const themes: ThemeDef[] = [
     swatches: ['#e9efe9', '#059669', '#10b981', '#3b82f6'],
     light: true,
   },
+  {
+    id: 'obsidian',
+    name: 'Obsidian',
+    emoji: '🔮',
+    description: 'Pro dark palette with refined three-pane depths and indigo electric accents',
+    swatches: ['#0f1117', '#181b24', '#6366f1', '#818cf8'],
+    light: false,
+  },
+  {
+    id: 'aurora',
+    name: 'Aurora',
+    emoji: '✨',
+    description: 'Nordic emerald night with luminous teal accents across three-pane glass surfaces',
+    swatches: ['#091512', '#0f1f1b', '#14b8a6', '#2dd4bf'],
+    light: false,
+  },
 ];
 
 export const defaultSettings = {

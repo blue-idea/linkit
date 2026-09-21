@@ -99,9 +99,9 @@ func TestGetAIConsentStatusRejectsInvalidBase(t *testing.T) {
 	assertCodedError(t, err, config.ErrorCodeSettingsInvalid, false)
 }
 
-// REQ-023-AC-003：Go 设置存储必须接受全部八套主题。
+// REQ-023-AC-003：Go 设置存储必须接受全部十套主题。
 func TestDecodeAcceptsAllThemeValues(t *testing.T) {
-	for _, theme := range []string{"midnight", "ocean", "graphite", "sunset", "daylight", "paper", "cupertino", "sequoia"} {
+	for _, theme := range []string{"midnight", "ocean", "graphite", "sunset", "daylight", "paper", "cupertino", "sequoia", "obsidian", "aurora"} {
 		t.Run(theme, func(t *testing.T) {
 			payload := makeSettingsJSON(t, appSettings{
 				SettingsVersion: 1,

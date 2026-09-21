@@ -123,6 +123,22 @@ body {
     linear-gradient(180deg, #e3eae4 0%, #d8e3da 50%, #ccded0 100%);
 }
 
+[data-theme="obsidian"] .workspace {
+  background:
+    radial-gradient(1100px 800px at 12% -10%, rgba(99, 102, 241, 0.16), transparent 55%),
+    radial-gradient(900px 700px at 92% 5%, rgba(129, 140, 248, 0.12), transparent 50%),
+    radial-gradient(800px 800px at 75% 105%, rgba(79, 70, 229, 0.14), transparent 55%),
+    linear-gradient(160deg, #0f1117 0%, #0d0f14 50%, #090a0f 100%);
+}
+
+[data-theme="aurora"] .workspace {
+  background:
+    radial-gradient(1100px 800px at 10% -10%, rgba(20, 184, 166, 0.18), transparent 55%),
+    radial-gradient(950px 650px at 94% 6%, rgba(45, 212, 191, 0.14), transparent 50%),
+    radial-gradient(800px 800px at 76% 104%, rgba(13, 148, 136, 0.14), transparent 55%),
+    linear-gradient(160deg, #091512 0%, #08120f 50%, #050b09 100%);
+}
+
 /* Ocean：深青黑表面与青色强调色。 */
 [data-theme="ocean"] {
   --ink-950: 2 12 20;
@@ -380,6 +396,88 @@ body {
   --scrollbar-hover-alpha: 0.24;
 }
 
+/* Obsidian：专业深黑质感，macOS Pro 风格与电光紫靛强调色。 */
+[data-theme="obsidian"] {
+  color-scheme: dark;
+  --ink-950: 9 10 15;
+  --ink-900: 15 17 23;
+  --ink-850: 20 23 31;
+  --ink-800: 24 27 36;
+  --ink-700: 36 41 54;
+  --ink-600: 51 58 76;
+  --ink-500: 100 110 135;
+  --ink-400: 156 163 175;
+  --ink-300: 198 203 214;
+  --ink-200: 226 230 238;
+  --ink-100: 243 244 246;
+  --accent-50: 238 242 255;
+  --accent-100: 224 231 255;
+  --accent-200: 199 210 254;
+  --accent-300: 165 180 252;
+  --accent-400: 129 140 248;
+  --accent-500: 99 102 241;
+  --accent-600: 79 70 229;
+  --accent-700: 67 56 202;
+  --accent-800: 55 48 163;
+  --accent-900: 49 46 129;
+  --hairline-rgb: 255 255 255;
+  --hairline-alpha: 0.08;
+  --glass-bg: 24 27 36;
+  --glass-alpha: 0.85;
+  --glass-strong-bg: 15 17 23;
+  --glass-strong-alpha: 0.92;
+  --glass-light-bg: 36 41 54;
+  --glass-light-alpha: 0.6;
+  --shadow-win-rgb: 0 0 0;
+  --shadow-win-alpha: 0.4;
+  --shadow-soft-rgb: 0 0 0;
+  --shadow-soft-alpha: 0.25;
+  --scrollbar-rgb: 255 255 255;
+  --scrollbar-alpha: 0.12;
+  --scrollbar-hover-alpha: 0.22;
+}
+
+/* Aurora：北欧极光深翠夜幕，通透材质与碧青薄荷强调色。 */
+[data-theme="aurora"] {
+  color-scheme: dark;
+  --ink-950: 5 11 9;
+  --ink-900: 9 21 18;
+  --ink-850: 12 25 22;
+  --ink-800: 15 31 27;
+  --ink-700: 25 48 42;
+  --ink-600: 40 71 63;
+  --ink-500: 94 135 124;
+  --ink-400: 153 189 180;
+  --ink-300: 204 228 222;
+  --ink-200: 230 244 241;
+  --ink-100: 240 253 250;
+  --accent-50: 240 253 250;
+  --accent-100: 204 251 241;
+  --accent-200: 153 246 228;
+  --accent-300: 94 234 212;
+  --accent-400: 45 212 191;
+  --accent-500: 20 184 166;
+  --accent-600: 13 148 136;
+  --accent-700: 15 118 110;
+  --accent-800: 17 94 89;
+  --accent-900: 19 78 74;
+  --hairline-rgb: 255 255 255;
+  --hairline-alpha: 0.08;
+  --glass-bg: 15 31 27;
+  --glass-alpha: 0.85;
+  --glass-strong-bg: 9 21 18;
+  --glass-strong-alpha: 0.92;
+  --glass-light-bg: 25 48 42;
+  --glass-light-alpha: 0.6;
+  --shadow-win-rgb: 0 0 0;
+  --shadow-win-alpha: 0.4;
+  --shadow-soft-rgb: 0 0 0;
+  --shadow-soft-alpha: 0.25;
+  --scrollbar-rgb: 255 255 255;
+  --scrollbar-alpha: 0.12;
+  --scrollbar-hover-alpha: 0.22;
+}
+
 /* macOS 3-Pane 差异化分栏模式：Cupertino 经典浅色 */
 [data-theme="cupertino"] nav .glass {
   background: rgba(235, 238, 244, 0.88);
@@ -414,6 +512,44 @@ body {
 }
 [data-theme="sequoia"] aside .glass {
   background: rgba(245, 248, 246, 0.92);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+}
+
+/* macOS 3-Pane 差异化分栏模式：Obsidian 钛灰 Pro 深色 */
+[data-theme="obsidian"] nav .glass {
+  background: rgba(15, 17, 23, 0.88);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+[data-theme="obsidian"] main .glass {
+  background: rgba(24, 27, 36, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+[data-theme="obsidian"] aside .glass {
+  background: rgba(19, 21, 29, 0.92);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+}
+
+/* macOS 3-Pane 差异化分栏模式：Aurora 墨翠极光深色 */
+[data-theme="aurora"] nav .glass {
+  background: rgba(9, 21, 18, 0.88);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-right: 1px solid rgba(45, 212, 191, 0.1);
+}
+[data-theme="aurora"] main .glass {
+  background: rgba(15, 31, 27, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(45, 212, 191, 0.1);
+}
+[data-theme="aurora"] aside .glass {
+  background: rgba(12, 25, 22, 0.92);
   backdrop-filter: blur(28px) saturate(160%);
   -webkit-backdrop-filter: blur(28px) saturate(160%);
 }

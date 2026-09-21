@@ -8,4 +8,6 @@ export const THEME_IDS = [
   'paper',
   'cupertino',
   'sequoia',
+  'obsidian',
+  'aurora',
 ] as const;

@@ -46,6 +46,8 @@ var allowedThemes = map[string]struct{}{
 	"paper":     {},
 	"cupertino": {},
 	"sequoia":   {},
+	"obsidian":  {},
+	"aurora":    {},
 }
 
 var allowedLocales = map[string]struct{}{
