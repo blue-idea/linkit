@@ -2,7 +2,7 @@
 > 闁哄倸娲ｅ▎銏㈡崉椤栨氨绐為柨娑欑摢docs/spec/tasks.md`
 > 闁绘鐗婂﹢浼存晬?.8.0
 > 闁哄啨鍎插﹢锟犳晬?026-08-11
-> 状态：TASK-084 已完成（含 Playwright 回归）
+> 状态：TASK-087 已完成（含 Vitest 505 项与 Playwright 视觉回归）
 闁圭瑳鍡╂斀闁哄啫鐖奸妴蹇旂▔閵夛妇澹愰梺顒勬涧閹?`docs/spec/requirements.md` 2.23.0闁靛棔姊梔ocs/spec/design.md` 1.25.0 闁?`docs/spec/test_strategy.md` 2.14.0闁靛棗鍊归惁鈩冦亜閸︻厽鏅稿ù婧犲倸鏁╅柣顔绘閹广垽宕濋垾宕囩畱濡炪倗绮晶鐣屾偘?TDD 缂佺虎娼块埀顑胯兌鐠炪垽濡存笟鈧崳鎼佸几閸曨偅鍎曢柣婊庡灛閳?
 AC 闁肩厧鍟ú璺ㄦ媼閻楀牏銆婂┑?`REQ-003-AC-001~005` 閻炴稏鍔庨妵姘?001 闁?005 闁汇劌瀚崣蹇涙焾?AC闁挎稑鐭傞々鑽や焊閹勭秵闁告牕鎳庨幆鍫ュΥ?
 ---
@@ -1695,6 +1695,7 @@ AC 闁肩厧鍟ú璺ㄦ媼閻楀牏銆婂┑?`REQ-003-AC-001~005` 閻炴稏�
 | TASK-081 | REQ-035/REQ-010闁挎稒纰嶇粊鑽ゆ喆閸繃鐝ゅ☉鏃撳椤掗鈧數鍘ч崣鍡樼┍椤旂瓔鍔€闁靛棔娌焑tadata/AI 闁告梻濞€閳ь剛鍠嶇粭宀勬焻閹烘垹绉洪柛鎺斿█濞?| Unit/Component/E2E/Visual/Performance/Manual | done闁挎稑鐗嗛ˇ濠氭焾閵娾晜锛岀紒鍌欑窔閸庢挳宕?BLOCKED闁?| REQ-010闁靛棔闃淓Q-035 |
 | TASK-085 | REQ-023：新增 Cupertino 与 Sequoia 两套 macOS 风格浅色主题及三栏分层设计 | Unit/Component/Visual/Manual | done | REQ-023 |
 | TASK-086 | REQ-023：新增 Obsidian 与 Aurora 两套 macOS 风格深色主题及三栏分层设计 | Unit/Component/Visual/Manual | done | REQ-023 |
+| TASK-087 | REQ-011：批量操作栏增加全选与取消全选功能，联动当前视图可视书签集合 | Unit/Component/Visual/Manual | done | REQ-011 |
 
 ---
 
@@ -1748,4 +1749,21 @@ AC 闁肩厧鍟ú璺ㄦ媼閻楀牏銆婂┑?`REQ-003-AC-001~005` 閻炴稏�
 | 4.8.1 | 2026-08-11 | 已完成 | 完成 TASK-084 metadata-only 实现；Vitest、Playwright、TypeScript、ESLint、Vite build 通过 |
 | 4.9.0 | 2026-09-21 | 已完成 | 完成 TASK-085：增加 Cupertino 与 Sequoia 两套 macOS 风格浅色主题，实现左中右三栏分层设计并通过单元与视觉回归测试 |
 | 4.10.0 | 2026-09-21 | 已完成 | 完成 TASK-086：增加 Obsidian 与 Aurora 两套 macOS 风格深色主题，实现左中右三栏材质差异化分层；499 个 Vitest 测试、Go 测试、Playwright 视觉回归测试全部通过 |
+| 4.11.0 | 2026-09-21 | 已完成 | 完成 TASK-087：批量操作栏增加全选与取消全选功能，505 项 Vitest 单测、组件测试与 Playwright MCP 视觉回归全部通过 |
+
+---
+
+### TASK-087 · 批量操作栏增加全选与取消全选功能
+
+- [x] **TASK-087：书签批量操作栏全选与取消全选**
+  - **前置依赖**：TASK-086
+  - **验收矩阵**：`docs/spec/ac/TASK-087-AC.md`
+  - **验收证据**：`docs/spec/evidence/TASK-087-select-all-partial.png`、`docs/spec/evidence/TASK-087-select-all-full.png`
+  - **TDD 流程**：
+    1. 纯函数单元测试：验证 `isAllVisibleSelected`、`computeSelectAllIds`、`computeDeselectAllIds`（5 tests passed）。
+    2. 实现纯函数逻辑并在 `i18n/catalogs.ts` 注册 `content.selectAll` / `content.deselectAll`。
+    3. 组件单元测试：验证 ContentArea 批量工具栏中展示全选/取消全选，点击状态切换与计数联动（2 tests passed）。
+    4. 实现 ContentArea 与 App.tsx 交互逻辑。
+    5. Playwright MCP 视觉回归验证并保存截图证据。
+
 

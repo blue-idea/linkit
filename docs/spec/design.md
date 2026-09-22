@@ -1,9 +1,9 @@
 # Linkit 技术设计（Design）
 
 > 文件路径：`docs/spec/design.md`  
-> 版本：1.28.0
+> 版本：1.29.0
 > 日期：2026-09-21
-> 状态：已定稿（新增 Obsidian 与 Aurora macOS 风格 3-Pane 深色主题设计）
+> 状态：已定稿（批量操作栏增加全选与取消全选设计 REQ-011-AC-006）
 
 ---
 
@@ -839,5 +839,26 @@ flowchart LR
 | 1.25.0 | 2026-08-11 | 已确认待实现 | 浏览器书签导入后移除 AI 后处理，仅保留 metadata 补全；导入进度阶段收敛为 `saving` / `metadata` / `complete`，并禁止 metadata 更新分类或标签 |
 | 1.27.0 | 2026-09-21 | 已定稿 | 增加 Cupertino 与 Sequoia 八主题 CSS 令牌架构与 macOS 3-Pane 差异化分栏设计 |
 | 1.28.0 | 2026-09-21 | 已定稿 | 增加 Obsidian 与 Aurora 十主题 CSS 令牌架构与深色 macOS 3-Pane 差异化分栏设计 |
+| 1.29.0 | 2026-09-21 | 已定稿 | 新增 6.13 批量书签全选与取消全选设计；纯函数状态衍生与批量操作栏交互对齐 REQ-011-AC-006 |
+
+---
+
+## 6.13 批量书签全选与取消全选设计（REQ-011-AC-006）
+
+### 6.13.1 领域与状态模型
+
+1. **作用范围**：全选基于当前视图根据查询、分类、标签或状态过滤后实际呈现的可视书签列表（`visibleBookmarks`）。
+2. **纯函数集合计算**（`src/features/collections/compose/selection.ts`）：
+   - `isAllVisibleSelected(currentIds: string[], visibleIds: string[]): boolean`：
+     当且仅当 `visibleIds.length > 0` 且其每一个 ID 均已包含在 `currentIds` 时为 true。
+   - `computeSelectAllIds(currentIds: string[], visibleIds: string[]): string[]`：
+     返回 `unique([...currentIds, ...visibleIds])`。
+   - `computeDeselectAllIds(currentIds: string[], visibleIds: string[]): string[]`：
+     从 `currentIds` 中剔除 `visibleIds` 集合中的元素。
+3. **UI 交互与渲染契约**：
+   - 在 `ContentArea` 批量操作栏（`role="toolbar"`，`aria-label` 为 `content.bulkActions`）中，在“移动（Move）”按钮最左侧放置全选/取消全选按钮。
+   - 当 `isAllVisibleSelected` 为 false 时：按钮文案显示 `content.selectAll`（“全选” / “Select all”），点击触发全选。
+   - 当 `isAllVisibleSelected` 为 true 时：按钮文案显示 `content.deselectAll`（“取消全选” / “Deselect all”），点击触发取消全选。
+   - 工具栏在 `composeSelectedIds.length > 0` 时展示，且当用户处于多选模式（`selectionMode === true`）且当前视图存在书签时亦自动展示，提供一键全选入口。
 
 

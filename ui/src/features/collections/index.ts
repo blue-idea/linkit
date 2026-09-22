@@ -23,4 +23,10 @@ export {
 } from './compose';
 export type { ComposePreview, ComposePreviewMember } from './compose';
 export { ComposePreviewDialog } from './compose/ComposePreviewDialog';
-export { parseComposeDragPayload, toggleComposeSelection } from './compose/selection';
+export {
+  computeDeselectAllIds,
+  computeSelectAllIds,
+  isAllVisibleSelected,
+  parseComposeDragPayload,
+  toggleComposeSelection,
+} from './compose/selection';

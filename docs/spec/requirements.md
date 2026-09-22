@@ -1,9 +1,9 @@
 # Linkit 需求文档（Requirements）
 
 > 文件路径：`docs/spec/requirements.md`  
-> 版本：2.26.0
+> 版本：2.27.0
 > 日期：2026-09-21
-> 状态：已定稿（新增 Obsidian 与 Aurora macOS 风格 3-Pane 深色主题）
+> 状态：已定稿（批量操作栏新增全选与取消全选选项 REQ-011-AC-006）
 
 ---
 
@@ -857,6 +857,16 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
     return_value: "LibraryData where every selected bookmark references the requested category or null"
     side_effects:
       - "If the target category or any selected bookmark is invalid, the whole operation fails without mutation"
+
+- id: REQ-011-AC-006
+  ears: >
+    While 批量操作栏处于展示状态,
+    when 用户点击 Select all / Deselect all 选项,
+    the Linkit shall 将当前展示列表中的全部书签加入或移出选中集合，并联动更新选中数量、卡片勾选状态与按钮切换状态.
+  test_type: Unit + E2E
+  expected:
+    ui_state: "All visible bookmarks are selected/deselected, and bulk action bar reflects exact count"
+    side_effects: []
 ```
 
 ---
@@ -2681,5 +2691,6 @@ Linkit 是一款面向 Windows 与 macOS 的桌面端智能知识收藏应用，
 | 2.24.0 | 2026-08-15 | 已定稿/已实现 | 修订 REQ-029-AC-003：目标目录已有 Linkit 数据时提供 Keep target data / Overwrite target data；Keep 仅切换目录，Overwrite 沿用迁移覆盖流程 |
 | 2.25.0 | 2026-09-21 | 已定稿 | 新增 Cupertino 与 Sequoia 两套 macOS 风格浅色主题，提供左中右三栏分层色彩，业务逻辑保持不变 |
 | 2.26.0 | 2026-09-21 | 已定稿 | 新增 Obsidian 与 Aurora 两套 macOS 风格 3-Pane 差异化深色主题，业务逻辑保持不变 |
+| 2.27.0 | 2026-09-21 | 已定稿 | 新增 REQ-011-AC-006：批量操作栏增加全选（Select all）与取消全选（Deselect all）功能，联动当前视图可视书签集合 |
 
 

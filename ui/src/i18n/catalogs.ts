@@ -132,6 +132,8 @@ const messages = {
   'content.createFromSelection': ['Create collection from selection', '从所选书签创建主题'],
   'content.createCollection': ['Create collection', '创建主题'],
   'content.clearSelection': ['Clear selection', '清除选择'],
+  'content.selectAll': ['Select all', '全选'],
+  'content.deselectAll': ['Deselect all', '取消全选'],
   'content.aiSuggestion': ['AI suggests adding to “{{name}}”', 'AI 建议加入“{{name}}”'],
   'content.aiSuggestionLabel': ['Smart grouping', '智能聚合'],
   'content.aiSuggestionHint': ['Based on the tags and categories of bookmarks already in this collection.', '基于该主题已收录内容的标签与分类画像推荐。'],

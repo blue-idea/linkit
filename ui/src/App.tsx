@@ -80,6 +80,8 @@ import {
   CollectionFormDialog,
   ComposePreviewDialog,
   confirmComposeCollection,
+  computeDeselectAllIds,
+  computeSelectAllIds,
   DeleteCollectionDialog,
   parseComposeDragPayload,
   RemoveFromCollectionDialog,
@@ -1655,6 +1657,12 @@ export default function App() {
                 : current.filter((currentId) => currentId !== id));
             }}
             onClearBookmarkSelection={() => setComposeSelectedIds([])}
+            onSelectAllBookmarks={(ids) => {
+              setComposeSelectedIds((current) => computeSelectAllIds(current, ids));
+            }}
+            onDeselectAllBookmarks={(ids) => {
+              setComposeSelectedIds((current) => computeDeselectAllIds(current, ids));
+            }}
             onRequestCompose={() => openComposePreview(composeSelectedIds)}
             onToggleStar={toggleStar}
             onClearTagFilter={(id) =>

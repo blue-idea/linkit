@@ -13,6 +13,7 @@ import {
   presentBookmarks,
 } from '../features/views';
 import { selectBookmarkRange } from '../features/bookmarks';
+import { isAllVisibleSelected } from '../features/collections/compose/selection';
 import { useI18n } from '../i18n/use-i18n';
 
 /* ---------- AI smart aggregation banner (Feature 2) ---------- */
@@ -346,6 +347,8 @@ export function ContentArea({
   onDeleteBookmarks,
   onToggleBookmarkSelection,
   onClearBookmarkSelection,
+  onSelectAllBookmarks,
+  onDeselectAllBookmarks,
   onOpenAddBookmarks,
   onRemoveFromCollection,
   onRequestBulkRemoveFromCollection,
@@ -388,6 +391,8 @@ export function ContentArea({
   onDeleteBookmarks: (ids: string[]) => void;
   onToggleBookmarkSelection: (id: string, selected: boolean) => void;
   onClearBookmarkSelection: () => void;
+  onSelectAllBookmarks?: (ids: string[]) => void;
+  onDeselectAllBookmarks?: (ids: string[]) => void;
   onOpenAddBookmarks?: () => void;
   onRemoveFromCollection?: (id: string) => void;
   onRequestBulkRemoveFromCollection?: () => void;
@@ -412,6 +417,26 @@ export function ContentArea({
   const showAI = selection.kind === 'collection' && !aiDismissed;
   const isCollectionView = selection.kind === 'collection';
   const composeSet = useMemo(() => new Set(composeSelectedIds), [composeSelectedIds]);
+  const visibleBookmarkIds = useMemo(() => presented.map((b) => b.id), [presented]);
+  const isAllSelected = useMemo(
+    () => isAllVisibleSelected(composeSelectedIds, visibleBookmarkIds),
+    [composeSelectedIds, visibleBookmarkIds]
+  );
+  const handleToggleSelectAll = () => {
+    if (isAllSelected) {
+      if (onDeselectAllBookmarks) {
+        onDeselectAllBookmarks(visibleBookmarkIds);
+      } else {
+        visibleBookmarkIds.forEach((id) => onToggleBookmarkSelection(id, false));
+      }
+    } else {
+      if (onSelectAllBookmarks) {
+        onSelectAllBookmarks(visibleBookmarkIds);
+      } else {
+        visibleBookmarkIds.forEach((id) => onToggleBookmarkSelection(id, true));
+      }
+    }
+  };
   const selectionAnchorRef = useRef<string | null>(null);
   const bookmarkItemActions = {
     selectionMode,
@@ -528,18 +553,27 @@ export function ContentArea({
         />
       )}
 
-      {composeSelectedIds.length > 0 && (
+      {(composeSelectedIds.length > 0 || (selectionMode && presented.length > 0)) && (
         <div role="toolbar" aria-label={i18n.t('content.bulkActions')} className="mx-4 mb-2 flex items-center justify-between gap-2 rounded-lg bg-accent-500/10 hairline px-3 py-2">
           <span className="text-[12px] text-ink-200">
             {i18n.t('content.bookmarksSelected', { count: composeSelectedIds.length })}
           </span>
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => onMoveBookmarks(composeSelectedIds)}>{i18n.t('common.move')}</Button>
-            <Button size="sm" variant="danger" onClick={() => onDeleteBookmarks(composeSelectedIds)}>{i18n.t('common.delete')}</Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              aria-label={isAllSelected ? i18n.t('content.deselectAll') : i18n.t('content.selectAll')}
+              onClick={handleToggleSelectAll}
+            >
+              {isAllSelected ? i18n.t('content.deselectAll') : i18n.t('content.selectAll')}
+            </Button>
+            <Button size="sm" disabled={composeSelectedIds.length === 0} onClick={() => onMoveBookmarks(composeSelectedIds)}>{i18n.t('common.move')}</Button>
+            <Button size="sm" variant="danger" disabled={composeSelectedIds.length === 0} onClick={() => onDeleteBookmarks(composeSelectedIds)}>{i18n.t('common.delete')}</Button>
             {isCollectionView && onRequestBulkRemoveFromCollection && (
               <Button
                 size="sm"
                 variant="ghost"
+                disabled={composeSelectedIds.length === 0}
                 aria-label={i18n.t('content.removeFromCollection')}
                 onClick={onRequestBulkRemoveFromCollection}
               >
@@ -547,7 +581,7 @@ export function ContentArea({
               </Button>
             )}
             {composeSelectedIds.length >= 2 && <Button size="sm" variant="primary" aria-label={i18n.t('content.createFromSelection')} onClick={onRequestCompose}>{i18n.t('content.createCollection')}</Button>}
-            <Button size="sm" variant="ghost" onClick={onClearBookmarkSelection}>{i18n.t('content.clearSelection')}</Button>
+            {composeSelectedIds.length > 0 && <Button size="sm" variant="ghost" onClick={onClearBookmarkSelection}>{i18n.t('content.clearSelection')}</Button>}
           </div>
         </div>
       )}
