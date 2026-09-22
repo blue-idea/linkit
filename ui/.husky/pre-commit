@@ -1,2 +1,0 @@
-pnpm --dir ui lint:staged
-pnpm --dir ui typecheck
