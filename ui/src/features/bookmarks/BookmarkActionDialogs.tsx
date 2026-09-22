@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { buildCategoryTree } from '../categories/utils';
+import { CategorySelect } from '../categories';
 import type { Bookmark, Category, Collection, Tag, TagColor } from '../../types';
 import { DialogFrame } from '../../components/DialogFrame';
 import { Button } from '../../components/ui';
@@ -106,8 +106,16 @@ export function BookmarkEditorDialog({ bookmark, categories, tags, collections, 
       <label className="col-span-2 text-xs text-ink-300">{i18n.t('bookmark.title')}<input aria-label={i18n.t('bookmark.title')} value={values.title} onChange={(e) => setValues({ ...values, title: e.target.value })} className={inputClass} /></label>
       <label className="col-span-2 text-xs text-ink-300">{i18n.t('bookmark.description')}<textarea aria-label={i18n.t('bookmark.description')} value={values.description} onChange={(e) => setValues({ ...values, description: e.target.value })} className={inputClass} rows={2} /></label>
       <label className="col-span-2 text-xs text-ink-300">{i18n.t('bookmark.notes')}<textarea aria-label={i18n.t('bookmark.notes')} value={values.notes} onChange={(e) => setValues({ ...values, notes: e.target.value })} className={inputClass} rows={4} /></label>
-      <label className="text-xs text-ink-300">{i18n.t('bookmark.category')}<select aria-label={i18n.t('bookmark.category')} value={values.categoryId} onChange={(e) => setValues({ ...values, categoryId: e.target.value })} className={inputClass}><option value="" className="bg-ink-900 text-ink-100">{i18n.t('bookmark.uncategorized')}</option>{buildCategoryTree(categories).map((category) => <option key={category.id} value={category.id} className="bg-ink-900 text-ink-100">{'\u00A0\u00A0'.repeat(category.level) + (category.level > 0 ? '└─ ' : '') + category.name}</option>)}</select></label>
-      <label className="text-xs text-ink-300">{i18n.t('bookmark.readStatus')}<select aria-label={i18n.t('bookmark.readStatus')} value={values.readStatus} onChange={(e) => setValues({ ...values, readStatus: e.target.value as typeof values.readStatus })} className={inputClass}>{readStatuses.map((status) => <option key={status} value={status} className="bg-ink-900 text-ink-100">{i18n.t(`status.${status}`)}</option>)}</select></label>
+      <div className="text-xs text-ink-300">
+        <span className="block mb-1">{i18n.t('bookmark.category')}</span>
+        <CategorySelect
+          ariaLabel={i18n.t('bookmark.category')}
+          value={values.categoryId}
+          onChange={(val) => setValues({ ...values, categoryId: val })}
+          categories={categories}
+        />
+      </div>
+      <label className="text-xs text-ink-300">{i18n.t('bookmark.readStatus')}<select aria-label={i18n.t('bookmark.readStatus')} value={values.readStatus} onChange={(e) => setValues({ ...values, readStatus: e.target.value as typeof values.readStatus })} className={inputClass}>{readStatuses.map((status) => <option key={status} value={status} className="bg-ink-800 text-ink-100">{i18n.t(`status.${status}`)}</option>)}</select></label>
       <fieldset className="col-span-2"><legend className="text-xs text-ink-300">{i18n.t('bookmark.tags')}</legend><div className="flex flex-wrap gap-2">{tags.map((tag) => <label key={tag.id} className="text-xs text-ink-200"><input type="checkbox" checked={values.tagIds.includes(tag.id)} onChange={() => toggle('tagIds', tag.id)} /> {tag.label}</label>)}</div></fieldset>
       <fieldset className="col-span-2"><legend className="text-xs text-ink-300">{i18n.t('bookmark.collections')}</legend><div className="flex flex-wrap gap-2">{collections.map((collection) => <label key={collection.id} className="text-xs text-ink-200"><input type="checkbox" checked={values.collectionIds.includes(collection.id)} onChange={() => toggle('collectionIds', collection.id)} /> {collection.name}</label>)}</div></fieldset>
     </div>
@@ -120,7 +128,28 @@ export function BookmarkMoveDialog({ open, count, categories, onClose, onMove }:
   const i18n = useI18n();
   const [categoryId, setCategoryId] = useState('');
   if (!open) return null;
-  return <DialogShell label={i18n.t('bookmark.move.confirm')}><h2 className="text-lg font-semibold text-ink-100">{i18n.t('bookmark.move.title', { count })}</h2><label className="mt-4 block text-xs text-ink-300">{i18n.t('bookmark.move.target')}<select aria-label={i18n.t('bookmark.move.target')} value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={inputClass}><option value="" className="bg-ink-900 text-ink-100">{i18n.t('bookmark.uncategorized')}</option>{buildCategoryTree(categories).map((category) => <option key={category.id} value={category.id} className="bg-ink-900 text-ink-100">{'\u00A0\u00A0'.repeat(category.level) + (category.level > 0 ? '└─ ' : '') + category.name}</option>)}</select></label><div className="mt-5 flex justify-end gap-2"><Button onClick={onClose}>{i18n.t('common.cancel')}</Button><Button variant="primary" onClick={() => onMove(categoryId || null)}>{i18n.t('bookmark.move.confirm')}</Button></div></DialogShell>;
+  return (
+    <DialogShell label={i18n.t('bookmark.move.confirm')}>
+      <h2 className="text-lg font-semibold text-ink-100">{i18n.t('bookmark.move.title', { count })}</h2>
+      <div className="mt-4">
+        <label className="mb-1.5 block text-xs text-ink-300">
+          {i18n.t('bookmark.move.target')}
+        </label>
+        <CategorySelect
+          ariaLabel={i18n.t('bookmark.move.target')}
+          value={categoryId}
+          onChange={setCategoryId}
+          categories={categories}
+        />
+      </div>
+      <div className="mt-5 flex justify-end gap-2">
+        <Button onClick={onClose}>{i18n.t('common.cancel')}</Button>
+        <Button variant="primary" onClick={() => onMove(categoryId || null)}>
+          {i18n.t('bookmark.move.confirm')}
+        </Button>
+      </div>
+    </DialogShell>
+  );
 }
 
 export function BulkDeleteDialog({ count, onClose, onConfirm }: { count: number; onClose: () => void; onConfirm: () => void }) {

@@ -29,5 +29,8 @@ export {
   runSetCategoryIcon,
   toCategoryLibrary,
 } from './apply-category-command';
+export { CategorySelect } from './CategorySelect';
+export type { CategorySelectProps } from './CategorySelect';
+
 
 

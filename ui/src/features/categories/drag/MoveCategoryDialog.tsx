@@ -83,9 +83,9 @@ export function MoveCategoryDialog({
               onChange={(e) => setTargetParentId(e.target.value)}
               className="w-full rounded-lg bg-ink-800/60 hairline px-3 py-2 text-[13px] text-ink-100 outline-none focus-ring"
             >
-              <option value="__root__" className="bg-ink-900 text-ink-100">{i18n.t('category.move.root')}</option>
+              <option value="__root__" className="bg-ink-800 text-ink-100">{i18n.t('category.move.root')}</option>
               {treeOptions.map((option) => (
-                <option key={option.id} value={option.id} className="bg-ink-900 text-ink-100">
+                <option key={option.id} value={option.id} className="bg-ink-800 text-ink-100">
                   {'\u00A0\u00A0'.repeat(option.level) + (option.level > 0 ? '└─ ' : '') + option.name}
                 </option>
               ))}
