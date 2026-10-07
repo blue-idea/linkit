@@ -5,7 +5,7 @@ import (
 )
 
 func TestAppVersion(t *testing.T) {
-	expected := "0.3.9"
+	expected := "0.4.0"
 	if AppVersion != expected {
 		t.Errorf("AppVersion = %q; want %q", AppVersion, expected)
 	}

@@ -51,7 +51,7 @@ describe('AboutDialog', () => {
     (window as unknown as { go: unknown }).go = {
       platform: {
         Service: {
-          GetAppVersion: vi.fn().mockResolvedValue('0.3.9'),
+          GetAppVersion: vi.fn().mockResolvedValue('0.4.0'),
         },
       },
     };
@@ -64,7 +64,7 @@ describe('AboutDialog', () => {
     );
 
     const dialog = screen.getByRole('dialog', { name: /about/i });
-    expect(await within(dialog).findByText(/version\s*0\.3\.9/i)).toBeInTheDocument();
+    expect(await within(dialog).findByText(/version\s*0\.4\.0/i)).toBeInTheDocument();
 
     (window as unknown as { go: unknown }).go = originalGo;
   });
