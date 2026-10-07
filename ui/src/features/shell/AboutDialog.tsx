@@ -11,7 +11,23 @@ type AboutDialogProps = {
   onClose: () => void;
   appVersion?: string;
   githubUrl?: string;
+  checkForUpdates?: () => Promise<UpdateCheckResult>;
 };
+
+type UpdateCheckResult = {
+  available: boolean;
+  version?: string;
+  releaseUrl?: string;
+  downloadUrl?: string;
+};
+
+function readWailsUpdateChecker(): (() => Promise<UpdateCheckResult>) | null {
+  return (
+    window as unknown as {
+      go?: { updater?: { Service?: { CheckForUpdatesNow?: () => Promise<UpdateCheckResult> } } };
+    }
+  ).go?.updater?.Service?.CheckForUpdatesNow ?? null;
+}
 
 /** About：展示应用版本与 GitHub 主页。 */
 export function AboutDialog({
@@ -19,9 +35,12 @@ export function AboutDialog({
   onClose,
   appVersion,
   githubUrl = LINKIT_GITHUB_URL,
+  checkForUpdates,
 }: AboutDialogProps) {
   const i18n = useI18n();
   const [displayedVersion, setDisplayedVersion] = useState<string>(appVersion ?? LINKIT_APP_VERSION);
+  const [checkingUpdates, setCheckingUpdates] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (appVersion) {
@@ -62,6 +81,29 @@ export function AboutDialog({
   if (!open) return null;
 
   const title = i18n.t('about.title');
+  const runUpdateCheck = async () => {
+    const checker = checkForUpdates ?? readWailsUpdateChecker();
+    if (!checker) {
+      setUpdateStatus(i18n.t('about.updateUnavailable'));
+      return;
+    }
+    setCheckingUpdates(true);
+    setUpdateStatus(null);
+    try {
+      const result = await checker();
+      if (result.available) {
+        const targetURL = result.downloadUrl || result.releaseUrl || githubUrl;
+        await openExternalUrl(targetURL);
+        setUpdateStatus(i18n.t('about.updateAvailable', { version: result.version ?? '' }));
+        return;
+      }
+      setUpdateStatus(i18n.t('about.updateCurrent'));
+    } catch {
+      setUpdateStatus(i18n.t('about.updateFailed'));
+    } finally {
+      setCheckingUpdates(false);
+    }
+  };
 
   return (
     <DialogFrame
@@ -92,6 +134,17 @@ export function AboutDialog({
           <p className="text-[12px] text-ink-300">
             {i18n.t('about.version', { version: displayedVersion })}
           </p>
+        </div>
+        <div className="space-y-2">
+          <Button variant="ghost" onClick={() => { void runUpdateCheck(); }} disabled={checkingUpdates}>
+            <Icon name="RefreshCw" size={14} />
+            {checkingUpdates ? i18n.t('about.checkingUpdates') : i18n.t('about.checkUpdates')}
+          </Button>
+          {updateStatus && (
+            <p className="text-[12px] text-ink-300" role="status">
+              {updateStatus}
+            </p>
+          )}
         </div>
         <div className="space-y-1">
           <p className="text-[11px] uppercase tracking-wide text-ink-400">{i18n.t('about.github')}</p>

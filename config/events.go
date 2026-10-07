@@ -9,4 +9,6 @@ const (
 	EventHealthScanProgress = "linkit:health-scan-progress"
 	// EventHealthScanFinished 报告健康扫描最终状态。
 	EventHealthScanFinished = "linkit:health-scan-finished"
+	// EventUpdateAvailable 报告有新版本可下载。
+	EventUpdateAvailable = "linkit:update-available"
 )

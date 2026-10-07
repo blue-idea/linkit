@@ -5,37 +5,43 @@ import (
 	"time"
 )
 
-// REQ-030-AC-002：托盘菜单包含 About、Settings 与 Quit。
+// REQ-030-AC-002：托盘菜单包含 About、Check for Updates、Settings 与 Quit。
 func TestDefaultMenuItems(t *testing.T) {
 	items := DefaultMenuItems()
-	if len(items) != 3 {
-		t.Fatalf("menu items = %d, want 3", len(items))
+	if len(items) != 4 {
+		t.Fatalf("menu items = %d, want 4", len(items))
 	}
 	if items[0].ID != MenuAbout || items[0].Label != "About" {
 		t.Fatalf("first item = %+v, want About", items[0])
 	}
-	if items[1].ID != MenuSettings || items[1].Label != "Settings" {
-		t.Fatalf("second item = %+v, want Settings", items[1])
+	if items[1].ID != MenuCheckUpdates || items[1].Label != "Check for Updates" {
+		t.Fatalf("second item = %+v, want Check for Updates", items[1])
 	}
-	if items[2].ID != MenuQuit || items[2].Label != "Quit" {
-		t.Fatalf("third item = %+v, want Quit", items[2])
+	if items[2].ID != MenuSettings || items[2].Label != "Settings" {
+		t.Fatalf("third item = %+v, want Settings", items[2])
+	}
+	if items[3].ID != MenuQuit || items[3].Label != "Quit" {
+		t.Fatalf("fourth item = %+v, want Quit", items[3])
 	}
 }
 
-func TestHostDispatchesSettingsAboutAndQuit(t *testing.T) {
+func TestHostDispatchesSettingsAboutCheckUpdatesAndQuit(t *testing.T) {
 	settingsOpened := make(chan struct{}, 1)
 	aboutOpened := make(chan struct{}, 1)
+	updatesChecked := make(chan struct{}, 1)
 	quit := make(chan struct{}, 1)
 	doubleClick := make(chan struct{}, 1)
 	host := NewHost(Callbacks{
-		OnSettings:    func() { settingsOpened <- struct{}{} },
-		OnAbout:       func() { aboutOpened <- struct{}{} },
-		OnQuit:        func() { quit <- struct{}{} },
-		OnDoubleClick: func() { doubleClick <- struct{}{} },
+		OnSettings:     func() { settingsOpened <- struct{}{} },
+		OnAbout:        func() { aboutOpened <- struct{}{} },
+		OnCheckUpdates: func() { updatesChecked <- struct{}{} },
+		OnQuit:         func() { quit <- struct{}{} },
+		OnDoubleClick:  func() { doubleClick <- struct{}{} },
 	})
 
 	host.HandleMenuClick(MenuSettings)
 	host.HandleMenuClick(MenuAbout)
+	host.HandleMenuClick(MenuCheckUpdates)
 	host.HandleMenuClick(MenuQuit)
 	host.HandleDoubleClick()
 
@@ -48,6 +54,11 @@ func TestHostDispatchesSettingsAboutAndQuit(t *testing.T) {
 	case <-aboutOpened:
 	case <-time.After(time.Second):
 		t.Fatal("About callback was not invoked")
+	}
+	select {
+	case <-updatesChecked:
+	case <-time.After(time.Second):
+		t.Fatal("Check for Updates callback was not invoked")
 	}
 	select {
 	case <-quit:

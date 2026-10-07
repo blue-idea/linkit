@@ -36,7 +36,7 @@ static void linkitRunOnMainSync(dispatch_block_t block) {
 	dispatch_sync(dispatch_get_main_queue(), block);
 }
 
-bool linkitCreateStatusTray(const char *settingsTitle, const char *aboutTitle, const char *quitTitle, const char *tooltip, const void *iconBytes, int iconLen) {
+bool linkitCreateStatusTray(const char *settingsTitle, const char *aboutTitle, const char *checkUpdatesTitle, const char *quitTitle, const char *tooltip, const void *iconBytes, int iconLen) {
 	__block bool created = false;
 	linkitRunOnMainSync(^{
 		if (linkitStatusItem != nil) {
@@ -66,6 +66,7 @@ bool linkitCreateStatusTray(const char *settingsTitle, const char *aboutTitle, c
 
 		NSString *settingsText = [NSString stringWithUTF8String:settingsTitle];
 		NSString *aboutText = [NSString stringWithUTF8String:aboutTitle];
+		NSString *checkUpdatesText = [NSString stringWithUTF8String:checkUpdatesTitle];
 		NSString *quitText = [NSString stringWithUTF8String:quitTitle];
 		linkitStatusMenu = [[NSMenu alloc] initWithTitle:@"Linkit"];
 
@@ -74,13 +75,18 @@ bool linkitCreateStatusTray(const char *settingsTitle, const char *aboutTitle, c
 		aboutItem.target = linkitTrayTarget;
 		[linkitStatusMenu addItem:aboutItem];
 
+		NSMenuItem *checkUpdatesItem = [[NSMenuItem alloc] initWithTitle:checkUpdatesText action:@selector(handleMenuItem:) keyEquivalent:@""];
+		checkUpdatesItem.tag = 3;
+		checkUpdatesItem.target = linkitTrayTarget;
+		[linkitStatusMenu addItem:checkUpdatesItem];
+
 		NSMenuItem *settingsItem = [[NSMenuItem alloc] initWithTitle:settingsText action:@selector(handleMenuItem:) keyEquivalent:@""];
 		settingsItem.tag = 1;
 		settingsItem.target = linkitTrayTarget;
 		[linkitStatusMenu addItem:settingsItem];
 
 		NSMenuItem *quitItem = [[NSMenuItem alloc] initWithTitle:quitText action:@selector(handleMenuItem:) keyEquivalent:@""];
-		quitItem.tag = 3;
+		quitItem.tag = 4;
 		quitItem.target = linkitTrayTarget;
 		[linkitStatusMenu addItem:quitItem];
 

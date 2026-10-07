@@ -3,12 +3,14 @@ package config
 var (
 	// AppVersion 用于导出信封标识生成文件的应用版本。
 	// 支持通过编译期 -ldflags "-X github.com/blue-idea/collection/config.AppVersion=X.Y.Z" 动态覆盖。
-	AppVersion = "0.4.0"
+	AppVersion = "0.4.2"
 )
 
 const (
 	// GitHubURL 为 About 与文档入口使用的项目主页。
 	GitHubURL = "https://github.com/blue-idea/linkit"
+	// ReleaseRepository 是桌面端更新检测使用的公开 GitHub Releases 仓库。
+	ReleaseRepository = "blue-idea/linkit"
 	// AppWidth 与 AppHeight 为三栏主界面提供默认可用空间。
 	AppWidth  = 1384
 	AppHeight = 865
