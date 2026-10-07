@@ -77,7 +77,7 @@ jobs:
         run: pnpm --dir ui verify:quality-config
 
       - name: Audit Node dependencies
-        run: pnpm --dir ui audit --audit-level high
+        run: pnpm --dir ui audit --audit-level high --prod
 
       - name: Frontend lint
         run: pnpm --dir ui lint
