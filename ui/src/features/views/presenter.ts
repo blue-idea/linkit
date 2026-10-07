@@ -1,8 +1,11 @@
-import type { Bookmark, Tag, TagColor } from '../../types';
+import type { Bookmark, Category, Tag, TagColor } from '../../types';
 
 export type BookmarkPresentation = {
   id: string;
   title: string;
+  url: string;
+  categoryId: string;
+  categoryName?: string;
   domain: string;
   description: string;
   summary: string;
@@ -21,11 +24,20 @@ export type BookmarkPresentation = {
  * 将书签投影为三视图共享的可读元数据。
  * REQ-015-AC-001~003
  */
-export function presentBookmark(bookmark: Bookmark, tags: Tag[]): BookmarkPresentation {
+export function presentBookmark(
+  bookmark: Bookmark,
+  tags: Tag[],
+  categories?: Category[]
+): BookmarkPresentation {
   const tagById = new Map(tags.map((tag) => [tag.id, tag]));
+  // 查找书签所属的直接分类（只显示最近一级分类名称）
+  const category = categories?.find((c) => c.id === bookmark.categoryId);
   return {
     id: bookmark.id,
     title: bookmark.title,
+    url: bookmark.url,
+    categoryId: bookmark.categoryId,
+    categoryName: category?.name,
     domain: bookmark.domain,
     description: bookmark.description ?? '',
     // 列表摘要优先 AI；无摘要时回退站点描述，避免列表空白。
@@ -47,7 +59,9 @@ export function presentBookmark(bookmark: Bookmark, tags: Tag[]): BookmarkPresen
 
 export function presentBookmarks(
   bookmarks: Bookmark[],
-  tags: Tag[]
+  tags: Tag[],
+  categories?: Category[]
 ): BookmarkPresentation[] {
-  return bookmarks.map((bookmark) => presentBookmark(bookmark, tags));
+  return bookmarks.map((bookmark) => presentBookmark(bookmark, tags, categories));
 }
+

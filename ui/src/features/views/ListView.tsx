@@ -134,9 +134,9 @@ function ListItem({
         selected ? 'bg-accent-500/15' : 'hover:bg-ink-700/40'
       }`}
     >
-      <div className="grid grid-cols-[28px_1fr_auto_auto] items-center gap-3">
+      <div className="flex items-center gap-3">
         <Favicon glyph={item.favicon} color={item.faviconColor} size={28} />
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="text-[13px] font-medium text-ink-100 truncate">{item.title}</span>
             {item.pinned && <Icon name="Pin" size={11} className="text-amber-400 shrink-0" />}
@@ -151,12 +151,12 @@ function ListItem({
             )}
           </div>
         </div>
-        <div className="hidden sm:flex items-center gap-1">
+        <div className="hidden sm:flex items-center gap-1 shrink-0">
           {item.tags.slice(0, 2).map((tag) => (
             <TagPill key={tag.id} label={tag.label} color={tag.color} size="xs" />
           ))}
         </div>
-        <div className="hidden md:flex items-center gap-1 text-[11px] text-ink-400">
+        <div className="hidden md:flex items-center gap-1 text-[11px] text-ink-400 shrink-0">
           <Icon name="Eye" size={11} />
           <span className="tabular-nums">{item.visitCount}</span>
         </div>
@@ -167,25 +167,27 @@ function ListItem({
             e.stopPropagation();
             onToggleStar();
           }}
-          className={`w-6 h-6 rounded-md flex items-center justify-center transition focus-ring ${
+          className={`w-6 h-6 rounded-md flex items-center justify-center transition focus-ring shrink-0 ${
             item.starred ? 'text-amber-400' : 'text-ink-500 opacity-0 group-hover:opacity-100'
           }`}
         >
           <Icon name="Star" size={13} fill={item.starred ? 'currentColor' : 'none'} />
         </button>
-        <div className={`col-span-3 transition-opacity ${selectionMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-          <BookmarkItemActions
-            title={item.title}
-            selected={bulkSelected}
-            selectionMode={selectionMode}
-            onToggleSelect={onToggleSelect}
-            onVisit={onVisit}
-            onEdit={onEdit}
-            onMove={onMove}
-            onDelete={onDelete}
-            onRemoveFromCollection={onRemoveFromCollection}
-          />
-        </div>
+      </div>
+      <div className={`transition-opacity ${selectionMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+        <BookmarkItemActions
+          title={item.title}
+          url={item.url}
+          categoryName={item.categoryName}
+          selected={bulkSelected}
+          selectionMode={selectionMode}
+          onToggleSelect={onToggleSelect}
+          onVisit={onVisit}
+          onEdit={onEdit}
+          onMove={onMove}
+          onDelete={onDelete}
+          onRemoveFromCollection={onRemoveFromCollection}
+        />
       </div>
     </div>
   );

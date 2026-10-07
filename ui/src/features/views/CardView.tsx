@@ -200,7 +200,19 @@ function CardItem({
           {formatDate(item.createdAt, i18n.getLocale())}
         </span>
       </div>
-      <BookmarkItemActions title={item.title} selected={bulkSelected} selectionMode={selectionMode} onToggleSelect={onToggleSelect} onVisit={onVisit} onEdit={onEdit} onMove={onMove} onDelete={onDelete} onRemoveFromCollection={onRemoveFromCollection} />
+      <BookmarkItemActions
+        title={item.title}
+        url={item.url}
+        categoryName={item.categoryName}
+        selected={bulkSelected}
+        selectionMode={selectionMode}
+        onToggleSelect={onToggleSelect}
+        onVisit={onVisit}
+        onEdit={onEdit}
+        onMove={onMove}
+        onDelete={onDelete}
+        onRemoveFromCollection={onRemoveFromCollection}
+      />
     </div>
   );
 }

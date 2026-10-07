@@ -44,6 +44,8 @@ export function CompactRow({
       </div>
       <BookmarkItemActions
         title={item.title}
+        url={item.url}
+        categoryName={item.categoryName}
         selected={isBulkSelected(item.id)}
         selectionMode={selectionMode}
         onToggleSelect={(checked) => onToggleSelect(item.id, checked)}

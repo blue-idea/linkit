@@ -69,4 +69,28 @@ describe('BookmarkItemActions', () => {
     renderActions();
     expect(screen.queryByRole('button', { name: 'Remove from collection' })).toBeNull();
   });
+
+  test('[组件] 提供 categoryName 时 shall 渲染分类名称标签', () => {
+    renderActions({ categoryName: 'Frontend' });
+    expect(screen.getByText('Frontend')).toBeInTheDocument();
+  });
+
+  test('[组件] 提供 url 时 shall 渲染复制链接按钮且点击时触发复制回调', async () => {
+    const user = userEvent.setup();
+    const onCopyUrl = vi.fn();
+    const props = renderActions({ url: 'https://example.com/test', onCopyUrl });
+
+    const copyBtn = screen.getByRole('button', { name: 'Copy link' });
+    expect(copyBtn).toBeInTheDocument();
+
+    await user.click(copyBtn);
+    expect(onCopyUrl).toHaveBeenCalledWith('https://example.com/test');
+    expect(props.onEdit).not.toHaveBeenCalled();
+  });
+
+  test('[组件] 未提供 categoryName 与 url 时 shall 不渲染多余分类或复制按钮', () => {
+    renderActions();
+    expect(screen.queryByRole('button', { name: 'Copy link' })).toBeNull();
+  });
 });
+

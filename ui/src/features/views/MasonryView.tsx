@@ -138,7 +138,19 @@ function MasonryTile({
         {item.summary && (
           <p className="text-[10px] text-ink-300 mt-1.5 line-clamp-3 leading-relaxed">{item.summary}</p>
         )}
-        <BookmarkItemActions title={item.title} selected={bulkSelected} selectionMode={selectionMode} onToggleSelect={onToggleSelect} onVisit={onVisit} onEdit={onEdit} onMove={onMove} onDelete={onDelete} onRemoveFromCollection={onRemoveFromCollection} />
+        <BookmarkItemActions
+          title={item.title}
+          url={item.url}
+          categoryName={item.categoryName}
+          selected={bulkSelected}
+          selectionMode={selectionMode}
+          onToggleSelect={onToggleSelect}
+          onVisit={onVisit}
+          onEdit={onEdit}
+          onMove={onMove}
+          onDelete={onDelete}
+          onRemoveFromCollection={onRemoveFromCollection}
+        />
       </div>
     </div>
   );

@@ -411,9 +411,15 @@ export function ContentArea({
     [bookmarks, sort]
   );
   // REQ-015：三视图共享 Presenter 元数据投影。
-  const presented = useMemo(() => presentBookmarks(sorted, tags), [sorted, tags]);
+  const presented = useMemo(
+    () => presentBookmarks(sorted, tags, categories),
+    [sorted, tags, categories]
+  );
   // Theme Space 以全库主题成员为容器数据源。
-  const presentedAll = useMemo(() => presentBookmarks(allBookmarks, tags), [allBookmarks, tags]);
+  const presentedAll = useMemo(
+    () => presentBookmarks(allBookmarks, tags, categories),
+    [allBookmarks, tags, categories]
+  );
   const showAI = selection.kind === 'collection' && !aiDismissed;
   const isCollectionView = selection.kind === 'collection';
   const composeSet = useMemo(() => new Set(composeSelectedIds), [composeSelectedIds]);

@@ -133,4 +133,40 @@ describe('BookmarkPresenter 共享投影', () => {
     expect(list).toHaveLength(1);
     expect(list[0].id).toBe('bm-a');
   });
+
+  // 投影应包含 url 以及直属的最近一级分类名称
+  test('presentBookmark 投影包含 url 与直属最近一级分类名称', async () => {
+    const mod = await loadPresenter();
+    if (!mod?.presentBookmark) throw new Error('presentBookmark is required');
+
+    const categories = [
+      { id: 'cat-parent', name: 'Engineering', icon: 'Code2', parentId: null },
+      { id: 'cat-child', name: 'Frontend', icon: 'MonitorSmartphone', parentId: 'cat-parent' },
+    ];
+    const bookmark: Bookmark = {
+      id: 'b-vue',
+      title: 'Vue.js',
+      url: 'https://vuejs.org',
+      domain: 'vuejs.org',
+      favicon: 'V',
+      faviconColor: 'green',
+      description: 'The Progressive JavaScript Framework',
+      notes: '',
+      tags: [],
+      categoryId: 'cat-child',
+      collectionIds: [],
+      createdAt: '2026-07-01T00:00:00.000Z',
+      lastVisitedAt: null,
+      visitCount: 1,
+      starred: false,
+      pinned: false,
+      health: 'ok',
+    };
+
+    const presented = mod.presentBookmark(bookmark, [], categories);
+    expect(presented.url).toBe('https://vuejs.org');
+    // 只显示最近一级（直接归属分类名称），即 Frontend
+    expect(presented.categoryName).toBe('Frontend');
+  });
 });
+
