@@ -10,12 +10,14 @@ const evidenceDirectory = resolve(
 );
 
 const macosThemes = [
-  { id: 'cupertino', label: 'Cupertino' },
-  { id: 'sequoia', label: 'Sequoia' },
+  { id: 'cupertino', label: 'Cupertino|库比蒂诺' },
+  { id: 'sequoia', label: 'Cappuccino|卡布奇诺' },
+  { id: 'provence', label: 'Provence|普罗旺斯' },
+  { id: 'monet', label: 'Monet|莫奈花园' },
 ] as const;
 
-test.describe('TASK-085 macOS 风格浅色双主题视觉回归与 3-Pane 差异化', () => {
-  test.setTimeout(90_000);
+test.describe('TASK-085 macOS 风格浅色多主题视觉回归与 3-Pane 差异化', () => {
+  test.setTimeout(180_000);
 
   test.beforeEach(async ({ page }) => {
     await resetApp(page);

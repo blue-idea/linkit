@@ -13,6 +13,8 @@ const themeKeys = {
   sequoia: 'theme.sequoia',
   obsidian: 'theme.obsidian',
   aurora: 'theme.aurora',
+  provence: 'theme.provence',
+  monet: 'theme.monet',
 } as const;
 
 /** 按 locale 解析主题展示名。覆盖 REQ-023-AC-003。 */

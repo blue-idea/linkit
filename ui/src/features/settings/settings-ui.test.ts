@@ -17,12 +17,14 @@ describe('设置 UI 规格', () => {
       'ocean',
       'graphite',
       'sunset',
+      'obsidian',
+      'aurora',
       'daylight',
       'paper',
       'cupertino',
       'sequoia',
-      'obsidian',
-      'aurora',
+      'provence',
+      'monet',
     ]);
     expect(resolveThemeLabel('midnight', 'en')).toBe('Midnight');
     expect(resolveThemeLabel('ocean', 'en')).toBe('Ocean');
@@ -31,9 +33,11 @@ describe('设置 UI 规格', () => {
     expect(resolveThemeLabel('daylight', 'en')).toBe('Daylight');
     expect(resolveThemeLabel('paper', 'en')).toBe('Paper');
     expect(resolveThemeLabel('cupertino', 'en')).toBe('Cupertino');
-    expect(resolveThemeLabel('sequoia', 'en')).toBe('Sequoia');
+    expect(resolveThemeLabel('sequoia', 'en')).toBe('Cappuccino');
     expect(resolveThemeLabel('obsidian', 'en')).toBe('Obsidian');
     expect(resolveThemeLabel('aurora', 'en')).toBe('Aurora');
+    expect(resolveThemeLabel('provence', 'en')).toBe('Provence');
+    expect(resolveThemeLabel('monet', 'en')).toBe('Monet');
   });
 
   // REQ-023-AC-003：中文 locale 下主题名本地化。
@@ -45,8 +49,10 @@ describe('设置 UI 规格', () => {
     expect(resolveThemeLabel('daylight', 'zh')).toBe('日光');
     expect(resolveThemeLabel('paper', 'zh')).toBe('纸墨');
     expect(resolveThemeLabel('cupertino', 'zh')).toBe('库比蒂诺');
-    expect(resolveThemeLabel('sequoia', 'zh')).toBe('红杉自然');
+    expect(resolveThemeLabel('sequoia', 'zh')).toBe('卡布奇诺');
     expect(resolveThemeLabel('obsidian', 'zh')).toBe('黑曜石');
     expect(resolveThemeLabel('aurora', 'zh')).toBe('极光之夜');
+    expect(resolveThemeLabel('provence', 'zh')).toBe('普罗旺斯');
+    expect(resolveThemeLabel('monet', 'zh')).toBe('莫奈花园');
   });
 });

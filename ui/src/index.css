@@ -109,18 +109,38 @@ body {
 
 [data-theme="cupertino"] .workspace {
   background:
-    radial-gradient(1000px 700px at 10% -10%, rgba(0,122,255,0.15), transparent 60%),
-    radial-gradient(900px 600px at 90% 5%, rgba(88,86,214,0.10), transparent 60%),
-    radial-gradient(800px 800px at 75% 105%, rgba(52,199,89,0.10), transparent 60%),
-    linear-gradient(180deg, #e4e7ed 0%, #dbe0e8 50%, #d2d8e2 100%);
+    radial-gradient(1100px 750px at 8% -8%, rgba(218, 232, 252, 0.95), transparent 60%),
+    radial-gradient(900px 650px at 94% 6%, rgba(240, 233, 252, 0.90), transparent 60%),
+    radial-gradient(850px 850px at 50% 105%, rgba(254, 250, 235, 0.92), transparent 60%),
+    radial-gradient(600px 600px at 15% 90%, rgba(0, 122, 255, 0.12), transparent 50%),
+    linear-gradient(160deg, #dae8fc 0%, #fef4c0 50%, #f0e9fc 100%);
 }
 
 [data-theme="sequoia"] .workspace {
   background:
-    radial-gradient(1000px 700px at 10% -10%, rgba(5,150,105,0.16), transparent 60%),
-    radial-gradient(900px 600px at 92% 5%, rgba(59,130,246,0.10), transparent 60%),
-    radial-gradient(800px 800px at 75% 105%, rgba(16,185,129,0.12), transparent 60%),
-    linear-gradient(180deg, #e3eae4 0%, #d8e3da 50%, #ccded0 100%);
+    radial-gradient(1100px 750px at 6% -8%, rgba(232, 208, 182, 0.95), transparent 60%),
+    radial-gradient(900px 650px at 94% 6%, rgba(224, 242, 224, 0.92), transparent 60%),
+    radial-gradient(850px 850px at 50% 105%, rgba(254, 248, 230, 0.95), transparent 60%),
+    radial-gradient(600px 600px at 18% 85%, rgba(180, 130, 90, 0.20), transparent 50%),
+    linear-gradient(160deg, #e8d0b6 0%, #fef8e6 50%, #e0f2e0 100%);
+}
+
+[data-theme="provence"] .workspace {
+  background:
+    radial-gradient(1100px 750px at 6% -8%, rgba(238, 212, 224, 0.95), transparent 60%),
+    radial-gradient(900px 650px at 94% 6%, rgba(222, 232, 250, 0.92), transparent 60%),
+    radial-gradient(850px 850px at 50% 105%, rgba(253, 247, 250, 0.95), transparent 60%),
+    radial-gradient(600px 600px at 18% 85%, rgba(180, 100, 140, 0.20), transparent 50%),
+    linear-gradient(160deg, #eed4e0 0%, #fdf7fa 50%, #dee8fa 100%);
+}
+
+[data-theme="monet"] .workspace {
+  background:
+    radial-gradient(1100px 750px at 6% -8%, rgba(214, 236, 226, 0.95), transparent 60%),
+    radial-gradient(900px 650px at 94% 6%, rgba(253, 242, 218, 0.92), transparent 60%),
+    radial-gradient(850px 850px at 50% 105%, rgba(254, 250, 244, 0.95), transparent 60%),
+    radial-gradient(600px 600px at 18% 85%, rgba(40, 140, 110, 0.18), transparent 50%),
+    linear-gradient(160deg, #d6ece2 0%, #fefaf4 50%, #fdf2da 100%);
 }
 
 [data-theme="obsidian"] .workspace {
@@ -314,20 +334,20 @@ body {
   --scrollbar-hover-alpha: 0.24;
 }
 
-/* Cupertino：经典 macOS 浅色系统质感。 */
+/* Cupertino：冷色三栏异色（浅天蓝左栏、浅鹅黄中栏、浅丁香紫右栏）。 */
 [data-theme="cupertino"] {
   color-scheme: light;
-  --ink-950: 17 24 39;
-  --ink-900: 31 41 55;
-  --ink-850: 55 65 81;
-  --ink-800: 255 255 255;
-  --ink-700: 243 244 246;
-  --ink-600: 229 231 235;
-  --ink-500: 156 163 175;
-  --ink-400: 107 114 128;
-  --ink-300: 75 85 99;
-  --ink-200: 31 41 55;
-  --ink-100: 17 24 39;
+  --ink-950: 28 32 46;
+  --ink-900: 42 48 64;
+  --ink-850: 58 64 82;
+  --ink-800: 252 247 230;
+  --ink-700: 245 238 218;
+  --ink-600: 235 226 202;
+  --ink-500: 140 135 120;
+  --ink-400: 95 95 90;
+  --ink-300: 65 65 70;
+  --ink-200: 40 42 52;
+  --ink-100: 18 20 28;
   --accent-50: 235 245 255;
   --accent-100: 209 232 255;
   --accent-200: 168 210 255;
@@ -338,37 +358,37 @@ body {
   --accent-700: 0 74 165;
   --accent-800: 0 58 135;
   --accent-900: 0 42 105;
-  --hairline-rgb: 0 0 0;
-  --hairline-alpha: 0.08;
-  --glass-bg: 255 255 255;
-  --glass-alpha: 0.85;
-  --glass-strong-bg: 255 255 255;
-  --glass-strong-alpha: 0.92;
-  --glass-light-bg: 243 245 249;
-  --glass-light-alpha: 0.7;
-  --shadow-win-rgb: 15 23 42;
-  --shadow-win-alpha: 0.16;
-  --shadow-soft-rgb: 15 23 42;
-  --shadow-soft-alpha: 0.08;
-  --scrollbar-rgb: 15 23 42;
-  --scrollbar-alpha: 0.14;
-  --scrollbar-hover-alpha: 0.24;
+  --hairline-rgb: 70 80 110;
+  --hairline-alpha: 0.10;
+  --glass-bg: 254 250 235;
+  --glass-alpha: 0.94;
+  --glass-strong-bg: 248 242 224;
+  --glass-strong-alpha: 0.96;
+  --glass-light-bg: 252 247 230;
+  --glass-light-alpha: 0.80;
+  --shadow-win-rgb: 40 45 60;
+  --shadow-win-alpha: 0.12;
+  --shadow-soft-rgb: 40 45 60;
+  --shadow-soft-alpha: 0.06;
+  --scrollbar-rgb: 70 80 110;
+  --scrollbar-alpha: 0.16;
+  --scrollbar-hover-alpha: 0.28;
 }
 
-/* Sequoia：现代加州红杉自然浅色。 */
+/* Sequoia（卡布奇诺）：方案一【复古咖啡馆】醇厚意式浓咖、香草炼乳浅米、清爽开心果浅草绿。 */
 [data-theme="sequoia"] {
   color-scheme: light;
-  --ink-950: 19 36 28;
-  --ink-900: 28 47 38;
-  --ink-850: 38 60 50;
-  --ink-800: 255 255 255;
-  --ink-700: 242 247 244;
-  --ink-600: 226 235 229;
-  --ink-500: 140 165 150;
-  --ink-400: 95 125 108;
-  --ink-300: 60 88 72;
-  --ink-200: 36 60 48;
-  --ink-100: 20 40 30;
+  --ink-950: 36 28 20;
+  --ink-900: 52 40 28;
+  --ink-850: 72 56 40;
+  --ink-800: 248 238 214;
+  --ink-700: 242 228 200;
+  --ink-600: 230 214 182;
+  --ink-500: 140 125 105;
+  --ink-400: 98 86 70;
+  --ink-300: 68 58 46;
+  --ink-200: 44 36 28;
+  --ink-100: 20 16 12;
   --accent-50: 236 253 245;
   --accent-100: 209 250 229;
   --accent-200: 167 243 208;
@@ -379,21 +399,103 @@ body {
   --accent-700: 4 95 70;
   --accent-800: 6 78 59;
   --accent-900: 6 64 49;
-  --hairline-rgb: 20 45 30;
-  --hairline-alpha: 0.08;
-  --glass-bg: 255 255 255;
-  --glass-alpha: 0.85;
-  --glass-strong-bg: 255 255 255;
-  --glass-strong-alpha: 0.92;
-  --glass-light-bg: 241 246 242;
-  --glass-light-alpha: 0.7;
-  --shadow-win-rgb: 20 45 30;
+  --hairline-rgb: 100 75 50;
+  --hairline-alpha: 0.12;
+  --glass-bg: 254 248 230;
+  --glass-alpha: 0.96;
+  --glass-strong-bg: 248 238 214;
+  --glass-strong-alpha: 0.96;
+  --glass-light-bg: 252 244 224;
+  --glass-light-alpha: 0.85;
+  --shadow-win-rgb: 45 35 25;
   --shadow-win-alpha: 0.14;
-  --shadow-soft-rgb: 20 45 30;
+  --shadow-soft-rgb: 45 35 25;
   --shadow-soft-alpha: 0.08;
-  --scrollbar-rgb: 20 45 30;
-  --scrollbar-alpha: 0.14;
-  --scrollbar-hover-alpha: 0.24;
+  --scrollbar-rgb: 100 75 50;
+  --scrollbar-alpha: 0.18;
+  --scrollbar-hover-alpha: 0.30;
+}
+
+/* Provence（普罗旺斯）：南法粉紫浪漫，烟粉玫瑰、雪燕柔粉白、霜蓝霁青。 */
+[data-theme="provence"] {
+  color-scheme: light;
+  --ink-950: 36 20 28;
+  --ink-900: 52 30 42;
+  --ink-850: 72 42 58;
+  --ink-800: 247 236 242;
+  --ink-700: 240 226 234;
+  --ink-600: 228 210 220;
+  --ink-500: 140 108 126;
+  --ink-400: 98 70 86;
+  --ink-300: 68 46 58;
+  --ink-200: 44 26 36;
+  --ink-100: 20 10 16;
+  --accent-50: 250 245 255;
+  --accent-100: 243 232 255;
+  --accent-200: 233 213 255;
+  --accent-300: 216 180 254;
+  --accent-400: 168 85 247;
+  --accent-500: 124 58 237;
+  --accent-600: 109 40 217;
+  --accent-700: 91 33 182;
+  --accent-800: 76 29 149;
+  --accent-900: 59 7 100;
+  --hairline-rgb: 100 50 80;
+  --hairline-alpha: 0.12;
+  --glass-bg: 253 247 250;
+  --glass-alpha: 0.96;
+  --glass-strong-bg: 247 236 242;
+  --glass-strong-alpha: 0.96;
+  --glass-light-bg: 250 242 246;
+  --glass-light-alpha: 0.85;
+  --shadow-win-rgb: 45 25 35;
+  --shadow-win-alpha: 0.14;
+  --shadow-soft-rgb: 45 25 35;
+  --shadow-soft-alpha: 0.08;
+  --scrollbar-rgb: 100 50 80;
+  --scrollbar-alpha: 0.18;
+  --scrollbar-hover-alpha: 0.30;
+}
+
+/* Monet（莫奈花园）：印象派睡莲倒影，鼠尾草水青、月光白桃、晚霞杏金。 */
+[data-theme="monet"] {
+  color-scheme: light;
+  --ink-950: 20 34 26;
+  --ink-900: 28 48 38;
+  --ink-850: 40 68 54;
+  --ink-800: 248 240 230;
+  --ink-700: 240 230 218;
+  --ink-600: 226 214 200;
+  --ink-500: 105 136 120;
+  --ink-400: 70 98 84;
+  --ink-300: 46 68 56;
+  --ink-200: 28 44 34;
+  --ink-100: 12 22 16;
+  --accent-50: 236 254 255;
+  --accent-100: 207 250 254;
+  --accent-200: 165 243 252;
+  --accent-300: 103 232 249;
+  --accent-400: 34 211 238;
+  --accent-500: 8 145 178;
+  --accent-600: 14 116 144;
+  --accent-700: 15 118 110;
+  --accent-800: 21 94 117;
+  --accent-900: 22 78 99;
+  --hairline-rgb: 40 85 70;
+  --hairline-alpha: 0.12;
+  --glass-bg: 254 250 244;
+  --glass-alpha: 0.96;
+  --glass-strong-bg: 248 240 230;
+  --glass-strong-alpha: 0.96;
+  --glass-light-bg: 252 246 238;
+  --glass-light-alpha: 0.85;
+  --shadow-win-rgb: 25 40 32;
+  --shadow-win-alpha: 0.14;
+  --shadow-soft-rgb: 25 40 32;
+  --shadow-soft-alpha: 0.08;
+  --scrollbar-rgb: 40 85 70;
+  --scrollbar-alpha: 0.18;
+  --scrollbar-hover-alpha: 0.30;
 }
 
 /* Obsidian：专业深黑质感，macOS Pro 风格与电光紫靛强调色。 */
@@ -478,40 +580,111 @@ body {
   --scrollbar-hover-alpha: 0.22;
 }
 
-/* macOS 3-Pane 差异化分栏模式：Cupertino 经典浅色 */
+/* macOS 3-Pane 差异化分栏模式：Cupertino 冷色三栏异色 */
 [data-theme="cupertino"] nav .glass {
-  background: rgba(235, 238, 244, 0.88);
+  background: rgba(218, 232, 252, 0.90);
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  border-right: 1px solid rgba(100, 130, 180, 0.12);
 }
 [data-theme="cupertino"] main .glass {
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(254, 250, 235, 0.94);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  border-right: 1px solid rgba(160, 140, 100, 0.10);
 }
 [data-theme="cupertino"] aside .glass {
-  background: rgba(246, 248, 251, 0.92);
+  background: rgba(240, 233, 252, 0.92);
   backdrop-filter: blur(28px) saturate(160%);
   -webkit-backdrop-filter: blur(28px) saturate(160%);
 }
 
-/* macOS 3-Pane 差异化分栏模式：Sequoia 自然浅色 */
+/* macOS 3-Pane 差异化分栏模式：Sequoia（卡布奇诺）明晰暖焙奶咖左栏、香草炼乳浅米中栏、清爽开心果浅草绿右栏 */
 [data-theme="sequoia"] nav .glass {
-  background: rgba(232, 238, 234, 0.88);
+  background: rgba(232, 208, 182, 0.94);
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border-right: 1px solid rgba(20, 45, 30, 0.08);
+  border-right: 1px solid rgba(130, 95, 60, 0.16);
+}
+[data-theme="sequoia"] nav [class*="text-ink-400"] {
+  color: rgb(112 75 44) !important;
+  font-weight: 600;
+}
+[data-theme="sequoia"] nav [class*="text-ink-300"] {
+  color: rgb(72 48 26) !important;
+}
+[data-theme="sequoia"] nav [class*="text-ink-200"] {
+  color: rgb(34 22 12) !important;
+  font-weight: 500;
 }
 [data-theme="sequoia"] main .glass {
-  background: rgba(253, 254, 253, 0.94);
+  background: rgba(254, 248, 230, 0.96);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-right: 1px solid rgba(20, 45, 30, 0.08);
+  border-right: 1px solid rgba(130, 100, 65, 0.12);
 }
 [data-theme="sequoia"] aside .glass {
-  background: rgba(245, 248, 246, 0.92);
+  background: rgba(224, 242, 224, 0.92);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+}
+
+/* macOS 3-Pane 差异化分栏模式：Provence（普罗旺斯）烟粉玫瑰左栏、雪燕粉白中栏、霜蓝霁青右栏 */
+[data-theme="provence"] nav .glass {
+  background: rgba(238, 212, 224, 0.94);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-right: 1px solid rgba(140, 70, 100, 0.16);
+}
+[data-theme="provence"] nav [class*="text-ink-400"] {
+  color: rgb(120 45 85) !important;
+  font-weight: 600;
+}
+[data-theme="provence"] nav [class*="text-ink-300"] {
+  color: rgb(85 28 60) !important;
+}
+[data-theme="provence"] nav [class*="text-ink-200"] {
+  color: rgb(42 16 28) !important;
+  font-weight: 500;
+}
+[data-theme="provence"] main .glass {
+  background: rgba(253, 247, 250, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(160, 90, 120, 0.12);
+}
+[data-theme="provence"] aside .glass {
+  background: rgba(222, 232, 250, 0.92);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+}
+
+/* macOS 3-Pane 差异化分栏模式：Monet（莫奈花园）鼠尾草水青左栏、月光白桃中栏、晚霞杏金右栏 */
+[data-theme="monet"] nav .glass {
+  background: rgba(214, 236, 226, 0.94);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-right: 1px solid rgba(40, 100, 75, 0.16);
+}
+[data-theme="monet"] nav [class*="text-ink-400"] {
+  color: rgb(38 98 72) !important;
+  font-weight: 600;
+}
+[data-theme="monet"] nav [class*="text-ink-300"] {
+  color: rgb(24 72 52) !important;
+}
+[data-theme="monet"] nav [class*="text-ink-200"] {
+  color: rgb(16 40 28) !important;
+  font-weight: 500;
+}
+[data-theme="monet"] main .glass {
+  background: rgba(254, 250, 244, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(90, 120, 100, 0.12);
+}
+[data-theme="monet"] aside .glass {
+  background: rgba(253, 242, 218, 0.92);
   backdrop-filter: blur(28px) saturate(160%);
   -webkit-backdrop-filter: blur(28px) saturate(160%);
 }
@@ -558,7 +731,9 @@ body {
 [data-theme="daylight"] [data-view="list"] > div,
 [data-theme="paper"] [data-view="list"] > div,
 [data-theme="cupertino"] [data-view="list"] > div,
-[data-theme="sequoia"] [data-view="list"] > div {
+[data-theme="sequoia"] [data-view="list"] > div,
+[data-theme="provence"] [data-view="list"] > div,
+[data-theme="monet"] [data-view="list"] > div {
   background-color: transparent;
   box-shadow: none;
 }
