@@ -83,4 +83,43 @@ describe('AboutDialog', () => {
     await user.click(within(dialog).getByRole('link', { name: /github\.com\/blue-idea\/linkit/i }));
     expect(openExternalUrl).toHaveBeenCalledWith('https://github.com/blue-idea/linkit');
   });
+
+  test('点击检查更新后打开可用版本下载链接', async () => {
+    const user = userEvent.setup();
+    const checkForUpdates = vi.fn().mockResolvedValue({
+      available: true,
+      version: '0.4.0',
+      releaseUrl: 'https://github.com/blue-idea/linkit/releases/tag/v0.4.0',
+      downloadUrl: 'https://github.com/blue-idea/linkit/releases/download/v0.4.0/Linkit.dmg',
+    });
+
+    render(
+      <AboutDialog
+        open
+        onClose={() => undefined}
+        checkForUpdates={checkForUpdates}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: /check for updates/i }));
+
+    expect(checkForUpdates).toHaveBeenCalledOnce();
+    expect(openExternalUrl).toHaveBeenCalledWith('https://github.com/blue-idea/linkit/releases/download/v0.4.0/Linkit.dmg');
+  });
+
+  test('点击检查更新且无新版本时显示已是最新', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AboutDialog
+        open
+        onClose={() => undefined}
+        checkForUpdates={vi.fn().mockResolvedValue({ available: false })}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: /check for updates/i }));
+
+    expect(await screen.findByText(/linkit is up to date/i)).toBeInTheDocument();
+  });
 });

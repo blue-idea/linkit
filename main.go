@@ -17,6 +17,7 @@ import (
 	"github.com/blue-idea/collection/internal/secretstore"
 	"github.com/blue-idea/collection/internal/settingsstore"
 	"github.com/blue-idea/collection/internal/tray"
+	"github.com/blue-idea/collection/internal/updater"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -99,6 +100,11 @@ func main() {
 	)
 	healthEmitter := health.NewWailsEmitter()
 	healthService := health.NewService(health.WithEmitter(healthEmitter))
+	updateService := updater.NewService(updater.Config{
+		Emitter: func(ctx context.Context, eventName string, result updater.UpdateCheckResult) {
+			wailsruntime.EventsEmit(ctx, eventName, result)
+		},
+	})
 
 	// REQ-031：冷启动按已存 uiSize 设宽高；缺省 medium。
 	launchWidth, launchHeight := config.AppWidth, config.AppHeight
@@ -133,6 +139,11 @@ func main() {
 			nativeFileService.SetContext(ctx)
 			localDocumentService.SetContext(ctx)
 			healthEmitter.SetContext(ctx)
+			go func() {
+				if _, err := updateService.CheckAndNotify(ctx); err != nil {
+					log.Printf("updater: unable to check releases: %v", err)
+				}
+			}()
 
 			desktopCapability := nativeFileService.GetDesktopCapability()
 			desktopCapability.TrayAvailable = tray.SafeStart(trayRunner)
@@ -170,6 +181,7 @@ func main() {
 			metadataService,
 			aiService,
 			healthService,
+			updateService,
 		},
 	})
 	if err != nil {

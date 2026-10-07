@@ -27,6 +27,7 @@ import {
 import { setToggleWindowHotkey } from './features/shell/desktop-hotkey';
 import { setMainWindowSize } from './features/shell/desktop-window-size';
 import { AboutDialog } from './features/shell/AboutDialog';
+import { UpdateNotifier } from './features/shell/UpdateNotifier';
 import { subscribeTrayAbout } from './features/shell/tray-about';
 import { subscribeTraySettings } from './features/shell/tray-settings';
 import { DEFAULT_UI_SIZE } from './config/window-size';
@@ -1459,9 +1460,12 @@ export default function App() {
   if (startup.view === 'loading') {
     return (
       <I18nProvider locale={locale}>
-        <div className="h-screen w-screen workspace flex items-center justify-center" role="status" aria-label={i18n.t('app.loading')}>
-          <div className="w-7 h-7 rounded-full border-2 border-white/20 border-t-white animate-spin" />
-        </div>
+        <>
+          <div className="h-screen w-screen workspace flex items-center justify-center" role="status" aria-label={i18n.t('app.loading')}>
+            <div className="w-7 h-7 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+          </div>
+          <UpdateNotifier />
+        </>
       </I18nProvider>
     );
   }
@@ -1503,6 +1507,7 @@ export default function App() {
           })();
           }}
         />
+        <UpdateNotifier />
       </I18nProvider>
     );
   }
@@ -1547,6 +1552,7 @@ export default function App() {
           void startup.enterLocalMode(settings);
         }}
         />
+        <UpdateNotifier />
       </I18nProvider>
     );
   }
@@ -2224,6 +2230,7 @@ export default function App() {
         onDataRootChanged={() => reloadLocalLibraryFromActiveRoot()}
       />
       <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
+      <UpdateNotifier />
       <CloudConflictDialog
         open={cloudConflictOpen}
         cloudRevision={cloudConflictRevision}

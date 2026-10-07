@@ -2,4 +2,5 @@
 export const APP_EVENTS = {
   openSettings: 'linkit:open-settings',
   openAbout: 'linkit:open-about',
+  updateAvailable: 'linkit:update-available',
 } as const;

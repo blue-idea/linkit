@@ -5,7 +5,7 @@ import (
 )
 
 func TestAppVersion(t *testing.T) {
-	expected := "0.4.0"
+	expected := "0.4.1"
 	if AppVersion != expected {
 		t.Errorf("AppVersion = %q; want %q", AppVersion, expected)
 	}
@@ -23,5 +23,12 @@ func TestGitHubURL(t *testing.T) {
 	expected := "https://github.com/blue-idea/linkit"
 	if GitHubURL != expected {
 		t.Errorf("GitHubURL = %q; want %q", GitHubURL, expected)
+	}
+}
+
+func TestReleaseRepository(t *testing.T) {
+	expected := "blue-idea/linkit"
+	if ReleaseRepository != expected {
+		t.Errorf("ReleaseRepository = %q; want %q", ReleaseRepository, expected)
 	}
 }
