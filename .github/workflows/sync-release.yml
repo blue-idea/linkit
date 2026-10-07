@@ -11,6 +11,7 @@ on:
 
 jobs:
   sync-release:
+    if: github.repository == 'blue-idea/collection'
     runs-on: ubuntu-latest
     steps:
       - name: Sync Release Assets

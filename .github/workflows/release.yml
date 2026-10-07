@@ -21,6 +21,7 @@ env:
 
 jobs:
   release:
+    if: github.repository == 'blue-idea/collection'
     strategy:
       fail-fast: false
       matrix:
@@ -225,6 +226,7 @@ jobs:
   sync-public-release:
     name: Sync Release to Public Repo
     needs: release
+    if: github.repository == 'blue-idea/collection'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -278,6 +280,7 @@ jobs:
   update-homebrew-tap:
     name: Update Homebrew Tap
     needs: sync-public-release
+    if: github.repository == 'blue-idea/collection'
     runs-on: ubuntu-latest
     permissions:
       contents: read
