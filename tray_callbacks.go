@@ -8,6 +8,7 @@ func buildTrayCallbacks(
 	showWindow func(),
 	openSettings func(),
 	openAbout func(),
+	checkUpdates func(),
 	quitApplication func(),
 ) tray.Callbacks {
 	return tray.Callbacks{
@@ -25,6 +26,14 @@ func buildTrayCallbacks(
 			}
 			if openAbout != nil {
 				openAbout()
+			}
+		},
+		OnCheckUpdates: func() {
+			if showWindow != nil {
+				showWindow()
+			}
+			if checkUpdates != nil {
+				checkUpdates()
 			}
 		},
 		OnQuit: quitApplication,

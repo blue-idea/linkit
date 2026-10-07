@@ -12,6 +12,7 @@ func TestBuildTrayCallbacksUsesShowWindowForDoubleClick(t *testing.T) {
 		func() { events = append(events, "show") },
 		func() { events = append(events, "settings") },
 		func() { events = append(events, "about") },
+		func() { events = append(events, "updates") },
 		func() { events = append(events, "quit") },
 	)
 	if callbacks.OnDoubleClick == nil {
@@ -32,6 +33,7 @@ func TestBuildTrayCallbacksShowsWindowBeforeOpeningSettings(t *testing.T) {
 		func() { events = append(events, "show") },
 		func() { events = append(events, "settings") },
 		func() { events = append(events, "about") },
+		func() { events = append(events, "updates") },
 		func() { events = append(events, "quit") },
 	)
 	if callbacks.OnSettings == nil {
@@ -52,6 +54,7 @@ func TestBuildTrayCallbacksShowsWindowBeforeOpeningAbout(t *testing.T) {
 		func() { events = append(events, "show") },
 		func() { events = append(events, "settings") },
 		func() { events = append(events, "about") },
+		func() { events = append(events, "updates") },
 		func() { events = append(events, "quit") },
 	)
 	if callbacks.OnAbout == nil {
@@ -65,6 +68,27 @@ func TestBuildTrayCallbacksShowsWindowBeforeOpeningAbout(t *testing.T) {
 	}
 }
 
+func TestBuildTrayCallbacksShowsWindowBeforeCheckingUpdates(t *testing.T) {
+	events := make([]string, 0, 3)
+
+	callbacks := buildTrayCallbacks(
+		func() { events = append(events, "show") },
+		func() { events = append(events, "settings") },
+		func() { events = append(events, "about") },
+		func() { events = append(events, "updates") },
+		func() { events = append(events, "quit") },
+	)
+	if callbacks.OnCheckUpdates == nil {
+		t.Fatal("check updates callback must be configured")
+	}
+
+	callbacks.OnCheckUpdates()
+
+	if !reflect.DeepEqual(events, []string{"show", "updates"}) {
+		t.Fatalf("check updates events = %v, want [show updates]", events)
+	}
+}
+
 func TestBuildTrayCallbacksRetainsQuitCallback(t *testing.T) {
 	events := make([]string, 0, 1)
 
@@ -72,6 +96,7 @@ func TestBuildTrayCallbacksRetainsQuitCallback(t *testing.T) {
 		func() { events = append(events, "show") },
 		func() { events = append(events, "settings") },
 		func() { events = append(events, "about") },
+		func() { events = append(events, "updates") },
 		func() { events = append(events, "quit") },
 	)
 	if callbacks.OnQuit == nil {

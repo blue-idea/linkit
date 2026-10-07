@@ -18,10 +18,10 @@ describe('backup config & app version', () => {
     expect(resolveAppVersion('  v1.0.0  ')).toBe('1.0.0');
   });
 
-  it('resolveAppVersion 在无注入时回退至当前默认版本 0.4.1', () => {
-    expect(resolveAppVersion(undefined)).toBe('0.4.1');
-    expect(resolveAppVersion('')).toBe('0.4.1');
-    expect(resolveAppVersion('   ')).toBe('0.4.1');
+  it('resolveAppVersion 在无注入时回退至当前默认版本 0.4.2', () => {
+    expect(resolveAppVersion(undefined)).toBe('0.4.2');
+    expect(resolveAppVersion('')).toBe('0.4.2');
+    expect(resolveAppVersion('   ')).toBe('0.4.2');
   });
 
   it('LINKIT_APP_VERSION 默认应为有效版本字符串', () => {

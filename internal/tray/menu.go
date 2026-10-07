@@ -1,9 +1,10 @@
 package tray
 
 const (
-	MenuSettings = "settings"
-	MenuAbout    = "about"
-	MenuQuit     = "quit"
+	MenuSettings     = "settings"
+	MenuAbout        = "about"
+	MenuCheckUpdates = "check-updates"
+	MenuQuit         = "quit"
 )
 
 // MenuItem 描述托盘菜单项。
@@ -14,9 +15,10 @@ type MenuItem struct {
 
 // Callbacks 托盘动作回调。
 type Callbacks struct {
-	OnSettings func()
-	OnAbout    func()
-	OnQuit     func()
+	OnSettings     func()
+	OnAbout        func()
+	OnCheckUpdates func()
+	OnQuit         func()
 
 	OnDoubleClick func()
 }
@@ -30,11 +32,12 @@ func NewHost(callbacks Callbacks) *Host {
 	return &Host{callbacks: callbacks}
 }
 
-// DefaultMenuItems 返回 About / Settings / Quit。
+// DefaultMenuItems 返回托盘右键菜单项。
 // REQ-030-AC-002
 func DefaultMenuItems() []MenuItem {
 	return []MenuItem{
 		{ID: MenuAbout, Label: "About"},
+		{ID: MenuCheckUpdates, Label: "Check for Updates"},
 		{ID: MenuSettings, Label: "Settings"},
 		{ID: MenuQuit, Label: "Quit"},
 	}
@@ -47,6 +50,8 @@ func (h *Host) HandleMenuClick(id string) {
 		callback = h.callbacks.OnSettings
 	case MenuAbout:
 		callback = h.callbacks.OnAbout
+	case MenuCheckUpdates:
+		callback = h.callbacks.OnCheckUpdates
 	case MenuQuit:
 		callback = h.callbacks.OnQuit
 	}
