@@ -43,6 +43,7 @@ type UpdateCheckResult struct {
 	Version     string `json:"version,omitempty"`
 	ReleaseURL  string `json:"releaseUrl,omitempty"`
 	DownloadURL string `json:"downloadUrl,omitempty"`
+	Error       string `json:"error,omitempty"`
 }
 
 type Service struct {
@@ -128,6 +129,26 @@ func (service *Service) CheckAndNotify(ctx context.Context) (UpdateCheckResult, 
 	}
 	if result.Available && service.config.Emitter != nil {
 		service.config.Emitter(ctx, config.EventUpdateAvailable, result)
+	}
+	return result, nil
+}
+
+func (service *Service) CheckAndNotifyManual(ctx context.Context) (UpdateCheckResult, error) {
+	if service.config.Emitter != nil {
+		service.config.Emitter(ctx, config.EventUpdateCheckStarted, UpdateCheckResult{})
+	}
+
+	result, err := service.CheckForUpdates(ctx)
+	if err != nil {
+		failed := UpdateCheckResult{Error: "Unable to check for updates"}
+		if service.config.Emitter != nil {
+			service.config.Emitter(ctx, config.EventUpdateCheckFinished, failed)
+		}
+		return UpdateCheckResult{}, err
+	}
+
+	if service.config.Emitter != nil {
+		service.config.Emitter(ctx, config.EventUpdateCheckFinished, result)
 	}
 	return result, nil
 }

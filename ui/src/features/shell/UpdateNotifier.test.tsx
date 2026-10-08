@@ -2,6 +2,7 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { APP_EVENTS } from '../../config/events';
+import { I18nProvider } from '../../i18n/use-i18n';
 import { UpdateNotifier, type UpdateAvailablePayload } from './UpdateNotifier';
 
 describe('UpdateNotifier', () => {
@@ -17,20 +18,20 @@ describe('UpdateNotifier', () => {
       releaseUrl: 'https://github.com/blue-idea/linkit/releases/tag/v0.4.0',
       downloadUrl: 'https://github.com/blue-idea/linkit/releases/download/v0.4.0/Linkit.dmg',
     };
-    let subscribedEvent = '';
+    const subscribedEvents: string[] = [];
 
     render(
       <UpdateNotifier
         subscribe={(eventName, callback) => {
-          subscribedEvent = eventName;
-          callback(payload);
+          subscribedEvents.push(eventName);
+          if (eventName === APP_EVENTS.updateAvailable) callback(payload);
           return () => undefined;
         }}
         openUrl={vi.fn()}
       />
     );
 
-    expect(subscribedEvent).toBe(APP_EVENTS.updateAvailable);
+    expect(subscribedEvents).toContain(APP_EVENTS.updateAvailable);
     const notice = await screen.findByRole('status');
     expect(within(notice).getByText(/new version 0\.4\.0 is available/i)).toBeInTheDocument();
     expect(within(notice).getByRole('button', { name: /download update/i })).toBeInTheDocument();
@@ -67,8 +68,8 @@ describe('UpdateNotifier', () => {
 
     render(
       <UpdateNotifier
-        subscribe={(_, callback) => {
-          callback({
+        subscribe={(eventName, callback) => {
+          if (eventName === APP_EVENTS.updateAvailable) callback({
             available: true,
             version: '0.4.0',
             releaseUrl: 'https://github.com/blue-idea/linkit/releases/tag/v0.4.0',
@@ -118,13 +119,15 @@ describe('UpdateNotifier', () => {
 
     render(
       <UpdateNotifier
-        subscribe={(_, callback) => {
-          callback({
-            available: true,
-            version: '0.4.0',
-            releaseUrl: 'https://github.com/blue-idea/linkit/releases/tag/v0.4.0',
-            downloadUrl: 'https://github.com/blue-idea/linkit/releases/tag/v0.4.0',
-          });
+        subscribe={(eventName, callback) => {
+          if (eventName === APP_EVENTS.updateAvailable) {
+            callback({
+              available: true,
+              version: '0.4.0',
+              releaseUrl: 'https://github.com/blue-idea/linkit/releases/tag/v0.4.0',
+              downloadUrl: 'https://github.com/blue-idea/linkit/releases/tag/v0.4.0',
+            });
+          }
           return () => undefined;
         }}
         openUrl={vi.fn()}
@@ -132,5 +135,129 @@ describe('UpdateNotifier', () => {
     );
 
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+  test('manual check shows checking feedback immediately', async () => {
+    const callbacks = new Map<string, (payload: UpdateAvailablePayload) => void>();
+
+    render(
+      <UpdateNotifier
+        subscribe={(eventName, callback) => {
+          callbacks.set(eventName, callback);
+          return () => undefined;
+        }}
+        openUrl={vi.fn()}
+      />
+    );
+
+    callbacks.get(APP_EVENTS.updateCheckStarted)?.({
+      available: false,
+      version: '',
+      releaseUrl: '',
+      downloadUrl: '',
+    });
+
+    const notice = await screen.findByRole('status');
+    expect(within(notice).getByText(/checking for updates/i)).toBeInTheDocument();
+  });
+
+  test('manual check shows current feedback when no update is available', async () => {
+    const callbacks = new Map<string, (payload: UpdateAvailablePayload) => void>();
+
+    render(
+      <UpdateNotifier
+        subscribe={(eventName, callback) => {
+          callbacks.set(eventName, callback);
+          return () => undefined;
+        }}
+        openUrl={vi.fn()}
+      />
+    );
+
+    callbacks.get(APP_EVENTS.updateCheckFinished)?.({
+      available: false,
+      version: '',
+      releaseUrl: '',
+      downloadUrl: '',
+    });
+
+    const notice = await screen.findByRole('status');
+    expect(within(notice).getByText(/linkit is up to date/i)).toBeInTheDocument();
+  });
+
+  test('manual check feedback follows the current Chinese locale', async () => {
+    const callbacks = new Map<string, (payload: UpdateAvailablePayload) => void>();
+
+    render(
+      <I18nProvider locale="zh">
+        <UpdateNotifier
+          subscribe={(eventName, callback) => {
+            callbacks.set(eventName, callback);
+            return () => undefined;
+          }}
+          openUrl={vi.fn()}
+        />
+      </I18nProvider>
+    );
+
+    callbacks.get(APP_EVENTS.updateCheckFinished)?.({
+      available: false,
+      version: '',
+      releaseUrl: '',
+      downloadUrl: '',
+    });
+
+    const notice = await screen.findByRole('status');
+    expect(within(notice).getByText('Linkit 已是最新版本')).toBeInTheDocument();
+    expect(within(notice).getByText('你正在使用最新版本。')).toBeInTheDocument();
+  });
+
+  test('manual check shows failure feedback when release lookup fails', async () => {
+    const callbacks = new Map<string, (payload: UpdateAvailablePayload & { error?: string }) => void>();
+
+    render(
+      <UpdateNotifier
+        subscribe={(eventName, callback) => {
+          callbacks.set(eventName, callback);
+          return () => undefined;
+        }}
+        openUrl={vi.fn()}
+      />
+    );
+
+    callbacks.get(APP_EVENTS.updateCheckFinished)?.({
+      available: false,
+      version: '',
+      releaseUrl: '',
+      downloadUrl: '',
+      error: 'Unable to check for updates',
+    });
+
+    const notice = await screen.findByRole('status');
+    expect(within(notice).getByText(/unable to check for updates/i)).toBeInTheDocument();
+  });
+
+  test('manual check shows an ignored version when update is explicitly requested', async () => {
+    window.localStorage.setItem('linkit.update.dismissedVersion', '0.4.0');
+    const callbacks = new Map<string, (payload: UpdateAvailablePayload) => void>();
+
+    render(
+      <UpdateNotifier
+        subscribe={(eventName, callback) => {
+          callbacks.set(eventName, callback);
+          return () => undefined;
+        }}
+        openUrl={vi.fn()}
+      />
+    );
+
+    callbacks.get(APP_EVENTS.updateCheckFinished)?.({
+      available: true,
+      version: '0.4.0',
+      releaseUrl: 'https://github.com/blue-idea/linkit/releases/tag/v0.4.0',
+      downloadUrl: 'https://github.com/blue-idea/linkit/releases/download/v0.4.0/Linkit.dmg',
+    });
+
+    const notice = await screen.findByRole('status');
+    expect(within(notice).getByText(/new version 0\.4\.0 is available/i)).toBeInTheDocument();
   });
 });

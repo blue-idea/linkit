@@ -89,11 +89,13 @@ test.describe('Generate README Screenshots', () => {
     await page.keyboard.press('Escape');
     await expect(newBookmarkDialog).not.toBeVisible();
 
-    // 5. Settings screenshot
+    // 5. Settings screenshot (Appearance & Themes)
+    await page.setViewportSize({ width: 1280, height: 1050 });
     await page.getByRole('button', { name: 'Settings' }).click();
     const settingsDialog = page.getByRole('dialog', { name: 'Settings' });
     await expect(settingsDialog).toBeVisible();
-    await page.waitForTimeout(300);
+    await settingsDialog.getByRole('tab', { name: 'Appearance' }).click();
+    await page.waitForTimeout(400);
 
     await page.screenshot({
       path: resolve(screenshotDir, 'settings.png'),

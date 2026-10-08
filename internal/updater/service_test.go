@@ -161,6 +161,85 @@ func TestCheckAndNotifyEmitsUpdateAvailable(t *testing.T) {
 	}
 }
 
+func TestCheckAndNotifyManualEmitsStartedAndFinishedWhenCurrent(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(ReleaseInfo{
+			TagName: "v0.4.0",
+			HTMLURL: "https://github.com/blue-idea/linkit/releases/tag/v0.4.0",
+		})
+	}))
+	defer server.Close()
+
+	var eventNames []string
+	var finishedPayload UpdateCheckResult
+	service := NewService(Config{
+		CurrentVersion:    "0.4.0",
+		ReleaseAPIBaseURL: server.URL,
+		ReleaseRepository: config.ReleaseRepository,
+		Emitter: func(_ context.Context, name string, result UpdateCheckResult) {
+			eventNames = append(eventNames, name)
+			if name == config.EventUpdateCheckFinished {
+				finishedPayload = result
+			}
+		},
+	})
+
+	result, err := service.CheckAndNotifyManual(context.Background())
+	if err != nil {
+		t.Fatalf("CheckAndNotifyManual: %v", err)
+	}
+	if result.Available {
+		t.Fatal("expected current version to be up to date")
+	}
+	if len(eventNames) != 2 ||
+		eventNames[0] != config.EventUpdateCheckStarted ||
+		eventNames[1] != config.EventUpdateCheckFinished {
+		t.Fatalf("event names = %v, want started then finished", eventNames)
+	}
+	if finishedPayload.Available || finishedPayload.Error != "" {
+		t.Fatalf("finished payload = %+v, want current without error", finishedPayload)
+	}
+}
+
+func TestCheckAndNotifyManualEmitsFinishedOnFailure(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "release lookup failed", http.StatusInternalServerError)
+	}))
+	defer server.Close()
+
+	var eventNames []string
+	var finishedPayload UpdateCheckResult
+	service := NewService(Config{
+		CurrentVersion:    "0.4.0",
+		ReleaseAPIBaseURL: server.URL,
+		ReleaseRepository: config.ReleaseRepository,
+		Emitter: func(_ context.Context, name string, result UpdateCheckResult) {
+			eventNames = append(eventNames, name)
+			if name == config.EventUpdateCheckFinished {
+				finishedPayload = result
+			}
+		},
+	})
+
+	_, err := service.CheckAndNotifyManual(context.Background())
+	if err == nil {
+		t.Fatal("expected release lookup error")
+	}
+	if len(eventNames) != 2 ||
+		eventNames[0] != config.EventUpdateCheckStarted ||
+		eventNames[1] != config.EventUpdateCheckFinished {
+		t.Fatalf("event names = %v, want started then finished", eventNames)
+	}
+	if finishedPayload.Error == "" {
+		t.Fatalf("finished payload = %+v, want error text", finishedPayload)
+	}
+}
+
 func TestCheckForUpdatesNowUsesBackgroundContextForWailsBinding(t *testing.T) {
 	t.Parallel()
 

@@ -97,7 +97,7 @@ func main() {
 				return
 			}
 			go func(ctx context.Context) {
-				if _, err := updateService.CheckAndNotify(ctx); err != nil {
+				if _, err := updateService.CheckAndNotifyManual(ctx); err != nil {
 					log.Printf("updater: unable to check releases from tray menu: %v", err)
 				}
 			}(appContext)

@@ -11,4 +11,8 @@ const (
 	EventHealthScanFinished = "linkit:health-scan-finished"
 	// EventUpdateAvailable 报告有新版本可下载。
 	EventUpdateAvailable = "linkit:update-available"
+	// EventUpdateCheckStarted 报告用户手动开始检查更新。
+	EventUpdateCheckStarted = "linkit:update-check-started"
+	// EventUpdateCheckFinished 报告用户手动检查更新已完成。
+	EventUpdateCheckFinished = "linkit:update-check-finished"
 )
