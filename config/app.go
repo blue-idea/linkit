@@ -3,7 +3,7 @@ package config
 var (
 	// AppVersion 用于导出信封标识生成文件的应用版本。
 	// 支持通过编译期 -ldflags "-X github.com/blue-idea/collection/config.AppVersion=X.Y.Z" 动态覆盖。
-	AppVersion = "0.4.2"
+	AppVersion = "0.4.3"
 )
 
 const (
