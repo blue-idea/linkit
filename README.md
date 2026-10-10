@@ -46,7 +46,7 @@ Windows, macOS (DMG), and Linux (AppImage / DEB) binaries are on the [GitHub Rel
 
 ### 🌟 Why Linkit?
 
-|                                 | Linkit       | Raindrop                      | Browser Bookmarks |
+|                                 | Linkit       | R*                   | Browser Bookmarks |
 | ------------------------------- | ------------ | ----------------------------- | ----------------- |
 | Local-first storage             | ✅           | ❌                            | ✅                |
 | AI summaries & tags             | ✅           | ❌                            | ❌                |
