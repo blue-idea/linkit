@@ -29,7 +29,7 @@
 ```bash
 brew install blue-idea/tap/linkit
 ```
-
+#### 更新
 ```bash
 brew update && brew upgrade linkit   # 随时升级
 ```
