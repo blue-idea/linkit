@@ -30,6 +30,7 @@
 brew install blue-idea/tap/linkit
 ```
 
+### Upgrade
 ```bash
 brew update && brew upgrade linkit
 ```
