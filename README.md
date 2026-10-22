@@ -1,6 +1,10 @@
 # Linkit — Your Smart Knowledge Curation Space
 
 <p align="center">
+  <img src="docs/social-preview.png" alt="Linkit — AI bookmark and knowledge manager" width="100%">
+</p>
+
+<p align="center">
   <img src="ui/screenshot/dashboard.png" alt="Linkit Dashboard" width="80%">
 </p>
 
@@ -18,7 +22,9 @@
 
 ---
 
-**Linkit** is a desktop bookmark manager built for knowledge workers. AI summaries, semantic search, and a knowledge graph turn saved links into real assets. Collections let you group ideas across categories; link health checks and duplicate detection keep your library clean; one-click import from Chrome, Firefox, Raindrop and more gets you started in seconds. Twelve beautiful themes, **dual-track local-first storage and cloud sync — completely free with no paywalls**, your data is always yours. Connect any OpenAI-compatible API or a local model (Ollama, etc.) for full AI features. Available on macOS, Windows, and Linux.
+> **Your bookmarks are a graveyard.** You save a link, swear you'll read it later, and never find it again. Linkit fixes that — with AI that actually remembers for you.
+
+**Linkit** is a desktop bookmark manager built for knowledge workers. AI summaries, semantic search, and a knowledge graph turn saved links into real assets. Collections let you group ideas across categories; link health checks and duplicate detection keep your library clean; one-click import from Chrome, Firefox, Edge, Safari and other bookmark services gets you started in seconds. Twelve beautiful themes, **dual-track local-first storage and cloud sync — completely free with no paywalls**, your data is always yours. Connect any OpenAI-compatible API or a local model (Ollama, etc.) for full AI features. Available on macOS, Windows, and Linux.
 
 ---
 
@@ -47,7 +53,7 @@ Windows, macOS (DMG), and Linux (AppImage / DEB) binaries are on the [GitHub Rel
 
 ### 🌟 Why Linkit?
 
-|                                 | Linkit       | R*                   | Browser Bookmarks |
+|                                 | Linkit       | Other paid tools     | Browser Bookmarks |
 | ------------------------------- | ------------ | ----------------------------- | ----------------- |
 | Local-first storage             | ✅           | ❌                            | ✅                |
 | AI summaries & tags             | ✅           | ❌                            | ❌                |
@@ -55,12 +61,19 @@ Windows, macOS (DMG), and Linux (AppImage / DEB) binaries are on the [GitHub Rel
 | Duplicate detection             | ✅           | ✅                            | ❌                |
 | Knowledge graph                 | ✅           | ❌                            | ❌                |
 | Insights report                 | ✅           | ❌                            | ❌                |
-| Import from browsers / Raindrop | ✅           | ✅                            | —                |
+| Import from browsers & services | ✅           | ✅                            | —                |
 | Cross-device sync               | ✅           | ✅                            | ✅                |
 | Offline-first                   | ✅           | ❌                            | ✅                |
 | Pricing (No Paywall)            | ✅ 100% Free | ❌ Paid Subscription ($3+/mo) | ✅ Free           |
 
 ---
+
+### ⭐ Star Linkit
+
+If Linkit solves your "bookmark graveyard" problem, a **star** genuinely helps other people
+discover it. It's free, it's open source, and it costs you one click.
+
+[![Star on GitHub](https://img.shields.io/github/stars/blue-idea/linkit?style=social)](https://github.com/blue-idea/linkit/stargazers)
 
 ### ✨ Key Features
 
@@ -82,7 +95,7 @@ Windows, macOS (DMG), and Linux (AppImage / DEB) binaries are on the [GitHub Rel
 Migrate your existing bookmarks in seconds:
 
 - **Browser HTML export** — Chrome, Firefox, Safari, Edge
-- **Raindrop.io CSV/JSON export**
+- **CSV / JSON export from any bookmark service**
 - **Clipboard URL** — paste any link directly via Spotlight (`Cmd/Ctrl + K`)
 
 #### 💡 Knowledge Assets, Not Just Links
