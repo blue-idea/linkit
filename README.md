@@ -28,6 +28,28 @@
 
 ---
 
+### 🔎 What is Linkit?
+
+**Linkit is a free, open-source bookmark manager for desktop** — a self-hosted, local-first
+alternative to browser bookmarks, read-it-later services, and paid cloud bookmark apps.
+
+| | |
+|---|---|
+| **Category** | Bookmark manager · PKM (personal knowledge management) tool |
+| **Platform** | Desktop app — macOS, Windows, Linux (Go + Wails + React) |
+| **Storage** | Local-first (SQLite on your machine); optional self-hosted cloud sync |
+| **License** | MIT — free and open source forever, no paywalls, no ads |
+| **AI** | Summarization, semantic search, knowledge graph — bring your own OpenAI-compatible API or local model (Ollama) |
+| **Privacy** | No account required, no telemetry, data stays on your device |
+
+Search it as a **local-first bookmark manager**, a **self-hosted bookmark service**,
+an **open-source read-it-later** tool, a **privacy-first bookmark organizer**, or a
+**free PKM / knowledge management desktop app**. If you want your bookmarks out of a
+saas paywall and back under your own control, Linkit is a FOSS bookmark manager that
+does AI curation without subscription pricing.
+
+---
+
 ### 🚀 Installation
 
 #### 🍺 macOS — Homebrew (Recommended)
@@ -220,3 +242,22 @@ Twelve elegant themes (*Midnight*, *Ocean*, *Graphite*, *Sunset*, *Obsidian*, *A
 - **Local by default**: No account, no telemetry, no cloud dependency to get started.
 - **RLS-enforced sync**: Cloud data is row-level secured — only you can access your records.
 - **Keychain-stored credentials**: AI API keys are stored in your OS keystore (`go-keyring` → macOS Keychain / Windows Credential Manager). Never hardcoded, never uploaded.
+
+---
+
+### 📄 License
+
+Linkit is **MIT licensed** — free and open source, no paywalls and no ads. Use it
+personally, at work, or as the base for your own **self-hosted bookmark manager**
+deployment.
+
+[**MIT License**](LICENSE) · Copyright © 2026 blue-idea
+
+---
+
+### 🔗 Links
+
+- **Releases & downloads** — <https://github.com/blue-idea/linkit/releases>
+- **Latest release (v0.4.7)** — <https://github.com/blue-idea/linkit/releases>
+- **Report an issue** — <https://github.com/blue-idea/linkit/issues>
+- **Feature request** — <https://github.com/blue-idea/linkit/issues/new>
