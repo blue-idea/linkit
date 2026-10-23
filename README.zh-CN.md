@@ -18,7 +18,28 @@
 
 ---
 
-**Linkit** 是为知识工作者设计的桌面书签管理器。AI 自动摘要、语义搜索与知识图谱，让收藏真正变成资产；主题空间帮你跨分类聚合灵感；链接健康扫描与重复项检测让书签库始终整洁；一键导入 Chrome、Firefox、Raindrop 等数据，十二款精美主题开箱即用。**本地存储 + 云端同步双轨架构，且完全免费无任何付费墙**，数据始终属于你。支持接入任意 OpenAI 兼容 API 或本地模型（Ollama 等）解锁全部 AI 功能。支持 macOS、Windows 与 Linux。
+**Linkit** 是为知识工作者设计的桌面书签管理器。AI 自动摘要、语义搜索与知识图谱，让收藏真正变成资产；主题空间帮你跨分类聚合灵感；链接健康扫描与重复项检测让书签库始终整洁；一键导入 Chrome、Firefox、Safari、Edge 等浏览器书签及主流书签服务数据，十二款精美主题开箱即用。**本地存储 + 云端同步双轨架构，且完全免费无任何付费墙**，数据始终属于你。支持接入任意 OpenAI 兼容 API 或本地模型（Ollama 等）解锁全部 AI 功能。支持 macOS、Windows 与 Linux。
+
+---
+
+### 🔎 Linkit 是什么？
+
+**Linkit 是一款免费开源的桌面书签管理器** —— 一个本地优先、可自托管的
+书签整理工具，替代浏览器书签、稍后读服务以及各类付费云端书签应用。
+
+| | |
+|---|---|
+| **类别** | 书签管理器 · PKM（个人知识管理）工具 |
+| **平台** | 桌面应用 —— macOS / Windows / Linux（Go + Wails + React） |
+| **存储** | 本地优先（SQLite 存本机）；可选自托管云同步 |
+| **许可协议** | MIT —— 永久免费开源，无付费墙、无广告 |
+| **AI 能力** | 自动摘要、语义搜索、知识图谱 —— 接入任意 OpenAI 兼容 API 或本地模型（Ollama） |
+| **隐私** | 无需账号、无遥测，数据始终留在你的设备上 |
+
+可以把它当作**本地优先书签管理器**、**自托管书签服务**、**开源稍后读工具**、
+**隐私优先的书签整理器**，或**免费 PKM / 知识管理桌面应用**来搜索。
+如果想把书签从 SaaS 付费墙里搬回自己掌控，Linkit 就是一个不靠订阅定价
+做 AI 整理的 FOSS 书签管理器。
 
 ---
 
@@ -54,7 +75,7 @@ Windows、macOS (DMG) 和 Linux (AppImage / DEB) 的预编译版本均可在 [Gi
 | 重复书签检测           | ✅          | ✅                      | ❌          |
 | 知识关联网络           | ✅          | ❌                      | ❌          |
 | 收藏洞察报告           | ✅          | ❌                      | ❌          |
-| 浏览器 / Raindrop 导入 | ✅          | ✅                      | —          |
+| 浏览器 / 书签服务导入 | ✅          | ✅                      | —          |
 | 多设备同步             | ✅          | ✅                      | ✅          |
 | 离线优先               | ✅          | ❌                      | ✅          |
 | 费用政策（无付费墙）   | ✅ 完全免费 | ❌ 需付费订阅（$3+/月） | ✅ 完全免费 |
@@ -81,7 +102,7 @@ Windows、macOS (DMG) 和 Linux (AppImage / DEB) 的预编译版本均可在 [Gi
 几秒钟内完成现有书签的迁移：
 
 - **浏览器 HTML 导出** — Chrome、Firefox、Safari、Edge 均支持
-- **Raindrop.io CSV / JSON 导出**
+- **主流书签服务 CSV / JSON 导出**
 - **剪贴板 URL** — 通过 Spotlight（`Cmd/Ctrl + K`）直接粘贴保存
 
 #### 💡 知识资产，而非链接列表
@@ -208,3 +229,21 @@ Linkit 定期生成**洞察报告**，汇总你的收藏习惯：最常用标签
 - **本地优先**：无需账号，无遥测，无云端依赖，开箱即用。
 - **RLS 强制隔离**：云端同步时，每行数据在数据库层面与 `auth.uid()` 绑定，杜绝越权访问。
 - **系统级密钥存储**：AI API 密钥通过宿主系统安全凭据层（`go-keyring` → macOS Keychain / Windows Credential Manager）本地存取，绝不硬编码，绝不上传。
+
+---
+
+### 📄 开源许可
+
+Linkit 采用 **MIT 协议** —— 免费开源，无付费墙、无广告。可个人使用、
+可用于团队，也可以作为搭建你自己的**自托管书签管理器**的基础。
+
+[**MIT License**](LICENSE) · Copyright © 2026 blue-idea
+
+---
+
+### 🔗 相关链接
+
+- **下载与版本发布** — <https://github.com/blue-idea/linkit/releases>
+- **最新版本（v0.4.7）** — <https://github.com/blue-idea/linkit/releases>
+- **提交 Issue** — <https://github.com/blue-idea/linkit/issues>
+- **功能建议** — <https://github.com/blue-idea/linkit/issues/new>
