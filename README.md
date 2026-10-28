@@ -30,7 +30,7 @@
 
 ### 🔎 What is Linkit?
 
-**Linkit is a free, open-source bookmark manager for desktop** — a self-hosted, local-first
+**Linkit is a free bookmark manager for desktop** — a self-hosted, local-first
 alternative to browser bookmarks, read-it-later services, and paid cloud bookmark apps.
 
 | | |
@@ -38,14 +38,14 @@ alternative to browser bookmarks, read-it-later services, and paid cloud bookmar
 | **Category** | Bookmark manager · PKM (personal knowledge management) tool |
 | **Platform** | Desktop app — macOS, Windows, Linux (Go + Wails + React) |
 | **Storage** | Local-first (SQLite on your machine); optional self-hosted cloud sync |
-| **License** | MIT — free and open source forever, no paywalls, no ads |
+| **License** | MIT — free forever, no paywalls, no ads |
 | **AI** | Summarization, semantic search, knowledge graph — bring your own OpenAI-compatible API or local model (Ollama) |
 | **Privacy** | No account required, no telemetry, data stays on your device |
 
 Search it as a **local-first bookmark manager**, a **self-hosted bookmark service**,
-an **open-source read-it-later** tool, a **privacy-first bookmark organizer**, or a
+a **free read-it-later** tool, a **privacy-first bookmark organizer**, or a
 **free PKM / knowledge management desktop app**. If you want your bookmarks out of a
-saas paywall and back under your own control, Linkit is a FOSS bookmark manager that
+saas paywall and back under your own control, Linkit is a free bookmark manager that
 does AI curation without subscription pricing.
 
 ---
@@ -93,7 +93,7 @@ Windows, macOS (DMG), and Linux (AppImage / DEB) binaries are on the [GitHub Rel
 ### ⭐ Star Linkit
 
 If Linkit solves your "bookmark graveyard" problem, a **star** genuinely helps other people
-discover it. It's free, it's open source, and it costs you one click.
+discover it. It's free, and it costs you one click.
 
 [![Star on GitHub](https://img.shields.io/github/stars/blue-idea/linkit?style=social)](https://github.com/blue-idea/linkit/stargazers)
 
@@ -247,7 +247,7 @@ Twelve elegant themes (*Midnight*, *Ocean*, *Graphite*, *Sunset*, *Obsidian*, *A
 
 ### 📄 License
 
-Linkit is **MIT licensed** — free and open source, no paywalls and no ads. Use it
+Linkit is **MIT licensed** — free, no paywalls and no ads. Use it
 personally, at work, or as the base for your own **self-hosted bookmark manager**
 deployment.
 
