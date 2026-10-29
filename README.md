@@ -160,6 +160,10 @@ Automatically surface exact-URL duplicates and AI-detected near-duplicates (same
 
 Background scans detect broken links (`404`) and silently changed pages. Filter, review, and clean up stale bookmarks before they pile up.
 
+#### ✅ Bulk Bookmark Actions
+
+Turn on selection mode and act on many bookmarks at once. A **Select all** button picks up every bookmark currently in view and flips to **Deselect all** once they are all selected, `Shift`-click extends a range, and `Cmd`/`Ctrl`-click adds or removes single items. The bulk bar can move bookmarks to another category, delete them, remove them from a collection, or turn the selection into a new collection.
+
 #### 🌐 Knowledge Graph
 
 Visualize your entire library as an interactive network. Nodes connect via shared tags, collections, and AI semantic similarity. Click any node to jump directly to that bookmark.
