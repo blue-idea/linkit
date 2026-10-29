@@ -247,9 +247,13 @@ Twelve elegant themes (*Midnight*, *Ocean*, *Graphite*, *Sunset*, *Obsidian*, *A
 
 ### 📄 License
 
-Linkit is **MIT licensed** — free, no paywalls and no ads. Use it
-personally, at work, or as the base for your own **self-hosted bookmark manager**
-deployment.
+Linkit is free software under the MIT license that covers the files in this
+repository — no paywalls, no ads. Use it personally, at work, or as the base for
+your own **self-hosted bookmark manager** deployment.
+
+> **Source availability:** Linkit ships as prebuilt binaries for macOS, Windows,
+> and Linux. This repository contains the README, screenshots, install scripts,
+> and the Homebrew tap — the application source is not published here.
 
 [**MIT License**](LICENSE) · Copyright © 2026 blue-idea
 
@@ -258,6 +262,6 @@ deployment.
 ### 🔗 Links
 
 - **Releases & downloads** — <https://github.com/blue-idea/linkit/releases>
-- **Latest release (v0.4.7)** — <https://github.com/blue-idea/linkit/releases>
+- **Latest release (v0.5.5)** — <https://github.com/blue-idea/linkit/releases>
 - **Report an issue** — <https://github.com/blue-idea/linkit/issues>
 - **Feature request** — <https://github.com/blue-idea/linkit/issues/new>
