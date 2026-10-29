@@ -234,8 +234,13 @@ Linkit 定期生成**洞察报告**，汇总你的收藏习惯：最常用标签
 
 ### 📄 许可协议
 
-Linkit 采用 **MIT 协议** —— 免费，无付费墙、无广告。可个人使用、
-可用于团队，也可以作为搭建你自己的**自托管书签管理器**的基础。
+Linkit 是采用 MIT 协议的自由软件（该协议覆盖本仓库中的文件）—— 免费，
+无付费墙、无广告。可个人使用、可用于团队，也可以作为搭建你自己的
+**自托管书签管理器**的基础。
+
+> **源码说明：** Linkit 以 macOS / Windows / Linux 预编译二进制形式发布。
+> 本仓库包含 README、界面截图、安装脚本与 Homebrew tap —— 应用源码
+> 未在此公开。
 
 [**MIT License**](LICENSE) · Copyright © 2026 blue-idea
 
@@ -244,6 +249,6 @@ Linkit 采用 **MIT 协议** —— 免费，无付费墙、无广告。可个�
 ### 🔗 相关链接
 
 - **下载与版本发布** — <https://github.com/blue-idea/linkit/releases>
-- **最新版本（v0.4.7）** — <https://github.com/blue-idea/linkit/releases>
+- **最新版本（v0.5.5）** — <https://github.com/blue-idea/linkit/releases>
 - **提交 Issue** — <https://github.com/blue-idea/linkit/issues>
 - **功能建议** — <https://github.com/blue-idea/linkit/issues/new>
